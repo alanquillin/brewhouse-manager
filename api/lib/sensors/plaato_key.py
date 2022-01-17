@@ -4,7 +4,7 @@ import requests
 from requests import auth
 from requests.auth import HTTPBasicAuth
 
-from lib.sensors import SensorBase
+from lib.sensors import SensorBase, InvalidDataType
 from db import session_scope
 from db.sensors import Sensors as SensorsDB
 
@@ -24,6 +24,9 @@ class PlaatoKeg(SensorBase):
             meta = sensor.meta
 
         pin = self._data_type_to_pin.get(data_type)
+        if not pin:
+            raise InvalidDataType(data_type)
+
         return self._get(pin, meta)
 
     def _get(self, pin, meta, params=None):  

@@ -1,8 +1,7 @@
-from resources import BaseResource, ResourceMixinBase, NotFoundError
+from resources import BaseResource, ResourceMixinBase, NotFoundError, ClientError
 from db import session_scope
-from db.locations import Locations as LocationsDB
 from db.sensors import Sensors as SensorsDB, _PKEY as sensors_pk
-from lib.sensors import get_sensor_lib
+from lib.sensors import get_sensor_lib, InvalidDataType
 
 class Sensors(BaseResource, ResourceMixinBase):
     def get(self, location=None):
@@ -54,4 +53,7 @@ class SensorData(BaseResource, ResourceMixinBase):
                 raise NotFoundError()
                 
             sensor_lib = get_sensor_lib(sensor.sensor_type)
-            return sensor_lib.get(data_type, sensor=sensor)
+            try:
+                return sensor_lib.get(data_type, sensor=sensor)
+            except InvalidDataType as ex:
+                raise ClientError(user_msg=ex.message)

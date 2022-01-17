@@ -1,7 +1,16 @@
 from lib.config import Config
-from lib import logging
+from lib import logging, Error
 
 SENSORS = {}
+
+class InvalidDataType(Error):
+    def __init__(self, data_type, message=None):
+        if not message:
+            message = f"Invalid data type '{data_type}'"
+
+        super().__init__(message)
+        
+        self.data_type = data_type
 
 class SensorBase():
     def __init__(self) -> None:
