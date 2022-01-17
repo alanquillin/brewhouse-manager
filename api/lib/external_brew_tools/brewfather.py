@@ -18,7 +18,7 @@ class Brewfather(ExternalBrewToolBase):
                     beer = Beers.get_by_pkey(session, beer_id)
             meta = beer.external_brewing_tool_meta
         
-        fields = ["measuredAbv", "status", "estimatedIbu", "brewDate", "bottlingDate", "estimatedColor", "recipe.name", "recipe.img_url", "recipe.style.type"]
+        fields = ["measuredAbv", "status", "estimatedIbu", "brewDate", "bottlingDate", "estimatedColor", "recipe.name", "recipe.img_url", "recipe.style.name", "recipe.style.type"]
         batch = self._get_batch(meta=meta, params={"include": ",".join(fields)})
         recipe = batch.get("recipe", {})
         status = batch.get("status")
@@ -28,7 +28,7 @@ class Brewfather(ExternalBrewToolBase):
             "abv": batch.get('measuredAbv'),
             "img_url": recipe.get("img_url"),
             "status": status,
-            "style": recipe.get("style", {}).get("type"),
+            "style": recipe.get("style", {}).get("name"),
             "ibu": batch.get("estimatedIbu"),
             "brew_date": batch.get("brewDate"),
             "keg_date": batch.get("bottlingDate"),
