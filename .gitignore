@@ -1,0 +1,111 @@
+# compiled output
+/dist
+/tmp
+/out-tsc
+
+# dependencies
+/node_modules
+
+# profiling files
+chrome-profiler-events.json
+speed-measure-plugin.json
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+*.launch
+.settings/
+
+# IDE - VSCode
+.vscode/*
+.history/*
+.editorconfig
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# environment
+.env
+.venv
+.env.swp
+env/
+envf/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# GPG Files
+**/gpg/.gnupg/*
+!**/gpg/.gnupg/gpg.conf
+
+# terraform + terragrunt
+*.tfstate
+*.out
+terragrunt.iml
+*.tfstate.backup
+.terraform
+*.tfvars
+!terraform.tfvars
+.terragrunt-cache
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# vim
+*.swp

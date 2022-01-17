@@ -1,0 +1,50 @@
+<div class="header">
+    <div class="header-content">
+        <a class="title" href="/">Brewhouse: {{ location.description }}</a>
+    </div>
+</div>
+<div class="content">
+    <mat-sidenav #sidenav position="end" class="example-sidenav" mode="side" opened="true">
+        
+    </mat-sidenav>
+    <div class="tap-list" *ngFor="let tap of taps">
+        <mat-card class=tap-card>
+            <mat-card-subtitle>{{ tap.description }}</mat-card-subtitle>
+            <mat-card-content>
+                <div *ngIf="tap.isEmpty">
+                    <p>Empty :(</p>
+                </div>
+                <div *ngIf="!tap.isEmpty && !_.isNil(tap.beer)">
+                    <div class="tap-volume" *ngIf="!_.isNil(tap.sensor) && !_.isNaN(tap.sensor.percentBeerRemaining)">
+                        <mwl-gauge
+                            [max]="100"
+                            [dialStartAngle]="-90"
+                            [dialEndAngle]="-90.001"
+                            [value]="tap.sensor.percentBeerRemaining"
+                            [animated]="true"
+                            [animationDuration]="1"
+                            class="srm-{{getSrm(tap.beer)}}-gauge">
+                        </mwl-gauge>
+                    </div>
+                    <div class="tap-image" *ngIf="_.isNil(tap.sensor)">
+                        <img src="assets/img/generic_beer.png" class="srm-{{getSrm(tap.beer)}}" />
+                    </div>
+                    <div class=tap-details>
+                        <p class="title">{{ tap.beer.name }}</p>
+                        <p>Style: {{ tap.beer.style }}</p>
+                        <p>{{ tap.beer.abv }}% alc./vol.</p>
+                        <p>IBU: {{ tap.beer.ibu }}</p>
+                    </div>
+                    <div class="tap-logo" *ngIf="!_.isNil(tap.beer) && !_.isEmpty(tap.beer.imgUrl)">
+                        <img src="{{tap.beer.imgUrl}}" />
+                    </div>
+                </div>
+            </mat-card-content>
+            <mat-card-footer>
+                <mat-progress-bar mode="indeterminate" *ngIf="tap.isLoading"></mat-progress-bar>
+            </mat-card-footer>
+        </mat-card>
+    </div>
+</div>
+<div class="footer"></div>
+

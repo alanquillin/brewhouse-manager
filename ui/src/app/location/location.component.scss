@@ -1,0 +1,55 @@
+div.tap-list {
+    padding-left: 12px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.tap-card {
+    min-height: 200px;
+}
+
+div.tap-volume {
+    display: inline-block;
+    vertical-align: top;
+    height: 136px;
+    width: 136px;
+}
+
+div.tap-image {
+    display: inline-block;
+    vertical-align: top;
+}
+
+div.tap-details {
+    display: inline-block;
+    vertical-align: top;
+    padding-left: 12px;
+}
+
+div.tap-details p {
+    line-height: 1.2em;
+    margin: 6px 0px;
+}
+
+div.tap-details p.title {
+    font-size: 120%;
+    font-weight: bold;
+}
+
+div.tap-logo {
+    display: block;
+    float: right;
+}
+
+div.tap-logo > img,
+div.tap-image > img {
+    width: auto;
+    max-height: 126px;
+}
+
+mwl-gauge {
+    display: block;
+    border-radius: 3px;
+    background-image: url("/assets/img/generic_beer_gauge.png");
+    background-size: contain;
+}

@@ -1,0 +1,41 @@
+version: '3'
+services:
+  web:
+    image: brewhouse-manager:latest
+    expose:
+      - 5000
+    ports:
+      - 5000:5000
+    env_file:
+      - ./deploy/docker-local/docker-local.env
+      - ".env"
+    depends_on:
+      - postgres
+      - db-data-seed
+    networks:
+      - brewhouse-manager-net
+    stdin_open: true
+    tty: true
+  postgres:
+    image: postgres:12-alpine
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    networks:
+      - brewhouse-manager-net
+    env_file:
+      - ./deploy/docker-local/docker-local.env
+      - ".env"
+  db-data-seed:
+    image: brewhouse-manager-db-seed:latest
+    depends_on:
+      - postgres
+    env_file:
+      - ./deploy/docker-local/docker-local.env
+      - ".env"
+    networks:
+      - brewhouse-manager-net
+networks:
+  brewhouse-manager-net:
+      

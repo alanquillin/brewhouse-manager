@@ -1,0 +1,10 @@
+# DB migrations
+
+Use Alembic with this to automatically generate your migration configurations.
+
+## Be aware of the limitations
+
+Alembic's autogenerate functionality will come close to doing what you want it
+to do, but it won't detect some things (e.g. renames will turn into drop + add,
+which can be a real problem for production data).  Be sure to check your
+migration script before running it.

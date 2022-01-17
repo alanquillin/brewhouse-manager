@@ -1,0 +1,14 @@
+{
+    "__conversion_schema": {
+      "api.port": "int"
+    },
+    "api": {
+      "host": "localhost",
+      "port": 5000,
+      "schema": "http"
+    },
+    "app_id": "brewhouse-manager",
+    "brewfather": {
+        "username": "foo"
+    }
+}
