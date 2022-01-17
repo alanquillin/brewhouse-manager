@@ -181,7 +181,10 @@ class ResourceMixinBase:
                 return self._get_location_id(location_name, db_session)
         
         res = LocationsDB.query(db_session, name=location_name)
-        return res[0].id
+        loc = None
+        if res:
+            loc = res[0].id
+        return loc
 
     def get_location_id(self, location, db_session=None):
         if util.is_valid_uuid(location):

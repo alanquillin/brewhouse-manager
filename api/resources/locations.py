@@ -1,7 +1,7 @@
 
 #from flask_connect import login_required
 
-from resources import BaseResource, ResourceMixinBase
+from resources import BaseResource, ResourceMixinBase, NotFoundError
 from db import session_scope
 from db.locations import Locations as LocationsDB
 
@@ -15,5 +15,9 @@ class Location(BaseResource, ResourceMixinBase):
     def get(self, location=None):
         with session_scope(self.config) as db_session:
             location_id = self.get_location_id(location, db_session)
+            if not location_id:
+                raise NotFoundError()
             l = LocationsDB.get_by_pkey(db_session, location_id)
+            if not l:
+                raise NotFoundError()
             return self.transform_response(l.to_dict())
