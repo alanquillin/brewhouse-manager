@@ -1,0 +1,49 @@
+$srm1: #FFE699;
+$srm2: #FFD878;
+$srm3: #FFCA5A;
+$srm4: #FFBF42;
+$srm5: #FBB123;
+$srm6: #F8A600;
+$srm7: #F39C00;
+$srm8: #EA8F00;
+$srm9: #E58500;
+$srm10: #DE7C00;
+$srm11: #D77200;
+$srm12: #CF6900;
+$srm13: #CB6200;
+$srm14: #C35900;
+$srm15: #BB5100;
+$srm16: #B54C00;
+$srm17: #B04500;
+$srm18: #A63E00;
+$srm19: #A13700;
+$srm20: #9B3200; 
+$srm21: #952D00; 
+$srm22: #8E2900; 
+$srm23: #882300; 
+$srm24: #821E00; 
+$srm25: #7B1A00;
+$srm26: #771900;
+$srm27: #701400;
+$srm28: #6A0E00; 
+$srm29: #660D00; 
+$srm30: #5E0B00; 
+$srm31: #5A0A02; 
+$srm32: #600903; 
+$srm33: #520907;
+$srm34: #4C0505;
+$srm35: #470606;
+$srm36: #440607;
+$srm37: #3F0708;
+$srm38: #3B0607;
+$srm39: #3A070B;
+$srm40: #36080A;
+$srm40plus: #080101;
+
+$srm-color-map: (
+    1: $srm1, 2: $srm2, 3: $srm3, 4: $srm4, 5: $srm5, 6: $srm6, 7: $srm7, 8: $srm8, 9: $srm9,
+    10: $srm10, 11: $srm11, 12: $srm12, 13: $srm13, 14: $srm14, 15: $srm15, 16: $srm16, 17: $srm17, 18: $srm18, 19: $srm19,
+    20: $srm20, 21: $srm21, 22: $srm22, 23: $srm23, 24: $srm24, 25: $srm25, 26: $srm26, 27: $srm27, 28: $srm28, 29: $srm29,
+    30: $srm30, 31: $srm31, 32: $srm32, 33: $srm33, 34: $srm34, 35: $srm35, 36: $srm36, 37: $srm37, 38: $srm38, 39: $srm39,
+    40: $srm40, "40plus": $srm40plus
+);

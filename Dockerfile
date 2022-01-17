@@ -6,7 +6,6 @@ RUN yarn global add @angular/cli
 COPY ui/angular.json ui/tsconfig.app.json ui/tsconfig.json ui/package.json /ui/
 WORKDIR /ui
 RUN yarn install --non-interactive
-COPY ui/src /ui/src
 
 # Python base
 # ############################################################
@@ -31,6 +30,7 @@ RUN --mount=type=ssh poetry install --no-interaction --no-ansi --no-dev --no-roo
 FROM node-base as node-build
 
 ARG build_for=prod
+COPY ui/src /ui/src
 RUN yarn run build:${build_for}
 
 # Final build

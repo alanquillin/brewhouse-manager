@@ -3,6 +3,16 @@
 // this check reports that some of these types shadow their own definitions
 /* eslint-disable no-shadow */
 
+export class DataError extends Error {
+  statusCode!: number;
+
+  constructor(message?: string, statusCode?: any | undefined){
+    super(message);
+    if (statusCode !== undefined){
+      this.statusCode = statusCode;
+    }
+  }
+}
 export class Location {
   id!: string;
   description!: string;

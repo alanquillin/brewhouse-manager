@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { LocationComponent } from './location/location.component'
 import { LocationSelectorComponent } from './location-selector/location-selector.component'
-import { ManagementComponent } from './manage/manage.component'
+import { ManageComponent } from './manage/manage.component'
 
 const routes: Routes = [
   {
@@ -16,7 +16,7 @@ const routes: Routes = [
   },
   {
     path: 'manage',
-    component: ManagementComponent
+    component: ManageComponent
   },
 ];
 

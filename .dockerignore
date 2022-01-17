@@ -15,4 +15,6 @@
 !**/gpg/.gnupg/gpg.conf
 
 # Node modules
-node_modules
+ui/node_modules
+ui/dist
+ui/.angular

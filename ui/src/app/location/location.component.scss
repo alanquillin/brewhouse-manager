@@ -47,9 +47,19 @@ div.tap-image > img {
     max-height: 126px;
 }
 
-mwl-gauge {
+.tap-gauge {
     display: block;
     border-radius: 3px;
     background-image: url("/assets/img/generic_beer_gauge.png");
     background-size: contain;
 }
+
+
+// .tap-gauge > .gauge > .value {
+//     stroke-width: 5;
+// }
+
+// .tap-gauge > .gauge > .value-text {
+//     font-size: 10px;
+//     transform: translateY(-10px);
+// }

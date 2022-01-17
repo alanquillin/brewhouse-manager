@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DataService } from './../data.service';
 import { Router } from '@angular/router';
 
@@ -9,7 +9,7 @@ import { Location } from './../models/models';
   templateUrl: './location-selector.component.html',
   styleUrls: ['./location-selector.component.scss']
 })
-export class LocationSelectorComponent {
+export class LocationSelectorComponent implements OnInit {
   title = 'Location Selector';
 
   isLoading = false;

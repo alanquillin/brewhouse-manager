@@ -1,19 +1,21 @@
-import { Component } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+import { Component, OnInit } from '@angular/core';
 import { DataService } from './../data.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor } from './../models/models';
+import { Location, Tap, Beer, Sensor, DataError } from './../models/models';
 import { SensorData, TapDetails } from './models'
 
 import * as _ from 'lodash';
-import * as $ from 'jquery';
+//import * as $ from 'jquery';
 
 @Component({
-  selector: 'location',
+  selector: 'app-location',
   templateUrl: './location.component.html',
   styleUrls: ['./location.component.scss']
 })
-export class LocationComponent {
+export class LocationComponent implements OnInit {
   title = 'Location';
 
   isLoading = false;
@@ -22,24 +24,38 @@ export class LocationComponent {
   taps: TapDetails[] = [];
   _ = _; //allow the html template to access lodash
 
-  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute) {
+  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private _snackBar: MatSnackBar) {
     this.route.params.subscribe( (params: any) => this.location_identifier = params['location'] );
+  }
+
+  displayError(errMsg: string) {
+    this._snackBar.open("Error: " + errMsg, "Close");
   }
 
   refresh() {
     this.isLoading = true;
     this.taps = [];
-    this.dataService.getLocation(this.location_identifier).subscribe((location: Location) => {
-      this.location = location;
-      this.dataService.getTaps(location.id).subscribe((taps: Tap[]) => {
-        _.forEach(taps, (tap: Tap) => {
-          let tapD = <TapDetails>tap;
-          this.taps.push(tapD)
-          this.setTapDetails(tapD);
+    this.dataService.getLocation(this.location_identifier).subscribe({
+      next: (location: Location) => {
+        this.location = location;
+        this.dataService.getTaps(location.id).subscribe((taps: Tap[]) => {
+          _.forEach(taps, (tap: Tap) => {
+            let tapD = <TapDetails>tap;
+            this.taps.push(tapD)
+            this.setTapDetails(tapD);
+          })
+          this.isLoading = false;
+        }, (err: DataError) => {
+          this.displayError(err.message);
         })
-        this.isLoading = false;
-      })
-    })
+      }, error: (err: DataError) => {
+        if (err.statusCode === 404) {
+          this.router.navigate(["/"]);
+        }
+
+        this.displayError(err.message);
+      }
+  })
   }
 
   // refreshTap(tapId: string) {
@@ -102,4 +118,3 @@ export class LocationComponent {
     this.refresh();
   }
 }
-

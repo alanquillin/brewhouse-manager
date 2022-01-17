@@ -6,7 +6,6 @@ import { AppComponent } from './app.component';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { HttpClient } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
@@ -31,16 +30,16 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 
 import { GaugeModule } from 'angular-gauge';
 
-import { LocationComponent } from './location/location.component'
-import { LocationSelectorComponent } from './location-selector/location-selector.component'
-import { ManagementComponent } from './manage/manage.component'
+import { LocationComponent } from './location/location.component';
+import { LocationSelectorComponent } from './location-selector/location-selector.component';
+import { ManageComponent } from './manage/manage.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LocationComponent,
     LocationSelectorComponent,
-    ManagementComponent
+    ManageComponent
   ],
   imports: [
     BrowserModule,
@@ -56,7 +55,6 @@ import { ManagementComponent } from './manage/manage.component'
     ReactiveFormsModule,
     MatInputModule,
     MatFormFieldModule,
-    FlexLayoutModule,
     MatSnackBarModule,
     MatListModule,
     MatChipsModule,
