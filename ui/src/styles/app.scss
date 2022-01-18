@@ -76,6 +76,7 @@ label {
     position: fixed;
     bottom: 0;
     width: 100%;
+    display: none;
 }
 
 @each $srm, $color in $srm-color-map {

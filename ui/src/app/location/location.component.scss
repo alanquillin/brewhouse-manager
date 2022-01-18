@@ -5,14 +5,14 @@ div.tap-list {
 }
 
 .tap-card {
-    min-height: 200px;
+    min-height: 120px;
 }
 
 div.tap-volume {
     display: inline-block;
     vertical-align: top;
-    height: 136px;
-    width: 136px;
+    height: 106px;
+    width: 106px;
 }
 
 div.tap-image {
@@ -44,7 +44,7 @@ div.tap-logo {
 div.tap-logo > img,
 div.tap-image > img {
     width: auto;
-    max-height: 126px;
+    max-height: 100px;
 }
 
 .tap-gauge {
