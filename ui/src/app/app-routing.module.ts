@@ -4,6 +4,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { LocationComponent } from './location/location.component'
 import { LocationSelectorComponent } from './location-selector/location-selector.component'
 import { ManageComponent } from './manage/manage.component'
+import { LoginComponent } from './login/login.component';
+import { ManageLocationsComponent } from './manage/locations/locations.component';
 
 const routes: Routes = [
   {
@@ -15,8 +17,16 @@ const routes: Routes = [
     component: LocationComponent,
   },
   {
+    path: 'login',
+    component: LoginComponent
+  },
+  {
     path: 'manage',
     component: ManageComponent
+  },
+  {
+    path: 'manage/locations',
+    component: ManageLocationsComponent
   },
 ];
 

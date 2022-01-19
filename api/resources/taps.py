@@ -1,5 +1,3 @@
-#from flask_connect import login_required
-
 from resources import BaseResource, ResourceMixinBase, NotFoundError
 from db import session_scope
 from db.locations import Locations as LocationsDB

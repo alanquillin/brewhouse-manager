@@ -67,6 +67,23 @@ def convert_exceptions(func):
 
     return decorator
 
+def convert_ui_exceptions(func):
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except NotAuthorized as exc:
+            LOGGER.error(exc.server_msg)
+            return redirect("/not-authorized")
+        except UserMessageError as exc:
+            LOGGER.exception(exc.server_msg)
+            return redirect("/error")
+        except Exception:  # pylint: disable=broad-except
+            LOGGER.exception("AN unknown or unexpected error has occurred.  Redirecting to /error")
+            return redirect("/error")
+
+    return decorator
+
 
 def with_schema_validation(schema):
     def wrapper(f):
@@ -155,6 +172,17 @@ class BaseResource(Resource):
         self.config = Config()
         self.logger = logging.getLogger(self.__class__.__name__)
 
+class UIBaseResource(BaseResource):
+    schema = Schema({})
+
+    def __init__(self):
+        super().__init__()
+        self.method_decorators = [convert_ui_exceptions] + self.method_decorators
+
+    @staticmethod
+    def serve_app():
+        dir_path = os.path.join(os.getcwd(), STATIC_URL_PATH)
+        return send_from_directory(dir_path, "index.html")
 
 class ResourceMixinBase:
     def __init__(self):

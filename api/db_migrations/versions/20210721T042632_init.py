@@ -131,9 +131,9 @@ def upgrade():
     sa.ForeignKeyConstraint(['sensor_id'], ['sensors.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index('taps_beer_id_ix', 'taps', ['beer_id'], unique=False)
-    op.create_index('taps_cold_brew_id_ix', 'taps', ['cold_brew_id'], unique=False)
-    op.create_index('taps_location_id_ix', 'taps', ['location_id'], unique=False)
+    op.create_index('ix_taps_beer_id', 'taps', ['beer_id'], unique=False)
+    op.create_index('ix_taps_cold_brew_id', 'taps', ['cold_brew_id'], unique=False)
+    op.create_index('ix_taps_location_id', 'taps', ['location_id'], unique=False)
     # ### end Alembic commands ###
 
 

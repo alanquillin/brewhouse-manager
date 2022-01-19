@@ -14,7 +14,8 @@ from db import (
     Base,
     taps,
     beers,
-    sensors
+    sensors,
+    admins
 )
 from sqlalchemy.exc import OperationalError, IntegrityError
 
@@ -138,7 +139,7 @@ TAPS = [
         "location_id": location1_id,
         "tap_type": "beer",
         "beer_id": beer_l1b2_id,
-        #"sensor_id": sensor_l1s2_id
+        "sensor_id": sensor_l1s2_id
     },
     {
         "id": "e24fd19e-cfed-45e8-91c5-544ec5db4ad5",
@@ -174,11 +175,13 @@ TAPS = [
     }
 ]
 
+ADMINS = []
+
 def seed_db(db_session, db, items, pk="id"):
     for item in items:
         logger.info(item)
         try:
-            if not db.get_by_pkey(db_session, item[pk]):
+            if not db.get_by_pkey(db_session, item.get(pk)):
                 logger.info("Seeding %s: %s", db.__name__, item)
                 db.create(db_session, **item)
             else:
@@ -233,3 +236,14 @@ if __name__ == "__main__":
         seed_db(db_session, beers.Beers, BEERS)
         seed_db(db_session, sensors.Sensors, SENSORS)
         seed_db(db_session, taps.Taps, TAPS)
+
+        initial_admin_email = config.get("db.initial_admin.email")
+        initial_admin_password = config.get("db.initial_admin.password")
+        if initial_admin_email:
+            admin = {
+                "email": initial_admin_email
+            }
+            if initial_admin_password:
+                admin["password"] = initial_admin_password
+            seed_db(db_session, admins.Admins, [admin])
+            

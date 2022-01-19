@@ -35,13 +35,17 @@ import { GaugeModule } from 'angular-gauge';
 import { LocationComponent } from './location/location.component';
 import { LocationSelectorComponent } from './location-selector/location-selector.component';
 import { ManageComponent } from './manage/manage.component';
+import { ManageLocationsComponent } from './manage/locations/locations.component';
+import { LoginComponent } from './login/login.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LocationComponent,
     LocationSelectorComponent,
-    ManageComponent
+    ManageComponent,
+    ManageLocationsComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,

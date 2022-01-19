@@ -3,7 +3,7 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 
 config = context.config
 fileConfig(config.config_file_name)
@@ -63,7 +63,7 @@ def run_migrations_online():
 
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
-
+        connection.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'))
         with context.begin_transaction():
             context.run_migrations()
 

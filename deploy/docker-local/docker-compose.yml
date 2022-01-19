@@ -1,13 +1,23 @@
-version: '3'
+version: '2'
 services:
+  nginx: 
+    image : nginx:latest 
+    ports : 
+        - 5000:5000
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./certs/localhost.crt:/etc/nginx/certs/localhost.crt
+      - ./certs/localhost.decrypted.key:/etc/nginx/certs/localhost.key
+    networks:
+      - brewhouse-manager-net
+    depends_on:
+      - "web"
   web:
     image: brewhouse-manager:latest
     expose:
       - 5000
-    ports:
-      - 5000:5000
     env_file:
-      - ./deploy/docker-local/docker-local.env
+      - ./docker-local.env
       - ".env"
     depends_on:
       - postgres
@@ -25,14 +35,14 @@ services:
     networks:
       - brewhouse-manager-net
     env_file:
-      - ./deploy/docker-local/docker-local.env
+      - ./docker-local.env
       - ".env"
   db-data-seed:
     image: brewhouse-manager-db-seed:latest
     depends_on:
       - postgres
     env_file:
-      - ./deploy/docker-local/docker-local.env
+      - ./docker-local.env
       - ".env"
     networks:
       - brewhouse-manager-net

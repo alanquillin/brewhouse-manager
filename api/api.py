@@ -14,21 +14,24 @@ import argparse
 import json as official_json
 import uuid
 from datetime import timedelta
-from urllib.parse import urljoin
 import os
 
-from flask import Flask, make_response, send_from_directory
+from flask import Flask, make_response, send_from_directory, redirect
 from flask.logging import create_logger
 from flask_cors import CORS
+from flask_login import LoginManager
 from flask_restful import Api
 from gevent.pywsgi import LoggingLogAdapter, WSGIServer  # pylint:disable=ungrouped-imports
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.wrappers.base_response import BaseResponse
 
+from db import session_scope
+from db.admins import Admins as AdminsDB
 from lib.config import Config
 from lib import json, logging
 from resources.beers import Beers, Beer
 from resources.locations import Location, Locations
+from resources.auth import GoogleLogin, Logout, GoogleCallback, User, Login
 from resources.taps import Tap, Taps
 from resources.sensors import Sensor, Sensors, SensorData
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
@@ -50,12 +53,13 @@ class IgnoringLogAdapter(LoggingLogAdapter):
 
 STATIC_URL_PATH = "static"
 
+CONFIG = Config()
+
 # Disable Location header autocorrect which prepends the HOST to the Location
 BaseResponse.autocorrect_location_header = False
 
 app = Flask(__name__)
 api = Api(app)
-
 
 app.json_encoder = json.CloudCommonJsonEncoder
 
@@ -71,7 +75,7 @@ def _json(data, code, headers=None):
 official_json.dumps = json.dumps
 
 
-app_config = Config()
+app_config = CONFIG
 app_config.setup(config_files=["default.json"])
 
 
@@ -79,6 +83,17 @@ app_config.setup(config_files=["default.json"])
 def health():
     return "healthy 👍"
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    with session_scope(CONFIG) as db_session:
+        return User.from_admin(AdminsDB.get_by_pkey(db_session, user_id))
+
+@login_manager.unauthorized_handler
+def redirect_not_logged_in():
+    return redirect("/login")
 
 # API resources for UI:
 api.add_resource(Beers, "/api/v1/beers", "/api/v1/locations/<location>/beers")
@@ -93,13 +108,15 @@ api.add_resource(SensorData, "/api/v1/sensors/<sensor_id>/<data_type>", "/api/v1
 api.add_resource(ExternalBrewToolTypes, "/api/v1/external_brew_tools/types")
 api.add_resource(ExternalBrewTool, "/api/v1/external_brew_tools/<tool_name>")
 api.add_resource(SearchExternalBrewTool, "/api/v1/external_brew_tools/<tool_name>/search")
+api.add_resource(GoogleLogin, "/login/google")
+api.add_resource(GoogleCallback, "/login/google/callback")
+api.add_resource(Logout, "/logout")
 
 # UI resources
-#api.add_resource(AWSOrder, "/aws/order")
+api.add_resource(Login, "/login")
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
-app.secret_key = os.environ.get("APP_SECRET_KEY", str(uuid.uuid4()))
-
+app.secret_key = CONFIG.get("app.secret_key", str(uuid.uuid4()))
 
 app.config.update(
     {

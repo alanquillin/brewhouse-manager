@@ -18,11 +18,11 @@ RUN mkdir -p -m 0600 ~/.ssh && \
     ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 RUN pip install -U pip setuptools wheel && \
-    pip install "poetry>=1.1.8"
+    pip install "poetry>=1.1.11"
 RUN poetry config virtualenvs.in-project true
 COPY pyproject.toml poetry.lock ./
 RUN poetry run pip install --upgrade pip
-RUN --mount=type=ssh poetry install --no-interaction --no-ansi --no-dev --no-root
+RUN poetry install --no-interaction --no-ansi --no-dev --no-root
 
 
 # Angular build

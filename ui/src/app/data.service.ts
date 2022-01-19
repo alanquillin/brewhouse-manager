@@ -6,14 +6,18 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import { Location, Tap, Beer, Sensor, DataError } from './models/models';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+const httpOptions = {
+  headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+};
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataService {
   baseUrl: string;
-  //host: string;
+  host: string;
 
   constructor(public http: HttpClient) {
     // if (!environment.production) {
@@ -27,8 +31,8 @@ export class DataService {
     //   this.baseUrl = '/api/v1';
     // }
 
-    //this.host = 'http://';
-    this.baseUrl = 'http://localhost:5000/api/v1';
+    this.host = 'https://localhost:5000';
+    this.baseUrl = this.host + '/api/v1';
   }
 
   getError(error: any){
@@ -45,6 +49,11 @@ export class DataService {
     }
     console.log(message);
     return throwError(() => new DataError(message, statusCode));
+  }
+
+  login(email: string, password: string): Observable<any>{
+    const url = `${this.host}/login`;
+    return this.http.post<any>(url, {email, password}, httpOptions).pipe(catchError(this.getError));
   }
 
   getLocations(): Observable<Location[]> {

@@ -52,7 +52,11 @@ class Taps(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     cold_brew = relationship(cold_brews.ColdBrews)
     sensor = relationship(sensors.Sensors)
 
-    __table_args__ = ( )
+    __table_args__ = (
+        Index("ix_taps_beer_id", beer_id, unique=False),
+        Index("ix_taps_cold_brew_id", cold_brew_id, unique=False),
+        Index("ix_taps_location_id", location_id, unique=False),
+    )
 
     @classmethod
     def get_by_location(cls, session, location_id, **kwargs):

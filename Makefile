@@ -38,8 +38,14 @@ DOCKER_CI_TARGETS := $(NODE_DOCKER_CI_TARGETS) $(PYTHON_DOCKER_CI_TARGETS)
 CI_IMAGES := node-ci python-ci
 CI_IMAGE_TARGETS := $(addprefix docker-build/,$(CI_IMAGES))
 
-include .env
-export $(shell sed 's/=.*//' .env)
+ifneq ("$(wildcard .env)","")
+    include .env
+	export $(shell sed 's/=.*//' .env)
+endif
+
+ifeq ("$(wildcard deploy/docker-local/.env)","")
+    $(shell touch deploy/docker-local/.env)
+endif
 
 
 .PHONY: build build-dev docker-build \
@@ -103,19 +109,14 @@ build-db-seed:
 rebuild-db-seed: 
 	$(DOCKER_BUILD) -t $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG) --no-cache deploy/docker-local
 
-run:
-	-@$(DOCKER) run \
-		--name brewhouse-manager \
-		--env-file .env \
-		$(RUN_ARGS) \
-		-p 5000:5000 \
-		brewhouse-manager
-
 run-dev: build-dev build-db-seed
-	docker-compose up
+	docker-compose --project-directory deploy/docker-local up
+
+run-web-local:
+	pushd ./ui && ng serve --ssl --ssl-key ../deploy/docker-local/certs/localhost.decrypted.key --ssl-cert ../deploy/docker-local/certs/localhost.crt && popd
 
 clean:
-	docker-compose down --volumes
+	docker-compose --project-directory deploy/docker-local down --volumes
 
 clean-image:
 	docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG)

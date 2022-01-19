@@ -5,10 +5,19 @@
     "api": {
       "host": "localhost",
       "port": 5000,
-      "schema": "http"
+      "schema": "https"
     },
     "app_id": "brewhouse-manager",
+    "auth": {
+      "oidc": {
+        "google": {
+          "enabled": false,
+          "discovery_url": "https://accounts.google.com/.well-known/openid-configuration"
+        }
+      }
+    },
     "brewfather": {
-        "username": "foo"
+        "username": "foo",
+        "enabled": true
     }
 }
