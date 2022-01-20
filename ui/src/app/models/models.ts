@@ -5,11 +5,19 @@
 
 export class DataError extends Error {
   statusCode!: number;
+  statusText!: string;
+  reason!: string;
 
-  constructor(message?: string, statusCode?: any | undefined){
+  constructor(message?: string, statusCode?: any | undefined, statusText?: any | undefined, reason?: any | undefined){
     super(message);
     if (statusCode !== undefined){
       this.statusCode = statusCode;
+    }
+    if (statusText !== undefined) {
+      this.statusText = statusText
+    }
+    if (reason !== undefined) {
+      this.reason = reason;
     }
   }
 }
@@ -51,4 +59,13 @@ export class Sensor {
   name!: string;
   locationId!: string;
   meta!: Object;
+}
+
+export class UserInfo {
+  id!: string;
+  email!: string;
+  firstName!: string;
+  lastName!: string;
+  profilePic!: string;
+  passwordEnabled!: boolean;
 }

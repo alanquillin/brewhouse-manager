@@ -1,0 +1,13 @@
+@import "../variables";
+@import "../mixins";
+
+.dp-initial {
+    display: inline-block;
+    position: relative;
+
+    .dp-initial--value {
+        @include dp-absolute();
+        font-weight: 400;
+        z-index: 1;
+    }
+}

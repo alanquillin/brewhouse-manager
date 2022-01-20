@@ -1,0 +1,20 @@
+<div class="header-content">
+    <div class="header-title">
+        <a class="title" href="/">Brewhouse Manager</a>
+    </div>
+    <div class="header-nav">
+        <span tabindex="-1" *ngIf="userInfo">
+            <button id="nav_toggle_user_menu"
+                mat-mini-fab
+                [matMenuTriggerFor]="navMenu">
+                <mat-icon>menu</mat-icon>
+            </button>
+            <mat-menu #navMenu="matMenu" xPosition="before" class="override">
+                <button mat-menu-item id="nav_signed_in_as" disabled *ngIf="userInfo">Signed in as {{ name }}</button>
+                <button mat-menu-item id="nav_dashboard" (click)="redirectToDashboard()">Management Dashboard</button>
+                <button mat-menu-item id="nav_account_profile" (click)="redirectToProfile()">Account Profile</button>
+                <button mat-menu-item id="nav_sign_out" (click)="logout()">Sign Out</button>
+            </mat-menu>
+        </span>
+    </div>
+</div>

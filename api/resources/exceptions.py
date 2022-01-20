@@ -33,6 +33,19 @@ class NotAuthorized(ClientError):
             user_msg = "You are not authorized to access the requested resource."
         super().__init__(response_code=401, user_msg=user_msg, **kwargs)
 
+class ForbiddenError(ClientError):
+    def __init__(self, user_msg=None, **kwargs):
+        if not user_msg:
+            user_msg = "You are not authorized to access the requested resource."
+        super().__init__(response_code=403, user_msg=user_msg, **kwargs)
+
+class NotAllowedError(ClientError):
+    def __init__(self, user_msg=None, **kwargs):
+        if not user_msg:
+            user_msg = "You are not authorized to perform the specified action"
+        super().__init__(response_code=405, user_msg=user_msg, **kwargs)
+
+
 class InvalidEnum(ValueError):
     pass
 

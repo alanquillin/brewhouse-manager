@@ -1,0 +1,114 @@
+<div class="header">
+    <app-manage-header></app-manage-header>
+</div>
+<div class="content">
+    <div class="view-profile" *ngIf="userInfo && !editing && !changePassword">
+        <div class="title"><p>{{ name }}</p></div>
+        <div class="profile-pic" *ngIf="userInfo.profilePic">
+            <img src="{{ userInfo.profilePic }}" />
+        </div>
+        <div class="profile-actions">
+            <button mat-raised-button color="primary" (click)="startEditing()"><mat-icon>edit</mat-icon> Edit</button>
+            <button mat-raised-button (click)="startChangePassword()">{{ userInfo.passwordEnabled ? "Change" : "Set" }} Password</button>
+        </div>
+    </div>
+
+    <div class="edit-profile" *ngIf="userInfo && editing">
+        <div class="title"><p>Edit Profile</p></div>
+        
+        <div class="edit-form">
+            <form [formGroup]="editFormGroup">
+                <fieldset>
+
+                    <mat-form-field appearance="fill" class="edit-field">
+                        <input id="edit_email_input"
+                            class="dp-textfield--input"
+                            formControlName="email"
+                            [(ngModel)]="editUserInfo.email"
+                            matInput
+                            required />
+                        <mat-label>Email</mat-label>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill" class="edit-field">
+                        <input id="edit_first_name_input"
+                            class="dp-textfield--input"
+                            formControlName="firstName"
+                            [(ngModel)]="editUserInfo.firstName"
+                            matInput
+                            required />
+                        <mat-label>First Name</mat-label>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill" class="edit-field">
+                        <input id="edit_last_name_input"
+                            class="dp-textfield--input"
+                            formControlName="lastName"
+                            [(ngModel)]="editUserInfo.lastName"
+                            matInput
+                            required />
+                        <mat-label>Last Name</mat-label>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill" class="edit-field">
+                        <input id="edit_profile_pic_input"
+                            class="dp-textfield--input"
+                            formControlName="profilePic"
+                            [(ngModel)]="editUserInfo.profilePic"
+                            matInput
+                            required />
+                        <mat-label>Profile Picture URL</mat-label>
+                    </mat-form-field>
+                </fieldset>
+            </form>
+        </div>
+        
+        
+        <div class="profile-actions">
+            <button mat-raised-button color="primary" (click)="save()" [disabled]="!editFormGroup.valid || processing || _.isEmpty(getChanges())"><mat-icon>save</mat-icon> Save</button>
+            <button mat-raised-button color="warn" (click)="cancelEditing()"><mat-icon>cancel</mat-icon> Cancel</button>
+            <button mat-raised-button (click)="disablePassword()" *ngIf="userInfo.passwordEnabled">Disable Password</button>
+        </div>
+    </div>
+
+    <div class="change-password" *ngIf="userInfo && changePassword">
+        <div class="title"><p>Change Password</p></div>
+        <div class="change-password-form">
+            <form [formGroup]="changePasswordFormGroup">
+                <fieldset>
+                    <mat-form-field appearance="fill" class="change-password-field">
+                        <input type="password"
+                            id="change_password_password_input"
+                            class="dp-textfield--input"
+                            formControlName="password"
+                            [(ngModel)]="newPassword"
+                            matInput
+                            required />
+                        <mat-label>Password</mat-label>
+                        <mat-error *ngIf="changePasswordForm['password'].errors && changePasswordForm['password'].errors['pattern']">
+                            Password must be at least 8 characters and contain at least 1 lowercase letter, uppercase letter, number and a special character
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill" class="change-password-field">
+                        <input type="password"
+                            id="change_password_confirm_password_input"
+                            class="dp-textfield--input"
+                            formControlName="confirmPassword"
+                            [(ngModel)]="confirmNewPassword"
+                            matInput
+                            required />
+                        <mat-label>Confirm Password</mat-label>
+                    </mat-form-field>
+                </fieldset>
+            </form>
+        </div>
+        <div class="profile-actions">
+            <button mat-raised-button color="primary" (click)="savePassword()" [disabled]="!changePasswordFormGroup.valid || processing">
+                <mat-icon>save</mat-icon> Save
+            </button>
+            <button mat-raised-button color="warn" (click)="cancelChangePassword()"><mat-icon>cancel</mat-icon> Cancel</button>
+        </div>
+    </div>
+</div>
+<div class="footer"></div>

@@ -12,67 +12,72 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { HttpClient } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
 
-import { MatSelectModule } from '@angular/material/select'
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatIconModule} from '@angular/material/icon';
-import { MatMenuModule} from '@angular/material/menu';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatListModule } from '@angular/material/list';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTableModule } from '@angular/material/table';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; 
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIconModule} from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatMenuModule} from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar'; 
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; 
+import { MatSelectModule } from '@angular/material/select'
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTableModule } from '@angular/material/table';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { GaugeModule } from 'angular-gauge';
 
 import { LocationComponent } from './location/location.component';
 import { LocationSelectorComponent } from './location-selector/location-selector.component';
-import { ManageComponent } from './manage/manage.component';
-import { ManageLocationsComponent } from './manage/locations/locations.component';
 import { LoginComponent } from './login/login.component';
-
+import { ManageComponent } from './manage/manage.component';
+import { ManageHeaderComponent } from './manage/header/header.component';
+import { ManageLocationsComponent } from './manage/locations/locations.component';
+import { ProfileComponent } from './profile/profile.component';
 @NgModule({
   declarations: [
     AppComponent,
     LocationComponent,
     LocationSelectorComponent,
+    LoginComponent,
     ManageComponent,
+    ManageHeaderComponent,
     ManageLocationsComponent,
-    LoginComponent
+    ProfileComponent
   ],
   imports: [
-    BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    HttpClientModule,
-    MatSelectModule,
-    MatButtonToggleModule,
-    MatSlideToggleModule,
-    MatIconModule,
-    MatMenuModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatInputModule,
+    BrowserModule,
     FlexLayoutModule,
-    MatFormFieldModule,
-    MatSnackBarModule,
-    MatListModule,
-    MatChipsModule,
-    MatTooltipModule,
+    FormsModule,
+    GaugeModule.forRoot(),
+    HttpClientModule,
     MatButtonModule,
-    MatTableModule,
-    MatProgressSpinnerModule,
+    MatButtonToggleModule,
     MatCardModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatListModule,
+    MatMenuModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
+    MatSelectModule,
     MatSidenavModule,
-    GaugeModule.forRoot()
+    MatSlideToggleModule,
+    MatSnackBarModule,
+    MatTableModule,
+    MatToolbarModule,
+    MatTooltipModule,
+    ReactiveFormsModule
   ],
   providers: [HttpClient],
   bootstrap: [AppComponent]

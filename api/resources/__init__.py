@@ -191,11 +191,12 @@ class ResourceMixinBase:
         self.config = Config()
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def get_request_data(self):
+    def get_request_data(self, remove_key=[]):
         j = request.get_json()
         data = {}
         for k, v in j.items():
-            data[util.camel_to_snake(k)] = v
+            if k not in remove_key:
+                data[util.camel_to_snake(k)] = v
 
         return data
 

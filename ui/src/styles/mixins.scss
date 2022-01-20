@@ -1,0 +1,496 @@
+@use "sass:math";
+
+/* Typography */
+
+@mixin type-display-1() {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 34px;
+}
+@mixin type-display-2() {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 24px;
+}
+@mixin type-display-3() {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+}
+@mixin type-display-4() {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 24px;
+    -webkit-font-smoothing: antialiased;
+}
+
+@mixin type-list-1() {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 18px;
+}
+@mixin type-list-2() {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 18px;
+}
+@mixin type-list-3() {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+}
+@mixin type-list-4() {
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 18px;
+}
+
+@mixin type-body-1() {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 24px;
+}
+@mixin type-body-2() {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+}
+@mixin type-mono() {
+    font-family: 'Roboto Mono';
+    font-size: 12px;
+    line-height: 18px;
+}
+
+@mixin type-button() {
+    font-size: 14px;
+    font-weight: 300;
+    letter-spacing: 0;
+}
+@mixin type-button-mini() {
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+
+@mixin type-icon() {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 18px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    word-wrap: normal;
+    font-feature-settings: 'liga';
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    vertical-align: sub;
+}
+
+@mixin code() {
+    font-family: 'Roboto Mono';
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 24px;
+    color: $color-purple;
+}
+
+/* Indicator */
+
+@mixin dp-indicator() {
+    display: inline-block;
+    position: relative;
+    vertical-align: super;
+    width: 6px;
+    height: 6px;
+    background: black;
+    border-radius: 100px;
+    padding: 0;
+    margin: 0 10px;
+    content: '';
+}
+
+/* Button */
+
+@mixin dp-button() {
+    @include type-button();
+    display: inline-block;
+    position: relative;
+    height: $button-height;
+    padding: 0 $button-padding;
+    background: transparent;
+    border: none;
+    border-radius: $button-border-radius;
+    outline: none;
+    overflow: hidden;
+    text-decoration: none !important;
+    text-align: center;
+    line-height: $button-height;
+    vertical-align: middle;
+    color: $color-black;
+    user-select: text;
+    cursor: pointer;
+}
+@mixin dp-button-hover() {
+    background: $button-background-hover;
+    text-decoration: none;
+    color: $color-black;
+}
+@mixin dp-button-active() {
+    background: $button-background-active;
+}
+
+@mixin dp-button-outline() {
+    line-height: $button-height - 2;
+    background: $button-background;
+    border: $button-border;
+}
+@mixin dp-button-outline-focus() {
+    border-color: $button-border-hover;
+}
+@mixin dp-button-outline-hover() {
+    border-color: $button-border-focus;
+}
+
+@mixin dp-button-icon() {
+    @include type-button-mini();
+    height: $button-height - 6;
+    padding: 0 $button-padding - 6;
+    line-height: $button-height - 6;
+
+    svg {
+        @include dp-absolute();
+        width: 18px;
+        padding: 0;
+        margin: 0;
+    }
+}
+
+/* Textfield */
+
+@mixin dp-textfield() {
+    @include type-body-1();
+    display: block;
+    width: 100%;
+    padding: 0 $input-text-padding;
+    background: $input-text-background;
+    border: $input-text-border !important;
+    border-radius: $input-text-border-radius;
+    outline: none;
+}
+@mixin dp-textfield-hover() {
+    background: transparent !important;
+    border-color: $input-text-border-hover !important;
+}
+@mixin dp-textfield-focus() {
+    background: transparent !important;
+    border-color: $input-text-border-focus !important;
+    box-shadow: $input-text-box-shadow-focus !important;
+}
+@mixin dp-textfield-input() {
+    @include type-body-1();
+    display: block;
+    width: $input-text-width;
+    min-height: $input-text-height;
+    max-height: $input-text-height;
+    padding: 0 $input-text-padding;
+    background: $input-text-background;
+    border: $input-text-border;
+    border-radius: $input-text-border-radius;
+    outline: none;
+    line-height: $input-text-height;
+    color: $input-text-color;
+}
+@mixin dp-textfield-label() {
+    @include type-button();
+    display: block;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0 $input-text-padding;
+    line-height: $input-text-height;
+    color: $input-text-label;
+}
+@mixin dp-textfield-icon() {
+    position: absolute;
+    top: 0;
+    right: $input-text-padding;
+    line-height: $input-text-height;
+}
+
+/* Fixed Label Textfield */
+
+@mixin dp-textfield-fixed-input() {
+    padding-top: $input-text-padding;
+    line-height: math.div($input-text-height, 2);
+}
+@mixin dp-textfield-fixed-label() {
+    @include type-button-mini();
+    font-weight: 300;
+    top: 0;
+    height: auto;
+    line-height: math.div($input-text-height, 2) + 4;
+    color: $input-text-label-color;
+    z-index: 1;
+}
+@mixin dp-textfield-fixed-icon() {
+    font-size: $input-text-font-size;
+    line-height: math.div($input-text-height, 2) + 4;
+}
+
+/* Without Label Textfield */
+
+@mixin dp-textfield-no-label-input() {
+    min-height: math.div($input-text-height, 2) + 8;
+    padding: 0 $input-text-padding;
+    line-height: math.div($input-text-height, 2) + 8;
+}
+
+/* Filter Textfield */
+
+@mixin dp-textfield-filter-input() {
+    min-height: math.div($input-text-height, 2) + 4;
+    padding: 0 $input-text-padding;
+    line-height: math.div($input-text-height, 2) + 4;
+}
+
+/* Disabled Textfield */
+
+@mixin dp-textfield-disabled() {
+    background: $input-text-background-disabled;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+/* Menu */
+
+@mixin dp-menu() {
+    @include shadow-4dp();
+    min-width: auto;
+    max-width: 372px;
+    height: auto;
+    max-height: 264px;
+    background: $menu-background;
+    border: $menu-border;
+    border-radius: $menu-border-radius;
+    padding: math.div($menu-padding, 2) - 2;
+    margin: 0;
+    list-style: none;
+    overflow: auto;
+}
+
+/* Checkbox */
+
+@mixin dp-checkbox() {
+    display: inline-block;
+    width: $checkbox-height;
+    height: $checkbox-height;
+    background: $checkbox-background;
+    border: $checkbox-border;
+    border-radius: $checkbox-border-radius;
+    box-shadow: $checkbox-box-shadow;
+    outline: none;
+    padding: 0;
+    margin: $checkbox-margin - 5;
+}
+@mixin dp-checkbox-hover() {
+    border-color: $checkbox-color-border;
+    box-shadow: $checkbox-color-box-shadow;
+}
+@mixin dp-checkbox-checked() {
+    background: $checkbox-color-background;
+    border-color: $checkbox-color-border;
+    box-shadow: $checkbox-color-box-shadow;
+}
+@mixin dp-checkbox-disabled() {
+    background: $checkbox-background-disabled;
+    border: $checkbox-border-disabled;
+    box-shadow: $checkbox-box-shadow-disabled;
+}
+
+/* Label */
+
+@mixin dp-label() {
+    display: inline-block;
+    width: auto;
+    max-width: 100%;
+    padding: 0 ($label-padding * 2);
+    background: $label-background-primary;
+    border-radius: $label-border-radius;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: $label-vertical-height;
+    color: $label-color-primary;
+}
+
+/* Card */
+
+@mixin dp-card() {
+    display: inline-block;
+    width: 100%;
+    padding: 0;
+    margin: 0 auto;
+    background: $card-background;
+    border: $card-border;
+    border-radius: $card-border-radius;
+    text-align: left;
+}
+
+/* Dialog */
+
+@mixin dp-dialog {
+    @include shadow-4dp();
+    display: inline-block;
+    height: auto;
+    max-height: calc(100% - 96px);
+    padding: 0;
+    margin: 48px auto;
+    background: $dialog-background;
+    border: $dialog-border;
+    border-radius: $dialog-border-radius;
+    text-align: left;
+    overflow: auto;
+}
+
+/* Table */
+
+@mixin dp-table() {
+    position: relative;
+    width: 100%;
+    margin: ($table-margin * 2) 0;
+    border-collapse: collapse;
+}
+@mixin dp-table-header-cell() {
+    @include type-button();
+    @extend %ellipsis;
+    line-height: $table-line-height;
+    color: $table-color-gray;
+}
+@mixin dp-table-cell() {
+    @include type-body-1();
+    width: auto;
+    padding: (math.div($table-padding, 3) - 2) $table-padding !important;
+    border-bottom: $table-border;
+    line-height: $table-line-height;
+    text-align: left !important;
+    vertical-align: top;
+    word-break: break-word;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+/* Tooltip */
+
+@mixin dp-tooltip() {
+    @extend %break-word;
+    background: $tooltip-background;
+    border-radius: $tooltip-border-radius;
+    font-family: 'Roboto';
+    font-size: $tooltip-font-size;
+    text-align: left;
+    hyphens: none;
+    color: $tooltip-color-white;
+}
+
+/* Shadows */
+
+@mixin shadow-2dp() {
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, $shadow-outer-opacity),
+                0 1px 5px 0 rgba(0, 0, 0, $shadow-ambient-opacity),
+                0 3px 1px -2px rgba(0, 0, 0, $shadow-inner-opacity);
+}
+@mixin shadow-4dp() {
+    box-shadow: 0 4px 5px 0 rgba(0, 0, 0, $shadow-outer-opacity),
+                0 1px 10px 0 rgba(0, 0, 0, $shadow-ambient-opacity),
+                0 2px 4px -1px rgba(0, 0, 0, $shadow-inner-opacity);
+}
+@mixin shadow-6dp() {
+    box-shadow: 0 6px 10px 0 rgba(0, 0, 0, $shadow-outer-opacity),
+                0 1px 18px 0 rgba(0, 0, 0, $shadow-ambient-opacity),
+                0 3px 5px -1px rgba(0, 0, 0, $shadow-inner-opacity);
+}
+@mixin shadow-8dp() {
+    box-shadow: 0 8px 10px 1px rgba(0, 0, 0, $shadow-outer-opacity),
+                0 3px 14px 2px rgba(0, 0, 0, $shadow-ambient-opacity),
+                0 5px 5px -3px rgba(0, 0, 0, $shadow-inner-opacity);
+}
+@mixin shadow-16dp() {
+    box-shadow: 0 16px 24px 2px rgba(0, 0, 0, $shadow-outer-opacity),
+                0  6px 30px 5px rgba(0, 0, 0, $shadow-ambient-opacity),
+                0  8px 10px -5px rgba(0, 0, 0, $shadow-inner-opacity);
+}
+@mixin shadow-24dp() {
+    box-shadow: 0  9px 46px  8px rgba(0, 0, 0, $shadow-outer-opacity),
+                0 11px 15px -7px rgba(0, 0, 0, $shadow-ambient-opacity),
+                0 24px 38px  3px rgba(0, 0, 0, $shadow-inner-opacity);
+}
+@mixin shadow-focus() {
+    box-shadow: 0 4px 5px 0 rgba(0, 0, 0, $shadow-outer-opacity),
+                0 1px 10px 0 rgba(0, 0, 0, $shadow-ambient-opacity),
+                0 2px 4px -1px rgba(0, 0, 0, $shadow-inner-opacity);
+}
+
+/* Spinner */
+
+@mixin dp-spinner-animate {
+    animation: dp-spin-animation $spinner-speed $spinner-timing $spinner-count;
+    -webkit-animation-duration: dp-spin-animation $spinner-speed $spinner-timing $spinner-count;
+    -moz-animation-duration: dp-spin-animation $spinner-speed $spinner-timing $spinner-count;
+}
+
+@mixin rotate-360() {
+    0% {
+        -webkit-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+        -ms-transform: rotate(0deg);
+        -o-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+        -moz-transform: rotate(360deg);
+        -ms-transform: rotate(360deg);
+        -o-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+/* Absolute Center */
+
+@mixin dp-absolute() {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+@mixin dp-absolute--horizontal() {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+@mixin dp-absolute--vertical() {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Opacity */
+
+@mixin opacity($opacity) {
+    opacity: $opacity;
+    $opacity-ie: $opacity * 100;
+    filter: alpha(opacity=$opacity-ie);
+}
+
+/* Tint & Shade */
+
+@function tint($color, $percentage) {
+    @return mix(white, $color, $percentage);
+}
+
+@function shade($color, $percentage) {
+    @return mix(black, $color, $percentage);
+}

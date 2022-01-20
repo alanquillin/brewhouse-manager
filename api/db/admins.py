@@ -53,4 +53,8 @@ class Admins(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
             ph = PasswordHasher()
             kwargs["password_hash"] = ph.hash(password)
         return super().create(session, **kwargs)
+    
+    @classmethod
+    def disable_password(cls, session, pkey):
+        return super().update(session, pkey, password_hash=None)
 

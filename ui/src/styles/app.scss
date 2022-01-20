@@ -31,13 +31,6 @@ label {
     vertical-align: middle;
 }
 
-.header .header-content {
-    color: white;
-    font-weight: 400;
-    font-size: 120%;
-    text-align: left;
-}
-
 .header .header-content a.title{
     color: white;
     text-decoration: none;
@@ -45,16 +38,6 @@ label {
     display: inline-block;
     font-weight: 400;
     font-size: 120%;
-}
-
-.header .header-content .menu {
-    display: block;
-    white-space: nowrap;
-    float: right;
-}
-
-.header-content .mat-icon {
-    vertical-align: middle;
 }
 
 .content {
@@ -76,7 +59,6 @@ label {
     position: fixed;
     bottom: 0;
     width: 100%;
-    display: none;
 }
 
 @each $srm, $color in $srm-color-map {
@@ -103,5 +85,12 @@ label {
                 }
             }
         }
+    }
+}
+
+div.title {
+    p {
+        font-size: 140%;
+        font-weight: bold;
     }
 }

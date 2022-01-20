@@ -27,15 +27,16 @@ from werkzeug.wrappers.base_response import BaseResponse
 
 from db import session_scope
 from db.admins import Admins as AdminsDB
-from lib.config import Config
 from lib import json, logging
-from resources.beers import Beers, Beer
-from resources.locations import Location, Locations
+from lib.config import Config
+from resources.admins import CurrentUser, Admins, Admin
 from resources.auth import GoogleLogin, Logout, GoogleCallback, User, Login
-from resources.taps import Tap, Taps
-from resources.sensors import Sensor, Sensors, SensorData
+from resources.beers import Beers, Beer
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
-
+from resources.locations import Location, Locations
+from resources.pages import ManagemantDashboard, Profile
+from resources.sensors import Sensor, Sensors, SensorData
+from resources.taps import Tap, Taps
 
 class IgnoringLogAdapter(LoggingLogAdapter):
     """
@@ -108,12 +109,19 @@ api.add_resource(SensorData, "/api/v1/sensors/<sensor_id>/<data_type>", "/api/v1
 api.add_resource(ExternalBrewToolTypes, "/api/v1/external_brew_tools/types")
 api.add_resource(ExternalBrewTool, "/api/v1/external_brew_tools/<tool_name>")
 api.add_resource(SearchExternalBrewTool, "/api/v1/external_brew_tools/<tool_name>/search")
+api.add_resource(Admins, "/api/v1/admins")
+api.add_resource(Admin, "/api/v1/admins/<admin_id>")
+api.add_resource(CurrentUser, "/api/v1/admins/current")
+
+# session management APIs
 api.add_resource(GoogleLogin, "/login/google")
 api.add_resource(GoogleCallback, "/login/google/callback")
 api.add_resource(Logout, "/logout")
+api.add_resource(Login, "/login")
 
 # UI resources
-api.add_resource(Login, "/login")
+api.add_resource(ManagemantDashboard, "/manage")
+api.add_resource(Profile, "/me")
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
 app.secret_key = CONFIG.get("app.secret_key", str(uuid.uuid4()))

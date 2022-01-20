@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../environments/environment';
-import { Location, Tap, Beer, Sensor, DataError } from './models/models';
+import { Location, Tap, Beer, Sensor, DataError, UserInfo } from './models/models';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 const httpOptions = {
@@ -37,18 +37,14 @@ export class DataService {
 
   getError(error: any){
     console.log("error caught")
-    let message = '';
-    let statusCode: any = undefined;
-    if (error.error instanceof ErrorEvent) {
-        // handle client-side errors
-        message = `Error: ${error.error.message}`;
-    } else {
+    let errObj = new DataError(error.error.message);
+    if (!(error.error instanceof ErrorEvent)) {
         // handle server-side errors
-        message = `Error Code: ${error.status}\nMessage: ${error.message}`;
-        statusCode = error.status;
+        errObj.reason = error.message;
+        errObj.statusCode = error.status;
+        errObj.statusText = error.statusText;
     }
-    console.log(message);
-    return throwError(() => new DataError(message, statusCode));
+    return throwError(() => errObj);
   }
 
   login(email: string, password: string): Observable<any>{
@@ -93,5 +89,15 @@ export class DataService {
 
   getPercentBeerRemaining(sensorId: string, locationId: string): Observable<number> {
     return this.getSensorData(sensorId, locationId, "percent_beer_remaining");
+  }
+
+  getCurrentUser(): Observable<UserInfo> {
+    const url = `${this.baseUrl}/admins/current`;
+    return this.http.get<UserInfo>(url).pipe(catchError(this.getError));
+  }
+
+  updateAdmin(adminId: string, data: object): Observable<UserInfo> {
+    const url = `${this.baseUrl}/admins/${adminId}`;
+    return this.http.patch<UserInfo>(url, data).pipe(catchError(this.getError));
   }
 }

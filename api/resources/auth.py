@@ -1,6 +1,6 @@
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from flask import redirect, request, url_for
+from flask import redirect, request
 from flask_login import (
     login_required,
     login_user,
@@ -11,7 +11,7 @@ import json
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 
-from resources import UIBaseResource, BaseResource, ResourceMixinBase, ClientError, NotAuthorized
+from resources import UIBaseResource, BaseResource, ResourceMixinBase, ClientError, NotAuthorized, ClientError
 from db import session_scope
 from db.admins import Admins as AdminsDB
 
@@ -115,6 +115,27 @@ class GoogleCallback(BaseResource, GoogleResourceMixin):
 
         with session_scope(self.config) as db_session:
             admin = AdminsDB.get_by_email(db_session, users_email)
+            update_data = {}
+
+            if not admin.first_name and first_name:
+                self.logger.debug("Admin '%s' first name not set in database.  Updating from google: %s", users_email, first_name)
+                update_data["first_name"] = first_name
+
+            if not admin.last_name and last_name:
+                self.logger.debug("Admin '%s' last name not set in database.  Updating from google: %s", users_email, last_name)
+                update_data["last_name"] = last_name
+            
+            if not admin.google_oidc_id and unique_id:
+                self.logger.debug("Admin '%s' google OIDC Id not set in database.  Updating from google: %s", users_email, unique_id)
+                update_data["google_oidc_id"] = unique_id
+
+            if not admin.profile_pic and picture:
+                self.logger.debug("Admin '%s' profile pic url not set in database.  Updating from google: %s", users_email, picture)
+                update_data["profile_pic"] = picture
+
+            if update_data:
+                self.logger.debug("Updating admin account '%s' with missing data: %s", users_email, update_data)
+                AdminsDB.update(db_session, admin.id, **update_data)
 
             if not admin:
                 raise NotAuthorized()
@@ -143,7 +164,10 @@ class Login(BaseResource, ResourceMixinBase):
 
             if not admin:
                 raise NotAuthorized()
-            
+
+            if not admin.password_hash:
+                raise ClientError(user_msg="The user does not have a password set.  Please try logging in with google.")
+
             ph = PasswordHasher()
             try:
                 if not ph.verify(admin.password_hash, password):

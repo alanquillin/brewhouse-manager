@@ -5,25 +5,31 @@
     align-items: center;
 }
 
-.login-card {
-    max-width: 400px;
-    img {
-        border-radius: 50%;
-        padding: 64px;
-
+.login {
+    fieldset {
+        border: none;
     }
 
-    .login-field {
-        width: 100%;
-    }
-
-    .mat-card-actions {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
+    .login-card {
+        max-width: 400px;
+        img {
+            border-radius: 50%;
+            padding: 64px;
     
+        }
+    
+        .login-field {
+            width: 100%;
+        }
+    
+        .mat-card-actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        
+    }
 }
 
 .login-socials {

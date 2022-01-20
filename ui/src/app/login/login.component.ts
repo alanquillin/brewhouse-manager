@@ -7,6 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { DataError } from '../models/models'
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
+import { CloseScrollStrategy } from '@angular/cdk/overlay';
 
 @Component({
   selector: 'app-login',
@@ -44,13 +45,13 @@ export class LoginComponent implements OnInit {
         this.router.navigate(["/manage"]);
       },
       error: (err: DataError) => {
-        if (err.statusCode === 401) {
+        if (err.statusCode === 400) {
+          this.displayError(err.message)
+        } else if (err.statusCode === 401) {
           this.displayError("Invalid username or password")
         } else {
           this.displayError("An unknown error occurred trying to login.")
         }
-      },
-      complete: () => {
         this.processing = false;
       }
     });

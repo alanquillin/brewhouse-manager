@@ -1,0 +1,13 @@
+.header-content {
+    display: flex;
+    flex-direction: row;
+
+    div.header-title {
+        order: 1;
+    }
+
+    div.header-nav {
+        order: 2;
+        margin-left: auto;
+    }
+}
