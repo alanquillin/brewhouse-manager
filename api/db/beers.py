@@ -29,7 +29,6 @@ class Beers(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
     name = Column(String, nullable=True)
     description = Column(String, nullable=True)
-    location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"))
     external_brewing_tool = Column(String, nullable=True)
     external_brewing_tool_meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
     style = Column(String, nullable=True)
@@ -41,7 +40,3 @@ class Beers(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     keg_date = Column(Date, nullable=True)
 
     __table_args__ = (Index("beer_name_lower_ix", func.lower(name), unique=True),)
-
-    @classmethod
-    def get_by_location(cls, session, location_id, **kwargs):
-        return session.query(cls).filter_by(location_id=location_id, **kwargs)

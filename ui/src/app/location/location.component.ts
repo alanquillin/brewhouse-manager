@@ -70,7 +70,7 @@ export class LocationComponent implements OnInit {
     if(!tap.isEmpty) {
       tap.isLoading = true
       if(tap.tapType === "beer"){
-        this.dataService.getBeer(tap.beerId, tap.locationId).subscribe((beer: Beer) => {
+        this.dataService.getBeer(tap.beerId).subscribe((beer: Beer) => {
           console.log(beer);
           tap.beer = beer;
           tap.isLoading = false;

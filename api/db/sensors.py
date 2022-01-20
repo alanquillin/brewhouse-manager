@@ -29,8 +29,12 @@ class Sensors(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     sensor_type = Column("sensor_type", String, nullable=False)
     meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
 
-    location = relationship(locations.Locations)
+    location = relationship(locations.Locations, backref=backref("Sensors", cascade="all,delete"))
 
+    __table_args__ = (
+        Index("ix_sensor_location_id", location_id, unique=False),
+    )
+        
     @classmethod
     def get_by_location(cls, session, location_id, **kwargs):
         return session.query(cls).filter_by(location_id=location_id, **kwargs)

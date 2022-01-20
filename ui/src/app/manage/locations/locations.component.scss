@@ -1,0 +1,59 @@
+.locations-view {
+    display: flex;
+    flex-direction: column;
+
+    .heading {
+        order: 1;
+    }
+
+    .location-view-actions {
+        order: 2;
+        padding: 0px 0px 12px;
+    }
+    
+    .locations-list {
+        order: 3;
+
+        table {
+            .mat-header-cell,
+            .mat-cell {
+                padding: 2px 8px;
+            }
+        
+            .actions {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+        }
+
+    }
+}
+
+.locations-add {
+    display: flex;
+    flex-direction: column;
+
+    .heading {
+        order: 1;
+    }
+
+    .add-form {
+        order: 2;
+    }
+
+    .add-actions {
+        order: 3;
+        
+        button {
+            margin: 2px 6px
+        }    
+    } 
+}
+
+.locations-add fieldset {
+    display: flex;
+    flex-direction: column;
+    border: none;
+    width: 400px;
+}

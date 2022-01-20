@@ -44,7 +44,6 @@ BEERS = [
     {
         "id": beer_l1b1_id,
         "description": "An Irish Stout on Nitro",
-        "location_id": location1_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "batch_id": "OxLBTCdfmPN5Z5DbrNidISXo67NMN3"
@@ -54,7 +53,6 @@ BEERS = [
         "id": beer_l1b2_id,
         "name": "4th and Lager",
         "description": "An American Lager",
-        "location_id": location1_id,
         "style": "Lager",
         "abv": 5.2,
         "ibu": 17,
@@ -62,7 +60,6 @@ BEERS = [
     },
     {
         "id": beer_l1b3_id,
-        "location_id": location1_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "batch_id": "k9MRi0BeqW3sFdltMhqy4CnHtSwDOG"
@@ -71,7 +68,6 @@ BEERS = [
     },
     {
         "id": beer_l1b4_id,
-        "location_id": location1_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "batch_id": "S0spuNZL8PcQM2f2ioCgAoR8A0tv2q"
@@ -83,6 +79,7 @@ sensor_l1s1_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec41"
 sensor_l1s2_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec42"
 sensor_l1s3_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec43"
 sensor_l1s4_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec44"
+sensor_l2s1_id = "cacfe989-cc88-4687-9a55-c8748de9f570"
 SENSORS=[
     {
         "id": sensor_l1s1_id,
@@ -118,6 +115,15 @@ SENSORS=[
         "sensor_type": "plaato-keg",
         "meta": {
             "auth_token": os.environ.get("PLAATO_KEG_4_TOKEN", "unknown")
+        }
+    },
+    {
+        "id": sensor_l2s1_id,
+        "name": "Plaato Keg A",
+        "location_id": location2_id,
+        "sensor_type": "plaato-keg",
+        "meta": {
+            "auth_token": "unknown"
         }
     }
 ]
@@ -164,7 +170,8 @@ TAPS = [
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location2_id,
-        "tap_type": "beer"
+        "tap_type": "beer",
+        "sensor_id": sensor_l2s1_id
     },
     {
         "id": "e0b83ea2-217b-440b-bad5-24548dc8bef1",

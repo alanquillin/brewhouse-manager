@@ -17,3 +17,23 @@ class Profile(UIBaseResource, ResourceMixinBase):
     @login_required
     def get(self):
         return self.serve_app()
+
+class ManagemantLocations(UIBaseResource, ResourceMixinBase):
+    @login_required
+    def get(self):
+        return self.serve_app()
+
+class ManagemantTaps(UIBaseResource, ResourceMixinBase):
+    @login_required
+    def get(self):
+        return self.serve_app()
+
+class ManagemantBeers(UIBaseResource, ResourceMixinBase):
+    @login_required
+    def get(self):
+        return self.serve_app()
+
+class ManagemantSensors(UIBaseResource, ResourceMixinBase):
+    @login_required
+    def get(self):
+        return self.serve_app()

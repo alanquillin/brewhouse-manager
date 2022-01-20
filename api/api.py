@@ -34,7 +34,7 @@ from resources.auth import GoogleLogin, Logout, GoogleCallback, User, Login
 from resources.beers import Beers, Beer
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
 from resources.locations import Location, Locations
-from resources.pages import ManagemantDashboard, Profile
+from resources.pages import ManagemantBeers, ManagemantDashboard, ManagemantLocations, ManagemantSensors, ManagemantTaps, Profile
 from resources.sensors import Sensor, Sensors, SensorData
 from resources.taps import Tap, Taps
 
@@ -90,6 +90,7 @@ login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
     with session_scope(CONFIG) as db_session:
+        print("refreshing user %s" % user_id)
         return User.from_admin(AdminsDB.get_by_pkey(db_session, user_id))
 
 @login_manager.unauthorized_handler
@@ -97,8 +98,8 @@ def redirect_not_logged_in():
     return redirect("/login")
 
 # API resources for UI:
-api.add_resource(Beers, "/api/v1/beers", "/api/v1/locations/<location>/beers")
-api.add_resource(Beer, "/api/v1/beers/<beer_id>", "/api/v1/locations/<location>/beers/<beer_id>")
+api.add_resource(Beers, "/api/v1/beers")
+api.add_resource(Beer, "/api/v1/beers/<beer_id>")
 api.add_resource(Locations, "/api/v1/locations")
 api.add_resource(Location, "/api/v1/locations/<location>")
 api.add_resource(Taps, "/api/v1/taps", "/api/v1/locations/<location>/taps")
@@ -121,6 +122,10 @@ api.add_resource(Login, "/login")
 
 # UI resources
 api.add_resource(ManagemantDashboard, "/manage")
+api.add_resource(ManagemantBeers, "/manage/beers")
+api.add_resource(ManagemantLocations, "/manage/locations")
+api.add_resource(ManagemantSensors, "/manage/sensors")
+api.add_resource(ManagemantTaps, "/manage/taps")
 api.add_resource(Profile, "/me")
 
 app.wsgi_app = ProxyFix(app.wsgi_app)

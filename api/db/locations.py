@@ -2,6 +2,8 @@
 _TABLE_NAME = "locations"
 _PKEY = "id"
 
+import re
+
 from psycopg2.errors import UniqueViolation  # pylint: disable=no-name-in-module
 from sqlalchemy import Column, String, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -24,3 +26,19 @@ class Locations(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     description = Column(String, nullable=True)
 
     __table_args__ = (Index("locations_name_lower_ix", func.lower(name), unique=True),)
+
+    @staticmethod
+    def _replace_name(data):
+        if "name" in data and data["name"]:
+            data["name"] = re.sub('[^a-zA-Z0-9-]', "", data["name"].replace(" ", "-")).lower()
+        return data
+    
+    @classmethod
+    def create(cls, session, **kwargs):
+        kwargs = cls._replace_name(kwargs)
+        return super().create(session, **kwargs)
+
+    @classmethod
+    def update(cls, session, pkey, **kwargs):
+        kwargs = cls._replace_name(kwargs)
+        return super().update(session, pkey, **kwargs)

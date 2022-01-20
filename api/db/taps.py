@@ -17,7 +17,6 @@ from db import (
     locations,
     column_as_enum,
     beers,
-    cold_brews,
     sensors,
 )
 
@@ -44,17 +43,14 @@ class Taps(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"), nullable=False)
     _tap_type = Column("tap_type", String, nullable=False)
     beer_id = Column(UUID, ForeignKey(f"{beers._TABLE_NAME}.{beers._PKEY}"))
-    cold_brew_id = Column(UUID, ForeignKey(f"{cold_brews._TABLE_NAME}.{cold_brews._PKEY}"))
     sensor_id = Column(UUID, ForeignKey(f"{sensors._TABLE_NAME}.{sensors._PKEY}"))
 
-    location = relationship(locations.Locations)
+    location = relationship(locations.Locations, backref=backref("Taps", cascade="all,delete"))
     beer = relationship(beers.Beers)
-    cold_brew = relationship(cold_brews.ColdBrews)
     sensor = relationship(sensors.Sensors)
 
     __table_args__ = (
         Index("ix_taps_beer_id", beer_id, unique=False),
-        Index("ix_taps_cold_brew_id", cold_brew_id, unique=False),
         Index("ix_taps_location_id", location_id, unique=False),
     )
 

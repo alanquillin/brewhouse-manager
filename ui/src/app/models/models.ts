@@ -3,6 +3,8 @@
 // this check reports that some of these types shadow their own definitions
 /* eslint-disable no-shadow */
 
+import * as _ from 'lodash';
+
 export class DataError extends Error {
   statusCode!: number;
   statusText!: string;
@@ -21,10 +23,55 @@ export class DataError extends Error {
     }
   }
 }
-export class Location {
+
+export class EditableBase {
+  isEditing: boolean;
+  editValues: any;
+  #fields: string[];
+
+  constructor(fields: string[]) {
+      this.isEditing = false;
+      this.editValues = {}
+      this.#fields = fields;
+  }
+
+  enableEditing(): void{
+      this.isEditing = true;
+      this.editValues = { ...this };
+  }
+
+  disableEditing(): void {
+      this.isEditing = false;
+      this.editValues = {};
+  }
+
+  get changes(): any {
+      var dataChanges: any = {}
+
+      if(this.isEditing) {
+          _.forEach(this.#fields, (key) => {
+              if(_.get(this, key) !== this.editValues[key]){
+                  dataChanges[key] = this.editValues[key]
+              }
+          });
+      }
+
+      return dataChanges;
+  }
+
+  get hasChanges(): boolean {
+      return !this.isEditing ? false : !_.isEmpty(this.changes);
+  }
+}
+
+export class Location extends EditableBase {
   id!: string;
   description!: string;
   name!: string;
+
+  constructor() {
+    super(["name", "description"]);
+}
 }
 
 export class Tap {

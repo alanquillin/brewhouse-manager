@@ -29,7 +29,6 @@ __all__ = [
     "admins",
     "audit",
     "beers",
-    "cold_brews",
     "locations",
     "sensors",
     "taps"

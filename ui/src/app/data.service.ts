@@ -62,6 +62,21 @@ export class DataService {
     return this.http.get<Location>(url).pipe(catchError(this.getError));
   }
 
+  createLocation(data: any): Observable<Location> {
+    const url = `${this.baseUrl}/locations`;
+    return this.http.post<Location>(url, data).pipe(catchError(this.getError));
+  }
+
+  deleteLocation(location: string): Observable<any> {
+    const url = `${this.baseUrl}/locations/${location}`;
+    return this.http.delete<any>(url).pipe(catchError(this.getError));
+  }
+
+  updateLocation(location: string, data: any): Observable<Location> {
+    const url = `${this.baseUrl}/locations/${location}`;
+    return this.http.patch<Location>(url, data).pipe(catchError(this.getError));
+  }
+
   getTaps(locationId: string): Observable<Tap[]> {
     const url = `${this.baseUrl}/locations/${locationId}/taps`;
     return this.http.get<Tap[]>(url).pipe(catchError(this.getError));
@@ -72,8 +87,8 @@ export class DataService {
     return this.http.get<Tap>(url).pipe(catchError(this.getError));
   }
 
-  getBeer(beerId: string, locationId: string): Observable<Beer> {
-    const url = `${this.baseUrl}/locations/${locationId}/beers/${beerId}`;
+  getBeer(beerId: string): Observable<Beer> {
+    const url = `${this.baseUrl}/beers/${beerId}`;
     return this.http.get<Beer>(url).pipe(catchError(this.getError));
   }
 
