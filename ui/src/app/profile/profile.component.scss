@@ -2,11 +2,8 @@
     display: flex;
     flex-direction: column;
 
-    .profile-name {
-        order: 1;
-
-        font-size: 120%;
-        font-weight: bold;
+    .profile-details {
+        order: 3;
     }
 
     .profile-pic {
@@ -19,7 +16,7 @@
     }
 
     .profile-actions {
-        order: 3;
+        order: 4;
     }
 }
 

@@ -7,6 +7,9 @@
         <div class="profile-pic" *ngIf="userInfo.profilePic">
             <img src="{{ userInfo.profilePic }}" />
         </div>
+        <div class="profile-details">
+            <p>Email: {{ userInfo.email }}</p>
+        </div>
         <div class="profile-actions">
             <button mat-raised-button color="primary" (click)="startEditing()"><mat-icon>edit</mat-icon> Edit</button>
             <button mat-raised-button (click)="startChangePassword()">{{ userInfo.passwordEnabled ? "Change" : "Set" }} Password</button>
