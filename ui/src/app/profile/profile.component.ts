@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { AbstractControl, FormGroup, Validators, FormControl } from '@angular/forms';
 
 import { DataError, UserInfo } from '../models/models';
-import { Validation } from '../form-validators';
+import { Validation } from '../utils/form-validators';
 
 import * as _ from 'lodash';
 
