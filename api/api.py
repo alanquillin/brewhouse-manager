@@ -35,7 +35,7 @@ from resources.beers import Beers, Beer
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
 from resources.locations import Location, Locations
 from resources.pages import ManagemantBeers, ManagemantDashboard, ManagemantLocations, ManagemantSensors, ManagemantTaps, Profile
-from resources.sensors import Sensor, Sensors, SensorData
+from resources.sensors import Sensor, Sensors, SensorData, SensorTypes
 from resources.taps import Tap, Taps
 
 class IgnoringLogAdapter(LoggingLogAdapter):
@@ -107,6 +107,7 @@ api.add_resource(Tap, "/api/v1/taps/<tap_id>", "/api/v1/locations/<location>/tap
 api.add_resource(Sensors, "/api/v1/sensors", "/api/v1/locations/<location>/sensors")
 api.add_resource(Sensor, "/api/v1/sensors/<sensor_id>", "/api/v1/locations/<location>/sensors/<sensor_id>")
 api.add_resource(SensorData, "/api/v1/sensors/<sensor_id>/<data_type>", "/api/v1/locations/<location>/sensors/<sensor_id>/<data_type>")
+api.add_resource(SensorTypes, "/api/v1/sensors/types")
 api.add_resource(ExternalBrewToolTypes, "/api/v1/external_brew_tools/types")
 api.add_resource(ExternalBrewTool, "/api/v1/external_brew_tools/<tool_name>")
 api.add_resource(SearchExternalBrewTool, "/api/v1/external_brew_tools/<tool_name>/search")

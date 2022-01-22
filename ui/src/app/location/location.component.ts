@@ -82,11 +82,11 @@ export class LocationComponent implements OnInit {
       }
 
       if(!_.isEmpty(tap.sensorId)) {
-        this.dataService.getSensor(tap.sensorId, tap.locationId).subscribe((sensor: Sensor) => {
+        this.dataService.getSensor(tap.sensorId).subscribe((sensor: Sensor) => {
           let sensorData = <SensorData>sensor;
           tap.sensor = sensorData;
 
-          this.dataService.getPercentBeerRemaining(sensorData.id, sensorData.locationId).subscribe((val: number) => {
+          this.dataService.getPercentBeerRemaining(sensorData.id).subscribe((val: number) => {
             console.log(val);
             sensorData.percentBeerRemaining = val as number;
             console.log(sensorData);

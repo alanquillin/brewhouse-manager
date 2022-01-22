@@ -30,6 +30,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSortModule } from '@angular/material/sort'; 
 
 import { GaugeModule } from 'angular-gauge';
 
@@ -40,6 +41,7 @@ import { ManageComponent } from './manage/manage.component';
 import { ManageHeaderComponent } from './manage/header/header.component';
 import { ManageLocationsComponent } from './manage/locations/locations.component';
 import { ProfileComponent } from './profile/profile.component';
+import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -49,7 +51,8 @@ import { ProfileComponent } from './profile/profile.component';
     ManageComponent,
     ManageHeaderComponent,
     ManageLocationsComponent,
-    ProfileComponent
+    ProfileComponent,
+    ManageSensorsComponent
   ],
   imports: [
     AppRoutingModule,
@@ -74,6 +77,7 @@ import { ProfileComponent } from './profile/profile.component';
     MatSidenavModule,
     MatSlideToggleModule,
     MatSnackBarModule,
+    MatSortModule,
     MatTableModule,
     MatToolbarModule,
     MatTooltipModule,

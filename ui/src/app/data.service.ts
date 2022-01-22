@@ -7,6 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import { Location, Tap, Beer, Sensor, DataError, UserInfo } from './models/models';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import * as _ from 'lodash';
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -92,18 +93,49 @@ export class DataService {
     return this.http.get<Beer>(url).pipe(catchError(this.getError));
   }
 
-  getSensor(sensorId: string, locationId: string): Observable<Sensor> {
-    const url = `${this.baseUrl}/locations/${locationId}/sensors/${sensorId}`;
+  getSensors(locationId?: string): Observable<Sensor[]> {
+    var url: string;
+    if (_.isNil(locationId)) {
+      url = `${this.baseUrl}/sensors`;
+    } else {
+      url = `${this.baseUrl}/locations/${locationId}/sensors`;
+    }
+
+    return this.http.get<Sensor[]>(url).pipe(catchError(this.getError));
+  }
+
+  getSensor(sensorId: string): Observable<Sensor> {
+    const url = `${this.baseUrl}/sensors/${sensorId}`;
     return this.http.get<Sensor>(url).pipe(catchError(this.getError));
   }
 
-  getSensorData(sensorId: string, locationId: string, dataType: string): Observable<any> {
-    const url = `${this.baseUrl}/locations/${locationId}/sensors/${sensorId}/${dataType}`;
+  createSensor(data: any): Observable<Sensor> {
+    const url = `${this.baseUrl}/sensors`;
+    return this.http.post<Sensor>(url, data).pipe(catchError(this.getError));
+  }
+
+  updateSensor(sensorId: string, data: any): Observable<Sensor> {
+    const url = `${this.baseUrl}/sensors/${sensorId}`;
+    return this.http.patch<Sensor>(url, data).pipe(catchError(this.getError));
+  }
+
+  deleteSensor(sensorId: string): Observable<any> {
+    const url = `${this.baseUrl}/sensors/${sensorId}`;
+    return this.http.delete<any>(url).pipe(catchError(this.getError));
+  }
+
+  getSensorType(): Observable<string[]> {
+    const url = `${this.baseUrl}/sensors/types`;
+    return this.http.get<string[]>(url).pipe(catchError(this.getError));
+  }
+
+  getSensorData(sensorId: string, dataType: string): Observable<any> {
+    const url = `${this.baseUrl}/sensors/${sensorId}/${dataType}`;
     return this.http.get<any>(url).pipe(catchError(this.getError));
   }
 
-  getPercentBeerRemaining(sensorId: string, locationId: string): Observable<number> {
-    return this.getSensorData(sensorId, locationId, "percent_beer_remaining");
+  getPercentBeerRemaining(sensorId: string): Observable<number> {
+    return this.getSensorData(sensorId, "percent_beer_remaining");
   }
 
   getCurrentUser(): Observable<UserInfo> {

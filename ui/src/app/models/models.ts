@@ -4,6 +4,7 @@
 /* eslint-disable no-shadow */
 
 import * as _ from 'lodash';
+import { deepEqual, isObject } from '../utils/helpers';
 
 export class DataError extends Error {
   statusCode!: number;
@@ -37,7 +38,7 @@ export class EditableBase {
 
   enableEditing(): void{
       this.isEditing = true;
-      this.editValues = { ...this };
+      this.editValues = _.cloneDeep(this);
   }
 
   disableEditing(): void {
@@ -50,9 +51,17 @@ export class EditableBase {
 
       if(this.isEditing) {
           _.forEach(this.#fields, (key) => {
-              if(_.get(this, key) !== this.editValues[key]){
-                  dataChanges[key] = this.editValues[key]
+            const v1 = _.get(this, key);
+            const v2 = this.editValues[key];
+            if (isObject(v1) && isObject(v2)) {
+              if (!deepEqual(v1, v2)) {
+                dataChanges[key] = this.editValues[key]
               }
+            } else {
+              if(v1 !== v2){
+                dataChanges[key] = this.editValues[key]
+              }
+            }
           });
       }
 
@@ -101,11 +110,17 @@ export class Beer {
   srm!: number;
 }
 
-export class Sensor {
+export class Sensor extends EditableBase {
   id!: string;
   name!: string;
+  sensorType!: string;
   locationId!: string;
-  meta!: Object;
+  meta!: any;
+
+  constructor() {
+    super(["name", "locationId", "sensorType", "meta"]);
+    this.meta = {}
+  }
 }
 
 export class UserInfo {

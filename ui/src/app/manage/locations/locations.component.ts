@@ -48,7 +48,8 @@ export class ManageLocationsComponent implements OnInit {
           var eLoc = new Location()
           Object.assign(eLoc, location);
           this.locations.push(eLoc)
-        })
+        });
+        this.dataSource.data = this.locations
       }, 
       error: (err: DataError) => {
         this.displayError(err.message);
