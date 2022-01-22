@@ -1,5 +1,4 @@
-
-#from flask_connect import login_required
+from flask_login import login_required
 
 from resources import BaseResource, ResourceMixinBase, NotFoundError
 from db import session_scope
@@ -15,6 +14,7 @@ class Locations(BaseResource, LocationsResourceMixin):
             locations = LocationsDB.query(db_session)
             return [self.transform_response(l.to_dict()) for l in locations]
 
+    @login_required
     def post(self):
         with session_scope(self.config) as db_session:
             data = self.get_request_data()
@@ -34,6 +34,7 @@ class Location(BaseResource, LocationsResourceMixin):
                 raise NotFoundError()
             return self.transform_response(l.to_dict())
 
+    @login_required
     def patch(self, location):
         with session_scope(self.config) as db_session:
             location_id = self.get_location_id(location, db_session)
@@ -47,7 +48,8 @@ class Location(BaseResource, LocationsResourceMixin):
             l = LocationsDB.update(db_session, location_id, **data)
             
             return self.transform_response(l.to_dict())
-
+    
+    @login_required
     def delete(self, location):
         with session_scope(self.config) as db_session:
             location_id = self.get_location_id(location, db_session)
