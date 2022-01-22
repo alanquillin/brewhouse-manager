@@ -96,6 +96,13 @@ def with_schema_validation(schema):
 
     return wrapper
 
+def transform_request_data(original_data):
+    data = {}
+    for k, v in original_data.items():
+        if isinstance(v, dict):
+            v = transform_request_data(v)
+        data[util.camel_to_snake(k)] = v
+    return data
 
 def transform_response(data, transform_keys=None, filtered_keys=None):
     if not data:
@@ -190,15 +197,19 @@ class ResourceMixinBase:
 
         self.config = Config()
         self.logger = logging.getLogger(self.__class__.__name__)
-
+    
     def get_request_data(self, remove_key=[]):
         j = request.get_json()
-        data = {}
-        for k, v in j.items():
-            if k not in remove_key:
-                data[util.camel_to_snake(k)] = v
+        
+        if remove_key:
+            data = {}
+            for k, v in j.items():
+                if k not in remove_key:
+                    data[k] = v
+        else:
+            data = j
 
-        return data
+        return transform_request_data(data)
 
     @staticmethod
     def transform_response(entity, filtered_keys=None):
