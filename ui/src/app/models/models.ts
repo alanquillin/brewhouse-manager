@@ -80,18 +80,24 @@ export class Location extends EditableBase {
 
   constructor() {
     super(["name", "description"]);
-}
+  }
 }
 
-export class Tap {
+export class Tap extends EditableBase {
   id!: string;
   description!: string;
   tapNumber!: number;
   locationId!: string;
+  location: Location | undefined;
   tapType!: string;
   beerId!: string;
-  coldBrewId!: string;
+  beer: Beer | undefined;
   sensorId!: string;
+  sensor: Sensor | undefined;
+
+  constructor() {
+    super(["description", "tapNumber", "locationId", "tapType", "beerId", "sensorId"]);
+  }
 }
 
 export class Beer {
@@ -115,6 +121,7 @@ export class Sensor extends EditableBase {
   name!: string;
   sensorType!: string;
   locationId!: string;
+  location: Location | undefined;
   meta!: any;
 
   constructor() {

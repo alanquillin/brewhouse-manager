@@ -198,7 +198,8 @@ class ResourceMixinBase:
         self.config = Config()
         self.logger = logging.getLogger(self.__class__.__name__)
     
-    def get_request_data(self, remove_key=[]):
+    @staticmethod
+    def get_request_data(remove_key=[]):
         j = request.get_json()
         
         if remove_key:

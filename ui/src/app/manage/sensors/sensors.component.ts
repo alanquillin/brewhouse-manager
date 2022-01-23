@@ -15,13 +15,13 @@ import * as _ from 'lodash';
   templateUrl: './sensors.component.html',
   styleUrls: ['./sensors.component.scss']
 })
-export class ManageSensorsComponent implements OnInit, AfterViewInit {
+export class ManageSensorsComponent implements OnInit {
 
   sensors: Sensor[] = [];
+  filteredSensors: Sensor[] = [];
   locations: Location[] = [];
   sensorTypes: string[] = [];
   displayedColumns: string[] = ['name', 'type', 'location', 'actions'];
-  dataSource = new MatTableDataSource<Sensor>(this.sensors)
   processing = false;
   adding = false;
   editing = false;
@@ -49,10 +49,9 @@ export class ManageSensorsComponent implements OnInit, AfterViewInit {
       next: (sensors: Sensor[]) => {
         this.sensors = [];
         _.forEach(sensors, (sensor) => {
-          var eSen = new Sensor()
-          Object.assign(eSen, sensor);
-          Object.assign(eSen, {locationName: this.getLocationName(eSen)});
-          this.sensors.push(eSen)
+          var _sensor = new Sensor()
+          Object.assign(_sensor, sensor);
+          this.sensors.push(_sensor)
         })
         this.filter();
       }, 
@@ -108,10 +107,6 @@ export class ManageSensorsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit() {
-    this.dataSource.sort = this.sort;
-  }
-
   ngOnInit(): void {
     this.processing = true;
     this.refreshAll(()=> {
@@ -142,7 +137,7 @@ export class ManageSensorsComponent implements OnInit, AfterViewInit {
       },
       error: (err: DataError) => {
         this.displayError(err.message);
-        this.processing;
+        this.processing = false;
       }
     })
   }
@@ -162,8 +157,8 @@ export class ManageSensorsComponent implements OnInit, AfterViewInit {
     this.processing = true;
     this.dataService.updateSensor(this.modifySensor.id, this.modifySensor.changes).subscribe({
       next: (sensor: Sensor) => {
+        this.modifySensor.disableEditing();
         this.refresh(()=> {this.processing = false;}, () => {
-          this.modifySensor.disableEditing();
           this.editing = false;
         })
       },
@@ -204,20 +199,30 @@ export class ManageSensorsComponent implements OnInit, AfterViewInit {
     return (loc as Location).name;
   }
 
-  filter() {
-    var sortBy:string = "name";
-    var sortDir: boolean = true;
-    if(!_.isNil(this.sort)) {
-      sortBy = _.isEmpty(this.sort.active) ? sortBy : this.sort.active;
-      sortDir = _.isEmpty(this.sort.direction) ? sortDir : this.sort.direction == 'asc';
+  filter(sort?: Sort) {
+    var sortBy:string = "description";
+    var asc: boolean = true;
+
+    if(!_.isNil(sort) && !_.isEmpty(this.sort.active) && !_.isEmpty(this.sort.direction)) {
+      sortBy = this.sort.active;
+      asc = this.sort.direction == 'asc';
     }
 
     var filteredData: Sensor[] = this.sensors;
     if(!_.isEmpty(this.selectedLocationFilters)){
       filteredData = <Sensor[]>_.filter(this.sensors, (s) => { return this.selectedLocationFilters.includes(s.locationId) });
     }
-    filteredData = _.orderBy(filteredData, [sortBy], [sortDir])
-    this.dataSource.data = filteredData;
+    filteredData = _.orderBy(filteredData, [sortBy], [asc])
+    _.sortBy(filteredData, [(d: Sensor) => {
+        if(sortBy === "location"){
+          return _.isNil(d.location) ? "" : d.location.name
+        }
+        return _.get(sortBy, sortBy);
+      }]);
+    if(!asc){
+      _.reverse(filteredData);
+    }
+    this.filteredSensors = filteredData;
   }
 
   addMissingMeta() {

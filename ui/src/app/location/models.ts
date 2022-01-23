@@ -3,8 +3,7 @@ import { Tap, Beer, Sensor } from './../models/models';
 export class TapDetails extends Tap {
   isEmpty!: boolean;
   isLoading!: boolean;
-  beer!: Beer;
-  sensor!: SensorData;
+  override sensor!: SensorData;
 }
 
 export class SensorData extends Sensor {

@@ -20,7 +20,7 @@
             </div>
         </div>
         <div class="sensors-list">
-            <table mat-table matSort [dataSource]="dataSource" class="mat-elevation-z8">
+            <table mat-table matSort [dataSource]="filteredSensors" class="mat-elevation-z8" (matSortChange)="filter($event)">
                 <ng-container matColumnDef="id">
                     <th mat-header-cell *matHeaderCellDef> Id </th>
                     <td mat-cell *matCellDef="let element"> {{element.id}} </td>
@@ -38,7 +38,7 @@
             
                 <ng-container matColumnDef="location">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header="locationName" sortActionDescription="Sort by location"> Location </th>
-                    <td mat-cell *matCellDef="let element">{{ element.locationName }}</td>
+                    <td mat-cell *matCellDef="let element">{{ _.isNil(element.location) ? getLocationName(element) : element.location.name }}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="actions">

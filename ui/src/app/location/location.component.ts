@@ -38,16 +38,19 @@ export class LocationComponent implements OnInit {
     this.dataService.getLocation(this.location_identifier).subscribe({
       next: (location: Location) => {
         this.location = location;
-        this.dataService.getTaps(location.id).subscribe((taps: Tap[]) => {
-          _.forEach(taps, (tap: Tap) => {
-            let tapD = <TapDetails>tap;
-            this.taps.push(tapD)
-            this.setTapDetails(tapD);
-          })
-          this.isLoading = false;
-        }, (err: DataError) => {
-          this.displayError(err.message);
-        })
+        this.dataService.getTaps(location.id).subscribe({
+          next: (taps: Tap[]) => {
+            _.forEach(taps, (tap: Tap) => {
+              let tapD = <TapDetails>tap;
+              this.taps.push(tapD)
+              this.setTapDetails(tapD);
+            })
+            this.isLoading = false;
+          },
+          error: (err: DataError) => {
+            this.displayError(err.message);
+          }
+        });
       }, error: (err: DataError) => {
         if (err.statusCode === 404) {
           this.router.navigate(["/"]);
@@ -59,7 +62,7 @@ export class LocationComponent implements OnInit {
   }
 
   // refreshTap(tapId: string) {
-  //   this.dataService.getTap(tapId, this.location.id).subscribe((tap: Tap) => {
+  //   this.dataService.getTap(tapId).subscribe((tap: Tap) => {
       
   //   })
   // }
@@ -99,15 +102,15 @@ export class LocationComponent implements OnInit {
     //setTimeout(() => {refreshTap(tap.id)}, _.random(600, 1200)*100);
   }
 
-  isTapEmpty(tap: TapDetails) {
-    if(_.isEmpty(tap.beerId) && _.isEmpty(tap.coldBrewId)){
+  isTapEmpty(tap: TapDetails): boolean {
+    if(_.isEmpty(tap.beerId)){
       return true;
     }
     
     return false;
   }
 
-  getSrm(beer: Beer) {
+  getSrm(beer: Beer): string {
     if(_.isNil(beer)){
       return "1";
     }
