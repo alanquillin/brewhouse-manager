@@ -43,6 +43,7 @@ import { ManageLocationsComponent } from './manage/locations/locations.component
 import { ProfileComponent } from './profile/profile.component';
 import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
+import { ManageBeerComponent } from './manage/beer/beer.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -54,7 +55,8 @@ import { ManageTapsComponent } from './manage/taps/taps.component';
     ManageLocationsComponent,
     ProfileComponent,
     ManageSensorsComponent,
-    ManageTapsComponent
+    ManageTapsComponent,
+    ManageBeerComponent
   ],
   imports: [
     AppRoutingModule,

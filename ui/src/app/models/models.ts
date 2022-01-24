@@ -100,11 +100,10 @@ export class Tap extends EditableBase {
   }
 }
 
-export class Beer {
+export class Beer extends EditableBase {
   id!: string;
   description!: string;
   name!: string;
-  locationId!: string;
   externalBrewingTool!: string;
   externalBrewingToolMeta!: Object;
   style!: number;
@@ -114,6 +113,58 @@ export class Beer {
   kegDate!: string;
   brewDate!: string;
   srm!: number;
+
+  constructor() {
+    super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm"]);
+  }
+
+  #getVal(key: string): any{
+    var v = _.get(this, key)
+    if(_.isNil(v) || _.isEmpty(v)) {
+      if(!_.isEmpty(this.externalBrewingTool) && !_.isEmpty(this.externalBrewingToolMeta)) {
+        if(this.externalBrewingTool === "brewfather") {
+          v = _.get(this.externalBrewingToolMeta, `details.${key}`);
+        }
+      }
+    }
+
+    return v;
+  }
+
+  getName() {
+    return this.#getVal("name");
+  }
+
+  getDescription() {
+    return this.#getVal("description");
+  }
+  getStyle() {
+    return this.#getVal("style");
+  }
+
+  getAbv() {
+    return this.#getVal("abv");
+  }
+
+  getImgUrl() {
+    return this.#getVal("imgUrl");
+  }
+
+  getIbu() {
+    return this.#getVal("ibu");
+  }
+
+  getKegDate() {
+    return this.#getVal("kegDate");
+  }
+  
+  getBrewDate() {
+    return this.#getVal("brewDate");
+  }
+
+  getSrm() {
+    return this.#getVal("srm");
+  }
 }
 
 export class Sensor extends EditableBase {

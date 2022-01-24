@@ -1,6 +1,7 @@
 import logging
 
 from flask import request
+from flask_login import login_required
 
 from resources import BaseResource, ResourceMixinBase, NotFoundError
 from db import session_scope
@@ -29,11 +30,7 @@ class BeerResourceMixin(ResourceMixinBase):
 
         data = beer.to_dict()
         G_LOGGER.debug(data)
-        meta = data.get("external_brewing_tool_meta", {})
-        ex_details = None
-        if meta:
-            ex_details = meta.get("details", {})
-
+        
         if not skip_meta_refresh:
             force_refresh = request.args.get("force_refresh", "false").lower() in ["true", "yes", "", "1"]
 
@@ -41,7 +38,11 @@ class BeerResourceMixin(ResourceMixinBase):
             if tool_type:
                 refresh_data=False
                 refresh_reason="UNKNOWN"
-                
+                meta = data.get("external_brewing_tool_meta", {})
+                ex_details = None
+                if meta:
+                    ex_details = meta.get("details", {})
+
                 if not ex_details:
                     refresh_data = True
                     refresh_reason = "No cached details exist in DB."
@@ -62,13 +63,6 @@ class BeerResourceMixin(ResourceMixinBase):
                     else:
                         G_LOGGER.warning("There and error or no details from %s for %s", tool_type, {k:v for k,v in meta.items() if k != "details"})
 
-        if ex_details:
-            for k,v in ex_details.items():
-                if k.startswith("_"):
-                    continue
-                if not data.get(k):
-                    data[k] = v
-
         return ResourceMixinBase.transform_response(data, **kwargs)
 
 class Beers(BaseResource, BeerResourceMixin):
@@ -81,6 +75,7 @@ class Beers(BaseResource, BeerResourceMixin):
                 beers = BeersDB.query(db_session)
             return [self.transform_response(b) for b in beers]
     
+    @login_required
     def post(self):
         with session_scope(self.config) as db_session:
             data = self.get_request_data()
@@ -92,25 +87,16 @@ class Beers(BaseResource, BeerResourceMixin):
 
 
 class Beer(BaseResource, BeerResourceMixin):
-    def get(self, beer_id, location=None):
+    def get(self, beer_id):
         with session_scope(self.config) as db_session:
-            beer = None
-            if location:
-                query = {
-                    beers_pk: beer_id, 
-                    "location_id": self.get_location_id(location, db_session)
-                }
-                resp = BeersDB.query(db_session, **query)
-                if resp:
-                    beer = resp[0]
-            else:    
-                beer = BeersDB.get_by_pkey(db_session, beer_id)
+            beer = BeersDB.get_by_pkey(db_session, beer_id)
 
             if not beer:
                 raise NotFoundError()
                 
             return self.transform_response(beer)
-
+    
+    @login_required
     def patch(self, beer_id):
         with session_scope(self.config) as db_session:
             data = request.get_json()
@@ -122,4 +108,15 @@ class Beer(BaseResource, BeerResourceMixin):
             beer = BeersDB.get_by_pkey(db_session, beer_id)
 
             return self.transform_response(beer)
+
+    @login_required
+    def delete(self, beer_id):
+        with session_scope(self.config) as db_session:
+            beer = BeersDB.get_by_pkey(db_session, beer_id)
+
+            if not beer:
+                raise NotFoundError()
+
+            BeersDB.delete(db_session, beer_id) 
+            return True
         

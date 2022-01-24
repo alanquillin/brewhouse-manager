@@ -114,9 +114,24 @@ export class DataService {
     return this.http.get<Beer[]>(url).pipe(catchError(this.getError));
   }
 
+  createBeer(data: any): Observable<Beer[]> {
+    const url = `${this.baseUrl}/beers`;
+    return this.http.post<Beer[]>(url, data).pipe(catchError(this.getError));
+  }
+
   getBeer(beerId: string): Observable<Beer> {
     const url = `${this.baseUrl}/beers/${beerId}`;
     return this.http.get<Beer>(url).pipe(catchError(this.getError));
+  }
+
+  deleteBeer(beerId: string): Observable<any> {
+    const url = `${this.baseUrl}/beers/${beerId}`;
+    return this.http.delete<any>(url).pipe(catchError(this.getError));
+  }
+
+  updateBeer(beerId: string, data: any): Observable<Beer> {
+    const url = `${this.baseUrl}/beers/${beerId}`;
+    return this.http.patch<Beer>(url, data).pipe(catchError(this.getError));
   }
 
   getSensors(locationId?: string): Observable<Sensor[]> {

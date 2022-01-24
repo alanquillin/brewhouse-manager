@@ -74,8 +74,9 @@ export class LocationComponent implements OnInit {
       tap.isLoading = true
       if(tap.tapType === "beer"){
         this.dataService.getBeer(tap.beerId).subscribe((beer: Beer) => {
-          console.log(beer);
-          tap.beer = beer;
+          const _beer = new Beer()
+          Object.assign(_beer, beer);
+          tap.beer = _beer;
           tap.isLoading = false;
         })
       }

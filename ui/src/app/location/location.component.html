@@ -30,13 +30,13 @@
                         <img src="assets/img/generic_beer.png" class="srm-{{getSrm(tap.beer)}}" />
                     </div>
                     <div class=tap-details>
-                        <p class="title">{{ tap.beer.name }}</p>
-                        <p>Style: {{ tap.beer.style }}</p>
-                        <p>{{ tap.beer.abv }}% alc./vol.</p>
-                        <p>IBU: {{ tap.beer.ibu }}</p>
+                        <p class="title">{{ tap.beer.getName() }}</p>
+                        <p>Style: {{ tap.beer.getStyle() }}</p>
+                        <p>{{ tap.beer.getAbv() }}% alc./vol.</p>
+                        <p>IBU: {{ tap.beer.getIbu() }}</p>
                     </div>
-                    <div class="tap-logo" *ngIf="!_.isNil(tap.beer) && !_.isEmpty(tap.beer.imgUrl)">
-                        <img src="{{tap.beer.imgUrl}}" />
+                    <div class="tap-logo" *ngIf="!_.isNil(tap.beer) && !_.isEmpty(tap.beer.getImgUrl())">
+                        <img src="{{tap.beer.getImgUrl()}}" />
                     </div>
                 </div>
             </mat-card-content>

@@ -9,6 +9,7 @@ import { ManageLocationsComponent } from './manage/locations/locations.component
 import { ProfileComponent } from './profile/profile.component';
 import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
+import { ManageBeerComponent } from './manage/beer/beer.component';
 
 const routes: Routes = [
   {
@@ -42,6 +43,10 @@ const routes: Routes = [
   {
     path: 'manage/taps',
     component: ManageTapsComponent
+  },
+  {
+    path: 'manage/beers',
+    component: ManageBeerComponent
   },
 ];
 
