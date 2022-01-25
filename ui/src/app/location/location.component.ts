@@ -115,7 +115,8 @@ export class LocationComponent implements OnInit {
     if(_.isNil(beer)){
       return "1";
     }
-    return beer.srm > 40 ? "40plus" : _.toString(_.round(beer.srm))
+    const srm = beer.getSrm();
+    return srm > 40 ? "40plus" : _.toString(_.round(srm))
   }
 
   ngOnInit() {  
