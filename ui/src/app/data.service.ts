@@ -114,9 +114,9 @@ export class DataService {
     return this.http.get<Beer[]>(url).pipe(catchError(this.getError));
   }
 
-  createBeer(data: any): Observable<Beer[]> {
+  createBeer(data: any): Observable<Beer> {
     const url = `${this.baseUrl}/beers`;
-    return this.http.post<Beer[]>(url, data).pipe(catchError(this.getError));
+    return this.http.post<Beer>(url, data).pipe(catchError(this.getError));
   }
 
   getBeer(beerId: string): Observable<Beer> {

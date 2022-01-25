@@ -3,9 +3,12 @@ import { DataService } from '../../data.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
-import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
+import { FormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, FormGroup } from '@angular/forms';
 
 import { Beer, DataError, Location } from '../../models/models';
+import { toUnixTimestamp } from '../..//utils/datetime';
+import { isNilOrEmpty } from '../..//utils/helpers';
+
 
 import * as _ from 'lodash';
 
@@ -23,21 +26,64 @@ export class ManageBeerComponent implements OnInit {
   adding = false;
   editing = false;
   modifyBeer: Beer = new Beer();
+  isNilOrEmpty: Function = isNilOrEmpty;
   _ = _;
 
-  externalBrewingTool!: string;
-  style!: number;
-  abv!: string;
-  imgUrl!: string;
-  ibu!: number;
-  kegDate!: string;
-  brewDate!: string;
-  srm!: number;
+  transformFns = {
+    abv: _.toNumber,
+    ibu: _.toNumber,
+    srm: _.toNumber,
+    externalBrewingToolMeta: _.cloneDeep,
+    brewDate: toUnixTimestamp,
+    kegDate: toUnixTimestamp
+  }
+
+  externalBrewingTools: string[] = ["brewfather"]
+
+  decimalRegex = /^-?\d*[.]?\d{0,2}$/;
+  decimalValidator = Validators.pattern(this.decimalRegex); 
+
+  requiredIfNoBrewTool(comp: ManageBeerComponent): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null  => {
+      var brewTool = _.get(comp.modifyBeer.editValues, "externalBrewingTool")
+      if(!_.isEmpty(brewTool) && brewTool !== "-1"){
+        return null;
+      }
+      
+      if(isNilOrEmpty(control.value)) {
+        return { requiredIfNoToolSelected: true };
+      }
+
+      return null;
+    }
+  }
+  
+  requiredForBrewingTool(comp: ManageBeerComponent, tool: string): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      var brewTool = _.get(comp.modifyBeer.editValues, "externalBrewingTool")
+      if(_.isEmpty(brewTool) || brewTool === "-1"){
+        return null;
+      }
+      
+      if(brewTool === tool && (_.isNil(control.value) || _.isEmpty(control.value))){
+        return { requiredForBrewTool: true };
+      }
+
+      return null;
+    }
+  }
 
   modifyFormGroup: FormGroup = new FormGroup({
-    // name: new FormControl('', [Validators.required]),
-    // locationId: new FormControl('', [Validators.required]),
-    // metaAuthToken: new FormControl('', [Validators.required])
+    name: new FormControl('', [this.requiredIfNoBrewTool(this)]),
+    description: new FormControl('', [this.requiredIfNoBrewTool(this)]),
+    style: new FormControl('', [this.requiredIfNoBrewTool(this)]),
+    abv: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
+    srm: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
+    ibu: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
+    externalBrewingTool: new FormControl(-1),
+    brewDate: new FormControl(new Date(), [this.requiredIfNoBrewTool(this)]),
+    kegDate: new FormControl(new Date(), [this.requiredIfNoBrewTool(this)]),
+    brewfatherBatchId: new FormControl('', [this.requiredForBrewingTool(this, "brewfather")])
   });
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
@@ -93,31 +139,33 @@ export class ManageBeerComponent implements OnInit {
   }
 
   create(): void {
-    console.log(this.modifyBeer);
+    var data: any = {}
+    const name = _.get(this.modifyBeer.editValues, "name");
+    console.log(this.modifyBeer.editValues)
+    const keys = ['name', 'description', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl', 'externalBrewingToolMeta']
+    
+    _.forEach(keys, (k) => {
+      var val: any = _.get(this.modifyBeer.editValues, k);
+      if(isNilOrEmpty(val)){
+        return;
+      }
+      const transformFn = _.get(this.transformFns, k);
+      if(!_.isNil(transformFn)){
+        val = transformFn(val);
+      }
+      data[k] = val;
+    })
+    
     this.processing = true;
-    var data: any = {
-      name: this.modifyBeer.editValues.name,
-  // description!: string;
-  // externalBrewingTool!: string;
-  // externalBrewingToolMeta!: Object;
-  // style!: number;
-  // abv!: string;
-  // imgUrl!: string;
-  // ibu!: number;
-  // kegDate!: string;
-  // brewDate!: string;
-  // srm!: number;
-    }
-    console.log(data)
-    // this.dataService.createBeer(data).subscribe({
-    //   next: (beer: Beer) => {
-    //     this.refresh(() => {this.processing = false;}, () => {this.adding = false;});
-    //   },
-    //   error: (err: DataError) => {
-    //     this.displayError(err.message);
-    //     this.processing = false;
-    //   }
-    // })
+    this.dataService.createBeer(data).subscribe({
+      next: (beer: Beer) => {
+        this.refresh(() => {this.processing = false;}, () => {this.adding = false;});
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    });
   }
 
   cancelAdd(): void {
@@ -126,6 +174,7 @@ export class ManageBeerComponent implements OnInit {
 
   edit(beer: Beer): void {
     beer.enableEditing();
+    console.log(beer);
     this.modifyBeer = beer;
     this.editing = true;
     this.modifyFormGroup.reset();
@@ -188,20 +237,29 @@ export class ManageBeerComponent implements OnInit {
     this.filteredBeers = filteredData;
   }
 
+  brewToolChanges(event?: any) {
+    this.addMissingMeta();
+    this.reRunValidation();
+  }
+
   addMissingMeta() {
-    // switch(this.modifySensor.editValues.sensorType) {
-    //   case "plaato-keg":
-    //     if(!_.has(this.modifySensor.editValues.meta, "authToken")){
-    //       console.log("adding missing metadata");
-    //       console.log(this.modifySensor.editValues.meta)
-    //       _.set(this.modifySensor.editValues, 'meta.authToken', '');
-    //       console.log(this.modifySensor);
-    //     }
-    //     break
-    // }
+    switch(this.modifyBeer.editValues.externalBrewingTool) {
+      case "brewfather":
+        if(!_.has(this.modifyBeer.editValues.externalBrewingToolMeta, "batchId")){
+          _.set(this.modifyBeer.editValues, 'externalBrewingToolMeta.batchId', '');
+        }
+        break
+    }
   }
 
   get modifyForm(): { [key: string]: AbstractControl } {
     return this.modifyFormGroup.controls;
   } 
+
+  reRunValidation(): void {
+    _.forEach(this.modifyForm, (ctrl) => {
+      ctrl.updateValueAndValidity();
+    });
+  }
+
 }

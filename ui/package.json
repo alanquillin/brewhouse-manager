@@ -19,6 +19,7 @@
     "@angular/core": "~13.1.0",
     "@angular/flex-layout": "~13.0.0-beta.36",
     "@angular/forms": "~13.1.0",
+    "@angular/localize": "~13.1.0",
     "@angular/material": "^13.1.0",
     "@angular/material-moment-adapter": "^13.1.0",
     "@angular/platform-browser": "~13.1.0",
@@ -31,7 +32,9 @@
     "lodash": "~4.17.21",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.11.4"
+    "zone.js": "~0.11.4",
+    "bootstrap": "~4.6.1",
+    "@ng-bootstrap/ng-bootstrap": "~11.0.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~13.1.3",

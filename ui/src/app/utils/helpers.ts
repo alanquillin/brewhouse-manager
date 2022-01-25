@@ -1,3 +1,5 @@
+import * as _ from "lodash";
+
 export function deepEqual(object1: any, object2: any): boolean {
     const keys1 = Object.keys(object1);
     const keys2 = Object.keys(object2);
@@ -20,4 +22,20 @@ export function deepEqual(object1: any, object2: any): boolean {
 
   export function isObject(object: any): boolean {
     return object != null && typeof object === 'object';
+  }
+
+  export function isNilOrEmpty(val: any): boolean {
+    if (_.isNil(val)){
+      return true;
+    }
+
+    if (_.isDate(val) || _.isBoolean(val)){
+      return false;
+    }
+
+    if(_.isNumber(val)) {
+      return _.isNaN(val);
+    }
+
+    return _.isEmpty(val);
   }

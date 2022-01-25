@@ -31,8 +31,12 @@ import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSortModule } from '@angular/material/sort'; 
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 import { GaugeModule } from 'angular-gauge';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap'
 
 import { LocationComponent } from './location/location.component';
 import { LocationSelectorComponent } from './location-selector/location-selector.component';
@@ -70,11 +74,13 @@ import { ManageBeerComponent } from './manage/beer/beer.component';
     MatButtonToggleModule,
     MatCardModule,
     MatChipsModule,
+    MatDatepickerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
     MatListModule,
     MatMenuModule,
+    MatNativeDateModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
     MatSelectModule,
@@ -85,7 +91,8 @@ import { ManageBeerComponent } from './manage/beer/beer.component';
     MatTableModule,
     MatToolbarModule,
     MatTooltipModule,
-    ReactiveFormsModule
+    NgbPopoverModule,
+    ReactiveFormsModule,
   ],
   providers: [HttpClient],
   bootstrap: [AppComponent]

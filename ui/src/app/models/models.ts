@@ -5,6 +5,9 @@
 
 import * as _ from 'lodash';
 import { deepEqual, isObject } from '../utils/helpers';
+import { fromJsTimestamp, formatDate, fromUnixTimestamp } from '../utils/datetime';
+
+import { isNilOrEmpty } from '../utils/helpers'
 
 export class DataError extends Error {
   statusCode!: number;
@@ -105,7 +108,7 @@ export class Beer extends EditableBase {
   description!: string;
   name!: string;
   externalBrewingTool!: string;
-  externalBrewingToolMeta!: Object;
+  externalBrewingToolMeta!: any;
   style!: number;
   abv!: string;
   imgUrl!: string;
@@ -116,15 +119,23 @@ export class Beer extends EditableBase {
 
   constructor() {
     super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm"]);
+    this.externalBrewingToolMeta = {}
   }
 
-  #getVal(key: string): any{
+  #getVal(key: string, transformFn?: Function, brewToolTransformFn?: any): any{
     var v = _.get(this, key)
-    if(_.isNil(v) || _.isEmpty(v)) {
+    if(isNilOrEmpty(v)) {
       if(!_.isEmpty(this.externalBrewingTool) && !_.isEmpty(this.externalBrewingToolMeta)) {
         if(this.externalBrewingTool === "brewfather") {
           v = _.get(this.externalBrewingToolMeta, `details.${key}`);
         }
+        if(!_.isNil(v) && _.has(brewToolTransformFn, this.externalBrewingTool)) {
+          v = brewToolTransformFn[this.externalBrewingTool](v);
+        }
+      }
+    } else {
+      if (!_.isNil(transformFn)) {
+        v = transformFn(v);
       }
     }
 
@@ -155,11 +166,11 @@ export class Beer extends EditableBase {
   }
 
   getKegDate() {
-    return this.#getVal("kegDate");
+    return this.#getVal("kegDate", (v: any) => {return formatDate(fromUnixTimestamp(v));}, {"brewfather": (v: any) => {return formatDate(fromJsTimestamp(v));}});
   }
   
   getBrewDate() {
-    return this.#getVal("brewDate");
+    return this.#getVal("brewDate", (v: any) => {return formatDate(fromUnixTimestamp(v));}, {"brewfather": (v: any) => {return formatDate(fromJsTimestamp(v));}});
   }
 
   getSrm() {

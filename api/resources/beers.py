@@ -1,3 +1,4 @@
+from datetime import datetime, date
 import logging
 
 from flask import request
@@ -63,7 +64,22 @@ class BeerResourceMixin(ResourceMixinBase):
                     else:
                         G_LOGGER.warning("There and error or no details from %s for %s", tool_type, {k:v for k,v in meta.items() if k != "details"})
 
+        for k in ["brew_date", "keg_date"]:
+            d = data.get(k)
+            if k in data and isinstance(d, date):
+                data[k] = datetime.timestamp(datetime.fromordinal(d.toordinal()))
+
         return ResourceMixinBase.transform_response(data, **kwargs)
+    
+    @staticmethod
+    def get_request_data(remove_key=[]):
+        data = ResourceMixinBase.get_request_data(remove_key=remove_key)
+
+        for k in ["brew_date", "keg_date"]:
+            if k in data and data.get(k):
+                data[k] = datetime.fromtimestamp(data.get(k))
+        
+        return data
 
 class Beers(BaseResource, BeerResourceMixin):
     def get(self, location=None):
@@ -99,13 +115,18 @@ class Beer(BaseResource, BeerResourceMixin):
     @login_required
     def patch(self, beer_id):
         with session_scope(self.config) as db_session:
-            data = request.get_json()
-            
-            if data.get("id"):
-                data.pop("id")
-
-            self.update(beer_id, data, db_session=db_session)
             beer = BeersDB.get_by_pkey(db_session, beer_id)
+
+            if not beer:
+                raise NotFoundError()
+
+            data = self.get_request_data(remove_key=["id"])
+
+            external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
+            if external_brewing_tool_meta and beer.external_brewing_tool_meta:
+                data["external_brewing_tool_meta"] = {**beer.external_brewing_tool_meta} | external_brewing_tool_meta
+
+            beer = self.update(beer_id, data, db_session=db_session)
 
             return self.transform_response(beer)
 
