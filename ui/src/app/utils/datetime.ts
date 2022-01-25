@@ -5,11 +5,7 @@ export function formatDate(d: Date): string | undefined {
         return d;
     }
 
-  var year = d.getFullYear();
-  var month = d.getMonth();
-  var day = d.getDay()
-
-  return `${month}/${day}/${year}`;
+  return d.toLocaleDateString();
 }
 
 

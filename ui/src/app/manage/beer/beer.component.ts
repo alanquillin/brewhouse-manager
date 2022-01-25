@@ -5,8 +5,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { FormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, FormGroup } from '@angular/forms';
 
-import { Beer, DataError, Location } from '../../models/models';
-import { toUnixTimestamp } from '../..//utils/datetime';
+import { Beer, DataError, Location, beerTransformFns } from '../../models/models';
+import { fromUnixTimestamp, toUnixTimestamp } from '../..//utils/datetime';
 import { isNilOrEmpty } from '../..//utils/helpers';
 
 
@@ -29,14 +29,7 @@ export class ManageBeerComponent implements OnInit {
   isNilOrEmpty: Function = isNilOrEmpty;
   _ = _;
 
-  transformFns = {
-    abv: _.toNumber,
-    ibu: _.toNumber,
-    srm: _.toNumber,
-    externalBrewingToolMeta: _.cloneDeep,
-    brewDate: toUnixTimestamp,
-    kegDate: toUnixTimestamp
-  }
+  transformFns = beerTransformFns;
 
   externalBrewingTools: string[] = ["brewfather"]
 
@@ -141,11 +134,13 @@ export class ManageBeerComponent implements OnInit {
   create(): void {
     var data: any = {}
     const name = _.get(this.modifyBeer.editValues, "name");
-    console.log(this.modifyBeer.editValues)
     const keys = ['name', 'description', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl', 'externalBrewingToolMeta']
+    const checkKeys = {"brewDate": "brewDateObj", "kegDate": "kegDateObj"}
     
     _.forEach(keys, (k) => {
-      var val: any = _.get(this.modifyBeer.editValues, k);
+      const checkKey = _.get(checkKeys, k, k);
+
+      var val: any = _.get(this.modifyBeer.editValues, checkKey);
       if(isNilOrEmpty(val)){
         return;
       }
@@ -155,6 +150,19 @@ export class ManageBeerComponent implements OnInit {
       }
       data[k] = val;
     })
+
+    if(_.has(data, "externalBrewingTool")){
+      const tool = data["externalBrewingTool"];
+      if(isNilOrEmpty(tool)) {
+        delete data["externalBrewingTool"];
+      }
+    }
+
+    if (_.has(data, "externalBrewingToolMeta")) {
+      if(isNilOrEmpty(_.get(data, "externalBrewingTool"))) {
+        delete data["externalBrewingToolMeta"];
+      }
+    }
     
     this.processing = true;
     this.dataService.createBeer(data).subscribe({
@@ -174,27 +182,26 @@ export class ManageBeerComponent implements OnInit {
 
   edit(beer: Beer): void {
     beer.enableEditing();
-    console.log(beer);
     this.modifyBeer = beer;
     this.editing = true;
     this.modifyFormGroup.reset();
+    this.reRunValidation();
   }
 
-  save(): void {
-    console.log(this.modifyBeer.editValues);
+  save(): void {  
     this.processing = true;
-    // this.dataService.updateBeer(this.modifyBeer.id, this.modifyBeer.changes).subscribe({
-    //   next: (beer: Beer) => {
-    //     this.modifyBeer.disableEditing();
-    //     this.refresh(()=> {this.processing = false;}, () => {
-    //       this.editing = false;
-    //     })
-    //   },
-    //   error: (err: DataError) => {
-    //     this.displayError(err.message);
-    //     this.processing = false;
-    //   }
-    // })
+    this.dataService.updateBeer(this.modifyBeer.id, this.changes).subscribe({
+      next: (beer: Beer) => {
+        this.modifyBeer.disableEditing();
+        this.refresh(()=> {this.processing = false;}, () => {
+          this.editing = false;
+        })
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    })
   }
 
   cancelEdit(): void {
@@ -262,4 +269,40 @@ export class ManageBeerComponent implements OnInit {
     });
   }
 
+  get hasChanges(): boolean {
+    if(!this.modifyBeer.hasChanges) {
+      return false;
+    }
+
+    return !_.isEmpty(this.changes)
+  }
+
+  get changes(): any {
+    var changes = _.cloneDeep(this.modifyBeer.changes);
+
+    if (_.get(changes, "externalBrewingTool") === "-1") {
+      changes["externalBrewingTool"] = null;
+      changes["externalBrewingToolMeta"] = null;
+    } else {
+      if (_.has(changes, "externalBrewingToolMeta")) {
+        if(isNilOrEmpty(_.get(this.modifyBeer, "externalBrewingTool"))) {
+          delete changes["externalBrewingToolMeta"];
+        }
+      }
+    }
+
+    if(_.has(_.get(changes, "externalBrewingToolMeta", {}), "details")) {
+      delete changes["externalBrewingToolMeta"]["details"]
+    }
+
+    const keys = ['name', 'description', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl']
+    _.forEach(keys, (k) => {
+      if(_.has(changes, k)) {
+        if(isNilOrEmpty(changes[k])) {
+          changes[k] = null;
+        }
+      }
+    });
+    return changes;
+  }
 }

@@ -5,9 +5,19 @@
 
 import * as _ from 'lodash';
 import { deepEqual, isObject } from '../utils/helpers';
-import { fromJsTimestamp, formatDate, fromUnixTimestamp } from '../utils/datetime';
+import { fromJsTimestamp, formatDate, fromUnixTimestamp, toUnixTimestamp } from '../utils/datetime';
 
 import { isNilOrEmpty } from '../utils/helpers'
+
+export const beerTransformFns = {
+  abv: (v: any) => {return isNilOrEmpty(v) ? undefined : _.toNumber(v)},
+  ibu: (v: any) => {return isNilOrEmpty(v) ? undefined : _.toNumber(v)},
+  srm: (v: any) => {return isNilOrEmpty(v) ? undefined : _.toNumber(v)},
+  externalBrewingToolMeta: (v: any) => {return _.isNil(v) ? v : _.cloneDeep(v)},
+  externalBrewingTool: (v: any) => {return isNilOrEmpty(v) || v === "-1" ? undefined : v},
+  brewDate: (v: any) => {return isNilOrEmpty(v) ? undefined : _.isDate(v) ? toUnixTimestamp(v) : _.toNumber(v);},
+  kegDate: (v: any) => {return isNilOrEmpty(v) ? undefined : _.isDate(v) ? toUnixTimestamp(v) : _.toNumber(v);}
+}
 
 export class DataError extends Error {
   statusCode!: number;
@@ -32,47 +42,57 @@ export class EditableBase {
   isEditing: boolean;
   editValues: any;
   #fields: string[];
+  #transformFns: any;
 
-  constructor(fields: string[]) {
-      this.isEditing = false;
-      this.editValues = {}
-      this.#fields = fields;
+  constructor(fields: string[], transformFns?: any) {
+    this.#transformFns = isNilOrEmpty(transformFns) ? {} : transformFns;
+    this.isEditing = false;
+    this.editValues = {}
+    this.#fields = fields;
+  }
+
+  cloneValuesForEditing() {
+    this.editValues = _.cloneDeep(this);
   }
 
   enableEditing(): void{
-      this.isEditing = true;
-      this.editValues = _.cloneDeep(this);
+    this.isEditing = true;
+    this.cloneValuesForEditing();
   }
 
   disableEditing(): void {
-      this.isEditing = false;
-      this.editValues = {};
+    this.isEditing = false;
+    this.editValues = {};
   }
 
   get changes(): any {
-      var dataChanges: any = {}
+    var dataChanges: any = {}
 
-      if(this.isEditing) {
-          _.forEach(this.#fields, (key) => {
-            const v1 = _.get(this, key);
-            const v2 = this.editValues[key];
-            if (isObject(v1) && isObject(v2)) {
-              if (!deepEqual(v1, v2)) {
-                dataChanges[key] = this.editValues[key]
-              }
-            } else {
-              if(v1 !== v2){
-                dataChanges[key] = this.editValues[key]
-              }
-            }
-          });
-      }
+    if(this.isEditing) {
+      _.forEach(this.#fields, (key) => {
+        const v1 = _.get(this, key);
+        var v2 = _.get(this.editValues, key);
+        const transformFn = _.get(this.#transformFns, key)
+        if (!_.isNil(transformFn)) {
+          v2 = transformFn(v2);
+        }
+        if (isObject(v1) && isObject(v2)) {
+          if (!deepEqual(v1, v2)) {
+            dataChanges[key] = this.editValues[key]
+          }
+        } else {
+          if(v1 !== v2 && !(isNilOrEmpty(v1) && isNilOrEmpty(v2))) {
+            dataChanges[key] = this.editValues[key]
+          }
+        }
+      });
+    }
 
-      return dataChanges;
+    return dataChanges;
   }
 
   get hasChanges(): boolean {
-      return !this.isEditing ? false : !_.isEmpty(this.changes);
+    return !this.isEditing ? false : !_.isEmpty(this.changes);
   }
 }
 
@@ -113,12 +133,12 @@ export class Beer extends EditableBase {
   abv!: string;
   imgUrl!: string;
   ibu!: number;
-  kegDate!: string;
-  brewDate!: string;
+  kegDate!: number;
+  brewDate!: number;
   srm!: number;
 
   constructor() {
-    super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm"]);
+    super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm"], beerTransformFns);
     this.externalBrewingToolMeta = {}
   }
 
@@ -140,6 +160,21 @@ export class Beer extends EditableBase {
     }
 
     return v;
+  }
+
+  override cloneValuesForEditing() {
+    super.cloneValuesForEditing();
+    this.editValues["brewDateObj"] = isNilOrEmpty(this.brewDate) ? undefined : fromUnixTimestamp(this.brewDate)
+    this.editValues["kegDateObj"] = isNilOrEmpty(this.kegDate) ? undefined : fromUnixTimestamp(this.kegDate)
+  }
+
+  override get changes() {
+    this.editValues["brewDate"] = isNilOrEmpty(this.editValues["brewDateObj"]) ? undefined : toUnixTimestamp(this.editValues["brewDateObj"]);
+    this.editValues["kegDate"] = isNilOrEmpty(this.editValues["kegDateObj"]) ? undefined : toUnixTimestamp(this.editValues["kegDateObj"]);
+        
+    var changes = super.changes;
+
+    return changes;
   }
 
   getName() {

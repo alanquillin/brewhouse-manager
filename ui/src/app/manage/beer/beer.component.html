@@ -206,7 +206,7 @@
 
                     <mat-form-field appearance="fill">
                         <mat-label>Brew Date</mat-label>
-                        <input matInput [matDatepicker]="brewDatePicker" formControlName="brewDate" [(ngModel)]="modifyBeer.editValues.brewDate">
+                        <input matInput [matDatepicker]="brewDatePicker" formControlName="brewDate" [(ngModel)]="modifyBeer.editValues.brewDateObj">
                         <mat-datepicker-toggle matSuffix [for]="brewDatePicker"></mat-datepicker-toggle>
                         <mat-datepicker #brewDatePicker></mat-datepicker>
                         <mat-error *ngIf="modifyForm['brewDate'].errors && modifyForm['brewDate'].errors['requiredIfNoToolSelected']">
@@ -216,7 +216,7 @@
                     
                     <mat-form-field appearance="fill">
                         <mat-label>Keg Date</mat-label>
-                        <input matInput [matDatepicker]="kegDatePicker" formControlName="kegDate" [(ngModel)]="modifyBeer.editValues.kegDate">
+                        <input matInput [matDatepicker]="kegDatePicker" formControlName="kegDate" [(ngModel)]="modifyBeer.editValues.kegDateObj">
                         <mat-datepicker-toggle matSuffix [for]="kegDatePicker"></mat-datepicker-toggle>
                         <mat-datepicker #kegDatePicker></mat-datepicker>
                         <mat-error *ngIf="modifyForm['kegDate'].errors && modifyForm['kegDate'].errors['requiredIfNoToolSelected']">
@@ -232,7 +232,7 @@
             <button mat-raised-button color="warn" (click)="cancelAdd()"><mat-icon>cancel</mat-icon> Cancel</button>
         </div>
         <div class="modify-actions" *ngIf="editing">
-            <button mat-raised-button color="primary" (click)="save()" [disabled]="!modifyBeer.hasChanges || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
+            <button mat-raised-button color="primary" (click)="save()" [disabled]="!hasChanges || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
             <button mat-raised-button color="warn" (click)="cancelEdit()"><mat-icon>cancel</mat-icon> Cancel</button>
         </div>
     </div>

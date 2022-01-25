@@ -29,8 +29,12 @@ export function deepEqual(object1: any, object2: any): boolean {
       return true;
     }
 
-    if (_.isDate(val) || _.isBoolean(val)){
+    if (_.isBoolean(val)){
       return false;
+    }
+
+    if (_.isDate(val)) {
+      return _.isEqual(new Date(), val);
     }
 
     if(_.isNumber(val)) {
