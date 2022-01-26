@@ -28,14 +28,6 @@ def init(config=None, fmt=DEFAULT_LOG_FMT):
             log_handler.setFormatter(Formatter(fmt=fmt))
     basicConfig(level=log_level, format=fmt)
 
-    boto_log_level = config.get("boto_log_level", "WARNING")
-
-    if "boto3" not in log_levels:
-        log_levels["boto3"] = boto_log_level
-
-    if "botocore" not in log_levels:
-        log_levels["botocore"] = boto_log_level
-
     for l, level in log_levels.items():
         root_logger.debug("Setting log level for %s to %s", l, level)
         getLogger(l).setLevel(get_log_level(level))

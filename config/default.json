@@ -9,7 +9,7 @@
   "api": {
     "host": "localhost",
     "port": 5000,
-    "schema": "https"
+    "schema": "http"
   },
   "app_id": "brewhouse-manager",
   "auth": {
