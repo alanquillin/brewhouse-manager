@@ -13,4 +13,5 @@ WORKDIR /brewhouse-manager/api
 
 ENTRYPOINT []
 
-CMD poetry run python3 seed-db.py
+CMD poetry run ./migrate.sh upgrade head && \
+    poetry run python3 seed-db.py

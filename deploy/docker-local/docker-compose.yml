@@ -16,8 +16,6 @@ services:
     image: brewhouse-manager:dev
     expose:
       - 5000
-    environment:
-      - CONFIG_PATH=config.json
     env_file:
       - ./docker-local.env
       - ".env"
@@ -50,6 +48,8 @@ services:
     env_file:
       - ./docker-local.env
       - ".env"
+    volumes:
+      - ./my-config.json:/brewhouse-manager/config/config.json
     networks:
       - brewhouse-manager-net
 networks:

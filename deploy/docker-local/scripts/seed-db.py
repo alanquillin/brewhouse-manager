@@ -3,9 +3,8 @@
 import argparse
 import logging
 import os
-from datetime import datetime, timedelta
+import sys
 from time import sleep
-from uuid import uuid4
 
 from lib.config import Config
 from db import (
@@ -216,6 +215,11 @@ if __name__ == "__main__":
     config = Config()
     config.setup(config_files=["default.json"])
 
+    skip_db_seed = config.get("db.seed.skip")
+    if skip_db_seed:
+        logger.info("Skipping DB Seeding")
+        sys.exit()
+
     logger.debug("config: %s", config.data_flat)
     logger.debug("db host: %s", config.get("db.host"))
     logger.debug("db username: %s", config.get("db.username"))
@@ -235,7 +239,6 @@ if __name__ == "__main__":
                 sleep(3)
 
         logger.debug("Creating database schema and seeding with data")
-        Base.metadata.create_all(db_session.get_bind())
 
         seed_db(db_session, locations.Locations, LOCATIONS)
         seed_db(db_session, beers.Beers, BEERS)
