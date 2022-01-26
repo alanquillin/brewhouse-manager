@@ -1,12 +1,14 @@
 // since these will often be python API driven snake_case names
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { environment } from '../environments/environment';
-import { Location, Tap, Beer, Sensor, DataError, UserInfo, Settings } from './models/models';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+import { Location, Tap, Beer, Sensor, DataError, UserInfo, Settings } from './models/models';
+import { WINDOW } from './window.provider';
+
 import * as _ from 'lodash';
 
 const httpOptions = {
@@ -17,23 +19,21 @@ const httpOptions = {
   providedIn: 'root',
 })
 export class DataService {
+  apiBaseUrl: string;
   baseUrl: string;
-  host: string;
 
-  constructor(public http: HttpClient) {
-    // if (!environment.production) {
-    //   const schema = environment.apiSchema;
-    //   const host = environment.apiHost;
-    //   const port = environment.apiPort;
-    //   this.host = `${schema}://${host}:${port}`;
-    //   this.baseUrl = `${this.host}`;
-    // } else {
-    //   this.host = '';
-    //   this.baseUrl = '/api/v1';
-    // }
+  constructor(public http: HttpClient, @Inject(WINDOW) private window: Window) {
+    console.log(this.window.location)
+    const protocol = this.window.location.protocol
+    const hostname = this.window.location.hostname;
+    const port = this.window.location.port
+    this.baseUrl = `${protocol}//${hostname}`;
 
-    this.host = 'https://localhost:5000';
-    this.baseUrl = this.host + '/api/v1';
+    if (!((protocol === 'http:' && port === "80") || (protocol === 'https:' && port === "443"))){
+      this.baseUrl = `${this.baseUrl}:${port}`;
+    }
+
+    this.apiBaseUrl = this.baseUrl + '/api/v1';
   }
 
   getError(error: any){
@@ -49,129 +49,129 @@ export class DataService {
   }
 
   login(email: string, password: string): Observable<any>{
-    const url = `${this.host}/login`;
+    const url = `${this.baseUrl}/login`;
     return this.http.post<any>(url, {email, password}, httpOptions).pipe(catchError(this.getError));
   }
 
   getLocations(): Observable<Location[]> {
-    const url = `${this.baseUrl}/locations`;
+    const url = `${this.apiBaseUrl}/locations`;
     return this.http.get<Location[]>(url).pipe(catchError(this.getError));
   }
 
   getLocation(location: any): Observable<Location> {
-    const url = `${this.baseUrl}/locations/${location}`;
+    const url = `${this.apiBaseUrl}/locations/${location}`;
     return this.http.get<Location>(url).pipe(catchError(this.getError));
   }
 
   createLocation(data: any): Observable<Location> {
-    const url = `${this.baseUrl}/locations`;
+    const url = `${this.apiBaseUrl}/locations`;
     return this.http.post<Location>(url, data).pipe(catchError(this.getError));
   }
 
   deleteLocation(location: string): Observable<any> {
-    const url = `${this.baseUrl}/locations/${location}`;
+    const url = `${this.apiBaseUrl}/locations/${location}`;
     return this.http.delete<any>(url).pipe(catchError(this.getError));
   }
 
   updateLocation(location: string, data: any): Observable<Location> {
-    const url = `${this.baseUrl}/locations/${location}`;
+    const url = `${this.apiBaseUrl}/locations/${location}`;
     return this.http.patch<Location>(url, data).pipe(catchError(this.getError));
   }
 
   getTaps(locationId?: string): Observable<Tap[]> {
     var url: string;
     if(_.isNil(locationId)) {
-      url = `${this.baseUrl}/taps`;
+      url = `${this.apiBaseUrl}/taps`;
     } else {
-      url = `${this.baseUrl}/locations/${locationId}/taps`;
+      url = `${this.apiBaseUrl}/locations/${locationId}/taps`;
     }
 
     return this.http.get<Tap[]>(url).pipe(catchError(this.getError));
   }
 
   getTap(tapId: string): Observable<Tap> {
-    const url = `${this.baseUrl}/taps/${tapId}`;
+    const url = `${this.apiBaseUrl}/taps/${tapId}`;
     return this.http.get<Tap>(url).pipe(catchError(this.getError));
   }
 
   createTap(data: any): Observable<Tap> {
-    const url = `${this.baseUrl}/taps`;
+    const url = `${this.apiBaseUrl}/taps`;
     return this.http.post<Tap>(url, data).pipe(catchError(this.getError));
   }
 
   updateTap(tapId: string, data: any): Observable<Tap> {
-    const url = `${this.baseUrl}/taps/${tapId}`;
+    const url = `${this.apiBaseUrl}/taps/${tapId}`;
     return this.http.patch<Tap>(url, data).pipe(catchError(this.getError));
   }
 
   deleteTap(tapId: string): Observable<any> {
-    const url = `${this.baseUrl}/taps/${tapId}`;
+    const url = `${this.apiBaseUrl}/taps/${tapId}`;
     return this.http.delete<any>(url).pipe(catchError(this.getError));
   }
 
   getBeers(): Observable<Beer[]> {
-    const url = `${this.baseUrl}/beers`;
+    const url = `${this.apiBaseUrl}/beers`;
     return this.http.get<Beer[]>(url).pipe(catchError(this.getError));
   }
 
   createBeer(data: any): Observable<Beer> {
-    const url = `${this.baseUrl}/beers`;
+    const url = `${this.apiBaseUrl}/beers`;
     return this.http.post<Beer>(url, data).pipe(catchError(this.getError));
   }
 
   getBeer(beerId: string): Observable<Beer> {
-    const url = `${this.baseUrl}/beers/${beerId}`;
+    const url = `${this.apiBaseUrl}/beers/${beerId}`;
     return this.http.get<Beer>(url).pipe(catchError(this.getError));
   }
 
   deleteBeer(beerId: string): Observable<any> {
-    const url = `${this.baseUrl}/beers/${beerId}`;
+    const url = `${this.apiBaseUrl}/beers/${beerId}`;
     return this.http.delete<any>(url).pipe(catchError(this.getError));
   }
 
   updateBeer(beerId: string, data: any): Observable<Beer> {
-    const url = `${this.baseUrl}/beers/${beerId}`;
+    const url = `${this.apiBaseUrl}/beers/${beerId}`;
     return this.http.patch<Beer>(url, data).pipe(catchError(this.getError));
   }
 
   getSensors(locationId?: string): Observable<Sensor[]> {
     var url: string;
     if (_.isNil(locationId)) {
-      url = `${this.baseUrl}/sensors`;
+      url = `${this.apiBaseUrl}/sensors`;
     } else {
-      url = `${this.baseUrl}/locations/${locationId}/sensors`;
+      url = `${this.apiBaseUrl}/locations/${locationId}/sensors`;
     }
 
     return this.http.get<Sensor[]>(url).pipe(catchError(this.getError));
   }
 
   getSensor(sensorId: string): Observable<Sensor> {
-    const url = `${this.baseUrl}/sensors/${sensorId}`;
+    const url = `${this.apiBaseUrl}/sensors/${sensorId}`;
     return this.http.get<Sensor>(url).pipe(catchError(this.getError));
   }
 
   createSensor(data: any): Observable<Sensor> {
-    const url = `${this.baseUrl}/sensors`;
+    const url = `${this.apiBaseUrl}/sensors`;
     return this.http.post<Sensor>(url, data).pipe(catchError(this.getError));
   }
 
   updateSensor(sensorId: string, data: any): Observable<Sensor> {
-    const url = `${this.baseUrl}/sensors/${sensorId}`;
+    const url = `${this.apiBaseUrl}/sensors/${sensorId}`;
     return this.http.patch<Sensor>(url, data).pipe(catchError(this.getError));
   }
 
   deleteSensor(sensorId: string): Observable<any> {
-    const url = `${this.baseUrl}/sensors/${sensorId}`;
+    const url = `${this.apiBaseUrl}/sensors/${sensorId}`;
     return this.http.delete<any>(url).pipe(catchError(this.getError));
   }
 
   getSensorType(): Observable<string[]> {
-    const url = `${this.baseUrl}/sensors/types`;
+    const url = `${this.apiBaseUrl}/sensors/types`;
     return this.http.get<string[]>(url).pipe(catchError(this.getError));
   }
 
   getSensorData(sensorId: string, dataType: string): Observable<any> {
-    const url = `${this.baseUrl}/sensors/${sensorId}/${dataType}`;
+    const url = `${this.apiBaseUrl}/sensors/${sensorId}/${dataType}`;
     return this.http.get<any>(url).pipe(catchError(this.getError));
   }
 
@@ -180,17 +180,17 @@ export class DataService {
   }
 
   getCurrentUser(): Observable<UserInfo> {
-    const url = `${this.baseUrl}/admins/current`;
+    const url = `${this.apiBaseUrl}/admins/current`;
     return this.http.get<UserInfo>(url).pipe(catchError(this.getError));
   }
 
   updateAdmin(adminId: string, data: object): Observable<UserInfo> {
-    const url = `${this.baseUrl}/admins/${adminId}`;
+    const url = `${this.apiBaseUrl}/admins/${adminId}`;
     return this.http.patch<UserInfo>(url, data).pipe(catchError(this.getError));
   }
 
   getSettings(): Observable<Settings> {
-    const url = `${this.baseUrl}/settings`;
+    const url = `${this.apiBaseUrl}/settings`;
     return this.http.get<Settings>(url).pipe(catchError(this.getError));
   }
 }

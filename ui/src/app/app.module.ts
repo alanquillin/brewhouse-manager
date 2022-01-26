@@ -48,6 +48,9 @@ import { ProfileComponent } from './profile/profile.component';
 import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
 import { ManageBeerComponent } from './manage/beer/beer.component';
+
+import { WINDOW_PROVIDERS } from './window.provider'
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -94,7 +97,7 @@ import { ManageBeerComponent } from './manage/beer/beer.component';
     NgbPopoverModule,
     ReactiveFormsModule,
   ],
-  providers: [HttpClient],
+  providers: [HttpClient, WINDOW_PROVIDERS],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
