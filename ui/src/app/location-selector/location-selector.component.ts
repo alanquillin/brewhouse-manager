@@ -12,20 +12,21 @@ import { Location } from './../models/models';
 export class LocationSelectorComponent implements OnInit {
   title = 'Location Selector';
 
-  isLoading = false;
+  loading = false;
   locations: Location[] = [];
   constructor(private dataService: DataService, private router: Router) {}
 
   refresh() {
-    this.isLoading = true;
+    this.loading = true;
     this.dataService.getLocations().subscribe((locations: Location[]) => {
       this.locations = locations
       if (locations.length == 0) {
-        this.router.navigate(["manage"]);
+        // redirect via the window to make sure the backend code is hit in case the user is not logged in yet
+        window.location.href = "/manage";
       }else if (locations.length == 1) {
         this.selectLocation(locations[0])
       } else {
-        this.isLoading = false
+        this.loading = false
       }
     })
   }

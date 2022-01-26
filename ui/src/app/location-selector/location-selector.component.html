@@ -2,15 +2,20 @@
 
 </div>
 <div class="content">
-    <p class="h1">Select Location</p>
-    <mat-list role="list">
-        <mat-list-item role="listitem" *ngFor="let location of locations">
-            <button mat-raised-button color="primary" (click)="selectLocation(location)">
-                {{ location.description }}
-            </button>
-        </mat-list-item>
-      </mat-list>      
+    <div *ngIf="loading">
+        <mat-spinner></mat-spinner>
     </div>
+    <div *ngIf="!loading">
+        <p class="h1">Select Location</p>
+        <mat-list role="list">
+            <mat-list-item role="listitem" *ngFor="let location of locations">
+                <button mat-raised-button color="primary" (click)="selectLocation(location)">
+                    {{ location.description }}
+                </button>
+            </mat-list-item>
+        </mat-list>      
+    </div>
+</div>
 <div class="footer"></div>
 
 
