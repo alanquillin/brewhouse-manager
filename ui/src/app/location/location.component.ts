@@ -45,6 +45,7 @@ export class LocationComponent implements OnInit {
               this.taps.push(tapD)
               this.setTapDetails(tapD);
             })
+            this.taps = _.sortBy(this.taps, (t) => {return t.tapNumber});
             this.isLoading = false;
           },
           error: (err: DataError) => {
@@ -58,7 +59,7 @@ export class LocationComponent implements OnInit {
 
         this.displayError(err.message);
       }
-  })
+    });
   }
 
   // refreshTap(tapId: string) {
