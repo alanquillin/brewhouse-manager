@@ -182,8 +182,6 @@ TAPS = [
     }
 ]
 
-ADMINS = []
-
 def seed_db(db_session, db, items, pk="id"):
     for item in items:
         logger.info(item)
@@ -243,14 +241,4 @@ if __name__ == "__main__":
         seed_db(db_session, beers.Beers, BEERS)
         seed_db(db_session, sensors.Sensors, SENSORS)
         seed_db(db_session, taps.Taps, TAPS)
-
-        initial_admin_email = config.get("db.initial_admin.email")
-        initial_admin_password = config.get("db.initial_admin.password")
-        if initial_admin_email:
-            admin = {
-                "email": initial_admin_email
-            }
-            if initial_admin_password:
-                admin["password"] = initial_admin_password
-            seed_db(db_session, admins.Admins, [admin])
             

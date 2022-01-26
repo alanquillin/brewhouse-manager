@@ -23,20 +23,12 @@ PYTEST_ARGS += --disable-warnings --log-level DEBUG
 DOCKER_IMAGE ?= brewhouse-manager
 DOCKER_DB_SEED_IMAGE ?= brewhouse-manager-db-seed
 DOCKER_IMAGE_TAG ?= latest
+DOCKER_IMAGE_TAG_DEV ?= dev
+DOCKER_SOURCE_IMAGE_TAG ?= $(DOCKER_IMAGE_TAG)
 DOCKER := docker
-override DOCKER_BUILD_ARGS += --ssh default
 DOCKER_BUILD := $(DOCKER) build $(DOCKER_BUILD_ARGS)
-
-NODE_CI_TARGETS := lint-ts
-PYTHON_CI_TARGETS := lint-py test-py-cov-html test-sec test-deps
-CI_TARGETS := $(NODE_CI_TARGETS) $(PYTHON_CI_TARGETS)
-
-NODE_DOCKER_CI_TARGETS := $(addsuffix /docker,$(NODE_CI_TARGETS))
-PYTHON_DOCKER_CI_TARGETS := $(addsuffix /docker,$(PYTHON_CI_TARGETS))
-DOCKER_CI_TARGETS := $(NODE_DOCKER_CI_TARGETS) $(PYTHON_DOCKER_CI_TARGETS)
-
-CI_IMAGES := node-ci python-ci
-CI_IMAGE_TARGETS := $(addprefix docker-build/,$(CI_IMAGES))
+IMAGE_REPOSITORY := alanquillin
+REPOSITORY_IMAGE ?= brewhouse-manager
 
 ifneq ("$(wildcard .env)","")
     include .env
@@ -47,15 +39,19 @@ ifeq ("$(wildcard deploy/docker-local/.env)","")
     $(shell touch deploy/docker-local/.env)
 endif
 
+ifeq ("$(wildcard deploy/docker-local/my-config.json)","")
+    $(shell echo '{}' >> deploy/docker-local/my-config.json)
+endif
+
 
 .PHONY: build build-dev docker-build \
 	test ci ci/node ci/python ci/docker \
-	$(CI_IMAGE_TARGETS) \
-	$(CI_TARGETS) $(DOCKER_CI_TARGETS) \
 	format-py test-py test-py-verbose test-py-cov-html \
 	build-db-seed build-db-seed-fetch-tf \
 	depends test-depends \
 	run run-dev clean clean-images clean-all .env
+
+# dependency targets
 
 depends: 
 	$(POETRY_VARS) $(POETRY) install --no-dev --no-root
@@ -66,17 +62,45 @@ test-depends:
 update-depends: test-depends
 	$(POETRY_VARS) $(POETRY) update
 
-update-git-depends:
-	$(POETRY_VARS) $(POETRY) update flask-connect
+# Targets for building containers
 
-build: update-git-depends docker-build
-test: update-git-depends ci
+# prod
+build: update-depends docker-build
 
 docker-build:
 	$(DOCKER_BUILD) -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG) .
 
+# dev
+
 build-dev:
-	$(DOCKER_BUILD) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG) .
+	$(DOCKER_BUILD) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV) .
+
+build-db-seed:
+	$(DOCKER_BUILD) -t $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV) deploy/docker-local
+
+rebuild-db-seed: 
+	$(DOCKER_BUILD) -t $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV) --no-cache deploy/docker-local
+
+# Targets for publishing containers
+
+tag: build
+	$(DOCKER) tag $(DOCKER_IMAGE):$(DOCKER_SOURCE_IMAGE_TAG) $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):$(DOCKER_IMAGE_TAG)
+
+publish: tag
+	$(DOCKER) push $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):$(DOCKER_IMAGE_TAG)
+
+# Targets for running the app
+
+run-dev: build-dev build-db-seed
+	docker-compose --project-directory deploy/docker-local up
+
+run-web-local:
+	pushd ./ui && ng serve --ssl --ssl-key ../deploy/docker-local/certs/localhost.decrypted.key --ssl-cert ../deploy/docker-local/certs/localhost.crt && popd
+
+run-db-migrations:
+	./migrate.sh upgrade head
+
+# Testing and Syntax targets
 
 lint-py:
 	$(ISORT) --check-only api
@@ -89,6 +113,8 @@ lint-ts:
 format-py:
 	$(ISORT) api tests deploy
 	$(BLACK) api tests deploy
+
+test: update-git-depends ci
 
 test-py:
 	CONFIG_PATH=pytest.json CONFIG_BASE_DIR=$(CONFIG_BASE_DIR) \
@@ -103,17 +129,7 @@ test-py-cov-html: test-py
 test-sec:
 	$(BANDIT) -r api --exclude test
 
-build-db-seed:
-	$(DOCKER_BUILD) -t $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG) deploy/docker-local
-
-rebuild-db-seed: 
-	$(DOCKER_BUILD) -t $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG) --no-cache deploy/docker-local
-
-run-dev: build-dev build-db-seed
-	docker-compose --project-directory deploy/docker-local up
-
-run-web-local:
-	pushd ./ui && ng serve --ssl --ssl-key ../deploy/docker-local/certs/localhost.decrypted.key --ssl-cert ../deploy/docker-local/certs/localhost.crt && popd
+# Clean up targets
 
 clean:
 	docker-compose --project-directory deploy/docker-local down --volumes
@@ -127,6 +143,3 @@ clean-seed-image:
 clean-images: clean-image clean-seed-image
 
 clean-all: clean clean-images
-
-run-db-migrations:
-	./migrate.sh upgrade head

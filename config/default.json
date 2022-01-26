@@ -1,23 +1,35 @@
 {
-    "__conversion_schema": {
-      "api.port": "int"
+  "__conversion_schema": {
+    "api.port": "int",
+    "auth.initial_user.set_password": "bool",
+    "auth.oidc.google.enabled": "bool",
+    "external_brew_tools.brewfather.enabled": "bool",
+    "db.port": "int"
+  },
+  "api": {
+    "host": "localhost",
+    "port": 5000,
+    "schema": "https"
+  },
+  "app_id": "brewhouse-manager",
+  "auth": {
+    "initial_user": {
+      "email": "default_admin@acme.fake",
+      "password": "initial_password",
+      "first_name": "INTIAL",
+      "last_name": "ADMIN",
+      "set_password": true
     },
-    "api": {
-      "host": "localhost",
-      "port": 5000,
-      "schema": "https"
-    },
-    "app_id": "brewhouse-manager",
-    "auth": {
-      "oidc": {
-        "google": {
-          "enabled": false,
-          "discovery_url": "https://accounts.google.com/.well-known/openid-configuration"
-        }
+    "oidc": {
+      "google": {
+        "enabled": false,
+        "discovery_url": "https://accounts.google.com/.well-known/openid-configuration"
       }
-    },
-    "brewfather": {
-        "username": "foo",
-        "enabled": true
     }
+  },
+  "external_brew_tools": {
+    "brewfather": {
+        "enabled": false
+    }
+  }
 }

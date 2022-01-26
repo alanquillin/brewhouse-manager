@@ -13,9 +13,11 @@ services:
     depends_on:
       - "web"
   web:
-    image: brewhouse-manager:latest
+    image: brewhouse-manager:dev
     expose:
       - 5000
+    environment:
+      - CONFIG_PATH=config.json
     env_file:
       - ./docker-local.env
       - ".env"
@@ -24,6 +26,8 @@ services:
       - db-data-seed
     networks:
       - brewhouse-manager-net
+    volumes:
+      - ./my-config.json:/brewhouse-manager/config/config.json
     stdin_open: true
     tty: true
   postgres:
@@ -34,11 +38,13 @@ services:
       - 5432:5432
     networks:
       - brewhouse-manager-net
+    volumes:
+      - ./my-config.json:/brewhouse-manager/config/config.json
     env_file:
       - ./docker-local.env
       - ".env"
   db-data-seed:
-    image: brewhouse-manager-db-seed:latest
+    image: brewhouse-manager-db-seed:dev
     depends_on:
       - postgres
     env_file:
