@@ -11,7 +11,7 @@ import json
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 
-from resources import UIBaseResource, BaseResource, ResourceMixinBase, ClientError, NotAuthorized, ClientError
+from resources import BaseResource, ResourceMixinBase, ClientError, NotAuthorized, ClientError, ForbiddenError
 from db import session_scope
 from db.admins import Admins as AdminsDB
 
@@ -51,6 +51,9 @@ class GoogleResourceMixin(ResourceMixinBase):
 
 class GoogleLogin(BaseResource, GoogleResourceMixin):
     def get(self):
+        if not self.config.get("auth.oidc.google.enabled"):
+            raise ForbiddenError(user_msg="Google authentication is disabled")
+
         # Find out what URL to hit for Google login
         google_provider_cfg = self.get_provider_cfg()
         authorization_endpoint = google_provider_cfg["authorization_endpoint"]

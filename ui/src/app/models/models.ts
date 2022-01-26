@@ -235,3 +235,11 @@ export class UserInfo {
   profilePic!: string;
   passwordEnabled!: boolean;
 }
+
+export class Settings {
+  googleSSOEnabled: boolean;
+
+  constructor() {
+    this.googleSSOEnabled = false;
+  }
+}

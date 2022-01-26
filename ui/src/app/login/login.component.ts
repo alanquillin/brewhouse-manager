@@ -4,10 +4,9 @@ import { Router } from '@angular/router';
 import { FormGroup, Validators, FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { DataError } from '../models/models'
+import { DataError, Settings } from '../models/models'
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
-import { CloseScrollStrategy } from '@angular/cdk/overlay';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +15,7 @@ import { CloseScrollStrategy } from '@angular/cdk/overlay';
 })
 export class LoginComponent implements OnInit {
   
+  loading = false;
   loginFormGroup: FormGroup = new FormGroup({
     email: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required])
@@ -24,6 +24,7 @@ export class LoginComponent implements OnInit {
   email!: string;
   password!: string;
   processing: boolean = false;
+  settings: Settings = new Settings();
   
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, private domSanitizer: DomSanitizer, private matIconRegistry: MatIconRegistry) { 
     this.matIconRegistry.addSvgIcon(
@@ -31,7 +32,19 @@ export class LoginComponent implements OnInit {
       this.domSanitizer.bypassSecurityTrustResourceUrl("https://raw.githubusercontent.com/fireflysemantics/logo/master/Google.svg"));
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loading = true;
+    this.dataService.getSettings().subscribe({
+      next: (settings: Settings) => {
+        this.settings = settings;
+        this.loading = false;
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.loading = false;
+      }
+    })
+  }
 
   displayError(errMsg: string) {
     this._snackBar.open("Error: " + errMsg, "Close");

@@ -10,11 +10,12 @@ if __name__ == "__main__":
 
     patch_psycopg()
 
+from datetime import timedelta
 import argparse
 import json as official_json
-import uuid
-from datetime import timedelta
 import os
+import sys
+import uuid
 
 from flask import Flask, make_response, send_from_directory, redirect
 from flask.logging import create_logger
@@ -36,6 +37,7 @@ from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolType
 from resources.locations import Location, Locations
 from resources.pages import ManagemantBeers, ManagemantDashboard, ManagemantLocations, ManagemantSensors, ManagemantTaps, Profile
 from resources.sensors import Sensor, Sensors, SensorData, SensorTypes
+from resources.settings import Settings
 from resources.taps import Tap, Taps
 
 class IgnoringLogAdapter(LoggingLogAdapter):
@@ -114,6 +116,7 @@ api.add_resource(SearchExternalBrewTool, "/api/v1/external_brew_tools/<tool_name
 api.add_resource(Admins, "/api/v1/admins")
 api.add_resource(Admin, "/api/v1/admins/<admin_id>")
 api.add_resource(CurrentUser, "/api/v1/admins/current")
+api.add_resource(Settings, "/api/v1/settings")
 
 # session management APIs
 api.add_resource(GoogleLogin, "/login/google")
@@ -191,6 +194,32 @@ if __name__ == "__main__":
             max_age=3000,
             vary_header=True,
         )
+    
+    with session_scope(app_config) as db_session:
+        admins = AdminsDB.query(db_session)
+
+        if not admins:
+            init_admin_email = app_config.get("auth.initial_user.email")
+            set_init_admin_pass = app_config.get("auth.initial_user.set_password")
+            init_admin_fname = app_config.get("auth.initial_user.first_name")
+            init_admin_lname = app_config.get("auth.initial_user.last_name")
+            google_sso_enabled = app_config.get("auth.oidc.google.enabled")
+
+            if not google_sso_enabled and not set_init_admin_pass:
+                logger.error("Can create an initial user!  auth.initial_user.set_pass and google authentication is disabled!")
+                sys.exit(1)
+                
+            data = {
+                "email": init_admin_email,
+                "first_name": init_admin_fname,
+                "last_name": init_admin_lname
+            }
+            logger.info("No admins exist, creating initial admin: %s", data)
+            if set_init_admin_pass:
+                data["password"] = app_config.get("auth.initial_user.password")
+                logger.warning("Creating initial user with password: %s", data["password"])
+                logger.warning("PLEASE REMEMBER TO LOG IN AND CHANGE IT ASAP!!")
+            AdminsDB.create(db_session, **data)
 
     http_server = WSGIServer(("", port), app, log=IgnoringLogAdapter(app.logger, log_level))
     logger.debug("app.config: %s", app.config)
@@ -201,3 +230,4 @@ if __name__ == "__main__":
         http_server.serve_forever()
     except KeyboardInterrupt:
         logger.info("User interrupted - Goodbye")
+        sys.exit()

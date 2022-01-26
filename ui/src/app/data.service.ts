@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../environments/environment';
-import { Location, Tap, Beer, Sensor, DataError, UserInfo } from './models/models';
+import { Location, Tap, Beer, Sensor, DataError, UserInfo, Settings } from './models/models';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import * as _ from 'lodash';
 
@@ -187,5 +187,10 @@ export class DataService {
   updateAdmin(adminId: string, data: object): Observable<UserInfo> {
     const url = `${this.baseUrl}/admins/${adminId}`;
     return this.http.patch<UserInfo>(url, data).pipe(catchError(this.getError));
+  }
+
+  getSettings(): Observable<Settings> {
+    const url = `${this.baseUrl}/settings`;
+    return this.http.get<Settings>(url).pipe(catchError(this.getError));
   }
 }

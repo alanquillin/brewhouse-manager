@@ -52,7 +52,7 @@
             </fieldset>
         </form>
     </div>
-    <div class="login-socials">
+    <div class="login-socials" *ngIf="settings.googleSSOEnabled">
         <button mat-raised-button class="login-google" (click)="loginWithGoogle()">
             <mat-icon svgIcon="logo"></mat-icon> Login With Google
         </button>
