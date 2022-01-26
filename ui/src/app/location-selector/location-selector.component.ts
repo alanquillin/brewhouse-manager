@@ -20,10 +20,13 @@ export class LocationSelectorComponent implements OnInit {
     this.isLoading = true;
     this.dataService.getLocations().subscribe((locations: Location[]) => {
       this.locations = locations
-      if (locations.length == 1) {
+      if (locations.length == 0) {
+        this.router.navigate(["manage"]);
+      }else if (locations.length == 1) {
         this.selectLocation(locations[0])
+      } else {
+        this.isLoading = false
       }
-      this.isLoading = false
     })
   }
 
