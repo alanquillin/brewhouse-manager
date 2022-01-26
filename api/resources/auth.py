@@ -28,6 +28,9 @@ class User(UserMixin):
 
     @staticmethod
     def from_admin(admin):
+        if not admin:
+            return None
+            
         return User(
             admin.id,
             admin.first_name,
