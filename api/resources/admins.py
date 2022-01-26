@@ -1,7 +1,7 @@
 from flask import request
 from flask_login import login_required, current_user
 
-from resources import BaseResource, ResourceMixinBase, generate_filtered_keys, NotFoundError, ForbiddenError
+from resources import BaseResource, ResourceMixinBase, NotFoundError, ForbiddenError, ClientError
 from db import session_scope
 from db.admins import Admins as AdminsDB
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
@@ -73,6 +73,9 @@ class Admin(BaseResource, AdminResourceMixin):
 
             if not admin:
                 raise NotFoundError()
+
+            if admin_id == current_user.id:
+                raise ClientError("You cannot delete your own user")
 
             self.logger.debug("Deleting admin '%s' (%s)", admin.email, admin_id)
             AdminsDB.delete(db_session, admin_id)
