@@ -2,18 +2,11 @@
     display: flex;
     flex-direction: column;
 
-    .heading {
-        order: 1;
-    }
-
     .location-view-actions {
-        order: 2;
         padding: 0px 0px 12px;
     }
     
     .locations-list {
-        order: 3;
-
         table {
             .mat-header-cell,
             .mat-cell {

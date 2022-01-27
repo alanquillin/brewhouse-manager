@@ -4,12 +4,15 @@
 <div class="content">
     <div class="users-view" *ngIf="!editing && !adding">
         <div class="heading"><p>Edit Users</p></div>
-        <div class="user-view-filters">
+        <div class="taps-list-loading" *ngIf="loading">
+            <mat-spinner></mat-spinner>
+        </div>
+        <div class="user-view-filters" *ngIf="!loading">
             <div class="user-view-actions">
                 <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add User</button>
             </div>
         </div>
-        <div class="users-list">
+        <div class="users-list" *ngIf="!loading">
             <table mat-table matSort [dataSource]="filteredUsers" class="mat-elevation-z8" (matSortChange)="filter($event)">
                 <ng-container matColumnDef="id">
                     <th mat-header-cell *matHeaderCellDef> Id </th>

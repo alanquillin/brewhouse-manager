@@ -15,7 +15,8 @@ import * as _ from 'lodash';
   styleUrls: ['./locations.component.scss']
 })
 export class ManageLocationsComponent implements OnInit {
-
+  
+  loading = false;
   locations: Location[] = [];
   displayedColumns: string[] = ['name', 'description', 'actions'];
   dataSource = new MatTableDataSource<Location>(this.locations)
@@ -72,9 +73,9 @@ export class ManageLocationsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.processing = true;
+    this.loading = true;
     this.refresh(() => {
-      this.processing = false;
+      this.loading = false;
     })
   }
 

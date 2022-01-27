@@ -4,8 +4,11 @@
 <div class="content">
     <div class="taps-view" *ngIf="!editing && !adding">
         <div class="heading"><p>Edit Taps</p></div>
-        <div class="tap-view-filters">
-            <div>
+        <div class="taps-list-loading" *ngIf="loading">
+            <mat-spinner></mat-spinner>
+        </div>
+        <div class="tap-view-filters" *ngIf="!loading">
+            <div *ngIf="locations.length > 1">
                 <mat-form-field appearance="fill">
                     <mat-label>Filter By Location</mat-label>
                     <mat-select [(value)]="selectedLocationFilters" (selectionChange)="filter()" multiple>
@@ -18,9 +21,6 @@
             <div class="tap-view-actions">
                 <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add tap</button>
             </div>
-        </div>
-        <div class="taps-list-loading" *ngIf="loading">
-            <mat-spinner></mat-spinner>
         </div>
         <div class="taps-list" *ngIf="!loading">
             <table mat-table matSort [dataSource]="filteredTaps" class="mat-elevation-z8" (matSortChange)="filter($event)">

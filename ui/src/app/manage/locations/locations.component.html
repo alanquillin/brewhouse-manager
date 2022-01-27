@@ -4,10 +4,13 @@
 <div class="content">
     <div class="locations-view" *ngIf="!adding">
         <div class="heading"><p>Edit Locations</p></div>
-        <div class="location-view-actions">
+        <div class="taps-list-loading" *ngIf="loading">
+            <mat-spinner></mat-spinner>
+        </div>
+        <div class="location-view-actions" *ngIf="!loading">
             <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add Location</button>
         </div>
-        <div class="locations-list">
+        <div class="locations-list" *ngIf="!loading">
             <table mat-table [dataSource]="locations" class="mat-elevation-z8">
                 <ng-container matColumnDef="id">
                     <th mat-header-cell *matHeaderCellDef> Id </th>

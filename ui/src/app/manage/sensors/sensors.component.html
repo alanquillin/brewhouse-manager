@@ -4,8 +4,11 @@
 <div class="content">
     <div class="sensors-view" *ngIf="!editing && !adding">
         <div class="heading"><p>Edit Sensors</p></div>
-        <div class="sensor-view-filters">
-            <div>
+        <div *ngIf="loading">
+            <mat-spinner></mat-spinner>
+        </div>
+        <div class="sensor-view-filters" *ngIf="!loading">
+            <div *ngIf="locations.length > 1">
                 <mat-form-field appearance="fill">
                     <mat-label>Filter By Location</mat-label>
                     <mat-select [(value)]="selectedLocationFilters" (selectionChange)="filter()" multiple>
@@ -19,7 +22,7 @@
                 <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add Sensor</button>
             </div>
         </div>
-        <div class="sensors-list">
+        <div class="sensors-list" *ngIf="!loading">
             <table mat-table matSort [dataSource]="filteredSensors" class="mat-elevation-z8" (matSortChange)="filter($event)">
                 <ng-container matColumnDef="id">
                     <th mat-header-cell *matHeaderCellDef> Id </th>

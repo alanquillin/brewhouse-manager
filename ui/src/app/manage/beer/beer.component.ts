@@ -18,7 +18,7 @@ import * as _ from 'lodash';
   styleUrls: ['./beer.component.scss']
 })
 export class ManageBeerComponent implements OnInit {
-
+  loading = false;
   beers: Beer[] = [];
   filteredBeers: Beer[] = [];
   displayedColumns: string[] = ['name', 'description', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl', 'actions'];
@@ -119,9 +119,9 @@ export class ManageBeerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.processing = true;
+    this.loading = true;
     this.refresh(()=> {
-      this.processing = false;
+      this.loading = false;
     })
   }
 
@@ -234,7 +234,42 @@ export class ManageBeerComponent implements OnInit {
     }
 
     var filteredData: Beer[] = this.beers;
-    _.sortBy(filteredData, [(d: Beer) => { return _.get(d, sortBy); }]);
+    filteredData= _.sortBy(filteredData, [
+      (d: Beer) => { 
+        if (sortBy === "name") {
+          return d.getName();
+        }
+
+        if (sortBy === "description") {
+          return d.getDescription();
+        }
+
+        if (sortBy === "style") {
+          return d.getStyle();
+        }
+
+        if (sortBy === "abv") {
+          return d.getAbv();
+        }
+
+        if (sortBy === "ibu") {
+          return d.getIbu();
+        }
+
+        if (sortBy === "kegDate") {
+          return d.getKegDate();
+        }
+
+        if (sortBy === "brewDate") {
+          return d.getBrewDate();
+        }
+
+        if (sortBy === "srm") {
+          return d.getSrm();
+        }
+        return _.get(d, sortBy); 
+      }]
+    );
     if(!asc){
       _.reverse(filteredData);
     }

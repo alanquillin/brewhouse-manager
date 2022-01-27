@@ -16,6 +16,8 @@ import { isNilOrEmpty } from 'src/app/utils/helpers';
   styleUrls: ['./users.component.scss']
 })
 export class ManageUsersComponent implements OnInit {
+  
+  loading = false;
   me: UserInfo = new UserInfo();
   users: UserInfo[] = [];
   filteredUsers: UserInfo[] = [];
@@ -76,12 +78,12 @@ export class ManageUsersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.processing = true;
+    this.loading = true;
     this.dataService.getCurrentUser().subscribe({
       next: (me: UserInfo) => {
         this.me = me;
         this.refresh(undefined, ()=> {
-          this.processing = false;
+          this.loading = false;
         })
       },
       error: (err: DataError) => {
@@ -181,7 +183,7 @@ export class ManageUsersComponent implements OnInit {
     }
 
     var filteredData: UserInfo[] = this.users;
-    _.sortBy(filteredData, [(d: UserInfo) => { return _.get(d, sortBy)}]);
+    filteredData = _.sortBy(filteredData, [(d: UserInfo) => { return _.get(d, sortBy)}]);
     if(!asc){
       _.reverse(filteredData);
     }

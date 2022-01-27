@@ -8,6 +8,7 @@ import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/fo
 import { Beer, DataError, Location, Tap, Sensor } from '../../models/models';
 
 import * as _ from 'lodash';
+import { isNilOrEmpty } from 'src/app/utils/helpers';
 
 @Component({
   selector: 'app-taps',
@@ -53,6 +54,11 @@ export class ManageTapsComponent implements OnInit {
         _.forEach(taps, (tap) => {
           var _tap = new Tap()
           Object.assign(_tap, tap);
+          if (!isNilOrEmpty(_tap.beer)) {
+            var _beer = new Beer();
+            Object.assign(_beer, _tap.beer);
+            _tap.beer = _beer;
+          }
           this.taps.push(_tap)
         });
         this.filter();
@@ -83,7 +89,12 @@ export class ManageTapsComponent implements OnInit {
         this.locations = _.orderBy(locations, ["name"]);
         this.dataService.getBeers().subscribe({
           next: (beers: Beer[]) => {
-            this.beers = beers;
+            this.beers = []
+            _.forEach(beers, (beer) => { 
+              var _beer = new Beer();
+              Object.assign(_beer, beer);
+              this.beers.push(_beer);
+            });
             this.dataService.getSensors().subscribe({
               next: (sensors: Sensor[]) => {
                 this.sensors = sensors;
@@ -233,8 +244,8 @@ export class ManageTapsComponent implements OnInit {
     if(!_.isEmpty(this.selectedLocationFilters)){
       filteredData = <Tap[]>_.filter(this.taps, (s) => { return this.selectedLocationFilters.includes(s.locationId) });
     }
-    filteredData = _.orderBy(filteredData, [sortBy], [asc])
-    _.sortBy(filteredData, [(d: Tap) => {
+  
+    filteredData = _.sortBy(filteredData, [(d: Tap) => {
         if(sortBy === "location"){
           return _.isNil(d.location) ? "" : d.location.name
         }
@@ -242,9 +253,9 @@ export class ManageTapsComponent implements OnInit {
           return _.isNil(d.sensor) ? "" : d.sensor.name
         }
         if(sortBy === "beer"){
-          return _.isNil(d.beer) ? "" : d.beer.name
+          return _.isNil(d.beer) ? "" : d.beer.getName();
         }
-        return _.get(sortBy, sortBy);
+        return _.get(d, sortBy);
       }]);
     if(!asc){
       _.reverse(filteredData);

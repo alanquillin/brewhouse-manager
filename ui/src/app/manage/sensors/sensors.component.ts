@@ -16,6 +16,7 @@ import * as _ from 'lodash';
 })
 export class ManageSensorsComponent implements OnInit {
 
+  loading = false;
   sensors: Sensor[] = [];
   filteredSensors: Sensor[] = [];
   locations: Location[] = [];
@@ -107,9 +108,9 @@ export class ManageSensorsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.processing = true;
+    this.loading = true;
     this.refreshAll(()=> {
-      this.processing = false;
+      this.loading = false;
     })
   }
 
@@ -211,12 +212,12 @@ export class ManageSensorsComponent implements OnInit {
     if(!_.isEmpty(this.selectedLocationFilters)){
       filteredData = <Sensor[]>_.filter(this.sensors, (s) => { return this.selectedLocationFilters.includes(s.locationId) });
     }
-    filteredData = _.orderBy(filteredData, [sortBy], [asc])
-    _.sortBy(filteredData, [(d: Sensor) => {
+    
+    filteredData = _.sortBy(filteredData, [(d: Sensor) => {
         if(sortBy === "location"){
           return _.isNil(d.location) ? "" : d.location.name
         }
-        return _.get(sortBy, sortBy);
+        return _.get(d, sortBy);
       }]);
     if(!asc){
       _.reverse(filteredData);
