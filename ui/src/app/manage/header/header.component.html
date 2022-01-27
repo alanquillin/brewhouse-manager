@@ -13,7 +13,7 @@
                 <button mat-menu-item id="nav_signed_in_as" disabled *ngIf="userInfo">Signed in as {{ name }}</button>
                 <button mat-menu-item id="nav_dashboard" (click)="goto('')"><mat-icon>home</mat-icon>Home</button>
                 <button mat-menu-item [matMenuTriggerFor]="managementOptions"><mat-icon>build</mat-icon>Manage</button>
-                <button mat-menu-item id="nav_account_profile" (click)="goto('profile')"><mat-icon>person</mat-icon>Account Profile</button>
+                <button mat-menu-item id="nav_account_profile" (click)="goto('me')"><mat-icon>person</mat-icon>Account Profile</button>
                 <button mat-menu-item id="nav_sign_out" (click)="logout()">Sign Out</button>
             </mat-menu>
 
@@ -23,7 +23,7 @@
                 <button mat-menu-item id="nav_manage_taps" (click)="goto('manage/taps')"><mat-icon>kitchen</mat-icon>Taps</button>
                 <button mat-menu-item id="nav_manage_beers" (click)="goto('manage/beers')"><mat-icon>local_drink</mat-icon>Beers</button>
                 <button mat-menu-item id="nav_manage_sensors" (click)="goto('manage/sensors')"><mat-icon>gps_fixed</mat-icon>Sensors</button>
-                <button mat-menu-item id="nav_manage_users" (click)="goto('manage/users')"><mat-icon>group</mat-icon>Users</button>
+                <!-- <button mat-menu-item id="nav_manage_users" (click)="goto('manage/users')"><mat-icon>group</mat-icon>Users</button> -->
             </mat-menu>
         </span>
     </div>
