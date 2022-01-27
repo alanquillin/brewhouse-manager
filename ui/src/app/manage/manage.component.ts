@@ -19,5 +19,9 @@ export class ManageComponent implements OnInit {
 
   ngOnInit() {  
   }
+
+  goto(path: string): void {
+    window.location.href = `/${path}`;
+  }
 }
 

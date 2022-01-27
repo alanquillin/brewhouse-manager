@@ -34,15 +34,11 @@ export class ManageHeaderComponent implements OnInit {
   }
 
   logout() {
-    window.location.href = '/logout';
+    this.goto('logout');
   }
 
-  redirectToProfile() {
-    window.location.href = '/me';
-  }
-
-  redirectToDashboard() {
-    window.location.href = '/manage';
+  goto(path: string): void {
+    window.location.href = `/${path}`;
   }
   
   get name(): string {
