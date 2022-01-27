@@ -35,7 +35,7 @@ class Users(BaseResource, UserResourceMixin):
     @login_required
     def post(self):
         user_c = current_user
-        data = self.get_request_data("password_hash")
+        data = self.get_request_data()
 
         with session_scope(self.config) as db_session:
             self.logger.debug("Creating user with data: %s", data)
