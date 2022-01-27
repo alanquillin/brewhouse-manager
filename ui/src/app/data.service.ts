@@ -184,9 +184,29 @@ export class DataService {
     return this.http.get<UserInfo>(url).pipe(catchError(this.getError));
   }
 
+  getUsers(): Observable<UserInfo[]> {
+    const url = `${this.apiBaseUrl}/users`;
+    return this.http.get<UserInfo[]>(url).pipe(catchError(this.getError));
+  }
+
+  getUser(userId: string): Observable<UserInfo> {
+    const url = `${this.apiBaseUrl}/users/${userId}`;
+    return this.http.get<UserInfo>(url).pipe(catchError(this.getError));
+  }
+
+  createUser(data: any): Observable<UserInfo> {
+    const url = `${this.apiBaseUrl}/users`;
+    return this.http.post<UserInfo>(url, data).pipe(catchError(this.getError));
+  }
+
   updateUser(userId: string, data: object): Observable<UserInfo> {
     const url = `${this.apiBaseUrl}/users/${userId}`;
     return this.http.patch<UserInfo>(url, data).pipe(catchError(this.getError));
+  }
+
+  deleteUser(userId: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/users/${userId}`;
+    return this.http.delete<any>(url).pipe(catchError(this.getError));
   }
 
   getSettings(): Observable<Settings> {

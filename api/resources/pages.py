@@ -37,3 +37,8 @@ class ManagemantSensors(UIBaseResource, ResourceMixinBase):
     @login_required
     def get(self):
         return self.serve_app()
+
+class ManagemantUsers(UIBaseResource, ResourceMixinBase):
+    @login_required
+    def get(self):
+        return self.serve_app()

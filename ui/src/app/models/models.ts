@@ -227,13 +227,17 @@ export class Sensor extends EditableBase {
   }
 }
 
-export class UserInfo {
+export class UserInfo extends EditableBase {
   id!: string;
   email!: string;
   firstName!: string;
   lastName!: string;
   profilePic!: string;
   passwordEnabled!: boolean;
+
+  constructor() {
+    super(["email", "firstName", "lastName", "profilePic"]);
+  }
 }
 
 export class Settings {

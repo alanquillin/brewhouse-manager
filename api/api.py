@@ -34,7 +34,7 @@ from resources.auth import GoogleLogin, Logout, GoogleCallback, AuthUser, Login
 from resources.beers import Beers, Beer
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
 from resources.locations import Location, Locations
-from resources.pages import ManagemantBeers, ManagemantDashboard, ManagemantLocations, ManagemantSensors, ManagemantTaps, Profile
+from resources.pages import ManagemantBeers, ManagemantDashboard, ManagemantLocations, ManagemantSensors, ManagemantTaps, Profile, ManagemantUsers
 from resources.sensors import Sensor, Sensors, SensorData, SensorTypes
 from resources.settings import Settings
 from resources.taps import Tap, Taps
@@ -130,6 +130,7 @@ api.add_resource(ManagemantBeers, "/manage/beers")
 api.add_resource(ManagemantLocations, "/manage/locations")
 api.add_resource(ManagemantSensors, "/manage/sensors")
 api.add_resource(ManagemantTaps, "/manage/taps")
+api.add_resource(ManagemantUsers, "/manage/users")
 api.add_resource(Profile, "/me")
 
 app.wsgi_app = ProxyFix(app.wsgi_app)

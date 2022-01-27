@@ -65,7 +65,7 @@ export class ProfileComponent implements OnInit {
 
   startEditing(): void {
     this.editing = true;
-    this.editUserInfo = { ...this.userInfo }
+    this.editUserInfo.enableEditing()
   }
 
   getChanges() {
@@ -107,6 +107,7 @@ export class ProfileComponent implements OnInit {
         this.userInfo = data;
         this.editing = false;
         this.processing = false;
+        this.editUserInfo.disableEditing()
       },
       error: (err: DataError) => {
         this.displayError(err.message);

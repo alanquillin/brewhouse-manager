@@ -11,18 +11,20 @@ class UserResourceMixin(ResourceMixinBase):
     def get_request_data(self):
         return super().get_request_data(remove_key=["password_hash", "id"])
 
-    def transform_response(self, entity):
+    @staticmethod
+    def transform_response(user):
+        data = user.to_dict()
         FILTERED_KEYS = ["password_hash", "google_oidc_id"]
         
-        entity["password_enabled"] = False
-        if entity.get("password_hash"):
-            entity["password_enabled"] = True
+        data["password_enabled"] = False
+        if data.get("password_hash"):
+            data["password_enabled"] = True
 
         for key in FILTERED_KEYS:
-            if key in entity:
-                del entity[key]
+            if key in data:
+                del data[key]
 
-        return super().transform_response(entity)
+        return ResourceMixinBase.transform_response(data)
 
 class Users(BaseResource, UserResourceMixin):
     @login_required
@@ -30,17 +32,16 @@ class Users(BaseResource, UserResourceMixin):
         with session_scope(self.config) as db_session:
             users = UsersDB.query(db_session)
 
-            return [self.transform_response(a.to_dict() for a in users)]
+            return [self.transform_response(u) for u in users]
 
     @login_required
     def post(self):
-        user_c = current_user
         data = self.get_request_data()
 
         with session_scope(self.config) as db_session:
             self.logger.debug("Creating user with data: %s", data)
             user = UsersDB.create(db_session, **data)
-            return self.transform_response(user.to_dict())
+            return self.transform_response(user)
 
 class User(BaseResource, UserResourceMixin):
     @login_required
@@ -64,7 +65,7 @@ class User(BaseResource, UserResourceMixin):
 
             self.logger.debug("Updating user '%s' (%s) with data: %s", user.email, user_id, data)
             user = UsersDB.update(db_session, user_id, **data)
-            return self.transform_response(user.to_dict())
+            return self.transform_response(user)
 
     @login_required
     def delete(self, user_id):
@@ -89,4 +90,4 @@ class CurrentUser(BaseResource, UserResourceMixin):
 
         with session_scope(self.config) as db_session:
             user = UsersDB.get_by_pkey(db_session, user_c.id)
-            return self.transform_response(user.to_dict())
+            return self.transform_response(user)

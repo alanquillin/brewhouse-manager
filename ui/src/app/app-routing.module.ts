@@ -3,13 +3,14 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { LocationComponent } from './location/location.component'
 import { LocationSelectorComponent } from './location-selector/location-selector.component'
-import { ManageComponent } from './manage/manage.component'
 import { LoginComponent } from './login/login.component';
+import { ManageBeerComponent } from './manage/beer/beer.component';
+import { ManageComponent } from './manage/manage.component'
 import { ManageLocationsComponent } from './manage/locations/locations.component';
-import { ProfileComponent } from './profile/profile.component';
 import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
-import { ManageBeerComponent } from './manage/beer/beer.component';
+import { ManageUsersComponent } from './manage/users/users.component';
+import { ProfileComponent } from './profile/profile.component';
 
 const routes: Routes = [
   {
@@ -47,6 +48,10 @@ const routes: Routes = [
   {
     path: 'manage/beers',
     component: ManageBeerComponent
+  },
+  {
+    path: 'manage/users',
+    component: ManageUsersComponent
   },
 ];
 

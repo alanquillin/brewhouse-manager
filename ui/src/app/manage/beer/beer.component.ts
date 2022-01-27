@@ -234,10 +234,7 @@ export class ManageBeerComponent implements OnInit {
     }
 
     var filteredData: Beer[] = this.beers;
-    filteredData = _.orderBy(filteredData, [sortBy], [asc])
-    _.sortBy(filteredData, [(d: Beer) => {
-        return _.get(sortBy, sortBy);
-      }]);
+    _.sortBy(filteredData, [(d: Beer) => { return _.get(d, sortBy); }]);
     if(!asc){
       _.reverse(filteredData);
     }
