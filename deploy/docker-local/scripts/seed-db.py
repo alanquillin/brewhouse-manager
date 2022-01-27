@@ -13,8 +13,7 @@ from db import (
     Base,
     taps,
     beers,
-    sensors,
-    admins
+    sensors
 )
 from sqlalchemy.exc import OperationalError, IntegrityError
 
