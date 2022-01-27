@@ -13,9 +13,9 @@ import requests
 
 from resources import BaseResource, ResourceMixinBase, ClientError, NotAuthorized, ClientError, ForbiddenError
 from db import session_scope
-from db.admins import Admins as AdminsDB
+from db.users import Users as UsersDB
 
-class User(UserMixin):
+class AuthUser(UserMixin):
     def __init__(self, id_, first_name, last_name, email, profile_pic, google_oidc_id):
         super().__init__()
 
@@ -27,17 +27,17 @@ class User(UserMixin):
         self.google_oidc_id = google_oidc_id
 
     @staticmethod
-    def from_admin(admin):
-        if not admin:
+    def from_user(user):
+        if not user:
             return None
             
-        return User(
-            admin.id,
-            admin.first_name,
-            admin.last_name,
-            admin.email,
-            admin.profile_pic,
-            admin.google_oidc_id
+        return AuthUser(
+            user.id,
+            user.first_name,
+            user.last_name,
+            user.email,
+            user.profile_pic,
+            user.google_oidc_id
         )
 
 class GoogleResourceMixin(ResourceMixinBase):
@@ -120,34 +120,34 @@ class GoogleCallback(BaseResource, GoogleResourceMixin):
             raise ClientError(user_msg="User email not available or not verified by Google.")
 
         with session_scope(self.config) as db_session:
-            admin = AdminsDB.get_by_email(db_session, users_email)
+            user = UsersDB.get_by_email(db_session, users_email)
             update_data = {}
 
-            if not admin.first_name and first_name:
-                self.logger.debug("Admin '%s' first name not set in database.  Updating from google: %s", users_email, first_name)
+            if not user.first_name and first_name:
+                self.logger.debug("User '%s' first name not set in database.  Updating from google: %s", users_email, first_name)
                 update_data["first_name"] = first_name
 
-            if not admin.last_name and last_name:
-                self.logger.debug("Admin '%s' last name not set in database.  Updating from google: %s", users_email, last_name)
+            if not user.last_name and last_name:
+                self.logger.debug("User '%s' last name not set in database.  Updating from google: %s", users_email, last_name)
                 update_data["last_name"] = last_name
             
-            if not admin.google_oidc_id and unique_id:
-                self.logger.debug("Admin '%s' google OIDC Id not set in database.  Updating from google: %s", users_email, unique_id)
+            if not user.google_oidc_id and unique_id:
+                self.logger.debug("User '%s' google OIDC Id not set in database.  Updating from google: %s", users_email, unique_id)
                 update_data["google_oidc_id"] = unique_id
 
-            if not admin.profile_pic and picture:
-                self.logger.debug("Admin '%s' profile pic url not set in database.  Updating from google: %s", users_email, picture)
+            if not user.profile_pic and picture:
+                self.logger.debug("User '%s' profile pic url not set in database.  Updating from google: %s", users_email, picture)
                 update_data["profile_pic"] = picture
 
             if update_data:
-                self.logger.debug("Updating admin account '%s' with missing data: %s", users_email, update_data)
-                AdminsDB.update(db_session, admin.id, **update_data)
+                self.logger.debug("Updating user account '%s' with missing data: %s", users_email, update_data)
+                UsersDB.update(db_session, user.id, **update_data)
 
-            if not admin:
+            if not user:
                 raise NotAuthorized()
 
             # Begin user session by logging the user in
-            login_user(User.from_admin(admin))
+            login_user(AuthUser.from_user(user))
 
         # Send user back to homepage
         return redirect("/manage")
@@ -166,22 +166,22 @@ class Login(BaseResource, ResourceMixinBase):
         password = data.get("password")
 
         with session_scope(self.config) as db_session:
-            admin = AdminsDB.get_by_email(db_session, email)
+            user = UsersDB.get_by_email(db_session, email)
 
-            if not admin:
+            if not user:
                 raise NotAuthorized()
 
-            if not admin.password_hash:
+            if not user.password_hash:
                 raise ClientError(user_msg="The user does not have a password set.  Please try logging in with google.")
 
             ph = PasswordHasher()
             try:
-                if not ph.verify(admin.password_hash, password):
+                if not ph.verify(user.password_hash, password):
                     raise NotAuthorized()
             except VerifyMismatchError:
                 raise NotAuthorized()
 
-            login_user(User.from_admin(admin))
+            login_user(AuthUser.from_user(user))
         
         return True
         

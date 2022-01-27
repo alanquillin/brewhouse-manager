@@ -1,5 +1,5 @@
 # pylint: disable=wrong-import-position
-_TABLE_NAME = "admins"
+_TABLE_NAME = "users"
 _PKEY = "id"
 
 from argon2 import PasswordHasher
@@ -18,7 +18,7 @@ from db import (
 )
 
 @generate_audit_trail
-class Admins(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class Users(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
 
     __tablename__ = _TABLE_NAME
 
@@ -30,7 +30,7 @@ class Admins(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     google_oidc_id = Column(String, nullable=True)
     password_hash = Column(String, nullable=True)
 
-    __table_args__ = (Index("ix_admin_email", email, unique=True), Index("ix_admin_google_oidc_id", google_oidc_id, unique=True))
+    __table_args__ = (Index("ix_user_email", email, unique=True), Index("ix_user_google_oidc_id", google_oidc_id, unique=True))
 
     @classmethod
     def get_by_email(cls, session, email, **kwargs):

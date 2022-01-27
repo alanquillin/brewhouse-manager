@@ -3,11 +3,11 @@ from flask_login import login_required, current_user
 
 from resources import BaseResource, ResourceMixinBase, NotFoundError, ForbiddenError, ClientError
 from db import session_scope
-from db.admins import Admins as AdminsDB
+from db.users import Users as UsersDB
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 
 
-class AdminResourceMixin(ResourceMixinBase):
+class UserResourceMixin(ResourceMixinBase):
     def get_request_data(self):
         return super().get_request_data(remove_key=["password_hash", "id"])
 
@@ -24,13 +24,13 @@ class AdminResourceMixin(ResourceMixinBase):
 
         return super().transform_response(entity)
 
-class Admins(BaseResource, AdminResourceMixin):
+class Users(BaseResource, UserResourceMixin):
     @login_required
     def get(self):
         with session_scope(self.config) as db_session:
-            admins = AdminsDB.query(db_session)
+            users = UsersDB.query(db_session)
 
-            return [self.transform_response(a.to_dict() for a in admins)]
+            return [self.transform_response(a.to_dict() for a in users)]
 
     @login_required
     def post(self):
@@ -38,55 +38,55 @@ class Admins(BaseResource, AdminResourceMixin):
         data = self.get_request_data("password_hash")
 
         with session_scope(self.config) as db_session:
-            self.logger.debug("Creating admin with data: %s", data)
-            admin = AdminsDB.create(db_session, **data)
-            return self.transform_response(admin.to_dict())
+            self.logger.debug("Creating user with data: %s", data)
+            user = UsersDB.create(db_session, **data)
+            return self.transform_response(user.to_dict())
 
-class Admin(BaseResource, AdminResourceMixin):
+class User(BaseResource, UserResourceMixin):
     @login_required
-    def patch(self, admin_id):
+    def patch(self, user_id):
         user_c = current_user
         data = self.get_request_data()
 
-        if "password" in data and user_c.id != admin_id:
-            raise ForbiddenError("You are not authorized to change the password for another admin.")
+        if "password" in data and user_c.id != user_id:
+            raise ForbiddenError("You are not authorized to change the password for another user.")
 
         with session_scope(self.config) as db_session:
-            admin = AdminsDB.get_by_pkey(db_session, admin_id)
+            user = UsersDB.get_by_pkey(db_session, user_id)
 
-            if not admin:
+            if not user:
                 raise NotFoundError()
 
             if "password" in data and data["password"] is None:
                 del data["password"]
-                self.logger.debug("Disabling password for admin '%s' (%s): %s", admin.email, admin_id)
-                AdminsDB.disable_password(db_session, admin_id)
+                self.logger.debug("Disabling password for user '%s' (%s): %s", user.email, user_id)
+                UsersDB.disable_password(db_session, user_id)
 
-            self.logger.debug("Updating admin '%s' (%s) with data: %s", admin.email, admin_id, data)
-            admin = AdminsDB.update(db_session, admin_id, **data)
-            return self.transform_response(admin.to_dict())
+            self.logger.debug("Updating user '%s' (%s) with data: %s", user.email, user_id, data)
+            user = UsersDB.update(db_session, user_id, **data)
+            return self.transform_response(user.to_dict())
 
     @login_required
-    def delete(self, admin_id):
+    def delete(self, user_id):
         with session_scope(self.config) as db_session:
-            admin = AdminsDB.get_by_pkey(db_session, admin_id)
+            user = UsersDB.get_by_pkey(db_session, user_id)
 
-            if not admin:
+            if not user:
                 raise NotFoundError()
 
-            if admin_id == current_user.id:
+            if user_id == current_user.id:
                 raise ClientError("You cannot delete your own user")
 
-            self.logger.debug("Deleting admin '%s' (%s)", admin.email, admin_id)
-            AdminsDB.delete(db_session, admin_id)
+            self.logger.debug("Deleting user '%s' (%s)", user.email, user_id)
+            UsersDB.delete(db_session, user_id)
             return True
 
 
-class CurrentUser(BaseResource, AdminResourceMixin):
+class CurrentUser(BaseResource, UserResourceMixin):
     @login_required
     def get(self):
         user_c = current_user
 
         with session_scope(self.config) as db_session:
-            admin = AdminsDB.get_by_pkey(db_session, user_c.id)
-            return self.transform_response(admin.to_dict())
+            user = UsersDB.get_by_pkey(db_session, user_c.id)
+            return self.transform_response(user.to_dict())

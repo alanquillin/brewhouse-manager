@@ -180,12 +180,12 @@ export class DataService {
   }
 
   getCurrentUser(): Observable<UserInfo> {
-    const url = `${this.apiBaseUrl}/admins/current`;
+    const url = `${this.apiBaseUrl}/users/current`;
     return this.http.get<UserInfo>(url).pipe(catchError(this.getError));
   }
 
-  updateAdmin(adminId: string, data: object): Observable<UserInfo> {
-    const url = `${this.apiBaseUrl}/admins/${adminId}`;
+  updateUser(userId: string, data: object): Observable<UserInfo> {
+    const url = `${this.apiBaseUrl}/users/${userId}`;
     return this.http.patch<UserInfo>(url, data).pipe(catchError(this.getError));
   }
 

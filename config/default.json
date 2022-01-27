@@ -16,8 +16,6 @@
     "initial_user": {
       "email": "default_admin@acme.fake",
       "password": "initial_password",
-      "first_name": "INTIAL",
-      "last_name": "ADMIN",
       "set_password": true
     },
     "oidc": {

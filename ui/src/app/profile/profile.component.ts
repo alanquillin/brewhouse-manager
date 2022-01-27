@@ -102,7 +102,7 @@ export class ProfileComponent implements OnInit {
     
     this.processing = true;
     
-    this.dataService.updateAdmin(this.userInfo.id, updateData).subscribe({
+    this.dataService.updateUser(this.userInfo.id, updateData).subscribe({
       next: (data: UserInfo) => {
         this.userInfo = data;
         this.editing = false;
@@ -131,7 +131,7 @@ export class ProfileComponent implements OnInit {
     }
     
     this.processing = true;
-    this.dataService.updateAdmin(this.userInfo.id, {password: this.newPassword}).subscribe({
+    this.dataService.updateUser(this.userInfo.id, {password: this.newPassword}).subscribe({
       next: (data: UserInfo) => {
         this.userInfo = data;
         this.changePassword = false;
@@ -147,7 +147,7 @@ export class ProfileComponent implements OnInit {
   disablePassword(): void {
     if(confirm("Are you sure you want to disable your password?  Doing so will prevent you from logging in with username and password.  You will need to log in via Google instead.")) {
       this.processing = true;
-      this.dataService.updateAdmin(this.userInfo.id, {password: null}).subscribe({
+      this.dataService.updateUser(this.userInfo.id, {password: null}).subscribe({
         next: (data: UserInfo) => {
           this.userInfo = data;
           this.editing = false;

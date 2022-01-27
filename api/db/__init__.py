@@ -26,12 +26,12 @@ Base = declarative_base()
 
 __all__ = [
     "Base",
-    "admins",
     "audit",
     "beers",
     "locations",
     "sensors",
-    "taps"
+    "taps",
+    "users"
 ]
 
 
