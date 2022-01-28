@@ -17,8 +17,10 @@ PYLINT := $(POETRY) run pylint
 PYTEST := $(POETRY) run pytest
 PYTHON := $(POETRY) run python3
 
+TAG_LATEST := false
 CONFIG_BASE_DIR ?= config
 TESTS ?= tests/
+DOCKER_BUILD_ARGS :=
 PYTEST_ARGS += --disable-warnings --log-level DEBUG
 DOCKER_IMAGE ?= brewhouse-manager
 DOCKER_DB_SEED_IMAGE ?= brewhouse-manager-db-seed
@@ -26,7 +28,6 @@ DOCKER_IMAGE_TAG ?= latest
 DOCKER_IMAGE_TAG_DEV ?= dev
 DOCKER_SOURCE_IMAGE_TAG ?= $(DOCKER_IMAGE_TAG)
 DOCKER := docker
-DOCKER_BUILD := $(DOCKER) build $(DOCKER_BUILD_ARGS)
 IMAGE_REPOSITORY := alanquillin
 REPOSITORY_IMAGE ?= brewhouse-manager
 
@@ -44,12 +45,15 @@ ifeq ("$(wildcard deploy/docker-local/my-config.json)","")
 endif
 
 
-.PHONY: build build-dev docker-build \
-	test ci ci/node ci/python ci/docker \
-	format-py test-py test-py-verbose test-py-cov-html \
-	build-db-seed build-db-seed-fetch-tf \
-	depends test-depends \
-	run run-dev clean clean-images clean-all .env
+$(info Hello World)
+ifeq ($(TAG_LATEST),true)
+$(info Setting build args)
+override DOCKER_BUILD_ARGS += -t $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):latest
+endif
+
+
+.PHONY: build build-dev docker-build test format-py test-py test-py-verbose test-py-cov-html \
+	build-db-seed build-db-seed-fetch-tf depends test-depends un-dev clean clean-images clean-all
 
 # dependency targets
 
@@ -68,26 +72,26 @@ update-depends: test-depends
 build: update-depends docker-build
 
 docker-build:
-	$(DOCKER_BUILD) -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG) .
+ifeq ($(VERSION),)
+	$(error VERSION was not provided)
+endif
+	$(DOCKER) buildx build --platform=linux/amd64,linux/arm64,linux/arm $(DOCKER_BUILD_ARGS) -t $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):$(VERSION) .
 
 # dev
 
 build-dev:
-	$(DOCKER_BUILD) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV) .
+	$(DOCKER) build $(DOCKER_BUILD_ARGS) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV) .
 
 build-db-seed:
-	$(DOCKER_BUILD) -t $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV) deploy/docker-local
+	$(DOCKER) build $(DOCKER_BUILD_ARGS) -t $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV) deploy/docker-local
 
 rebuild-db-seed: 
-	$(DOCKER_BUILD) -t $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV) --no-cache deploy/docker-local
+	$(DOCKER) build $(DOCKER_BUILD_ARGS) -t $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV) --no-cache deploy/docker-local
 
 # Targets for publishing containers
 
-tag: build
-	$(DOCKER) tag $(DOCKER_IMAGE):$(DOCKER_SOURCE_IMAGE_TAG) $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):$(DOCKER_IMAGE_TAG)
-
-publish: tag
-	$(DOCKER) push $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):$(DOCKER_IMAGE_TAG)
+publish:
+	$(MAKE) build DOCKER_BUILD_ARGS+="--push"
 
 # Targets for running the app
 

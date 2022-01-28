@@ -49,6 +49,7 @@ authors = ["Immuta"]
 description = "Immuta Brewing Company: Brewhouse Manager"
 
 [tool.poetry.dependencies]
+cryptography = "3.4.8"
 Flask = "^1.1.2"
 Flask-RESTful = "^0.3.8"
 PyJWT = "^1.7.1"

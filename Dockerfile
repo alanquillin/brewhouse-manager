@@ -9,20 +9,24 @@ RUN yarn install --non-interactive
 
 # Python base
 # ############################################################
-FROM python:3.9-buster as python-base
+FROM python:3.9-slim-buster as python-base
 
-ARG build_for=prod
-ENV RUN_ENV=${build_for}
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc build-essential libpq-dev libffi-dev libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p -m 0600 ~/.ssh && \
-    ssh-keyscan github.com >> ~/.ssh/known_hosts
+RUN pip install -U pip 
+RUN pip install setuptools wheel
+ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
+RUN pip install "cryptography<3.5"
+RUN pip install "poetry>=1.1.12"
 
-RUN pip install -U pip setuptools wheel && \
-    pip install "poetry>=1.1.11"
 RUN poetry config virtualenvs.in-project true
 COPY pyproject.toml poetry.lock ./
-RUN poetry run pip install --upgrade pip
 RUN poetry install --no-interaction --no-ansi --no-dev --no-root
+RUN poetry run pip install psycopg2-binary rpi.gpio
+
+RUN apt-get purge -y --auto-remove gcc build-essential libffi-dev libssl-dev
 
 
 # Angular build
@@ -35,11 +39,11 @@ RUN yarn run build:${build_for}
 
 # Final build
 # ############################################################
-FROM python:3.9-slim-buster as final
+FROM python-base as final
 
 ARG build_for=prod
 
-ENV CONFIG_PATH=${CONFIG_PATH}
+
 ENV PYTHONUNBUFFERED=1
 ENV CONFIG_BASE_DIR=/brewhouse-manager/config
 ENV RUN_ENV=${build_for}
@@ -50,13 +54,7 @@ RUN addgroup app --gid 10000 && \
             --no-create-home \
             --uid 10000 app
             
-RUN pip install -U pip setuptools wheel
-RUN pip install 'poetry>=1.1.8'
-RUN poetry config virtualenvs.in-project true
 
-COPY pyproject.toml poetry.lock .
-
-COPY --from=python-base /.venv /.venv
 COPY --from=node-build /ui/dist/brewhouse-manager /brewhouse-manager/api/static/
 
 COPY config /brewhouse-manager/config
