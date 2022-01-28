@@ -9,27 +9,19 @@ ifeq ($(shell uname -s),Darwin)
 	POETRY_VARS += LDFLAGS="-L$(HOMEBREW_OPENSSL_DIR)/lib"
 endif
 
-BANDIT := $(POETRY) run bandit
 BLACK := $(POETRY) run black
 ISORT := $(POETRY) run isort
-PIP := $(POETRY) run pip
 PYLINT := $(POETRY) run pylint
 PYTEST := $(POETRY) run pytest
 PYTHON := $(POETRY) run python3
 
 TAG_LATEST := false
-CONFIG_BASE_DIR ?= config
-TESTS ?= tests/
-DOCKER_BUILD_ARGS :=
-PYTEST_ARGS += --disable-warnings --log-level DEBUG
 DOCKER_IMAGE ?= brewhouse-manager
 DOCKER_DB_SEED_IMAGE ?= brewhouse-manager-db-seed
-DOCKER_IMAGE_TAG ?= latest
 DOCKER_IMAGE_TAG_DEV ?= dev
-DOCKER_SOURCE_IMAGE_TAG ?= $(DOCKER_IMAGE_TAG)
 DOCKER := docker
 IMAGE_REPOSITORY := alanquillin
-REPOSITORY_IMAGE ?= brewhouse-manager
+REPOSITORY_IMAGE ?= $(DOCKER_IMAGE)
 
 ifneq ("$(wildcard .env)","")
     include .env
@@ -45,25 +37,21 @@ ifeq ("$(wildcard deploy/docker-local/my-config.json)","")
 endif
 
 
-$(info Hello World)
 ifeq ($(TAG_LATEST),true)
-$(info Setting build args)
 override DOCKER_BUILD_ARGS += -t $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):latest
 endif
 
 
-.PHONY: build build-dev docker-build test format-py test-py test-py-verbose test-py-cov-html \
-	build-db-seed build-db-seed-fetch-tf depends test-depends un-dev clean clean-images clean-all
+.PHONY: build build-db-seed build-dev clean clean-all clean-image clean-images \
+	clean-seed-image depends docker-build format-py lint-py lint-ts publish \
+	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends
 
 # dependency targets
 
 depends: 
 	$(POETRY_VARS) $(POETRY) install --no-dev --no-root
 
-test-depends: 
-	$(POETRY_VARS) $(POETRY) install --no-root
-
-update-depends: test-depends
+update-depends:
 	$(POETRY_VARS) $(POETRY) update
 
 # Targets for building containers
@@ -118,32 +106,18 @@ format-py:
 	$(ISORT) api tests deploy
 	$(BLACK) api tests deploy
 
-test: update-git-depends ci
-
-test-py:
-	CONFIG_PATH=pytest.json CONFIG_BASE_DIR=$(CONFIG_BASE_DIR) \
-	$(PYTEST) ${PYTEST_ARGS} ${TESTS}
-
-test-py-cov: PYTEST_ARGS += --cov=api/
-test-py-cov: test-py
-
-test-py-cov-html: PYTEST_ARGS += --cov=api api/ --cov-report html
-test-py-cov-html: test-py
-
-test-sec:
-	$(BANDIT) -r api --exclude test
-
 # Clean up targets
 
 clean:
 	docker-compose --project-directory deploy/docker-local down --volumes
 
 clean-image:
-	docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG)
+	docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
 
 clean-seed-image:
-	docker rmi $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG)
+	docker rmi $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
 
 clean-images: clean-image clean-seed-image
 
 clean-all: clean clean-images
+
