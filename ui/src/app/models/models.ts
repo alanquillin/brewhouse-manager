@@ -44,7 +44,11 @@ export class EditableBase {
   #fields: string[];
   #transformFns: any;
 
-  constructor(fields: string[], transformFns?: any) {
+  constructor(fields: string[], from?: any, transformFns?: any) {
+    if(!isNilOrEmpty(from)) {
+      Object.assign(this, from);
+    }
+    
     this.#transformFns = isNilOrEmpty(transformFns) ? {} : transformFns;
     this.isEditing = false;
     this.editValues = {}
@@ -101,8 +105,8 @@ export class Location extends EditableBase {
   description!: string;
   name!: string;
 
-  constructor() {
-    super(["name", "description"]);
+  constructor(from?: any) {
+    super(["name", "description"], from);
   }
 }
 
@@ -118,8 +122,8 @@ export class Tap extends EditableBase {
   sensorId!: string;
   sensor: Sensor | undefined;
 
-  constructor() {
-    super(["description", "tapNumber", "locationId", "tapType", "beerId", "sensorId"]);
+  constructor(from?: any) {
+    super(["description", "tapNumber", "locationId", "tapType", "beerId", "sensorId"], from);
   }
 }
 
@@ -137,9 +141,11 @@ export class Beer extends EditableBase {
   brewDate!: number;
   srm!: number;
 
-  constructor() {
-    super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm"], beerTransformFns);
-    this.externalBrewingToolMeta = {}
+  constructor(from?: any) {
+    super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm"], from, beerTransformFns);
+    if(isNilOrEmpty(this.externalBrewingToolMeta)) {
+      this.externalBrewingToolMeta = {}
+    }
   }
 
   #getVal(key: string, transformFn?: Function, brewToolTransformFn?: any): any{
@@ -221,9 +227,11 @@ export class Sensor extends EditableBase {
   location: Location | undefined;
   meta!: any;
 
-  constructor() {
-    super(["name", "locationId", "sensorType", "meta"]);
-    this.meta = {}
+  constructor(from?: any) {
+    super(["name", "locationId", "sensorType", "meta"], from);
+    if(isNilOrEmpty(this.meta)){
+      this.meta = {}
+    }
   }
 }
 
@@ -235,15 +243,20 @@ export class UserInfo extends EditableBase {
   profilePic!: string;
   passwordEnabled!: boolean;
 
-  constructor() {
-    super(["email", "firstName", "lastName", "profilePic"]);
+  constructor(from?: any) {
+    super(["email", "firstName", "lastName", "profilePic"], from);
   }
 }
 
 export class Settings {
   googleSSOEnabled: boolean;
 
-  constructor() {
+  constructor(from?: any) {
     this.googleSSOEnabled = false;
+
+
+    if(!isNilOrEmpty(from)) {
+      Object.assign(this, from);
+    }
   }
 }

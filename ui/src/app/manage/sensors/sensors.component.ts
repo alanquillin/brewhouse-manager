@@ -49,8 +49,7 @@ export class ManageSensorsComponent implements OnInit {
       next: (sensors: Sensor[]) => {
         this.sensors = [];
         _.forEach(sensors, (sensor) => {
-          var _sensor = new Sensor()
-          Object.assign(_sensor, sensor);
+          var _sensor = new Sensor(sensor)
           this.sensors.push(_sensor)
         })
         this.filter();
@@ -116,7 +115,17 @@ export class ManageSensorsComponent implements OnInit {
 
   add(): void {
     this.modifyFormGroup.reset();
-    this.modifySensor = new Sensor();
+    var data: any = {}
+    if(this.locations.length == 1){
+      data["locationId"] = this.locations[0].id;
+    }
+    if(this.sensorTypes.length == 1) {
+      data["sensorType"] = this.sensorTypes[0];
+    }
+
+    this.modifySensor = new Sensor(data);
+    this.modifySensor.editValues = data;
+    this.addMissingMeta();
     this.adding = true;
   }
 
