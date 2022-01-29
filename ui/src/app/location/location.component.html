@@ -9,7 +9,7 @@
     </mat-sidenav> -->
     <div class="tap-list" *ngFor="let tap of taps">
         <mat-card class=tap-card>
-            <mat-card-subtitle>{{ tap.description }}</mat-card-subtitle>
+            <mat-card-subtitle>Tap {{tap.tapNumber}}: {{ tap.description }}</mat-card-subtitle>
             <mat-card-content>
                 <div *ngIf="tap.isEmpty">
                     <p>Empty :(</p>
