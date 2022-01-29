@@ -49,7 +49,7 @@ endif
 # dependency targets
 
 depends: 
-	$(POETRY_VARS) $(POETRY) install --no-dev --no-root
+	$(POETRY_VARS) $(POETRY) install --no-root
 
 update-depends:
 	$(POETRY_VARS) $(POETRY) update
@@ -67,7 +67,7 @@ endif
 
 # dev
 
-build-dev:
+build-dev: depends
 	$(DOCKER) build $(DOCKER_BUILD_ARGS) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV) .
 
 build-db-seed:

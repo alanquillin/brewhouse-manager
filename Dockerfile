@@ -24,7 +24,7 @@ RUN pip install "poetry>=1.1.12"
 RUN poetry config virtualenvs.in-project true
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-ansi --no-dev --no-root
-RUN poetry run pip install psycopg2-binary rpi.gpio
+RUN poetry run pip install psycopg2-binary
 
 RUN apt-get purge -y --auto-remove gcc build-essential libffi-dev libssl-dev
 
