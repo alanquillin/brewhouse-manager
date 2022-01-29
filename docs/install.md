@@ -197,7 +197,7 @@ services:
   nginx:
     image: nginx:latest
     ports:
-        - 443:5000
+        - 443:443
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
       - ./certs/service.crt:/etc/nginx/certs/service.crt
