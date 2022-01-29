@@ -21,7 +21,6 @@ export class ManageSensorsComponent implements OnInit {
   filteredSensors: Sensor[] = [];
   locations: Location[] = [];
   sensorTypes: string[] = [];
-  displayedColumns: string[] = ['name', 'type', 'location', 'actions'];
   processing = false;
   adding = false;
   editing = false;
@@ -35,6 +34,16 @@ export class ManageSensorsComponent implements OnInit {
     locationId: new FormControl('', [Validators.required]),
     metaAuthToken: new FormControl('', [Validators.required])
   });
+
+  get displayedColumns(): string[] {
+    var cols = ['name', 'type'];
+
+    if(this.locations.length > 1) {
+      cols.push("location")
+    }
+
+    return _.concat(cols, ['actions']);
+  }
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
 
@@ -116,10 +125,10 @@ export class ManageSensorsComponent implements OnInit {
   add(): void {
     this.modifyFormGroup.reset();
     var data: any = {}
-    if(this.locations.length == 1){
+    if(this.locations.length === 1){
       data["locationId"] = this.locations[0].id;
     }
-    if(this.sensorTypes.length == 1) {
+    if(this.sensorTypes.length === 1) {
       data["sensorType"] = this.sensorTypes[0];
     }
 

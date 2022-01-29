@@ -22,7 +22,6 @@ export class ManageTapsComponent implements OnInit {
   locations: Location[] = [];
   beers: Beer[] = [];
   sensors: Sensor[] = [];
-  displayedColumns: string[] = ['description', 'tapNumber', 'beer', 'location', 'sensor', 'actions'];
   loading = false;
   processing = false;
   adding = false;
@@ -39,6 +38,16 @@ export class ManageTapsComponent implements OnInit {
     sensorId: new FormControl(''),
   });
 
+  get displayedColumns() {
+    var cols = ['description', 'tapNumber'];
+
+    if(this.locations.length > 1) {
+      cols.push('location');
+    }
+
+    return _.concat(cols, ['beer', 'sensor', 'actions']);
+  }
+
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -52,12 +61,9 @@ export class ManageTapsComponent implements OnInit {
       next: (taps: Tap[]) => {
         this.taps = [];
         _.forEach(taps, (tap) => {
-          var _tap = new Tap()
-          Object.assign(_tap, tap);
+          var _tap = new Tap(tap)
           if (!isNilOrEmpty(_tap.beer)) {
-            var _beer = new Beer();
-            Object.assign(_beer, _tap.beer);
-            _tap.beer = _beer;
+            _tap.beer = new Beer(_tap.beer);
           }
           this.taps.push(_tap)
         });
@@ -143,7 +149,12 @@ export class ManageTapsComponent implements OnInit {
 
   add(): void {
     this.modifyFormGroup.reset();
-    this.modifyTap = new Tap();
+    var data:any = {}
+    if(this.locations.length === 1) {
+      data["locationId"] = this.locations[0].id;
+    }
+    this.modifyTap = new Tap(data);
+    this.modifyTap.editValues = data;
     this.adding = true;
   }
 

@@ -78,7 +78,7 @@
                         <mat-label>Name</mat-label>
                     </mat-form-field>
 
-                    <mat-form-field appearance="fill">
+                    <mat-form-field appearance="fill" [hidden]="locations.length <= 1">
                         <mat-label>Location</mat-label>
                         <mat-select formControlName="locationId" name="locationId" [(ngModel)]="modifySensor.editValues.locationId">
                             <mat-option *ngFor="let location of locations" [value]="location.id">

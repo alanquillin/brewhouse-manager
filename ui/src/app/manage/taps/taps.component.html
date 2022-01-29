@@ -99,21 +99,21 @@
                         <mat-label>Tap Number</mat-label>
                     </mat-form-field>
 
+                    <mat-form-field appearance="fill" [hidden]="locations.length <= 1">
+                        <mat-label>Location</mat-label>
+                        <mat-select formControlName="locationId" name="locationId" [(ngModel)]="modifyTap.editValues.locationId">
+                            <mat-option *ngFor="let location of locations" [value]="location.id">
+                            {{location.name}}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
                     <mat-form-field appearance="fill">
                         <mat-label>Beer</mat-label>
                         <mat-select formControlName="beerId" name="beerId" [(ngModel)]="modifyTap.editValues.beerId">
                             <mat-option value="-1">-- None --</mat-option>
                             <mat-option *ngFor="let beer of beers" [value]="beer.id">
                             {{ getBeerName(beer) }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="fill">
-                        <mat-label>Location</mat-label>
-                        <mat-select formControlName="locationId" name="locationId" [(ngModel)]="modifyTap.editValues.locationId">
-                            <mat-option *ngFor="let location of locations" [value]="location.id">
-                            {{location.name}}
                             </mat-option>
                         </mat-select>
                     </mat-form-field>
