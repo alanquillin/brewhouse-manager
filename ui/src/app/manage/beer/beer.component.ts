@@ -6,8 +6,7 @@ import { MatSort, Sort} from '@angular/material/sort';
 import { FormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, FormGroup } from '@angular/forms';
 
 import { Beer, DataError, Location, beerTransformFns } from '../../models/models';
-import { fromUnixTimestamp, toUnixTimestamp } from '../..//utils/datetime';
-import { isNilOrEmpty } from '../..//utils/helpers';
+import { isNilOrEmpty } from '../../utils/helpers';
 
 
 import * as _ from 'lodash';
@@ -21,7 +20,7 @@ export class ManageBeerComponent implements OnInit {
   loading = false;
   beers: Beer[] = [];
   filteredBeers: Beer[] = [];
-  displayedColumns: string[] = ['name', 'description', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl', 'actions'];
+  displayedColumns: string[] = ['name', 'description', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', "untappdId", 'imgUrl', 'actions'];
   processing = false;
   adding = false;
   editing = false;
@@ -76,7 +75,8 @@ export class ManageBeerComponent implements OnInit {
     externalBrewingTool: new FormControl(-1),
     brewDate: new FormControl(new Date(), [this.requiredIfNoBrewTool(this)]),
     kegDate: new FormControl(new Date(), [this.requiredIfNoBrewTool(this)]),
-    brewfatherBatchId: new FormControl('', [this.requiredForBrewingTool(this, "brewfather")])
+    brewfatherBatchId: new FormControl('', [this.requiredForBrewingTool(this, "brewfather")]),
+    untappdId: new FormControl('')
   });
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }

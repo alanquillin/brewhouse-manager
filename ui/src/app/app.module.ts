@@ -17,6 +17,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDialogModule } from '@angular/material/dialog';  
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIconModule} from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -36,6 +37,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { GaugeModule } from 'angular-gauge';
 import { NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap'
+import { QRCodeModule } from 'angularx-qrcode';
 
 import { LocationComponent } from './location/location.component';
 import { LocationSelectorComponent } from './location-selector/location-selector.component';
@@ -48,6 +50,8 @@ import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
 import { ManageUsersComponent } from './manage/users/users.component'
 import { ProfileComponent } from './profile/profile.component';
+import { LocationImageDialog } from './image-preview-dialog/image-preview-dialog.component'
+import { LocationQRCodeDialog } from './qrcode-dialog/qrcode-dialog.component'
 
 import { WINDOW_PROVIDERS } from './window.provider';
 
@@ -55,6 +59,8 @@ import { WINDOW_PROVIDERS } from './window.provider';
   declarations: [
     AppComponent,
     LocationComponent,
+    LocationImageDialog,
+    LocationQRCodeDialog,
     LocationSelectorComponent,
     LoginComponent,
     ManageBeerComponent,
@@ -79,6 +85,7 @@ import { WINDOW_PROVIDERS } from './window.provider';
     MatCardModule,
     MatChipsModule,
     MatDatepickerModule,
+    MatDialogModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -96,6 +103,7 @@ import { WINDOW_PROVIDERS } from './window.provider';
     MatToolbarModule,
     MatTooltipModule,
     NgbPopoverModule,
+    QRCodeModule,
     ReactiveFormsModule,
   ],
   providers: [HttpClient, WINDOW_PROVIDERS],

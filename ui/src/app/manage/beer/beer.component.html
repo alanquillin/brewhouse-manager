@@ -70,6 +70,11 @@
                     <td mat-cell *matCellDef="let element"><span class="{{ isNilOrEmpty(element.srm) ? 'imported-value' : '' }}">{{element.getSrm()}}</span></td>
                 </ng-container>
             
+                <ng-container matColumnDef="untappdId">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header="untappdId" sortActionDescription="Sort by Untappd Id"> Untappd Id </th>
+                    <td mat-cell *matCellDef="let element"><span>{{element.untappdId}}</span></td>
+                </ng-container>
+            
                 <ng-container matColumnDef="brewDate">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header="brewDate" sortActionDescription="Sort by brewDate"> Brew Date </th>
                     <td mat-cell *matCellDef="let element"><span class="{{ isNilOrEmpty(element.brewDate) ? 'imported-value' : '' }}">{{element.getBrewDate()}}</span></td>
@@ -205,6 +210,15 @@
                         <mat-error *ngIf="modifyForm['ibu'].errors && modifyForm['ibu'].errors['requiredIfNoToolSelected']">
                             IBU is required if not external brew tool is selected
                         </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill" class="modify-field">
+                        <input id="modify_untappd_id_input"
+                            class="dp-textfield--input"
+                            formControlName="untappdId"
+                            [(ngModel)]="modifyBeer.editValues.untappdId"
+                            matInput />
+                        <mat-label>Untappd Id</mat-label>
                     </mat-form-field>
 
                     <mat-form-field appearance="fill">

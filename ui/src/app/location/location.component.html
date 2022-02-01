@@ -14,7 +14,7 @@
                 <div *ngIf="tap.isEmpty">
                     <p>Empty :(</p>
                 </div>
-                <div *ngIf="!tap.isEmpty && !_.isNil(tap.beer)">
+                <div class="tap-display" *ngIf="!tap.isEmpty && !_.isNil(tap.beer)">
                     <div class="tap-volume" *ngIf="!_.isNil(tap.sensor) && !_.isNaN(tap.sensor.percentBeerRemaining)">
                         <mwl-gauge
                             [max]="100"
@@ -35,8 +35,15 @@
                         <p>{{ tap.beer.getAbv() }}% alc./vol.</p>
                         <p>IBU: {{ tap.beer.getIbu() }}</p>
                     </div>
+                    <div class="tap-qrcode">
+                        <a (click)="openQRCodeDialog(getUntappdUrl(tap.beer))">
+                            <qrcode [qrdata]="getUntappdUrl(tap.beer)" [width]="100" [margin]="0"  *ngIf="!isNilOrEmpty(tap.beer.untappdId)"></qrcode>
+                        </a>
+                    </div>
                     <div class="tap-logo" *ngIf="!_.isNil(tap.beer) && !_.isEmpty(tap.beer.getImgUrl())">
-                        <img src="{{tap.beer.getImgUrl()}}" />
+                        <a (click)="openImageDialog(tap.beer.getImgUrl())">
+                            <img src="{{tap.beer.getImgUrl()}}" />
+                        </a>
                     </div>
                 </div>
             </mat-card-content>

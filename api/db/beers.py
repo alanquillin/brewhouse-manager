@@ -36,6 +36,7 @@ class Beers(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     ibu = Column(Float, nullable=True)
     srm = Column(Float, nullable=True)
     img_url = Column(String, nullable=True)
+    untappd_id = Column(String, nullable=True)
     brew_date = Column(Date, nullable=True)
     keg_date = Column(Date, nullable=True)
 

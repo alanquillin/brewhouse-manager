@@ -1,14 +1,18 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { DataService } from './../data.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { Location, Tap, Beer, Sensor, DataError } from './../models/models';
 import { SensorData, TapDetails } from './models'
+import { isNilOrEmpty } from '../utils/helpers';
+
+import { LocationImageDialog } from '../image-preview-dialog/image-preview-dialog.component'
+import { LocationQRCodeDialog } from '../qrcode-dialog/qrcode-dialog.component'
 
 import * as _ from 'lodash';
-//import * as $ from 'jquery';
 
 @Component({
   selector: 'app-location',
@@ -22,9 +26,10 @@ export class LocationComponent implements OnInit {
   location_identifier: any;
   location!: Location;
   taps: TapDetails[] = [];
+  isNilOrEmpty: Function = isNilOrEmpty;
   _ = _; //allow the html template to access lodash
 
-  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private _snackBar: MatSnackBar) {
+  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private _snackBar: MatSnackBar, public dialog: MatDialog) {
     this.route.params.subscribe( (params: any) => this.location_identifier = params['location'] );
   }
 
@@ -41,9 +46,10 @@ export class LocationComponent implements OnInit {
         this.dataService.getTaps(location.id).subscribe({
           next: (taps: Tap[]) => {
             _.forEach(taps, (tap: Tap) => {
-              let tapD = <TapDetails>tap;
-              this.taps.push(tapD)
-              this.setTapDetails(tapD);
+              let _tap = new TapDetails(tap);
+              _tap.beer = new Beer(_tap.beer);
+              this.setTapDetails(_tap);
+              this.taps.push(_tap)
             })
             this.taps = _.sortBy(this.taps, (t) => {return t.tapNumber});
             this.isLoading = false;
@@ -75,8 +81,7 @@ export class LocationComponent implements OnInit {
       tap.isLoading = true
       if(tap.tapType === "beer"){
         this.dataService.getBeer(tap.beerId).subscribe((beer: Beer) => {
-          const _beer = new Beer()
-          Object.assign(_beer, beer);
+          const _beer = new Beer(beer)
           tap.beer = _beer;
           tap.isLoading = false;
         })
@@ -122,5 +127,29 @@ export class LocationComponent implements OnInit {
 
   ngOnInit() {  
     this.refresh();
+  }
+
+  openImageDialog(imgUrl: string) {
+    this.dialog.open(LocationImageDialog, {
+      data: {
+        imgUrl: imgUrl,
+      },
+    });
+  }
+
+  openQRCodeDialog(url: string) {
+    this.dialog.open(LocationQRCodeDialog, {
+      data: {
+        url: url,
+      },
+    });
+  }
+
+  getUntappdUrl(beer: Beer): string {
+    if(isNilOrEmpty(beer) || isNilOrEmpty(beer.untappdId)){
+      return "";
+    }
+
+    return `https://untappd.com/qr/beer/${beer.untappdId}`;
   }
 }
