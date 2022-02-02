@@ -1,0 +1,22 @@
+<div class="dropzone" app-dnd (fileDropped)="onFileDropped($event)" [disabled]="uploading">
+    <input class="{{uploading ? 'disabled': 'enabled'}}" type="file" #fileDropRef id="fileDropRef" (change)="fileBrowseHandler($event)" [disabled]="uploading" />
+    <img src="assets/img/dnd/ic-upload-file.svg" alt="">
+    <h3>Drag and drop file here</h3>
+    <h3>or</h3>
+    <label class="{{uploading ? 'disabled': 'enabled'}}" for="fileDropRef">Browse for file</label>
+</div>
+<div class="files-list">
+    <div class="single-file" *ngFor="let file of _.values(files)">
+      <img src="assets/img/dnd/ic-file.svg" width="45px" alt="file">
+      <div class="info">
+        <h4 class="name{{file.hasError ? ' error' : ''}}">
+          {{ file?.name }}
+        </h4>
+        <p class="size">
+          {{ formatBytes(file?.size) }}
+        </p>
+        <mat-progress-bar mode="determinate" [value]="file?.progress" *ngIf="!file.hasError"></mat-progress-bar>
+        <div class="error-message" *ngIf="file.hasError">Error: {{ file.errorMessage }}</div>
+      </div>
+    </div>
+</div>

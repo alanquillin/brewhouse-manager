@@ -3,11 +3,13 @@ import { DataService } from '../../data.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
+import { MatDialog } from '@angular/material/dialog';
 import { FormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, FormGroup } from '@angular/forms';
+
+import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/file-upload-dialog.component';
 
 import { Beer, DataError, Location, beerTransformFns } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
-
 
 import * as _ from 'lodash';
 
@@ -75,11 +77,12 @@ export class ManageBeerComponent implements OnInit {
     externalBrewingTool: new FormControl(-1),
     brewDate: new FormControl(new Date(), [this.requiredIfNoBrewTool(this)]),
     kegDate: new FormControl(new Date(), [this.requiredIfNoBrewTool(this)]),
+    imgUrl: new FormControl(''),
     brewfatherBatchId: new FormControl('', [this.requiredForBrewingTool(this, "brewfather")]),
     untappdId: new FormControl('')
   });
 
-  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
+  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -192,7 +195,6 @@ export class ManageBeerComponent implements OnInit {
     this.processing = true;
     this.dataService.updateBeer(this.modifyBeer.id, this.changes).subscribe({
       next: (beer: Beer) => {
-        this.modifyBeer.disableEditing();
         this.refresh(()=> {this.processing = false;}, () => {
           this.editing = false;
         })
@@ -336,5 +338,20 @@ export class ManageBeerComponent implements OnInit {
       }
     });
     return changes;
+  }
+
+  openUploadDialog(): void{
+    const dialogRef = this.dialog.open(FileUploadDialogComponent, {
+      data: {
+        imageType: "beer"
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!isNilOrEmpty(result)) {
+        const f = result[0];
+        this.modifyBeer.editValues.imgUrl = f.path;
+      }
+    });
   }
 }

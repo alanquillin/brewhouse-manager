@@ -36,7 +36,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { GaugeModule } from 'angular-gauge';
-import { NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap'
+import { NgbPopoverModule, NgbAlertModule } from '@ng-bootstrap/ng-bootstrap'
 import { QRCodeModule } from 'angularx-qrcode';
 
 import { LocationComponent } from './location/location.component';
@@ -50,10 +50,13 @@ import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
 import { ManageUsersComponent } from './manage/users/users.component'
 import { ProfileComponent } from './profile/profile.component';
-import { LocationImageDialog } from './image-preview-dialog/image-preview-dialog.component'
-import { LocationQRCodeDialog } from './qrcode-dialog/qrcode-dialog.component'
+import { LocationImageDialog } from './_dialogs/image-preview-dialog/image-preview-dialog.component'
+import { LocationQRCodeDialog } from './_dialogs/qrcode-dialog/qrcode-dialog.component'
+import { FileUploadDialogComponent } from './_dialogs/file-upload-dialog/file-upload-dialog.component';
+import { FileUploaderComponent } from './_components/file-uploader/file-uploader.component';
 
 import { WINDOW_PROVIDERS } from './window.provider';
+import { DndDirective } from './dnd.directive';
 
 @NgModule({
   declarations: [
@@ -71,6 +74,9 @@ import { WINDOW_PROVIDERS } from './window.provider';
     ManageTapsComponent,
     ManageUsersComponent,
     ProfileComponent,
+    FileUploaderComponent,
+    DndDirective,
+    FileUploadDialogComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -102,6 +108,7 @@ import { WINDOW_PROVIDERS } from './window.provider';
     MatTableModule,
     MatToolbarModule,
     MatTooltipModule,
+    NgbAlertModule,
     NgbPopoverModule,
     QRCodeModule,
     ReactiveFormsModule,

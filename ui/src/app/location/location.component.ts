@@ -1,5 +1,5 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 import { Component, OnInit, Inject } from '@angular/core';
 import { DataService } from './../data.service';
@@ -9,8 +9,8 @@ import { Location, Tap, Beer, Sensor, DataError } from './../models/models';
 import { SensorData, TapDetails } from './models'
 import { isNilOrEmpty } from '../utils/helpers';
 
-import { LocationImageDialog } from '../image-preview-dialog/image-preview-dialog.component'
-import { LocationQRCodeDialog } from '../qrcode-dialog/qrcode-dialog.component'
+import { LocationImageDialog } from '../_dialogs/image-preview-dialog/image-preview-dialog.component'
+import { LocationQRCodeDialog } from '../_dialogs/qrcode-dialog/qrcode-dialog.component'
 
 import * as _ from 'lodash';
 

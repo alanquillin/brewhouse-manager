@@ -30,6 +30,7 @@ from db import session_scope
 from db.users import Users as UsersDB
 from lib import json, logging
 from lib.config import Config
+from resources.assets import UploadImage
 from resources.auth import GoogleLogin, Logout, GoogleCallback, AuthUser, Login
 from resources.beers import Beers, Beer
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
@@ -117,6 +118,7 @@ api.add_resource(Users, "/api/v1/users")
 api.add_resource(User, "/api/v1/users/<user_id>")
 api.add_resource(CurrentUser, "/api/v1/users/current")
 api.add_resource(Settings, "/api/v1/settings")
+api.add_resource(UploadImage, "/api/v1/uploads/images/<image_type>")
 
 # session management APIs
 api.add_resource(GoogleLogin, "/login/google")

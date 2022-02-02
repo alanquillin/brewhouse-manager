@@ -36,6 +36,10 @@ ifeq ("$(wildcard deploy/docker-local/my-config.json)","")
     $(shell echo '{}' >> deploy/docker-local/my-config.json)
 endif
 
+ifeq ("$(wildcard deploy/docker-local/uploads)","")
+    $(shell mkdir deploy/docker-local/uploads && chmod 777 deploy/docker-local/uploads)
+endif
+
 
 ifeq ($(TAG_LATEST),true)
 override DOCKER_BUILD_ARGS += -t $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):latest
@@ -44,7 +48,8 @@ endif
 
 .PHONY: build build-db-seed build-dev clean clean-all clean-image clean-images \
 	clean-seed-image depends docker-build format-py lint-py lint-ts publish \
-	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends
+	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends \
+	clean-local-uploads
 
 # dependency targets
 
@@ -119,5 +124,8 @@ clean-seed-image:
 
 clean-images: clean-image clean-seed-image
 
-clean-all: clean clean-images
+clean-local-uploads:
+	rm -rf ./deploy/docker-local/.local/uploads/*
+
+clean-all: clean clean-images clean-local-uploads
 

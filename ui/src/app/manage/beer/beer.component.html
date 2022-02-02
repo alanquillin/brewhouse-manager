@@ -119,7 +119,7 @@
     <div class="beers-modify" *ngIf="editing || adding">
         <div class="heading"><p> {{ adding ? "Add" : "Edit" }} Beer</p></div>
         <div class="modify-form">
-            <form [formGroup]="modifyFormGroup" (ngSubmit)="editing ? save() : create()">
+            <form [formGroup]="modifyFormGroup">
                 <fieldset>
                     <mat-form-field appearance="fill">
                         <mat-label>External Brew Tool</mat-label>
@@ -133,6 +133,7 @@
 
                     <mat-form-field appearance="fill" class="modify-field" *ngIf="modifyBeer.editValues.externalBrewingTool === 'brewfather'">
                         <input id="modify_brewfather_batch_id_input"
+                            [disabled]="processing"
                             class="dp-textfield--input"
                             formControlName="brewfatherBatchId"
                             [(ngModel)]="modifyBeer.editValues.externalBrewingToolMeta.batchId"
@@ -142,6 +143,7 @@
 
                     <mat-form-field appearance="fill" class="modify-field">
                         <input id="modify_name_input"
+                            [disabled]="processing"
                             class="dp-textfield--input"
                             formControlName="name"
                             [(ngModel)]="modifyBeer.editValues.name"
@@ -154,6 +156,7 @@
 
                     <mat-form-field appearance="fill" class="modify-field">
                         <input id="modify_description_input"
+                            [disabled]="processing"
                             class="dp-textfield--input"
                             formControlName="description"
                             [(ngModel)]="modifyBeer.editValues.description"
@@ -166,6 +169,7 @@
 
                     <mat-form-field appearance="fill" class="modify-field">
                         <input id="modify_style_input"
+                            [disabled]="processing"
                             class="dp-textfield--input"
                             formControlName="style"
                             [(ngModel)]="modifyBeer.editValues.style"
@@ -178,6 +182,7 @@
 
                     <mat-form-field appearance="fill" class="modify-field">
                         <input id="modify_abv_input"
+                            [disabled]="processing"
                             class="dp-textfield--input"
                             formControlName="abv"
                             [(ngModel)]="modifyBeer.editValues.abv"
@@ -190,6 +195,7 @@
 
                     <mat-form-field appearance="fill" class="modify-field">
                         <input id="modify_srm_input"
+                            [disabled]="processing"
                             class="dp-textfield--input"
                             formControlName="srm"
                             [(ngModel)]="modifyBeer.editValues.srm"
@@ -202,6 +208,7 @@
 
                     <mat-form-field appearance="fill" class="modify-field">
                         <input id="modify_ibu_input"
+                            [disabled]="processing"
                             class="dp-textfield--input"
                             formControlName="ibu"
                             [(ngModel)]="modifyBeer.editValues.ibu"
@@ -214,6 +221,7 @@
 
                     <mat-form-field appearance="fill" class="modify-field">
                         <input id="modify_untappd_id_input"
+                            [disabled]="processing"
                             class="dp-textfield--input"
                             formControlName="untappdId"
                             [(ngModel)]="modifyBeer.editValues.untappdId"
@@ -221,9 +229,22 @@
                         <mat-label>Untappd Id</mat-label>
                     </mat-form-field>
 
+                    <mat-form-field appearance="fill" class="modify-field">
+                        <input id="modify_image_url_id_input"
+                            [disabled]="processing"
+                            class="dp-textfield--input"
+                            formControlName="imgUrl"
+                            [(ngModel)]="modifyBeer.editValues.imgUrl"
+                            matInput />
+                        <mat-label>Image URL</mat-label>
+                        <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog()">
+                            <mat-icon>upload</mat-icon>
+                        </button>
+                    </mat-form-field>
+
                     <mat-form-field appearance="fill">
                         <mat-label>Brew Date</mat-label>
-                        <input matInput [matDatepicker]="brewDatePicker" formControlName="brewDate" [(ngModel)]="modifyBeer.editValues.brewDateObj">
+                        <input matInput [matDatepicker]="brewDatePicker" formControlName="brewDate" [(ngModel)]="modifyBeer.editValues.brewDateObj" [disabled]="processing">
                         <mat-datepicker-toggle matSuffix [for]="brewDatePicker"></mat-datepicker-toggle>
                         <mat-datepicker #brewDatePicker></mat-datepicker>
                         <mat-error *ngIf="modifyForm['brewDate'].errors && modifyForm['brewDate'].errors['requiredIfNoToolSelected']">
@@ -233,7 +254,7 @@
                     
                     <mat-form-field appearance="fill">
                         <mat-label>Keg Date</mat-label>
-                        <input matInput [matDatepicker]="kegDatePicker" formControlName="kegDate" [(ngModel)]="modifyBeer.editValues.kegDateObj">
+                        <input matInput [matDatepicker]="kegDatePicker" formControlName="kegDate" [(ngModel)]="modifyBeer.editValues.kegDateObj" [disabled]="processing">
                         <mat-datepicker-toggle matSuffix [for]="kegDatePicker"></mat-datepicker-toggle>
                         <mat-datepicker #kegDatePicker></mat-datepicker>
                         <mat-error *ngIf="modifyForm['kegDate'].errors && modifyForm['kegDate'].errors['requiredIfNoToolSelected']">
@@ -245,12 +266,18 @@
         </div>
         
         <div class="modify-actions" *ngIf="adding">
-            <button mat-raised-button color="primary" (click)="create()" [disabled]="!modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Create</button>
-            <button mat-raised-button color="warn" (click)="cancelAdd()"><mat-icon>cancel</mat-icon> Cancel</button>
+            <button mat-raised-button color="primary" (click)="create()" [disabled]="!modifyFormGroup.valid || processing">
+                <mat-icon *ngIf="processing"><mat-spinner diameter="20"></mat-spinner></mat-icon>
+                <mat-icon *ngIf="!processing">save</mat-icon> Create
+            </button>
+            <button mat-raised-button color="warn" (click)="cancelAdd()" [disabled]="processing"><mat-icon>cancel</mat-icon> Cancel</button>
         </div>
         <div class="modify-actions" *ngIf="editing">
-            <button mat-raised-button color="primary" (click)="save()" [disabled]="!hasChanges || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
-            <button mat-raised-button color="warn" (click)="cancelEdit()"><mat-icon>cancel</mat-icon> Cancel</button>
+            <button mat-raised-button color="primary" (click)="save()" [disabled]="!hasChanges || !modifyFormGroup.valid || processing">
+                <mat-icon *ngIf="processing"><mat-spinner diameter="20"></mat-spinner></mat-icon>
+                <mat-icon *ngIf="!processing">save</mat-icon> Save
+            </button>
+            <button mat-raised-button color="warn" (click)="cancelEdit()" [disabled]="processing"><mat-icon>cancel</mat-icon> Cancel</button>
         </div>
     </div>
 </div>

@@ -26,6 +26,7 @@ services:
       - brewhouse-manager-net
     volumes:
       - ./my-config.json:/brewhouse-manager/config/config.json
+      - ./uploads:/brewhouse-manager/api/static/assets/uploads
     stdin_open: true
     tty: true
   postgres:

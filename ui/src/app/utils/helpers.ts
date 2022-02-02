@@ -43,3 +43,22 @@ export function deepEqual(object1: any, object2: any): boolean {
 
     return _.isEmpty(val);
   }
+
+export function toBoolean(val: any) {
+  if(_.isBoolean(val)){
+    return val;
+  }
+
+  if(_.isString(val)) {
+    val = _.toLower(val);
+    return val === "true" || val !== "yes"
+    
+    val = _.toNumber(val);
+  }
+
+  if(_.isNumber(val)) {
+    return val > 0;
+  }
+
+  return false;
+}

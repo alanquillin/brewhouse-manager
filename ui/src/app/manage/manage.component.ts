@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { DataService } from './../data.service';
 import { Router } from '@angular/router';
 
-//import {  } from './../models/models';
-
 @Component({
   selector: 'manage',
   templateUrl: './manage.component.html',

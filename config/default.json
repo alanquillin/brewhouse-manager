@@ -4,7 +4,8 @@
     "auth.initial_user.set_password": "bool",
     "auth.oidc.google.enabled": "bool",
     "external_brew_tools.brewfather.enabled": "bool",
-    "db.port": "int"
+    "db.port": "int",
+    "uploads.images.allowed_file_extensions": "list"
   },
   "api": {
     "host": "localhost",
@@ -28,6 +29,12 @@
   "external_brew_tools": {
     "brewfather": {
         "enabled": false
+    }
+  },
+  "uploads": {
+    "base_dir": "/brewhouse-manager/api/static/assets/uploads",
+    "images": {
+      "allowed_file_extensions": ["jpg","jpeg","png.","gif","svg"]
     }
   }
 }
