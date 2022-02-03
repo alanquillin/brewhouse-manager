@@ -35,7 +35,6 @@ export class ImageSelectorDialogComponent implements OnInit {
   ngOnInit(): void {
     this.dataService.listImages(this.imageType).subscribe({
       next: (images: string[]) => {
-        console.log(images);
         this.images = images;
       },
       error: (err: DataError) => {
