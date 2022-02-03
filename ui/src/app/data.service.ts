@@ -221,6 +221,11 @@ export class DataService {
     return this.http.post<any>(url, formData, {reportProgress: true}).pipe(catchError(this.getError));
   }
 
+  listImages(imageType: string): Observable<string[]> {
+    const url = `${this.apiBaseUrl}/uploads/images/${imageType}`;
+    return this.http.get<any>(url).pipe(catchError(this.getError));
+  }
+
   uploadBeerImage(file: File): Observable<any> {
     return this.uploadImage('beer', file);
   }

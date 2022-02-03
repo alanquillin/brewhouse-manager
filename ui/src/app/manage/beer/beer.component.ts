@@ -7,6 +7,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { FormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, FormGroup } from '@angular/forms';
 
 import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/file-upload-dialog.component';
+import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
+import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component'
 
 import { Beer, DataError, Location, beerTransformFns } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
@@ -340,7 +342,7 @@ export class ManageBeerComponent implements OnInit {
     return changes;
   }
 
-  openUploadDialog(): void{
+  openUploadDialog(): void {
     const dialogRef = this.dialog.open(FileUploadDialogComponent, {
       data: {
         imageType: "beer"
@@ -352,6 +354,29 @@ export class ManageBeerComponent implements OnInit {
         const f = result[0];
         this.modifyBeer.editValues.imgUrl = f.path;
       }
+    });
+  }
+
+  openImageSelectorDialog(): void {
+    const dialogRef = this.dialog.open(ImageSelectorDialogComponent, {
+      width: '1200px',
+      data: {
+        imageType: "beer"
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!isNilOrEmpty(result)) {
+        this.modifyBeer.editValues.imgUrl = result;
+      }
+    });
+  }
+
+  openImagePreviewDialog(imgUrl: string): void {
+    this.dialog.open(LocationImageDialog, {
+      data: {
+        imgUrl: imgUrl,
+      },
     });
   }
 }

@@ -19,6 +19,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDialogModule } from '@angular/material/dialog';  
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule} from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
@@ -39,7 +40,12 @@ import { GaugeModule } from 'angular-gauge';
 import { NgbPopoverModule, NgbAlertModule } from '@ng-bootstrap/ng-bootstrap'
 import { QRCodeModule } from 'angularx-qrcode';
 
+import { FileUploadDialogComponent } from './_dialogs/file-upload-dialog/file-upload-dialog.component';
+import { FileUploaderComponent } from './_components/file-uploader/file-uploader.component';
+import { ImageSelectorDialogComponent } from './_dialogs/image-selector-dialog/image-selector-dialog.component';
 import { LocationComponent } from './location/location.component';
+import { LocationImageDialog } from './_dialogs/image-preview-dialog/image-preview-dialog.component'
+import { LocationQRCodeDialog } from './_dialogs/qrcode-dialog/qrcode-dialog.component'
 import { LocationSelectorComponent } from './location-selector/location-selector.component';
 import { LoginComponent } from './login/login.component';
 import { ManageBeerComponent } from './manage/beer/beer.component';
@@ -50,10 +56,6 @@ import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
 import { ManageUsersComponent } from './manage/users/users.component'
 import { ProfileComponent } from './profile/profile.component';
-import { LocationImageDialog } from './_dialogs/image-preview-dialog/image-preview-dialog.component'
-import { LocationQRCodeDialog } from './_dialogs/qrcode-dialog/qrcode-dialog.component'
-import { FileUploadDialogComponent } from './_dialogs/file-upload-dialog/file-upload-dialog.component';
-import { FileUploaderComponent } from './_components/file-uploader/file-uploader.component';
 
 import { WINDOW_PROVIDERS } from './window.provider';
 import { DndDirective } from './dnd.directive';
@@ -61,6 +63,10 @@ import { DndDirective } from './dnd.directive';
 @NgModule({
   declarations: [
     AppComponent,
+    DndDirective,
+    FileUploadDialogComponent,
+    FileUploaderComponent,
+    ImageSelectorDialogComponent,
     LocationComponent,
     LocationImageDialog,
     LocationQRCodeDialog,
@@ -74,9 +80,6 @@ import { DndDirective } from './dnd.directive';
     ManageTapsComponent,
     ManageUsersComponent,
     ProfileComponent,
-    FileUploaderComponent,
-    DndDirective,
-    FileUploadDialogComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -93,6 +96,7 @@ import { DndDirective } from './dnd.directive';
     MatDatepickerModule,
     MatDialogModule,
     MatFormFieldModule,
+    MatGridListModule,
     MatIconModule,
     MatInputModule,
     MatListModule,

@@ -84,7 +84,7 @@ export class FileUploaderComponent implements AfterViewInit{
           file.progress = Math.round(100 * event.loaded / event.total);
         } else {
           file.progress = 100;
-          file.path = `/assets/uploads/img/${this.imageType}/${event.destinationFilename}`;
+          file.path = event.destinationPath;
           this.uploadComplete.emit(file);
           if(this.allowMultiple) {
             if(this.areUploadsComplete()) {

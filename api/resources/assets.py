@@ -23,6 +23,23 @@ class UploadImage(BaseResource, ResourceMixinBase):
     def is_file_allowed(self, filename):
         return '.' in filename and self.get_file_extension(filename) in [e.replace(".", "") for e in self.allowed_image_extensions]
     
+    def get_parent_dir(self, image_type):
+        return os.path.join(self.assets_base_dir, "img", image_type)
+
+    @staticmethod
+    def get_client_image_path(image_type, filename):
+        return f"/assets/uploads/img/{image_type}/{filename}"
+
+    @login_required
+    def get(self, image_type):
+        if image_type not in ["beer", "user"]:
+            raise ClientError(user_msg=f"Invalid image type '{image_type}'.  Must be either 'beer' or 'user'")
+        
+        parent_path = self.get_parent_dir(image_type)
+        all_files = [f for f in os.listdir(parent_path) if os.path.isfile(os.path.join(parent_path, f))]
+        return [self.get_client_image_path(image_type, f) for f in all_files if not f.startswith(".")]
+
+
     @login_required
     def post(self, image_type):
         if image_type not in ["beer", "user"]:
@@ -43,7 +60,7 @@ class UploadImage(BaseResource, ResourceMixinBase):
         new_filename = f"{str(uuid4())}.{self.get_file_extension(old_filename)}"
         filename = secure_filename(new_filename)
         
-        parent_dir = os.path.join(self.assets_base_dir, "img", image_type)
+        parent_dir = self.get_parent_dir(image_type)
         if not os.path.exists(parent_dir):
             self.logger.debug("Image director `%s` does not exist.  Creating...", parent_dir)
             os.makedirs(parent_dir)
@@ -54,4 +71,4 @@ class UploadImage(BaseResource, ResourceMixinBase):
         file.save(path)
         self.logger.debug("Successfully saved file '%s'", path)
         
-        return {"sourceFilename": old_filename, "destinationFilename": filename}
+        return {"sourceFilename": old_filename, "destinationPath": self.get_client_image_path(image_type, filename)}

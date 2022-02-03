@@ -90,7 +90,7 @@
                     <td mat-cell *matCellDef="let element">
                         <span *ngIf="!_.isEmpty(element.getImgUrl())">
                             <ng-template #popupContent><div><img class="beer-image-preview" src="{{ element.getImgUrl() }}"/></div></ng-template>
-                            <button mat-icon-button color="primary" [ngbPopover]="popupContent" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="left">
+                            <button mat-icon-button color="primary" [ngbPopover]="popupContent" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="left" (click)="openImagePreviewDialog(element.getImgUrl())">
                                 <mat-icon>open_in_new</mat-icon>
                             </button>
                         </span>
@@ -237,6 +237,13 @@
                             [(ngModel)]="modifyBeer.editValues.imgUrl"
                             matInput />
                         <mat-label>Image URL</mat-label>
+                        <ng-template #popupContentMod><div><img class="beer-image-preview" src="{{ modifyBeer.editValues.imgUrl }}"/></div></ng-template>
+                        <button *ngIf="!isNilOrEmpty(modifyBeer.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(modifyBeer.editValues.imgUrl)">
+                            <mat-icon>open_in_new</mat-icon>
+                        </button>
+                        <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog()">
+                            <mat-icon>photo_library</mat-icon>
+                        </button>
                         <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog()">
                             <mat-icon>upload</mat-icon>
                         </button>
