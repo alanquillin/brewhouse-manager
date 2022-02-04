@@ -54,6 +54,15 @@ echo "{}" > ./config.json
 Edit the new `config.json` file as needed.  See [configuration setting](./configs.md) file to set an specific
 configuration options.
 
+### Create an uploads file
+
+Next, create a new directory to contain any images uploaded in the app.  This allows the images to persist even if the container is destroyed/rebuilt as well
+as keeps the container image from growing as images are uploaded.  
+
+``` shell
+mkdir 777 uploads
+```
+
 ### Create the base docker-compose.yml file
 
 Create a new file named `docker-compose.yml` and add the following:
@@ -73,6 +82,7 @@ services:
       - brewhouse-manager-net
     volumes:
       - ./config.json:/brewhouse-manager/config/config.json
+      - ./uploads:/brewhouse-manager/api/static/assets/uploads
     stdin_open: true
     tty: true
 networks:
@@ -218,6 +228,7 @@ services:
       - brewhouse-manager-net
     volumes:
       - ./config.json:/brewhouse-manager/config/config.json
+      - ./uploads:/brewhouse-manager/api/static/assets/uploads
     stdin_open: true
     tty: true
   postgres:
