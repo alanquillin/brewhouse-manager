@@ -2,7 +2,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Component, Inject } from '@angular/core';
 
 import { toBoolean } from '../../utils/helpers';
-import { ExtendedFile } from '../../_components/file-uploader/models';
+import { ExtendedFile } from '../../_components/file-uploader/file-uploader.component'
 
 import * as _ from 'lodash';
 

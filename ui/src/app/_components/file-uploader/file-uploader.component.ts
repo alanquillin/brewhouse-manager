@@ -4,10 +4,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { DataError } from "../../models/models";
 import { HttpEventType } from "@angular/common/http";
-import { ExtendedFile } from './models'
 
 import * as _ from 'lodash';
 import * as $ from 'jquery';
+
+export class ExtendedFile extends File {
+  progress: number = 0;
+  path:string | undefined;
+  hasError: boolean = false
+  errorMessage: string | undefined
+}
 
 @Component({
   selector: 'app-file-uploader',

@@ -6,13 +6,22 @@ import { DataService } from './../data.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { Location, Tap, Beer, Sensor, DataError } from './../models/models';
-import { SensorData, TapDetails } from './models'
 import { isNilOrEmpty } from '../utils/helpers';
 
 import { LocationImageDialog } from '../_dialogs/image-preview-dialog/image-preview-dialog.component'
 import { LocationQRCodeDialog } from '../_dialogs/qrcode-dialog/qrcode-dialog.component'
 
 import * as _ from 'lodash';
+
+export class TapDetails extends Tap {
+  isEmpty!: boolean;
+  isLoading!: boolean;
+  override sensor!: SensorData;
+}
+
+export class SensorData extends Sensor {
+  percentBeerRemaining!: number;
+}
 
 @Component({
   selector: 'app-location',
