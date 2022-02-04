@@ -36,9 +36,16 @@
                         <p>IBU: {{ tap.beer.getIbu() }}</p>
                     </div>
                     <div class="tap-qrcode">
-                        <a (click)="openQRCodeDialog(getUntappdUrl(tap.beer))">
-                            <qrcode [qrdata]="getUntappdUrl(tap.beer)" [width]="100" [margin]="0"  *ngIf="!isNilOrEmpty(tap.beer.untappdId)"></qrcode>
-                        </a>
+                        <div class="tap-qrcode-container" *ngIf="!isNilOrEmpty(tap.beer.untappdId)">
+                            <div class="tap-qrcode-header">
+                                Untappd
+                            </div>
+                            <div class="tap-qrcode-content">
+                                <a (click)="openQRCodeDialog(getUntappdUrl(tap.beer))">
+                                    <qrcode [qrdata]="getUntappdUrl(tap.beer)" [width]="76" [margin]="0"></qrcode>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                     <div class="tap-logo" *ngIf="!_.isNil(tap.beer) && !_.isEmpty(tap.beer.getImgUrl())">
                         <a (click)="openImageDialog(tap.beer.getImgUrl())">

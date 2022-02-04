@@ -150,6 +150,7 @@ export class LocationComponent implements OnInit {
     this.dialog.open(LocationQRCodeDialog, {
       data: {
         url: url,
+        title: "Check-in on Untappd"
       },
     });
   }

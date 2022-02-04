@@ -1,4 +1,4 @@
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { Component, Inject } from '@angular/core';
 
@@ -8,5 +8,9 @@ import { Component, Inject } from '@angular/core';
   styleUrls: ['image-preview-dialog.component.scss']
 })
 export class LocationImageDialog {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<LocationImageDialog>) {}
+
+  onClick(): void {
+    this.dialogRef.close();
+  }
 }

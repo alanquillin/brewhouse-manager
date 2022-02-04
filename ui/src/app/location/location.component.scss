@@ -56,6 +56,10 @@ div.tap-image {
     }
 }
 
+div.tap-logo img {
+    cursor: pointer;
+}
+
 .tap-gauge {
     display: block;
     border-radius: 3px;
@@ -67,6 +71,30 @@ div.tap-image {
     order: 3;
     margin-left: auto;
     margin-right: 12px;
+}
+
+.tap-qrcode-container {
+    display: flex;
+    flex-direction: column;
+
+    border: none;
+    padding: 0px;
+
+    .tap-qrcode-header {
+        order: 1;
+        font-size: 12px;
+        text-align: center;
+        padding-bottom: 4px;
+    }
+
+    .tap-qrcode-content {
+        order: 2;
+        align-content: center;
+
+        a {
+            cursor: pointer;
+        }
+    }
 }
 
 .footer {
