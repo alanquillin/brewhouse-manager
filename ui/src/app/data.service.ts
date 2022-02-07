@@ -44,7 +44,6 @@ export class DataService {
   baseUrl: string;
 
   constructor(public http: HttpClient, @Inject(WINDOW) private window: Window) {
-    console.log(this.window.location)
     const protocol = this.window.location.protocol
     const hostname = this.window.location.hostname;
     const port = this.window.location.port
@@ -58,7 +57,6 @@ export class DataService {
   }
 
   getError(error: any){
-    console.log("error caught")
     let errObj = new DataError(error.error.message);
     if (!(error.error instanceof ErrorEvent)) {
         // handle server-side errors

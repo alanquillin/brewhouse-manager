@@ -32,7 +32,6 @@ export class DndDirective {
 
   // Drop listener
   @HostListener('drop', ['$event']) public ondrop(evt: any) {
-    console.log(evt);
     evt.preventDefault();
     evt.stopPropagation();
     this.fileOver = false;
