@@ -1,11 +1,11 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { DataService } from '../../data.service';
+import { DataService, DataError } from '../../data.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
 
-import { Sensor, DataError, Location } from '../../models/models';
+import { Sensor, Location } from '../../models/models';
 
 import * as _ from 'lodash';
 
@@ -139,7 +139,6 @@ export class ManageSensorsComponent implements OnInit {
   }
 
   create(): void {
-    console.log(this.modifySensor);
     this.processing = true;
     var data: any = {
       name: this.modifySensor.editValues.name,
@@ -147,8 +146,6 @@ export class ManageSensorsComponent implements OnInit {
       locationId: this.modifySensor.editValues.locationId,
       meta: {authToken: this.modifySensor.editValues.meta.authToken}
     }
-    console.log(`Creating sensor`)
-    console.log(data)
     this.dataService.createSensor(data).subscribe({
       next: (sensor: Sensor) => {
         this.refresh(() => {this.processing = false;}, () => {this.adding = false;});
@@ -247,10 +244,7 @@ export class ManageSensorsComponent implements OnInit {
     switch(this.modifySensor.editValues.sensorType) {
       case "plaato-keg":
         if(!_.has(this.modifySensor.editValues.meta, "authToken")){
-          console.log("adding missing metadata");
-          console.log(this.modifySensor.editValues.meta)
           _.set(this.modifySensor.editValues, 'meta.authToken', '');
-          console.log(this.modifySensor);
         }
         break
     }

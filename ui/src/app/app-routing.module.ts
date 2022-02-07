@@ -16,14 +16,25 @@ const routes: Routes = [
   {
     path: '',
     component: LocationSelectorComponent,
+    data: {
+      access: { restricted: false }
+    }
   },
   {
     path: 'view/:location',
     component: LocationComponent,
+    data: {
+      hideHeader: true,
+      hideFooter: true,
+      access: { restricted: false }
+    }
   },
   {
     path: 'login',
-    component: LoginComponent
+    component: LoginComponent,
+    data: {
+      access: { restricted: false }
+    }
   },
   {
     path: 'me',

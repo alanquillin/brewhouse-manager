@@ -1,135 +1,129 @@
-<div class="header">
-    <app-manage-header></app-manage-header>
-</div>
-<div class="content">
-    <div class="users-view" *ngIf="!editing && !adding">
-        <div class="heading"><p>Edit Users</p></div>
-        <div class="taps-list-loading" *ngIf="loading">
-            <mat-spinner></mat-spinner>
-        </div>
-        <div class="user-view-filters" *ngIf="!loading">
-            <div class="user-view-actions">
-                <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add User</button>
-            </div>
-        </div>
-        <div class="users-list" *ngIf="!loading">
-            <table mat-table matSort [dataSource]="filteredUsers" class="mat-elevation-z8" (matSortChange)="filter($event)">
-                <ng-container matColumnDef="id">
-                    <th mat-header-cell *matHeaderCellDef> Id </th>
-                    <td mat-cell *matCellDef="let element"> {{ element.id }} </td>
-                </ng-container>
-            
-                <ng-container matColumnDef="email">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header="email" sortActionDescription="Sort by email"> Email </th>
-                    <td mat-cell *matCellDef="let element">{{ element.email }}</td>
-                </ng-container>
-
-                <ng-container matColumnDef="firstName">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header="firstName" sortActionDescription="Sort by first name"> First Name </th>
-                    <td mat-cell *matCellDef="let element">{{ element.firstName }}</td>
-                </ng-container>
-            
-                <ng-container matColumnDef="lastName">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header="lastName" sortActionDescription="Sort by last name"> Last Name </th>
-                    <td mat-cell *matCellDef="let element">{{ element.lastName }}</td>
-                </ng-container>
-
-                <ng-container matColumnDef="profilePic">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header="profilePic" sortActionDescription="Sort by profile"> Profile Pic </th>
-                    <td mat-cell *matCellDef="let element">
-                        <span *ngIf="!_.isEmpty(element.profilePic)">
-                            <ng-template #popupContent><div><img class="user-image-preview" src="{{ element.profilePic }}"/></div></ng-template>
-                            <button mat-icon-button color="primary" [ngbPopover]="popupContent" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="left">
-                                <mat-icon>open_in_new</mat-icon>
-                            </button>
-                        </span>
-                    </td>
-                </ng-container>
-
-                <ng-container matColumnDef="actions">
-                    <th mat-header-cell *matHeaderCellDef> </th>
-                    <td mat-cell *matCellDef="let element"> 
-                        <div class="actions" *ngIf="me.id !== element.id">
-                            <button mat-icon-button color="primary" aria-label="Edit user" (click)="edit(element)">
-                                <mat-icon>edit</mat-icon>
-                            </button>
-                            <button mat-icon-button color="warn" aria-label="Delete user" (click)="delete(element)">
-                                <mat-icon>delete</mat-icon>
-                            </button>
-                        </div> 
-                    </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-            </table>
+<div class="users-view" *ngIf="!editing && !adding">
+    <div class="heading"><p>Edit Users</p></div>
+    <div class="taps-list-loading" *ngIf="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <div class="user-view-filters" *ngIf="!loading">
+        <div class="user-view-actions">
+            <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add User</button>
         </div>
     </div>
-    <div class="users-modify" *ngIf="editing || adding">
-        <div class="heading"><p> {{ adding ? "Add" : "Edit" }} User</p></div>
-        <div class="modify-form">
-            <form [formGroup]="modifyFormGroup">
-                <fieldset>
-                    <mat-form-field appearance="fill" class="modify-field">
-                        <input id="modify_email_input"
-                            class="dp-textfield--input"
-                            formControlName="email"
-                            [(ngModel)]="modifyUser.editValues.email"
-                            matInput
-                            required />
-                        <mat-label>Email</mat-label>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="fill" class="modify-field">
-                        <input id="modify_first_name_input"
-                            class="dp-textfield--input"
-                            formControlName="firstName"
-                            [(ngModel)]="modifyUser.editValues.firstName"
-                            matInput />
-                        <mat-label>First Name</mat-label>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="fill" class="modify-field">
-                        <input id="modify_last_name_input"
-                            class="dp-textfield--input"
-                            formControlName="lastName"
-                            [(ngModel)]="modifyUser.editValues.lastName"
-                            matInput />
-                        <mat-label>Last Name</mat-label>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="fill" class="modify-field">
-                        <input id="modify_profile_pic_input"
-                            class="dp-textfield--input"
-                            formControlName="profilePic"
-                            [(ngModel)]="modifyUser.editValues.profilePic"
-                            matInput />
-                        <mat-label>Profile Pic URL</mat-label>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="fill" class="modify-field" *ngIf="adding">
-                        <input id="modify_password_input"
-                            class="dp-textfield--input"
-                            formControlName="password"
-                            matInput
-                            [type]="hidePassword ? 'password' : 'text'" />
-                        <mat-label>Initial Password (optional)</mat-label>
-                        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidePassword">
-                            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                          </button>
-                    </mat-form-field>
-                </fieldset>
-            </form>
-        </div>
+    <div class="users-list" *ngIf="!loading">
+        <table mat-table matSort [dataSource]="filteredUsers" class="mat-elevation-z8" (matSortChange)="filter($event)">
+            <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef> Id </th>
+                <td mat-cell *matCellDef="let element"> {{ element.id }} </td>
+            </ng-container>
         
-        <div class="modify-actions" *ngIf="adding">
-            <button mat-raised-button color="primary" (click)="create()" [disabled]="!modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Create</button>
-            <button mat-raised-button color="warn" (click)="cancelAdd()"><mat-icon>cancel</mat-icon> Cancel</button>
-        </div>
-        <div class="modify-actions" *ngIf="editing">
-            <button mat-raised-button color="primary" (click)="save()" [disabled]="!modifyUser.hasChanges || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
-            <button mat-raised-button color="warn" (click)="cancelEdit()"><mat-icon>cancel</mat-icon> Cancel</button>
-        </div>
+            <ng-container matColumnDef="email">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="email" sortActionDescription="Sort by email"> Email </th>
+                <td mat-cell *matCellDef="let element">{{ element.email }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="firstName">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="firstName" sortActionDescription="Sort by first name"> First Name </th>
+                <td mat-cell *matCellDef="let element">{{ element.firstName }}</td>
+            </ng-container>
+        
+            <ng-container matColumnDef="lastName">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="lastName" sortActionDescription="Sort by last name"> Last Name </th>
+                <td mat-cell *matCellDef="let element">{{ element.lastName }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="profilePic">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="profilePic" sortActionDescription="Sort by profile"> Profile Pic </th>
+                <td mat-cell *matCellDef="let element">
+                    <span *ngIf="!_.isEmpty(element.profilePic)">
+                        <ng-template #popupContent><div><img class="user-image-preview" src="{{ element.profilePic }}"/></div></ng-template>
+                        <button mat-icon-button color="primary" [ngbPopover]="popupContent" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="left">
+                            <mat-icon>open_in_new</mat-icon>
+                        </button>
+                    </span>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> </th>
+                <td mat-cell *matCellDef="let element"> 
+                    <div class="actions" *ngIf="me.id !== element.id">
+                        <button mat-icon-button color="primary" aria-label="Edit user" (click)="edit(element)">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" aria-label="Delete user" (click)="delete(element)">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div> 
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
     </div>
 </div>
-<div class="footer"></div>
+<div class="users-modify" *ngIf="editing || adding">
+    <div class="heading"><p> {{ adding ? "Add" : "Edit" }} User</p></div>
+    <div class="modify-form">
+        <form [formGroup]="modifyFormGroup">
+            <fieldset>
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_email_input"
+                        class="dp-textfield--input"
+                        formControlName="email"
+                        [(ngModel)]="modifyUser.editValues.email"
+                        matInput
+                        required />
+                    <mat-label>Email</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_first_name_input"
+                        class="dp-textfield--input"
+                        formControlName="firstName"
+                        [(ngModel)]="modifyUser.editValues.firstName"
+                        matInput />
+                    <mat-label>First Name</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_last_name_input"
+                        class="dp-textfield--input"
+                        formControlName="lastName"
+                        [(ngModel)]="modifyUser.editValues.lastName"
+                        matInput />
+                    <mat-label>Last Name</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_profile_pic_input"
+                        class="dp-textfield--input"
+                        formControlName="profilePic"
+                        [(ngModel)]="modifyUser.editValues.profilePic"
+                        matInput />
+                    <mat-label>Profile Pic URL</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field" *ngIf="adding">
+                    <input id="modify_password_input"
+                        class="dp-textfield--input"
+                        formControlName="password"
+                        matInput
+                        [type]="hidePassword ? 'password' : 'text'" />
+                    <mat-label>Initial Password (optional)</mat-label>
+                    <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidePassword">
+                        <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                        </button>
+                </mat-form-field>
+            </fieldset>
+        </form>
+    </div>
+    
+    <div class="modify-actions" *ngIf="adding">
+        <button mat-raised-button color="primary" (click)="create()" [disabled]="!modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Create</button>
+        <button mat-raised-button color="warn" (click)="cancelAdd()"><mat-icon>cancel</mat-icon> Cancel</button>
+    </div>
+    <div class="modify-actions" *ngIf="editing">
+        <button mat-raised-button color="primary" (click)="save()" [disabled]="!modifyUser.hasChanges || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
+        <button mat-raised-button color="warn" (click)="cancelEdit()"><mat-icon>cancel</mat-icon> Cancel</button>
+    </div>
+</div>

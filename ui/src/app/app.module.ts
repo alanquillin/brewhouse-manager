@@ -42,6 +42,7 @@ import { QRCodeModule } from 'angularx-qrcode';
 
 import { FileUploadDialogComponent } from './_dialogs/file-upload-dialog/file-upload-dialog.component';
 import { FileUploaderComponent } from './_components/file-uploader/file-uploader.component';
+//import { FooterComponent } from './_components/footer/footer.component';
 import { ImageSelectorDialogComponent } from './_dialogs/image-selector-dialog/image-selector-dialog.component';
 import { LocationComponent } from './location/location.component';
 import { LocationImageDialog } from './_dialogs/image-preview-dialog/image-preview-dialog.component'
@@ -50,7 +51,7 @@ import { LocationSelectorComponent } from './location-selector/location-selector
 import { LoginComponent } from './login/login.component';
 import { ManageBeerComponent } from './manage/beer/beer.component';
 import { ManageComponent } from './manage/manage.component';
-import { ManageHeaderComponent } from './manage/header/header.component';
+import { HeaderComponent } from './_components/header/header.component';
 import { ManageLocationsComponent } from './manage/locations/locations.component';
 import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
@@ -58,7 +59,8 @@ import { ManageUsersComponent } from './manage/users/users.component'
 import { ProfileComponent } from './profile/profile.component';
 
 import { WINDOW_PROVIDERS } from './window.provider';
-import { DndDirective } from './dnd.directive';
+import { DndDirective } from './_directives/dnd.directive';
+import { ErrorsComponent } from './errors/errors.component';
 
 @NgModule({
   declarations: [
@@ -74,12 +76,13 @@ import { DndDirective } from './dnd.directive';
     LoginComponent,
     ManageBeerComponent,
     ManageComponent,
-    ManageHeaderComponent,
+    HeaderComponent,
     ManageLocationsComponent,
     ManageSensorsComponent,
     ManageTapsComponent,
     ManageUsersComponent,
     ProfileComponent,
+    ErrorsComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -87,6 +90,7 @@ import { DndDirective } from './dnd.directive';
     BrowserModule,
     FlexLayoutModule,
     FormsModule,
+    //FooterComponent,
     GaugeModule.forRoot(),
     HttpClientModule,
     MatButtonModule,

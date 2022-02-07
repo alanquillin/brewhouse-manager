@@ -1,64 +1,54 @@
-<div class="header">
-    <div class="header-content">
-        <a class="title" href="/">Brewhouse: {{ location.description }}</a>
-    </div>
-</div>
-<div class="content">
-    <!-- <mat-sidenav #sidenav position="end" class="example-sidenav" mode="side" opened="true">
-        
-    </mat-sidenav> -->
-    <div class="tap-list" *ngFor="let tap of taps">
-        <mat-card class=tap-card>
-            <mat-card-subtitle>Tap {{tap.tapNumber}}: {{ tap.description }}</mat-card-subtitle>
-            <mat-card-content>
-                <div *ngIf="tap.isEmpty">
-                    <p>Empty :(</p>
+<div class="tap-list" *ngFor="let tap of taps">
+    <mat-card class=tap-card>
+        <mat-card-subtitle>Tap {{tap.tapNumber}}: {{ tap.description }}</mat-card-subtitle>
+        <mat-card-content>
+            <div *ngIf="tap.isEmpty">
+                <p>Empty :(</p>
+            </div>
+            <div class="tap-display" *ngIf="!tap.isEmpty && !_.isNil(tap.beer)">
+                <div class="tap-volume" *ngIf="!_.isNil(tap.sensor) && !_.isNaN(tap.sensor.percentBeerRemaining)">
+                    <mwl-gauge
+                        [max]="100"
+                        [dialStartAngle]="-90"
+                        [dialEndAngle]="-90.001"
+                        [value]="tap.sensor.percentBeerRemaining"
+                        [animated]="true"
+                        [animationDuration]="1"
+                        class="srm-{{getSrm(tap.beer)}}-gauge tap-gauge">
+                    </mwl-gauge>
                 </div>
-                <div class="tap-display" *ngIf="!tap.isEmpty && !_.isNil(tap.beer)">
-                    <div class="tap-volume" *ngIf="!_.isNil(tap.sensor) && !_.isNaN(tap.sensor.percentBeerRemaining)">
-                        <mwl-gauge
-                            [max]="100"
-                            [dialStartAngle]="-90"
-                            [dialEndAngle]="-90.001"
-                            [value]="tap.sensor.percentBeerRemaining"
-                            [animated]="true"
-                            [animationDuration]="1"
-                            class="srm-{{getSrm(tap.beer)}}-gauge tap-gauge">
-                        </mwl-gauge>
-                    </div>
-                    <div class="tap-image" *ngIf="_.isNil(tap.sensor)">
-                        <img src="assets/img/generic_beer.png" class="srm-{{getSrm(tap.beer)}}" />
-                    </div>
-                    <div class=tap-details>
-                        <p class="title">{{ tap.beer.getName() }}</p>
-                        <p>Style: {{ tap.beer.getStyle() }}</p>
-                        <p>{{ tap.beer.getAbv() }}% alc./vol.</p>
-                        <p>IBU: {{ tap.beer.getIbu() }}</p>
-                    </div>
-                    <div class="tap-qrcode">
-                        <div class="tap-qrcode-container" *ngIf="!isNilOrEmpty(tap.beer.untappdId)">
-                            <div class="tap-qrcode-header">
-                                Untappd
-                            </div>
-                            <div class="tap-qrcode-content">
-                                <a (click)="openQRCodeDialog(getUntappdUrl(tap.beer))">
-                                    <qrcode [qrdata]="getUntappdUrl(tap.beer)" [width]="76" [margin]="0"></qrcode>
-                                </a>
-                            </div>
+                <div class="tap-image" *ngIf="_.isNil(tap.sensor)">
+                    <img src="assets/img/generic_beer.png" class="srm-{{getSrm(tap.beer)}}" />
+                </div>
+                <div class=tap-details>
+                    <p class="title">{{ tap.beer.getName() }}</p>
+                    <p>Style: {{ tap.beer.getStyle() }}</p>
+                    <p>{{ tap.beer.getAbv() }}% alc./vol.</p>
+                    <p>IBU: {{ tap.beer.getIbu() }}</p>
+                    <p *ngIf="tap.showTotalBeerRemaining">Total Remaining: {{_.round(tap.sensor.totalBeerRemaining, 2)}} {{tap.sensor.beerRemainingUnit}}.</p>
+                </div>
+                <div class="tap-qrcode">
+                    <div class="tap-qrcode-container" *ngIf="!isNilOrEmpty(tap.beer.untappdId)">
+                        <div class="tap-qrcode-header">
+                            Untappd
+                        </div>
+                        <div class="tap-qrcode-content">
+                            <a (click)="openQRCodeDialog(getUntappdUrl(tap.beer))">
+                                <qrcode [qrdata]="getUntappdUrl(tap.beer)" [width]="76" [margin]="0"></qrcode>
+                            </a>
                         </div>
                     </div>
-                    <div class="tap-logo" *ngIf="!_.isNil(tap.beer) && !_.isEmpty(tap.beer.getImgUrl())">
-                        <a (click)="openImageDialog(tap.beer.getImgUrl())">
-                            <img src="{{tap.beer.getImgUrl()}}" />
-                        </a>
-                    </div>
                 </div>
-            </mat-card-content>
-            <mat-card-footer>
-                <mat-progress-bar mode="indeterminate" *ngIf="tap.isLoading"></mat-progress-bar>
-            </mat-card-footer>
-        </mat-card>
-    </div>
+                <div class="tap-logo" *ngIf="!_.isNil(tap.beer) && !_.isEmpty(tap.beer.getImgUrl())">
+                    <a (click)="openImageDialog(tap.beer.getImgUrl())">
+                        <img src="{{tap.beer.getImgUrl()}}" />
+                    </a>
+                </div>
+            </div>
+        </mat-card-content>
+        <mat-card-footer>
+            <mat-progress-bar mode="indeterminate" *ngIf="tap.isLoading"></mat-progress-bar>
+        </mat-card-footer>
+    </mat-card>
 </div>
-<div class="footer"></div>
 

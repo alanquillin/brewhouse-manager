@@ -19,25 +19,6 @@ export const beerTransformFns = {
   kegDate: (v: any) => {return isNilOrEmpty(v) ? undefined : _.isDate(v) ? toUnixTimestamp(v) : _.toNumber(v);}
 }
 
-export class DataError extends Error {
-  statusCode!: number;
-  statusText!: string;
-  reason!: string;
-
-  constructor(message?: string, statusCode?: any | undefined, statusText?: any | undefined, reason?: any | undefined){
-    super(message);
-    if (statusCode !== undefined){
-      this.statusCode = statusCode;
-    }
-    if (statusText !== undefined) {
-      this.statusText = statusText
-    }
-    if (reason !== undefined) {
-      this.reason = reason;
-    }
-  }
-}
-
 export class EditableBase {
   isEditing: boolean;
   editValues: any;

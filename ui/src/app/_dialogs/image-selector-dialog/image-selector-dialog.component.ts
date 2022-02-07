@@ -1,10 +1,9 @@
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Component, Inject, OnInit } from '@angular/core';
-import { DataService } from '../../data.service';
+import { DataService, DataError } from '../../data.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import * as _ from 'lodash';
-import { DataError } from 'src/app/models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
 
 

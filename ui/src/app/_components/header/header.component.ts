@@ -1,22 +1,24 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { Component, OnInit } from '@angular/core';
-import { DataService } from './../../data.service';
+import { Component, Input, OnInit } from '@angular/core';
+import { DataService, DataError } from '../../data.service';
 import { Router } from '@angular/router';
-import { UserInfo, DataError } from '../../models/models';
+import { UserInfo } from '../../models/models';
 
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-manage-header',
+  selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class ManageHeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit {
 
   userInfo!: UserInfo;
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) {}
+  @Input() title: string = "";
+  @Input() restricted: boolean = true;
 
   displayError(errMsg: string) {
     this._snackBar.open("Error: " + errMsg, "Close");
@@ -28,6 +30,12 @@ export class ManageHeaderComponent implements OnInit {
         this.userInfo = userInfo;
       },
       error: (err: DataError) => { 
+        if(err.statusCode === 401) {
+          if(this.restricted) {
+            window.location.href = "/login"
+          }
+          return;
+        }
         this.displayError(err.message);
       }
     });
@@ -39,6 +47,7 @@ export class ManageHeaderComponent implements OnInit {
 
   goto(path: string): void {
     window.location.href = `/${path}`;
+    //this.router.navigate([path]);
   }
   
   get name(): string {

@@ -1,11 +1,11 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Component, OnInit } from '@angular/core';
-import { DataService } from './../data.service';
+import { DataService, DataError } from './../data.service';
 import { Router } from '@angular/router';
 import { AbstractControl, FormGroup, Validators, FormControl } from '@angular/forms';
 
-import { DataError, UserInfo } from '../models/models';
+import { UserInfo } from '../models/models';
 import { Validation } from '../utils/form-validators';
 
 import * as _ from 'lodash';
@@ -47,11 +47,9 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log(this.userInfo)
     this.dataService.getCurrentUser().subscribe({
       next: (userInfo: UserInfo) => {
         this.userInfo = userInfo;
-        console.log(this.userInfo);
       },
       error: (err: DataError) => { 
         this.displayError(err.message);
@@ -95,7 +93,6 @@ export class ProfileComponent implements OnInit {
     var updateData = this.getChanges();
 
     if(_.isEmpty(updateData)) {
-      console.log("nothing to update!")
       this.editing = false;
       return;
     }

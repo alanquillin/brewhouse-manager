@@ -1,61 +1,53 @@
-<div class="header">
-    <div class="header-content">
-        <a class="title" href="/">Brewhouse Manager</a>
-    </div>
+<div class="login">
+    <form [formGroup]="loginFormGroup" (ngSubmit)="submit()">
+        <fieldset>
+            <mat-card class="login-card">
+                <img mat-card-image src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="avatar">
+                <mat-card-content>
+
+                    <mat-form-field appearance="fill" class="login-field">
+                        <input id="login_email_input"
+                            class="dp-textfield--input"
+                            formControlName="email"
+                            [(ngModel)]="email"
+                            matInput
+                            required />
+                        <mat-label>Email</mat-label>
+                        <!-- <mat-error *ngIf="loginForm.email.hasError('required')">
+                            Email is required.
+                        </mat-error> -->
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill" class="login-field">
+                        <input type="password"
+                            id="login_password_input"
+                            class="dp-textfield--input"
+                            formControlName="password"
+                            [(ngModel)]="password"
+                            matInput
+                            required />
+                        <mat-label>Password</mat-label>
+                        <!-- <mat-error *ngIf="loginForm.password.hasError('required')">
+                            Password is required.
+                        </mat-error> -->
+                    </mat-form-field>
+
+            </mat-card-content>
+            <mat-card-actions>
+                <button 
+                    mat-raised-button 
+                    color="primary"
+                    class="btn btn-primary btn-block" 
+                    [disabled]="!loginFormGroup.valid || processing">
+                    Login
+                </button>
+            </mat-card-actions>
+        </mat-card>
+        </fieldset>
+    </form>
 </div>
-<div class="content">
-    <div class="login">
-        <form [formGroup]="loginFormGroup" (ngSubmit)="submit()">
-            <fieldset>
-                <mat-card class="login-card">
-                    <img mat-card-image src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="avatar">
-                    <mat-card-content>
-
-                        <mat-form-field appearance="fill" class="login-field">
-                            <input id="login_email_input"
-                                class="dp-textfield--input"
-                                formControlName="email"
-                                [(ngModel)]="email"
-                                matInput
-                                required />
-                            <mat-label>Email</mat-label>
-                            <!-- <mat-error *ngIf="loginForm.email.hasError('required')">
-                                Email is required.
-                            </mat-error> -->
-                        </mat-form-field>
-
-                        <mat-form-field appearance="fill" class="login-field">
-                            <input type="password"
-                                id="login_password_input"
-                                class="dp-textfield--input"
-                                formControlName="password"
-                                [(ngModel)]="password"
-                                matInput
-                                required />
-                            <mat-label>Password</mat-label>
-                            <!-- <mat-error *ngIf="loginForm.password.hasError('required')">
-                                Password is required.
-                            </mat-error> -->
-                        </mat-form-field>
-
-                </mat-card-content>
-                <mat-card-actions>
-                    <button 
-                        mat-raised-button 
-                        color="primary"
-                        class="btn btn-primary btn-block" 
-                        [disabled]="!loginFormGroup.valid || processing">
-                        Login
-                    </button>
-                </mat-card-actions>
-            </mat-card>
-            </fieldset>
-        </form>
-    </div>
-    <div class="login-socials" *ngIf="settings.googleSSOEnabled">
-        <button mat-raised-button class="login-google" (click)="loginWithGoogle()">
-            <mat-icon svgIcon="logo"></mat-icon> Login With Google
-        </button>
-    </div>
+<div class="login-socials" *ngIf="settings.googleSSOEnabled">
+    <button mat-raised-button class="login-google" (click)="loginWithGoogle()">
+        <mat-icon svgIcon="logo"></mat-icon> Login With Google
+    </button>
 </div>
-<div class="footer"></div>

@@ -1,1 +1,8 @@
-<router-outlet></router-outlet>
+<div class="header" *ngIf="!hideHeader">
+    <app-header [title]="title" [restricted]="restricted"></app-header>
+</div>
+<div class="content">
+    <router-outlet (activate)='onActivate(outlet)' #outlet="outlet"></router-outlet>
+</div>
+<div class="footer" *ngIf="!hideFooter">
+</div>

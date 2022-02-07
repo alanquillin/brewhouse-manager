@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { DataService } from '../../data.service';
+import { DataService, DataError } from '../../data.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {MatTableDataSource} from '@angular/material/table';
 import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
 
-import { Location, DataError } from '../../models/models';
+import { Location } from '../../models/models';
 
 import * as _ from 'lodash';
 
@@ -80,9 +80,7 @@ export class ManageLocationsComponent implements OnInit {
   }
 
   edit(location: Location): void {
-    console.log(location)
     location.enableEditing();
-    console.log(location)
   }
 
   delete(location: Location): void {

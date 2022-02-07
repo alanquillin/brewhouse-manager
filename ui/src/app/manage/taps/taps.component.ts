@@ -1,11 +1,11 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { DataService } from '../../data.service';
+import { DataService, DataError } from '../../data.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
 
-import { Beer, DataError, Location, Tap, Sensor } from '../../models/models';
+import { Beer, Location, Tap, Sensor } from '../../models/models';
 
 import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';

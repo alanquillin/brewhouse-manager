@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { DataService } from './../data.service';
+import { DataService, DataError } from './../data.service';
 import { Router } from '@angular/router';
 import { FormGroup, Validators, FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { DataError, Settings } from '../models/models'
+import { Settings } from '../models/models'
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
 

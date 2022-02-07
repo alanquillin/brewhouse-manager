@@ -2,11 +2,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 
 import { Component, OnInit, Inject } from '@angular/core';
-import { DataService } from './../data.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor, DataError } from './../models/models';
+import { Location, Tap, Beer, Sensor } from './../models/models';
 import { isNilOrEmpty } from '../utils/helpers';
+import { ConfigService } from '../_services/config.service';
+import { DataService, DataError } from './../data.service';
 
 import { LocationImageDialog } from '../_dialogs/image-preview-dialog/image-preview-dialog.component'
 import { LocationQRCodeDialog } from '../_dialogs/qrcode-dialog/qrcode-dialog.component'
@@ -17,10 +18,24 @@ export class TapDetails extends Tap {
   isEmpty!: boolean;
   isLoading!: boolean;
   override sensor!: SensorData;
+
+  constructor(from?: any) {
+    super(from);
+  }
+
+  get showTotalBeerRemaining(): boolean {
+    if(isNilOrEmpty(this.sensor)){
+      return false;
+    }
+
+    return this.sensor.totalBeerRemaining > 0;
+  }
 }
 
 export class SensorData extends Sensor {
-  percentBeerRemaining!: number;
+  percentBeerRemaining: number = 0;
+  totalBeerRemaining: number = 0;
+  beerRemainingUnit: string = "";
 }
 
 @Component({
@@ -38,7 +53,7 @@ export class LocationComponent implements OnInit {
   isNilOrEmpty: Function = isNilOrEmpty;
   _ = _; //allow the html template to access lodash
 
-  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private _snackBar: MatSnackBar, public dialog: MatDialog) {
+  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private _snackBar: MatSnackBar, public dialog: MatDialog, private configService: ConfigService) {
     this.route.params.subscribe( (params: any) => this.location_identifier = params['location'] );
   }
 
@@ -46,7 +61,7 @@ export class LocationComponent implements OnInit {
     this._snackBar.open("Error: " + errMsg, "Close");
   }
 
-  refresh() {
+  refresh(next?: Function, always?: Function) {
     this.isLoading = true;
     this.taps = [];
     this.dataService.getLocation(this.location_identifier).subscribe({
@@ -62,9 +77,15 @@ export class LocationComponent implements OnInit {
             })
             this.taps = _.sortBy(this.taps, (t) => {return t.tapNumber});
             this.isLoading = false;
+            if(!_.isNil(next)){
+              next();
+            }
           },
           error: (err: DataError) => {
             this.displayError(err.message);
+            if(!_.isNil(always)) {
+              always();
+            }
           }
         });
       }, error: (err: DataError) => {
@@ -73,6 +94,9 @@ export class LocationComponent implements OnInit {
         }
 
         this.displayError(err.message);
+        if(!_.isNil(always)) {
+          always();
+        }
       }
     });
   }
@@ -92,7 +116,6 @@ export class LocationComponent implements OnInit {
         this.dataService.getBeer(tap.beerId).subscribe((beer: Beer) => {
           const _beer = new Beer(beer)
           tap.beer = _beer;
-          tap.isLoading = false;
         })
       }
       // fix when coldbrew is implemented
@@ -106,12 +129,20 @@ export class LocationComponent implements OnInit {
           tap.sensor = sensorData;
 
           this.dataService.getPercentBeerRemaining(sensorData.id).subscribe((val: number) => {
-            console.log(val);
             sensorData.percentBeerRemaining = val as number;
-            console.log(sensorData);
-            console.log(tap.sensor);
+            tap.isLoading = false;
+          });
+          this.dataService.getTotalBeerRemaining(sensorData.id).subscribe((val: number) => {
+            sensorData.totalBeerRemaining = val as number;
+            tap.isLoading = false;
+          });
+          this.dataService.getBeerRemainingUnit(sensorData.id).subscribe((val: string) => {
+            sensorData.beerRemainingUnit = val;
+            tap.isLoading = false;
           });
         })
+      } else {
+        tap.isLoading = false;
       }
     }
 
@@ -135,7 +166,9 @@ export class LocationComponent implements OnInit {
   }
 
   ngOnInit() {  
-    this.refresh();
+    this.refresh(()=>{
+      this.configService.update({title: `On Tap: ${this.location.description}`})
+    });
   }
 
   openImageDialog(imgUrl: string) {

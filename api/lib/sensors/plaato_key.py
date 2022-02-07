@@ -10,7 +10,14 @@ from db.sensors import Sensors as SensorsDB
 
 class PlaatoKeg(SensorBase):
     _data_type_to_pin = {
-        "percent_beer_remaining": "v48"
+        "percent_beer_remaining": "v48",
+        "total_beer_remaining": "v51",
+        "beer_remaining_unit": "v74",
+        "style": "v64",
+        "og": "v65",
+        "fg": "v66",
+        "abv": "v68",
+        "firmware_version": "v93"
     }
 
     def get(self, data_type, sensor_id=None, sensor=None, meta=None):

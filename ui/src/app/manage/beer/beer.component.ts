@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { DataService } from '../../data.service';
+import { DataService, DataError } from '../../data.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
@@ -10,7 +10,7 @@ import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/fil
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
 import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component'
 
-import { Beer, DataError, Location, beerTransformFns } from '../../models/models';
+import { Beer, Location, beerTransformFns } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
 
 import * as _ from 'lodash';
