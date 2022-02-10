@@ -47,7 +47,6 @@ export class HeaderComponent implements OnInit {
 
   goto(path: string): void {
     window.location.href = `/${path}`;
-    //this.router.navigate([path]);
   }
   
   get name(): string {

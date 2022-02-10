@@ -8,6 +8,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { Location, Tap, Beer, Sensor, UserInfo, Settings } from '../models/models';
 import { WINDOW } from '../window.provider';
+import { isNilOrEmpty } from '../utils/helpers';
 
 import * as _ from 'lodash';
 
@@ -38,12 +39,14 @@ export class DataError extends Error {
   providedIn: 'root',
 })
 export class DataService {
-  unauthorized = new EventEmitter<DataError>();
+  unauthorized: EventEmitter<DataError> 
 
   apiBaseUrl: string;
   baseUrl: string;
 
   constructor(public http: HttpClient, @Inject(WINDOW) private window: Window) {
+    this.unauthorized = new EventEmitter();
+
     const protocol = this.window.location.protocol
     const hostname = this.window.location.hostname;
     const port = this.window.location.port
@@ -65,7 +68,13 @@ export class DataService {
       errObj.statusText = error.statusText;
 
       if(errObj.statusCode === 401) {
-        //this.unauthorized.emit(errObj);
+        this.unauthorized.emit(errObj);
+      }
+
+      // This is a work around in case the browser got a 302 to redirect to the login page, but the original
+      // request was not a GET so it tried to make an invalid request to /login instead of redirecting to the page
+      if(errObj.statusCode === 405 && (!isNilOrEmpty(error.url) && _.startsWith(error.url, `${this.baseUrl}/login`))){
+        window.location.href = error.url;
       }
     }
     return throwError(() => {return errObj});
@@ -73,32 +82,32 @@ export class DataService {
 
   login(email: string, password: string): Observable<any>{
     const url = `${this.baseUrl}/login`;
-    return this.http.post<any>(url, {email, password}, httpOptions).pipe(catchError(this.getError));
+    return this.http.post<any>(url, {email, password}, httpOptions).pipe(catchError((err: any) => this.getError(err)));
   }
 
   getLocations(): Observable<Location[]> {
     const url = `${this.apiBaseUrl}/locations`;
-    return this.http.get<Location[]>(url).pipe(catchError(this.getError));
+    return this.http.get<Location[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getLocation(location: any): Observable<Location> {
     const url = `${this.apiBaseUrl}/locations/${location}`;
-    return this.http.get<Location>(url).pipe(catchError(this.getError));
+    return this.http.get<Location>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   createLocation(data: any): Observable<Location> {
     const url = `${this.apiBaseUrl}/locations`;
-    return this.http.post<Location>(url, data).pipe(catchError(this.getError));
+    return this.http.post<Location>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   deleteLocation(location: string): Observable<any> {
     const url = `${this.apiBaseUrl}/locations/${location}`;
-    return this.http.delete<any>(url).pipe(catchError(this.getError));
+    return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   updateLocation(location: string, data: any): Observable<Location> {
     const url = `${this.apiBaseUrl}/locations/${location}`;
-    return this.http.patch<Location>(url, data).pipe(catchError(this.getError));
+    return this.http.patch<Location>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getTaps(locationId?: string): Observable<Tap[]> {
@@ -109,52 +118,52 @@ export class DataService {
       url = `${this.apiBaseUrl}/locations/${locationId}/taps`;
     }
 
-    return this.http.get<Tap[]>(url).pipe(catchError(this.getError));
+    return this.http.get<Tap[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getTap(tapId: string): Observable<Tap> {
     const url = `${this.apiBaseUrl}/taps/${tapId}`;
-    return this.http.get<Tap>(url).pipe(catchError(this.getError));
+    return this.http.get<Tap>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   createTap(data: any): Observable<Tap> {
     const url = `${this.apiBaseUrl}/taps`;
-    return this.http.post<Tap>(url, data).pipe(catchError(this.getError));
+    return this.http.post<Tap>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   updateTap(tapId: string, data: any): Observable<Tap> {
     const url = `${this.apiBaseUrl}/taps/${tapId}`;
-    return this.http.patch<Tap>(url, data).pipe(catchError(this.getError));
+    return this.http.patch<Tap>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   deleteTap(tapId: string): Observable<any> {
     const url = `${this.apiBaseUrl}/taps/${tapId}`;
-    return this.http.delete<any>(url).pipe(catchError(this.getError));
+    return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getBeers(): Observable<Beer[]> {
     const url = `${this.apiBaseUrl}/beers`;
-    return this.http.get<Beer[]>(url).pipe(catchError(this.getError));
+    return this.http.get<Beer[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   createBeer(data: any): Observable<Beer> {
     const url = `${this.apiBaseUrl}/beers`;
-    return this.http.post<Beer>(url, data).pipe(catchError(this.getError));
+    return this.http.post<Beer>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getBeer(beerId: string): Observable<Beer> {
     const url = `${this.apiBaseUrl}/beers/${beerId}`;
-    return this.http.get<Beer>(url).pipe(catchError(this.getError));
+    return this.http.get<Beer>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   deleteBeer(beerId: string): Observable<any> {
     const url = `${this.apiBaseUrl}/beers/${beerId}`;
-    return this.http.delete<any>(url).pipe(catchError(this.getError));
+    return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   updateBeer(beerId: string, data: any): Observable<Beer> {
     const url = `${this.apiBaseUrl}/beers/${beerId}`;
-    return this.http.patch<Beer>(url, data).pipe(catchError(this.getError));
+    return this.http.patch<Beer>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getSensors(locationId?: string): Observable<Sensor[]> {
@@ -165,37 +174,37 @@ export class DataService {
       url = `${this.apiBaseUrl}/locations/${locationId}/sensors`;
     }
 
-    return this.http.get<Sensor[]>(url).pipe(catchError(this.getError));
+    return this.http.get<Sensor[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getSensor(sensorId: string): Observable<Sensor> {
     const url = `${this.apiBaseUrl}/sensors/${sensorId}`;
-    return this.http.get<Sensor>(url).pipe(catchError(this.getError));
+    return this.http.get<Sensor>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   createSensor(data: any): Observable<Sensor> {
     const url = `${this.apiBaseUrl}/sensors`;
-    return this.http.post<Sensor>(url, data).pipe(catchError(this.getError));
+    return this.http.post<Sensor>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   updateSensor(sensorId: string, data: any): Observable<Sensor> {
     const url = `${this.apiBaseUrl}/sensors/${sensorId}`;
-    return this.http.patch<Sensor>(url, data).pipe(catchError(this.getError));
+    return this.http.patch<Sensor>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   deleteSensor(sensorId: string): Observable<any> {
     const url = `${this.apiBaseUrl}/sensors/${sensorId}`;
-    return this.http.delete<any>(url).pipe(catchError(this.getError));
+    return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getSensorType(): Observable<string[]> {
     const url = `${this.apiBaseUrl}/sensors/types`;
-    return this.http.get<string[]>(url).pipe(catchError(this.getError));
+    return this.http.get<string[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getSensorData(sensorId: string, dataType: string): Observable<any> {
     const url = `${this.apiBaseUrl}/sensors/${sensorId}/${dataType}`;
-    return this.http.get<any>(url).pipe(catchError(this.getError));
+    return this.http.get<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getPercentBeerRemaining(sensorId: string): Observable<number> {
@@ -232,49 +241,49 @@ export class DataService {
 
   getCurrentUser(): Observable<UserInfo> {
     const url = `${this.apiBaseUrl}/users/current`;
-    return this.http.get<UserInfo>(url).pipe(catchError(this.getError));
+    return this.http.get<UserInfo>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getUsers(): Observable<UserInfo[]> {
     const url = `${this.apiBaseUrl}/users`;
-    return this.http.get<UserInfo[]>(url).pipe(catchError(this.getError));
+    return this.http.get<UserInfo[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getUser(userId: string): Observable<UserInfo> {
     const url = `${this.apiBaseUrl}/users/${userId}`;
-    return this.http.get<UserInfo>(url).pipe(catchError(this.getError));
+    return this.http.get<UserInfo>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   createUser(data: any): Observable<UserInfo> {
     const url = `${this.apiBaseUrl}/users`;
-    return this.http.post<UserInfo>(url, data).pipe(catchError(this.getError));
+    return this.http.post<UserInfo>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   updateUser(userId: string, data: object): Observable<UserInfo> {
     const url = `${this.apiBaseUrl}/users/${userId}`;
-    return this.http.patch<UserInfo>(url, data).pipe(catchError(this.getError));
+    return this.http.patch<UserInfo>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   deleteUser(userId: string): Observable<any> {
     const url = `${this.apiBaseUrl}/users/${userId}`;
-    return this.http.delete<any>(url).pipe(catchError(this.getError));
+    return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getSettings(): Observable<Settings> {
     const url = `${this.apiBaseUrl}/settings`;
-    return this.http.get<Settings>(url).pipe(catchError(this.getError));
+    return this.http.get<Settings>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   uploadImage(imageType: string, file: File): Observable<any> {
     const url = `${this.apiBaseUrl}/uploads/images/${imageType}`;
     const formData: FormData = new FormData();
     formData.append('file', file);
-    return this.http.post<any>(url, formData, {reportProgress: true}).pipe(catchError(this.getError));
+    return this.http.post<any>(url, formData, {reportProgress: true}).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   listImages(imageType: string): Observable<string[]> {
     const url = `${this.apiBaseUrl}/uploads/images/${imageType}`;
-    return this.http.get<any>(url).pipe(catchError(this.getError));
+    return this.http.get<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   uploadBeerImage(file: File): Observable<any> {
