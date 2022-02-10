@@ -12,9 +12,10 @@
             <mat-menu #navMenu="matMenu" xPosition="before" class="override">
                 <button mat-menu-item id="nav_signed_in_as" disabled *ngIf="userInfo">Signed in as {{ name }}</button>
                 <button mat-menu-item id="nav_dashboard" (click)="goto('')"><mat-icon>home</mat-icon>Home</button>
-                <button mat-menu-item [matMenuTriggerFor]="managementOptions"><mat-icon>build</mat-icon>Manage</button>
+                <button mat-menu-item [matMenuTriggerFor]="managementOptions" *ngIf="userInfo"><mat-icon>build</mat-icon>Manage</button>
                 <button mat-menu-item id="nav_account_profile" (click)="goto('me')" *ngIf="userInfo"><mat-icon>person</mat-icon>Account Profile</button>
                 <button mat-menu-item id="nav_sign_out" (click)="logout()" *ngIf="userInfo">Sign Out</button>
+                <button mat-menu-item id="nav_sign_out" (click)="logout()" *ngIf="!userInfo">Sign In</button>
             </mat-menu>
 
             <mat-menu #managementOptions="matMenu">
