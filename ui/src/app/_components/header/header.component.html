@@ -3,7 +3,7 @@
         <a class="title" href="/">Brewhouse Manager</a>
     </div>
     <div class="header-nav">
-        <span tabindex="-1" *ngIf="userInfo">
+        <span tabindex="-1">
             <button id="nav_toggle_user_menu"
                 mat-mini-fab
                 [matMenuTriggerFor]="navMenu">
@@ -13,8 +13,8 @@
                 <button mat-menu-item id="nav_signed_in_as" disabled *ngIf="userInfo">Signed in as {{ name }}</button>
                 <button mat-menu-item id="nav_dashboard" (click)="goto('')"><mat-icon>home</mat-icon>Home</button>
                 <button mat-menu-item [matMenuTriggerFor]="managementOptions"><mat-icon>build</mat-icon>Manage</button>
-                <button mat-menu-item id="nav_account_profile" (click)="goto('me')"><mat-icon>person</mat-icon>Account Profile</button>
-                <button mat-menu-item id="nav_sign_out" (click)="logout()">Sign Out</button>
+                <button mat-menu-item id="nav_account_profile" (click)="goto('me')" *ngIf="userInfo"><mat-icon>person</mat-icon>Account Profile</button>
+                <button mat-menu-item id="nav_sign_out" (click)="logout()" *ngIf="userInfo">Sign Out</button>
             </mat-menu>
 
             <mat-menu #managementOptions="matMenu">

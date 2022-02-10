@@ -1,7 +1,7 @@
 from flask import request
 from flask_login import login_required, current_user
 
-from resources import BaseResource, ResourceMixinBase, NotFoundError, ForbiddenError, ClientError
+from resources import BaseResource, ResourceMixinBase, NotFoundError, ForbiddenError, ClientError, NotAuthorized
 from db import session_scope
 from db.users import Users as UsersDB
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
@@ -84,10 +84,14 @@ class User(BaseResource, UserResourceMixin):
 
 
 class CurrentUser(BaseResource, UserResourceMixin):
-    @login_required
     def get(self):
         user_c = current_user
+        if not user_c:
+            raise NotAuthorized()
 
+        if not user_c.is_authenticated:
+            raise NotAuthorized()
+            
         with session_scope(self.config) as db_session:
             user = UsersDB.get_by_pkey(db_session, user_c.id)
             return self.transform_response(user)
