@@ -1,4 +1,4 @@
-.content {
+.login-content {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -39,6 +39,7 @@
         .mat-icon {
             width: 24px;
             height: 24px;
+            line-height: 24px;
         }
     }
 }
