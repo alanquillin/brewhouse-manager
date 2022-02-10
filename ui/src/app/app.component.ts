@@ -7,7 +7,7 @@ import { ConfigService } from './_services/config.service';
 import { toBoolean } from './utils/helpers';
 
 import * as _ from 'lodash';
-import { DataError, DataService } from './data.service';
+import { DataError, DataService } from './_services/data.service';
 
 @Component({
   selector: 'app-root',

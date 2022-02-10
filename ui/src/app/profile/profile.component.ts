@@ -1,7 +1,7 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Component, OnInit } from '@angular/core';
-import { DataService, DataError } from './../data.service';
+import { DataService, DataError } from '../_services/data.service';
 import { Router } from '@angular/router';
 import { AbstractControl, FormGroup, Validators, FormControl } from '@angular/forms';
 

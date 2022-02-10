@@ -1,7 +1,7 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Component, Input, OnInit } from '@angular/core';
-import { DataService, DataError } from '../../data.service';
+import { DataService, DataError } from '../../_services/data.service';
 import { Router } from '@angular/router';
 import { UserInfo } from '../../models/models';
 
@@ -29,7 +29,7 @@ export class HeaderComponent implements OnInit {
       next: (userInfo: UserInfo) => {
         this.userInfo = userInfo;
       },
-      error: (err: DataError) => { 
+      error: (err: DataError) => {
         if(err.statusCode === 401) {
           if(this.restricted) {
             window.location.href = "/login"

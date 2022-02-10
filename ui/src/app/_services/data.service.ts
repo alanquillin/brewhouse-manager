@@ -1,13 +1,13 @@
 // since these will often be python API driven snake_case names
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { Injectable, Inject, EventEmitter } from '@angular/core';
+import { Injectable, Inject, EventEmitter, Output } from '@angular/core';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Location, Tap, Beer, Sensor, UserInfo, Settings } from './models/models';
-import { WINDOW } from './window.provider';
+import { Location, Tap, Beer, Sensor, UserInfo, Settings } from '../models/models';
+import { WINDOW } from '../window.provider';
 
 import * as _ from 'lodash';
 
@@ -59,16 +59,16 @@ export class DataService {
   getError(error: any){
     let errObj = new DataError(error.error.message);
     if (!(error.error instanceof ErrorEvent)) {
-        // handle server-side errors
-        errObj.reason = error.message;
-        errObj.statusCode = _.toInteger(error.status);
-        errObj.statusText = error.statusText;
+      // handle server-side errors
+      errObj.reason = error.message;
+      errObj.statusCode = _.toInteger(error.status);
+      errObj.statusText = error.statusText;
 
-        if(errObj.statusCode === 401) {
-          this.unauthorized.emit(errObj)
-        }
+      if(errObj.statusCode === 401) {
+        //this.unauthorized.emit(errObj);
+      }
     }
-    return throwError(() => errObj);
+    return throwError(() => {return errObj});
   }
 
   login(email: string, password: string): Observable<any>{

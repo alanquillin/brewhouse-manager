@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef, Input, AfterViewInit, Output, EventEmitter } from "@angular/core";
-import { DataService, DataError } from '../../data.service';
+import { DataService, DataError } from '../../_services/data.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { HttpEventType } from "@angular/common/http";

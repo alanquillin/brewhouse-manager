@@ -7,7 +7,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Location, Tap, Beer, Sensor } from './../models/models';
 import { isNilOrEmpty } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
-import { DataService, DataError } from './../data.service';
+import { DataService, DataError } from '../_services/data.service';
 
 import { LocationImageDialog } from '../_dialogs/image-preview-dialog/image-preview-dialog.component'
 import { LocationQRCodeDialog } from '../_dialogs/qrcode-dialog/qrcode-dialog.component'
