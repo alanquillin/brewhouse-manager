@@ -25,17 +25,19 @@
     "@angular/platform-browser": "~13.1.0",
     "@angular/platform-browser-dynamic": "~13.1.0",
     "@angular/router": "~13.1.0",
+    "@ng-bootstrap/ng-bootstrap": "~11.0.0",
+    "@types/gsap": "^3.0.0",
     "@types/jquery": "~3.5.13",
     "@types/lodash": "~4.14.178",
     "angular-gauge": "~4.0.0",
+    "angularx-qrcode": "~13.0.2",
+    "bootstrap": "~4.6.1",
+    "gsap": "^3.9.1",
     "jquery": "~3.6.0",
     "lodash": "~4.17.21",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.11.4",
-    "bootstrap": "~4.6.1",
-    "@ng-bootstrap/ng-bootstrap": "~11.0.0",
-    "angularx-qrcode": "~13.0.2"
+    "zone.js": "~0.11.4"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~13.1.3",

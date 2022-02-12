@@ -11,6 +11,7 @@ import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
 import { ManageUsersComponent } from './manage/users/users.component';
 import { ProfileComponent } from './profile/profile.component';
+import { ErrorsComponent } from './errors/errors.component';
 
 const routes: Routes = [
   {
@@ -64,6 +65,47 @@ const routes: Routes = [
     path: 'manage/users',
     component: ManageUsersComponent
   },
+  {
+    path: 'unauthorized',
+    component: ErrorsComponent,
+    data: {
+      error: "unauthorized",
+      access: { restricted: false }
+    }
+  },
+  {
+    path: 'forbidden',
+    component: ErrorsComponent,
+    data: {
+      error: "forbidden",
+      access: { restricted: false }
+    }
+  },
+  {
+    path: 'error',
+    component: ErrorsComponent,
+    data: {
+      error: "unknown",
+      access: { restricted: false }
+    }
+  },
+  {
+    path: 'not-found',
+    component: ErrorsComponent,
+    data: {
+      error: "notFound",
+      access: { restricted: false }
+    }
+  },
+  {
+    path: '404',
+    component: ErrorsComponent,
+    data: {
+      error: "notFound",
+      access: { restricted: false }
+    }
+  },
+  {path: '**', redirectTo: '/404'}
 ];
 
 @NgModule({
