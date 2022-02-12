@@ -27,10 +27,10 @@ class NotFoundError(UserMessageError):
         super().__init__(404, user_msg=user_msg, **kwargs)
 
 
-class NotAuthorized(ClientError):
+class NotAuthorizedError(ClientError):
     def __init__(self, user_msg=None, **kwargs):
         if not user_msg:
-            user_msg = "You are not authorized to access the requested resource."
+            user_msg = "You are not authorized.  Please login first."
         super().__init__(response_code=401, user_msg=user_msg, **kwargs)
 
 class ForbiddenError(ClientError):

@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService, DataError } from '../_services/data.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormGroup, Validators, FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Settings } from '../models/models'
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
+import { isNilOrEmpty } from '../utils/helpers';
+
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-login',
@@ -26,7 +29,7 @@ export class LoginComponent implements OnInit {
   processing: boolean = false;
   settings: Settings = new Settings();
   
-  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, private domSanitizer: DomSanitizer, private matIconRegistry: MatIconRegistry) { 
+  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private _snackBar: MatSnackBar, private domSanitizer: DomSanitizer, private matIconRegistry: MatIconRegistry) { 
     this.matIconRegistry.addSvgIcon(
       "logo",
       this.domSanitizer.bypassSecurityTrustResourceUrl("https://raw.githubusercontent.com/fireflysemantics/logo/master/Google.svg"));
@@ -43,7 +46,13 @@ export class LoginComponent implements OnInit {
         this.displayError(err.message);
         this.loading = false;
       }
-    })
+    });
+    this.route.queryParams.subscribe(params => {
+      const err = _.get(params, "error");
+      if(!isNilOrEmpty(err)) {
+        this.displayError(err);
+      }
+    });
   }
 
   displayError(errMsg: string) {

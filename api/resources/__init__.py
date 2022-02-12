@@ -1,18 +1,13 @@
 import logging
 import os
 from functools import wraps
-from urllib.parse import urljoin
-from uuid import UUID
+import urllib.parse
 
 import dns.exception
 import dns.resolver
-import requests
 import sqlalchemy
 from flask import redirect, request, send_from_directory, session
 from flask_restful import Resource
-from jwt import decode as jwt_decode
-from jwt import exceptions as jwt_exceptions
-from requests.exceptions import RequestException, SSLError
 from schema import Schema, SchemaError, SchemaMissingKeyError
 
 from db import session_scope
@@ -46,14 +41,6 @@ def convert_exceptions(func):
         except (SchemaError, SchemaMissingKeyError) as exc:
             LOGGER.exception(str(exc))
             return {"message": str(exc)}, 400
-        except (
-            jwt_exceptions.InvalidTokenError,
-            jwt_exceptions.InvalidSignatureError,
-            jwt_exceptions.ExpiredSignatureError,
-            jwt_exceptions.InvalidAlgorithmError,
-        ):
-            LOGGER.exception("Invalid token")
-            return {"message": "Invalid token"}, 401
         except sqlalchemy.exc.StatementError as exc:
             if isinstance(exc.orig, ValueError):
                 return {"message": f"Bad value: {str(exc.orig)}"}, 400
@@ -72,14 +59,17 @@ def convert_ui_exceptions(func):
     def decorator(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except NotAuthorized as exc:
+        except NotAuthorizedError as exc:
             LOGGER.error(exc.server_msg)
-            return redirect("/not-authorized")
+            return redirect("/login?error=%s" % urllib.parse.quote_plus(exc.user_msg))
+        except ForbiddenError as exc:
+            LOGGER.error(exc.server_msg)
+            return redirect("/forbidden")
         except UserMessageError as exc:
             LOGGER.exception(exc.server_msg)
             return redirect("/error")
         except Exception:  # pylint: disable=broad-except
-            LOGGER.exception("AN unknown or unexpected error has occurred.  Redirecting to /error")
+            LOGGER.exception("An unknown or unexpected error has occurred.  Redirecting to /error")
             return redirect("/error")
 
     return decorator

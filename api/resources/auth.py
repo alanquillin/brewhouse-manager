@@ -10,8 +10,9 @@ from flask_login import (
 import json
 from oauthlib.oauth2 import WebApplicationClient
 import requests
+import urllib.parse
 
-from resources import BaseResource, ResourceMixinBase, ClientError, NotAuthorized, ClientError, ForbiddenError
+from resources import BaseResource, ResourceMixinBase, ClientError, NotAuthorizedError, ClientError, ForbiddenError, UIBaseResource
 from db import session_scope
 from db.users import Users as UsersDB
 
@@ -71,7 +72,7 @@ class GoogleLogin(BaseResource, GoogleResourceMixin):
         self.logger.debug("redirecting to google SSO: %s", request_uri)
         return redirect(request_uri)
 
-class GoogleCallback(BaseResource, GoogleResourceMixin):
+class GoogleCallback(UIBaseResource, GoogleResourceMixin):
     def get(self):
         # Get authorization code Google sent back to you
         code = request.args.get("code")
@@ -121,6 +122,10 @@ class GoogleCallback(BaseResource, GoogleResourceMixin):
 
         with session_scope(self.config) as db_session:
             user = UsersDB.get_by_email(db_session, users_email)
+
+            if not user:
+                raise NotAuthorizedError(user_msg="No user found for the given Google account.  User email must match the Google account email.")
+
             update_data = {}
 
             if not user.first_name and first_name:
@@ -142,9 +147,6 @@ class GoogleCallback(BaseResource, GoogleResourceMixin):
             if update_data:
                 self.logger.debug("Updating user account '%s' with missing data: %s", users_email, update_data)
                 UsersDB.update(db_session, user.id, **update_data)
-
-            if not user:
-                raise NotAuthorized()
 
             # Begin user session by logging the user in
             login_user(AuthUser.from_user(user))
@@ -169,7 +171,7 @@ class Login(BaseResource, ResourceMixinBase):
             user = UsersDB.get_by_email(db_session, email)
 
             if not user:
-                raise NotAuthorized()
+                raise NotAuthorizedError()
 
             if not user.password_hash:
                 raise ClientError(user_msg="The user does not have a password set.  Please try logging in with google.")
@@ -177,9 +179,9 @@ class Login(BaseResource, ResourceMixinBase):
             ph = PasswordHasher()
             try:
                 if not ph.verify(user.password_hash, password):
-                    raise NotAuthorized()
+                    raise NotAuthorizedError()
             except VerifyMismatchError:
-                raise NotAuthorized()
+                raise NotAuthorizedError()
 
             login_user(AuthUser.from_user(user))
         
