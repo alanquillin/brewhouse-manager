@@ -163,7 +163,9 @@ export class ManageUsersComponent implements OnInit {
       this.processing = true;
       this.dataService.deleteUser(user.id).subscribe({
         next: (resp: any) => {
-          this.refresh(()=>{ this.processing = false; });
+          this.processing = false;
+          this.loading = true;
+          this.refresh(()=>{ this.loading = false; });
         },
         error: (err: DataError) => {
           this.displayError(err.message);

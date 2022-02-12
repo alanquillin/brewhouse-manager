@@ -91,7 +91,9 @@ export class ManageLocationsComponent implements OnInit {
           this.displayError(err.message);
         },
         complete: () => {
-          this.refresh(() => {this.processing = false;})
+          this.processing = false;
+          this.loading = true;
+          this.refresh(() => {this.loading = false;})
         }
       });
     }
