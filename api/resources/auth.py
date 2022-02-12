@@ -10,7 +10,6 @@ from flask_login import (
 import json
 from oauthlib.oauth2 import WebApplicationClient
 import requests
-import urllib.parse
 
 from resources import BaseResource, ResourceMixinBase, ClientError, NotAuthorizedError, ClientError, ForbiddenError, UIBaseResource
 from db import session_scope
