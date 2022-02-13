@@ -3,7 +3,7 @@
 FROM node:16-buster as node-base
 
 RUN yarn global add @angular/cli
-COPY ui/angular.json ui/tsconfig.app.json ui/tsconfig.json ui/package.json /ui/
+COPY ui/angular.json ui/tsconfig.app.json ui/tsconfig.json ui/package.json ui/.browserslistrc /ui/
 WORKDIR /ui
 RUN yarn install --non-interactive
 
