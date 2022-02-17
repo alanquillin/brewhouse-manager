@@ -5,6 +5,8 @@
     "auth.oidc.google.enabled": "bool",
     "external_brew_tools.brewfather.enabled": "bool",
     "db.port": "int",
+    "taps.refresh.base_sec": "int",
+    "taps.refresh.variable": "int",
     "uploads.images.allowed_file_extensions": "list"
   },
   "api": {
@@ -29,6 +31,12 @@
   "external_brew_tools": {
     "brewfather": {
         "enabled": false
+    }
+  },
+  "taps": {
+    "refresh": {
+      "base_sec": 300,
+      "variable": 150
     }
   },
   "uploads": {

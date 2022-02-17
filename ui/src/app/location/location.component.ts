@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor } from './../models/models';
+import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, TapSettings } from './../models/models';
 import { isNilOrEmpty } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
@@ -51,6 +51,8 @@ export class LocationComponent implements OnInit {
   location!: Location;
   taps: TapDetails[] = [];
   isNilOrEmpty: Function = isNilOrEmpty;
+  tapRefreshSettings: TapRefreshSettings = new TapRefreshSettings();
+
   _ = _; //allow the html template to access lodash
 
   constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private _snackBar: MatSnackBar, public dialog: MatDialog, private configService: ConfigService) {
@@ -64,35 +66,50 @@ export class LocationComponent implements OnInit {
   refresh(next?: Function, always?: Function) {
     this.isLoading = true;
     this.taps = [];
-    this.dataService.getLocation(this.location_identifier).subscribe({
-      next: (location: Location) => {
-        this.location = location;
-        this.dataService.getTaps(location.id).subscribe({
-          next: (taps: Tap[]) => {
-            _.forEach(taps, (tap: Tap) => {
-              let _tap = new TapDetails(tap);
-              _tap.beer = new Beer(_tap.beer);
-              this.setTapDetails(_tap);
-              this.taps.push(_tap)
-            })
-            this.taps = _.sortBy(this.taps, (t) => {return t.tapNumber});
-            this.isLoading = false;
-            if(!_.isNil(next)){
-              next();
+
+    this.dataService.getSettings().subscribe({
+      next: (data: Settings) => {
+        this.tapRefreshSettings = new TapRefreshSettings(data.taps.refresh);
+
+        this.dataService.getLocation(this.location_identifier).subscribe({
+          next: (location: Location) => {
+            this.location = location;
+
+
+            this.dataService.getTaps(location.id).subscribe({
+              next: (taps: Tap[]) => {
+                _.forEach(taps, (tap: Tap) => {
+                  this.taps.push(this.setTapDetails(new TapDetails(tap)))
+                })
+                this.taps = _.sortBy(this.taps, (t) => {return t.tapNumber});
+                this.isLoading = false;
+                if(!_.isNil(next)){
+                  next();
+                }
+              },
+              error: (err: DataError) => {
+                this.displayError(err.message);
+                if(!_.isNil(always)) {
+                  always();
+                }
+              }
+            });
+
+
+
+          }, error: (err: DataError) => {
+            if (err.statusCode === 404) {
+              this.router.navigate(["/"]);
             }
-          },
-          error: (err: DataError) => {
+    
             this.displayError(err.message);
             if(!_.isNil(always)) {
               always();
             }
           }
         });
-      }, error: (err: DataError) => {
-        if (err.statusCode === 404) {
-          this.router.navigate(["/"]);
-        }
-
+      },
+      error: (err: DataError) => {
         this.displayError(err.message);
         if(!_.isNil(always)) {
           always();
@@ -101,16 +118,18 @@ export class LocationComponent implements OnInit {
     });
   }
 
-  // refreshTap(tapId: string) {
-  //   this.dataService.getTap(tapId).subscribe((tap: Tap) => {
-      
-  //   })
-  // }
+  refreshTap(tap: TapDetails) {
+    this.dataService.getTap(tap.id).subscribe((_tap: Tap) => {
+      tap.from(_tap);
+      this.setTapDetails(tap);
+    })
+  }
 
-  setTapDetails(tap: TapDetails) {
+  setTapDetails(tap: TapDetails): TapDetails {
     tap.isEmpty = this.isTapEmpty(tap);
   
     if(!tap.isEmpty) {
+      tap.beer = new Beer(tap.beer);
       tap.isLoading = true
       if(tap.tapType === "beer"){
         this.dataService.getBeer(tap.beerId).subscribe((beer: Beer) => {
@@ -146,7 +165,10 @@ export class LocationComponent implements OnInit {
       }
     }
 
-    //setTimeout(() => {refreshTap(tap.id)}, _.random(600, 1200)*100);
+    const refreshInMs = (this.tapRefreshSettings.baseSec + _.random(this.tapRefreshSettings.variable * -1, this.tapRefreshSettings.variable))*1000;
+    console.log("refreshing tap " + tap.tapNumber + " in " + (refreshInMs / 1000) + " seconds")
+    setTimeout(() => {this.refreshTap(tap)}, refreshInMs);
+    return tap;
   }
 
   isTapEmpty(tap: TapDetails): boolean {
@@ -194,5 +216,13 @@ export class LocationComponent implements OnInit {
     }
 
     return `https://untappd.com/qr/beer/${beer.untappdId}`;
+  }
+
+  getRemainingBeerValue(tap: TapDetails): number {
+    if (isNilOrEmpty(tap.sensor.percentBeerRemaining)) {
+      return 0;
+    }
+
+    return tap.sensor.percentBeerRemaining;
   }
 }

@@ -11,7 +11,7 @@
                         [max]="100"
                         [dialStartAngle]="-90"
                         [dialEndAngle]="-90.001"
-                        [value]="tap.sensor.percentBeerRemaining"
+                        [value]="getRemainingBeerValue(tap)"
                         [animated]="true"
                         [animationDuration]="1"
                         class="srm-{{getSrm(tap.beer)}}-gauge tap-gauge">

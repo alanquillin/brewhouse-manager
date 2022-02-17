@@ -27,13 +27,17 @@ export class EditableBase {
 
   constructor(fields: string[], from?: any, transformFns?: any) {
     if(!isNilOrEmpty(from)) {
-      Object.assign(this, from);
+      this.from(from);
     }
     
     this.#transformFns = isNilOrEmpty(transformFns) ? {} : transformFns;
     this.isEditing = false;
     this.editValues = {}
     this.#fields = fields;
+  }
+
+  from(from: any) {
+    Object.assign(this, from);
   }
 
   cloneValuesForEditing() {
@@ -230,11 +234,39 @@ export class UserInfo extends EditableBase {
   }
 }
 
+export class TapRefreshSettings {
+  baseSec: number;
+  variable: number;
+
+  constructor(from?: any) {
+    this.baseSec = 300;
+    this.variable = 150;
+
+    if(!isNilOrEmpty(from)) {
+      Object.assign(this, from);
+    }
+  }
+}
+
+export class TapSettings {
+  refresh: TapRefreshSettings;
+
+  constructor(from?: any) {
+    this.refresh = new TapRefreshSettings();
+
+    if(!isNilOrEmpty(from)) {
+      Object.assign(this, from);
+    }
+  }
+}
+
 export class Settings {
   googleSSOEnabled: boolean;
+  taps: TapSettings;
 
   constructor(from?: any) {
     this.googleSSOEnabled = false;
+    this.taps = new TapSettings
 
 
     if(!isNilOrEmpty(from)) {
