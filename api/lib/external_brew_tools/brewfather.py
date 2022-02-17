@@ -36,7 +36,7 @@ class Brewfather(ExternalBrewToolBase):
             "batch_number": batch.get("batchNo")
         }
 
-        complete_statuses = ["Completed", "Archived"]
+        complete_statuses = self.config.get("external_brew_tools.brewfather.completed_statuses")
         if not status.lower() in [s.lower() for s in complete_statuses]:
             details["_refresh_on_next_check"] = True
             details["_refresh_reason"] = "The batch was not in a completed status: %s." % ", ".join(complete_statuses)

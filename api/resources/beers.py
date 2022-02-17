@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import logging
 
 from flask import request
@@ -10,6 +10,7 @@ from db.locations import Locations as LocationsDB
 from db.beers import Beers as BeersDB, _PKEY as beers_pk
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
+from lib.time import utcnow_aware, parse_iso8601_utc
 
 G_LOGGER = logging.getLogger(__name__)
 G_CONFIG = Config()
@@ -39,6 +40,9 @@ class BeerResourceMixin(ResourceMixinBase):
             if tool_type:
                 refresh_data=False
                 refresh_reason="UNKNOWN"
+                refresh_buffer = G_CONFIG.get(f"external_brew_tools.{tool_type}.refresh_buffer_sec.soft")
+                now = utcnow_aware()
+
                 meta = data.get("external_brewing_tool_meta", {})
                 ex_details = None
                 if meta:
@@ -47,18 +51,30 @@ class BeerResourceMixin(ResourceMixinBase):
                 if not ex_details:
                     refresh_data = True
                     refresh_reason = "No cached details exist in DB."
+                elif force_refresh:
+                    refresh_data = True
+                    refresh_buffer = G_CONFIG.get(f"external_brew_tools.{tool_type}.refresh_buffer_sec.hard")
+                    refresh_reason = "Forced refresh requested via query string parameter."
                 elif ex_details.get("_refresh_on_next_check", False):
                     refresh_data = True
                     refresh_reason = ex_details.get("_refresh_reason", "The beer was marked by the external brewing tool for refresh, reason unknown.")
-                elif force_refresh:
-                    refresh_data = True
-                    refresh_reason = "Forced refresh requested via query string parameter."
+
+                if refresh_data and ex_details:
+                    last_refresh = ex_details.get("_last_refreshed_on")
+                    if last_refresh:
+                        skip_until = parse_iso8601_utc(last_refresh) + timedelta(seconds=refresh_buffer)
+
+                        G_LOGGER.debug("Checking is last refrech date '%s' > now '%s'", skip_until.isoformat(), now.isoformat())
+                        if skip_until > now:
+                            G_LOGGER.info("Need to skip refreshing data from %s for %s until %s", tool_type, beer.id, skip_until.isoformat())
+                            refresh_data = False
 
                 if refresh_data:
                     G_LOGGER.info("Refreshing data from %s for %s.  Reason: %s", tool_type, beer.id, refresh_reason)
                     tool = get_external_brewing_tool(tool_type)
                     ex_details = tool.get_details(beer=beer)
                     if ex_details:
+                        ex_details["_last_refreshed_on"] = now.isoformat()
                         G_LOGGER.debug("Extended beer details: %s, updateing database", ex_details)
                         BeerResourceMixin.update(beer.id, {"external_brewing_tool_meta": {**meta, "details": ex_details}}, db_session=db_session)
                     else:

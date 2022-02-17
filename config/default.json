@@ -4,6 +4,9 @@
     "auth.initial_user.set_password": "bool",
     "auth.oidc.google.enabled": "bool",
     "external_brew_tools.brewfather.enabled": "bool",
+    "external_brew_tools.brewfather.completed_statuses": "list",
+    "external_brew_tools.brewfather.refresh_buffer_sec.hard": "int",
+    "external_brew_tools.brewfather.refresh_buffer_sec.soft": "int",
     "db.port": "int",
     "taps.refresh.base_sec": "int",
     "taps.refresh.variable": "int",
@@ -30,7 +33,12 @@
   },
   "external_brew_tools": {
     "brewfather": {
-        "enabled": false
+        "enabled": false,
+        "completed_statuses": ["Completed", "Archived", "Conditioning"],
+        "refresh_buffer_sec": {
+          "soft": 1200,
+          "hard": 120
+        }
     }
   },
   "taps": {
