@@ -166,7 +166,6 @@ export class LocationComponent implements OnInit {
     }
 
     const refreshInMs = (this.tapRefreshSettings.baseSec + _.random(this.tapRefreshSettings.variable * -1, this.tapRefreshSettings.variable))*1000;
-    console.log("refreshing tap " + tap.tapNumber + " in " + (refreshInMs / 1000) + " seconds")
     setTimeout(() => {this.refreshTap(tap)}, refreshInMs);
     return tap;
   }
