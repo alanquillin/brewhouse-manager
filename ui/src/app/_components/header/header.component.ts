@@ -18,7 +18,6 @@ export class HeaderComponent implements OnInit {
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) {}
   @Input() title: string = "";
-  @Input() restricted: boolean = true;
 
   displayError(errMsg: string) {
     this._snackBar.open("Error: " + errMsg, "Close");
@@ -30,13 +29,9 @@ export class HeaderComponent implements OnInit {
         this.userInfo = userInfo;
       },
       error: (err: DataError) => {
-        if(err.statusCode === 401) {
-          if(this.restricted) {
-            window.location.href = "/login"
-          }
-          return;
+        if(err.statusCode !== 401) {
+          this.displayError(err.message);
         }
-        this.displayError(err.message);
       }
     });
   }

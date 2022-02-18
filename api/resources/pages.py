@@ -42,3 +42,15 @@ class ManagemantUsers(UIBaseResource, ResourceMixinBase):
     @login_required
     def get(self):
         return self.serve_app()
+
+class Home(UIBaseResource, ResourceMixinBase):
+    def get(self):
+        return self.serve_app()
+
+class LocationView(UIBaseResource, ResourceMixinBase):
+    def get(self, **_):
+        return self.serve_app()
+
+class Login(UIBaseResource, ResourceMixinBase):
+    def get(self):
+        return self.serve_app()  

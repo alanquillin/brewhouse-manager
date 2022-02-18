@@ -22,7 +22,7 @@ DOCKER_IMAGE_TAG_DEV ?= dev
 DOCKER := docker
 IMAGE_REPOSITORY := alanquillin
 REPOSITORY_IMAGE ?= $(DOCKER_IMAGE)
-PLATFORM ?= linux/amd64,linux/arm64,linux/arm
+PLATFORMS ?= linux/amd64,linux/arm64,linux/arm
 
 ifneq ("$(wildcard .env)","")
     include .env
@@ -69,7 +69,7 @@ docker-build:
 ifeq ($(VERSION),)
 	$(error VERSION was not provided)
 endif
-	$(DOCKER) buildx build --platform=$(PLATFORM) $(DOCKER_BUILD_ARGS) --build-arg build_for=prod -t $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):$(VERSION) .
+	$(DOCKER) buildx build --platform=$(PLATFORMS) $(DOCKER_BUILD_ARGS) --build-arg build_for=prod -t $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):$(VERSION) .
 
 # dev
 

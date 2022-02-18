@@ -35,7 +35,7 @@ from resources.auth import GoogleLogin, Logout, GoogleCallback, AuthUser, Login
 from resources.beers import Beers, Beer
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
 from resources.locations import Location, Locations
-from resources.pages import ManagemantBeers, ManagemantDashboard, ManagemantLocations, ManagemantSensors, ManagemantTaps, Profile, ManagemantUsers
+from resources.pages import ManagemantBeers, ManagemantDashboard, ManagemantLocations, ManagemantSensors, ManagemantTaps, Profile, ManagemantUsers, Home, LocationView, Login as LoginPage
 from resources.sensors import Sensor, Sensors, SensorData, SensorTypes
 from resources.settings import Settings
 from resources.taps import Tap, Taps
@@ -124,7 +124,10 @@ api.add_resource(UploadImage, "/api/v1/uploads/images/<image_type>")
 api.add_resource(GoogleLogin, "/login/google")
 api.add_resource(GoogleCallback, "/login/google/callback")
 api.add_resource(Logout, "/logout")
-api.add_resource(Login, "/login")
+api.add_resource(Login, "/login", endpoint="submit_login", methods=['POST'])
+api.add_resource(LoginPage, "/login", endpoint="display_login", methods=['GET'])
+api.add_resource(Home, "/")
+api.add_resource(LocationView, "/view/<location>")
 
 # UI resources
 api.add_resource(ManagemantDashboard, "/manage")

@@ -159,7 +159,7 @@ class Logout(BaseResource, ResourceMixinBase):
         logout_user()
         return redirect("/login")
 
-class Login(BaseResource, ResourceMixinBase):    
+class Login(BaseResource, ResourceMixinBase):  
     def post(self):
         data = self.get_request_data()
 
