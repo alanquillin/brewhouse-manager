@@ -33,11 +33,13 @@ class NotAuthorizedError(ClientError):
             user_msg = "You are not authorized.  Please login first."
         super().__init__(response_code=401, user_msg=user_msg, **kwargs)
 
+
 class ForbiddenError(ClientError):
     def __init__(self, user_msg=None, **kwargs):
         if not user_msg:
             user_msg = "You are not authorized to access the requested resource."
         super().__init__(response_code=403, user_msg=user_msg, **kwargs)
+
 
 class NotAllowedError(ClientError):
     def __init__(self, user_msg=None, **kwargs):
@@ -64,6 +66,7 @@ class InvalidSensorType(InvalidEnum):
             message = f"{sensor_type} is an invalid sensor type"
         super().__init__(message)
         self.sensor_type = sensor_type
+
 
 class InvalidExternalBrewingTool(InvalidEnum):
     def __init__(self, tool, message=None):

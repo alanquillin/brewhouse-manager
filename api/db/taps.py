@@ -3,25 +3,15 @@ _TABLE_NAME = "taps"
 _PKEY = "id"
 
 from psycopg2.errors import UniqueViolation  # pylint: disable=no-name-in-module
-from sqlalchemy import CheckConstraint, Column, String, Integer, ForeignKey, func
+from sqlalchemy import CheckConstraint, Column, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import (
-    AuditedMixin,
-    Base,
-    DictifiableMixin,
-    QueryMethodsMixin,
-    generate_audit_trail,
-    locations,
-    column_as_enum,
-    beers,
-    sensors,
-)
-
-from lib.exceptions import InvalidTapType
+from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, beers, column_as_enum, generate_audit_trail, locations, sensors
 from lib import UsefulEnum
+from lib.exceptions import InvalidTapType
+
 
 class TapType(UsefulEnum):
     COLD_BREW = "cold-brew"
@@ -30,6 +20,7 @@ class TapType(UsefulEnum):
     @classmethod
     def _missing_(cls, value):
         raise InvalidTapType(value)
+
 
 @generate_audit_trail
 @column_as_enum("_tap_type", "tap_type", TapType, custom_exc=InvalidTapType)

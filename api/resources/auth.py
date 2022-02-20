@@ -1,19 +1,16 @@
+import json
+
+import requests
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from flask import redirect, request
-from flask_login import (
-    login_required,
-    login_user,
-    logout_user,
-    UserMixin
-)
-import json
+from flask_login import UserMixin, login_required, login_user, logout_user
 from oauthlib.oauth2 import WebApplicationClient
-import requests
 
-from resources import BaseResource, ResourceMixinBase, ClientError, NotAuthorizedError, ClientError, ForbiddenError, UIBaseResource
 from db import session_scope
 from db.users import Users as UsersDB
+from resources import BaseResource, ClientError, ForbiddenError, NotAuthorizedError, ResourceMixinBase, UIBaseResource
+
 
 class AuthUser(UserMixin):
     def __init__(self, id_, first_name, last_name, email, profile_pic, google_oidc_id):
@@ -30,15 +27,9 @@ class AuthUser(UserMixin):
     def from_user(user):
         if not user:
             return None
-            
-        return AuthUser(
-            user.id,
-            user.first_name,
-            user.last_name,
-            user.email,
-            user.profile_pic,
-            user.google_oidc_id
-        )
+
+        return AuthUser(user.id, user.first_name, user.last_name, user.email, user.profile_pic, user.google_oidc_id)
+
 
 class GoogleResourceMixin(ResourceMixinBase):
     def __init__(self):
@@ -46,11 +37,12 @@ class GoogleResourceMixin(ResourceMixinBase):
         self.client_id = self.config.get("auth.oidc.google.client_id")
         self.client_secret = self.config.get("auth.oidc.google.client_secret")
         self.discovery_url = self.config.get("auth.oidc.google.discovery_url")
-        
+
         self.client = WebApplicationClient(self.client_id)
 
     def get_provider_cfg(self):
         return requests.get(self.discovery_url).json()
+
 
 class GoogleLogin(BaseResource, GoogleResourceMixin):
     def get(self):
@@ -71,6 +63,7 @@ class GoogleLogin(BaseResource, GoogleResourceMixin):
         self.logger.debug("redirecting to google SSO: %s", request_uri)
         return redirect(request_uri)
 
+
 class GoogleCallback(UIBaseResource, GoogleResourceMixin):
     def get(self):
         # Get authorization code Google sent back to you
@@ -83,10 +76,7 @@ class GoogleCallback(UIBaseResource, GoogleResourceMixin):
 
         # Prepare and send a request to get tokens! Yay tokens!
         token_url, headers, body = self.client.prepare_token_request(
-            token_endpoint,
-            authorization_response=request.url,
-            redirect_url=request.base_url,
-            code=code
+            token_endpoint, authorization_response=request.url, redirect_url=request.base_url, code=code
         )
         token_response = requests.post(
             token_url,
@@ -134,7 +124,7 @@ class GoogleCallback(UIBaseResource, GoogleResourceMixin):
             if not user.last_name and last_name:
                 self.logger.debug("User '%s' last name not set in database.  Updating from google: %s", users_email, last_name)
                 update_data["last_name"] = last_name
-            
+
             if not user.google_oidc_id and unique_id:
                 self.logger.debug("User '%s' google OIDC Id not set in database.  Updating from google: %s", users_email, unique_id)
                 update_data["google_oidc_id"] = unique_id
@@ -152,14 +142,16 @@ class GoogleCallback(UIBaseResource, GoogleResourceMixin):
 
         # Send user back to homepage
         return redirect("/manage")
-        
+
+
 class Logout(BaseResource, ResourceMixinBase):
     @login_required
     def get(self):
         logout_user()
         return redirect("/login")
 
-class Login(BaseResource, ResourceMixinBase):  
+
+class Login(BaseResource, ResourceMixinBase):
     def post(self):
         data = self.get_request_data()
 
@@ -183,6 +175,5 @@ class Login(BaseResource, ResourceMixinBase):
                 raise NotAuthorizedError()
 
             login_user(AuthUser.from_user(user))
-        
+
         return True
-        

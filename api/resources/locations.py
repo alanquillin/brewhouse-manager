@@ -1,11 +1,14 @@
+import logging
+
 from flask_login import login_required
 
-from resources import BaseResource, ResourceMixinBase, NotFoundError
 from db import session_scope
 from db.locations import Locations as LocationsDB
+from resources import BaseResource, NotFoundError, ResourceMixinBase
 
-import logging
 LOGGER = logging.getLogger(__name__)
+
+
 class LocationsResourceMixin(ResourceMixinBase):
     def get_request_data(self):
         return super().get_request_data(remove_key=["id"])
@@ -14,6 +17,7 @@ class LocationsResourceMixin(ResourceMixinBase):
     def transform_response(location):
         data = location.to_dict()
         return ResourceMixinBase.transform_response(data)
+
 
 class Locations(BaseResource, LocationsResourceMixin):
     def get(self):
@@ -26,7 +30,7 @@ class Locations(BaseResource, LocationsResourceMixin):
         with session_scope(self.config) as db_session:
             data = self.get_request_data()
             l = LocationsDB.create(db_session, **data)
-            
+
             return self.transform_response(l)
 
 
@@ -50,12 +54,12 @@ class Location(BaseResource, LocationsResourceMixin):
             l = LocationsDB.get_by_pkey(db_session, location_id)
             if not l:
                 raise NotFoundError()
-            
+
             data = self.get_request_data()
             l = LocationsDB.update(db_session, location_id, **data)
-            
+
             return self.transform_response(l)
-    
+
     @login_required
     def delete(self, location):
         with session_scope(self.config) as db_session:
@@ -65,7 +69,7 @@ class Location(BaseResource, LocationsResourceMixin):
             l = LocationsDB.get_by_pkey(db_session, location_id)
             if not l:
                 raise NotFoundError()
-            
+
             LocationsDB.delete(db_session, location_id)
-            
+
             return True

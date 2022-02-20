@@ -1,10 +1,10 @@
 from flask import request
-from flask_login import login_required, current_user
+from flask_login import current_user, login_required
 
-from resources import BaseResource, ResourceMixinBase, NotFoundError, ForbiddenError, ClientError, NotAuthorizedError
 from db import session_scope
 from db.users import Users as UsersDB
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
+from resources import BaseResource, ClientError, ForbiddenError, NotAuthorizedError, NotFoundError, ResourceMixinBase
 
 
 class UserResourceMixin(ResourceMixinBase):
@@ -15,7 +15,7 @@ class UserResourceMixin(ResourceMixinBase):
     def transform_response(user):
         data = user.to_dict()
         FILTERED_KEYS = ["password_hash", "google_oidc_id"]
-        
+
         data["password_enabled"] = False
         if data.get("password_hash"):
             data["password_enabled"] = True
@@ -25,6 +25,7 @@ class UserResourceMixin(ResourceMixinBase):
                 del data[key]
 
         return ResourceMixinBase.transform_response(data)
+
 
 class Users(BaseResource, UserResourceMixin):
     @login_required
@@ -42,6 +43,7 @@ class Users(BaseResource, UserResourceMixin):
             self.logger.debug("Creating user with data: %s", data)
             user = UsersDB.create(db_session, **data)
             return self.transform_response(user)
+
 
 class User(BaseResource, UserResourceMixin):
     @login_required
@@ -91,7 +93,7 @@ class CurrentUser(BaseResource, UserResourceMixin):
 
         if not user_c.is_authenticated:
             raise NotAuthorizedError()
-            
+
         with session_scope(self.config) as db_session:
             user = UsersDB.get_by_pkey(db_session, user_c.id)
             return self.transform_response(user)

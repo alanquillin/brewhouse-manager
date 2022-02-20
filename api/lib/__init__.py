@@ -24,6 +24,7 @@ class ThreadSafeSingleton(type):
                     cls._instances[cls] = super(ThreadSafeSingleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
+
 class UsefulEnum(Enum):
     def __str__(self):  # pylint: disable=invalid-str-returned
         return self.value
@@ -48,4 +49,3 @@ class UsefulEnum(Enum):
     @classmethod
     def _missing_(cls, value):
         raise InvalidEnum(f"{value} is not a valid {cls.__name__}")
-

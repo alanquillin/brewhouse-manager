@@ -1,7 +1,7 @@
 import logging
 import os
-from functools import wraps
 import urllib.parse
+from functools import wraps
 
 import dns.exception
 import dns.resolver
@@ -12,8 +12,8 @@ from schema import Schema, SchemaError, SchemaMissingKeyError
 
 from db import session_scope
 from db.locations import Locations as LocationsDB
-from lib.config import Config
 from lib import util
+from lib.config import Config
 from resources.exceptions import *
 
 LOGGER = logging.getLogger(__name__)
@@ -54,6 +54,7 @@ def convert_exceptions(func):
 
     return decorator
 
+
 def convert_ui_exceptions(func):
     @wraps(func)
     def decorator(*args, **kwargs):
@@ -86,6 +87,7 @@ def with_schema_validation(schema):
 
     return wrapper
 
+
 def transform_request_data(original_data):
     data = {}
     for k, v in original_data.items():
@@ -93,6 +95,7 @@ def transform_request_data(original_data):
             v = transform_request_data(v)
         data[util.camel_to_snake(k)] = v
     return data
+
 
 def transform_response(data, transform_keys=None, filtered_keys=None):
     if not data:
@@ -169,6 +172,7 @@ class BaseResource(Resource):
         self.config = Config()
         self.logger = logging.getLogger(self.__class__.__name__)
 
+
 class UIBaseResource(BaseResource):
     schema = Schema({})
 
@@ -181,17 +185,18 @@ class UIBaseResource(BaseResource):
         dir_path = os.path.join(os.getcwd(), STATIC_URL_PATH)
         return send_from_directory(dir_path, "index.html")
 
+
 class ResourceMixinBase:
     def __init__(self):
         super().__init__()
 
         self.config = Config()
         self.logger = logging.getLogger(self.__class__.__name__)
-    
+
     @staticmethod
     def get_request_data(remove_key=[]):
         j = request.get_json()
-        
+
         if remove_key:
             data = {}
             for k, v in j.items():
@@ -210,7 +215,7 @@ class ResourceMixinBase:
         if not db_session:
             with session_scope(self.config) as db_session:
                 return self._get_location_id(location_name, db_session)
-        
+
         res = LocationsDB.query(db_session, name=location_name)
         loc = None
         if res:

@@ -3,20 +3,12 @@ _TABLE_NAME = "beers"
 _PKEY = "id"
 
 from psycopg2.errors import UniqueViolation  # pylint: disable=no-name-in-module
-from sqlalchemy import Column, String, ForeignKey, func, Integer, Date, Float
+from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.schema import Index
 
-from db import (
-    AuditedMixin,
-    Base,
-    DictifiableMixin,
-    QueryMethodsMixin,
-    generate_audit_trail,
-    locations
-)
+from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail, locations
 from db.types.nested import NestedMutableDict
-
 from lib import UsefulEnum
 from lib.exceptions import InvalidExternalBrewingTool
 

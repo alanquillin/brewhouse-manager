@@ -1,13 +1,11 @@
-import re
-from logging import getLogger
-from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 import random
 import re
 import string
+from logging import getLogger
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 from uuid import UUID
 
 from lib.time import utcnow_aware
-
 
 LOGGER = getLogger(__name__)
 
@@ -20,19 +18,14 @@ def camel_to_snake(camel_str):
 
 
 def snake_to_camel(in_str):
-    return "".join(
-        [element.title() if index > 0 else element.lower() for index, element in enumerate(in_str.split("_"))]
-    )
+    return "".join([element.title() if index > 0 else element.lower() for index, element in enumerate(in_str.split("_"))])
 
 
 def random_string(length):
 
     """Return a random string of a certain length."""
 
-    return "".join(
-        random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits)
-        for _ in range(length)
-    )
+    return "".join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(length))
 
 
 def flatten_dict(data, parent_name="", sep=".", key_converter=None, skip_key_check=None):
@@ -66,11 +59,7 @@ def flatten_dict(data, parent_name="", sep=".", key_converter=None, skip_key_che
     for key, val in data.items():
         child_name = key if not parent_name else f"{parent_name}{sep}{key}"
         if isinstance(val, dict) and not skip_key_check(child_name):
-            flattened.update(
-                flatten_dict(
-                    val, parent_name=child_name, sep=sep, key_converter=key_converter, skip_key_check=skip_key_check
-                )
-            )
+            flattened.update(flatten_dict(val, parent_name=child_name, sep=sep, key_converter=key_converter, skip_key_check=skip_key_check))
         else:
             if key_converter:
                 child_name = key_converter(child_name)
@@ -113,5 +102,5 @@ def is_valid_uuid(uuid_to_test, version=4):
         uuid_obj = UUID(uuid_to_test, version=version)
     except ValueError:
         return False
-    
+
     return str(uuid_obj) == uuid_to_test

@@ -3,9 +3,10 @@ import base64
 import requests
 from requests.auth import HTTPBasicAuth
 
-from lib.external_brew_tools import ExternalBrewToolBase
 from db import session_scope
 from db.beers import Beers
+from lib.external_brew_tools import ExternalBrewToolBase
+
 
 class Brewfather(ExternalBrewToolBase):
     def get_details(self, beer_id=None, beer=None, meta=None):
@@ -17,15 +18,27 @@ class Brewfather(ExternalBrewToolBase):
                 with session_scope as session:
                     beer = Beers.get_by_pkey(session, beer_id)
             meta = beer.external_brewing_tool_meta
-        
-        fields = ["batchNo", "measuredAbv", "status", "estimatedIbu", "brewDate", "bottlingDate", "estimatedColor", "recipe.name", "recipe.img_url", "recipe.style.name", "recipe.style.type"]
+
+        fields = [
+            "batchNo",
+            "measuredAbv",
+            "status",
+            "estimatedIbu",
+            "brewDate",
+            "bottlingDate",
+            "estimatedColor",
+            "recipe.name",
+            "recipe.img_url",
+            "recipe.style.name",
+            "recipe.style.type",
+        ]
         batch = self._get_batch(meta=meta, params={"include": ",".join(fields)})
         recipe = batch.get("recipe", {})
         status = batch.get("status")
 
         details = {
             "name": recipe.get("name"),
-            "abv": batch.get('measuredAbv'),
+            "abv": batch.get("measuredAbv"),
             "img_url": recipe.get("img_url"),
             "status": status,
             "style": recipe.get("style", {}).get("name"),
@@ -33,7 +46,7 @@ class Brewfather(ExternalBrewToolBase):
             "brew_date": batch.get("brewDate"),
             "keg_date": batch.get("bottlingDate"),
             "srm": batch.get("estimatedColor"),
-            "batch_number": batch.get("batchNo")
+            "batch_number": batch.get("batchNo"),
         }
 
         complete_statuses = self.config.get("external_brew_tools.brewfather.completed_statuses")
@@ -52,12 +65,12 @@ class Brewfather(ExternalBrewToolBase):
     def _get_batch(self, batch_id=None, meta=None, params=None):
         if not batch_id and not meta:
             raise Exception("WTH!!")
-        
+
         if not batch_id:
-            batch_id = meta.get('batch_id')
+            batch_id = meta.get("batch_id")
         return self._get(f"v1/batches/{batch_id}", meta, params=params)
 
-    def _get(self, path, meta, params=None):        
+    def _get(self, path, meta, params=None):
         url = f"https://api.brewfather.app/{path}"
         self.logger.debug("GET Request: %s, params: %s", url, params)
         resp = requests.get(url, auth=self._get_auth(meta), params=params)
@@ -76,7 +89,7 @@ class Brewfather(ExternalBrewToolBase):
         api_key = meta.get("api_key")
         if not username:
             username = self.config.get(f"{config_prefix}.username")
-        
+
         if not api_key:
             api_key = self.config.get(f"{config_prefix}.api_key")
         self.logger.debug("username: %s", username)

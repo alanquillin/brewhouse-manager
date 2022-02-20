@@ -4,9 +4,10 @@ import requests
 from requests import auth
 from requests.auth import HTTPBasicAuth
 
-from lib.sensors import SensorBase, InvalidDataType
 from db import session_scope
 from db.sensors import Sensors as SensorsDB
+from lib.sensors import InvalidDataType, SensorBase
+
 
 class PlaatoKeg(SensorBase):
     _data_type_to_pin = {
@@ -17,7 +18,7 @@ class PlaatoKeg(SensorBase):
         "og": "v65",
         "fg": "v66",
         "abv": "v68",
-        "firmware_version": "v93"
+        "firmware_version": "v93",
     }
 
     def get(self, data_type, sensor_id=None, sensor=None, meta=None):
@@ -36,7 +37,7 @@ class PlaatoKeg(SensorBase):
 
         return self._get(pin, meta)
 
-    def _get(self, pin, meta, params=None):  
+    def _get(self, pin, meta, params=None):
         auth_token = meta.get("auth_token")
         url = f"http://plaato.blynk.cc/{auth_token}/get/{pin}"
         self.logger.debug("GET Request: %s, params: %s", url, params)

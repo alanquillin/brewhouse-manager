@@ -6,16 +6,10 @@ import os
 import sys
 from time import sleep
 
+from sqlalchemy.exc import IntegrityError, OperationalError
+
+from db import Base, beers, locations, sensors, session_scope, taps
 from lib.config import Config
-from db import (
-    locations,
-    session_scope,
-    Base,
-    taps,
-    beers,
-    sensors
-)
-from sqlalchemy.exc import OperationalError, IntegrityError
 
 location1_id = "fb139af3-2905-4006-9196-62f54bb262ab"
 location2_id = "e472c003-01b2-4281-8a64-0c03a7c98e7d"

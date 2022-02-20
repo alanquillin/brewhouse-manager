@@ -3,11 +3,7 @@ from contextlib import contextmanager
 from functools import wraps
 from urllib.parse import quote
 
-from psycopg2.errors import (  # pylint: disable=no-name-in-module
-    InvalidTextRepresentation,
-    NotNullViolation,
-    UniqueViolation,
-)
+from psycopg2.errors import InvalidTextRepresentation, NotNullViolation, UniqueViolation  # pylint: disable=no-name-in-module
 from psycopg2.extensions import QuotedString, register_adapter
 from sqlalchemy import DDL, Column, DateTime, Integer, String, create_engine, event, func, text
 from sqlalchemy.dialects.postgresql import ENUM
@@ -24,15 +20,7 @@ from lib import json
 
 Base = declarative_base()
 
-__all__ = [
-    "Base",
-    "audit",
-    "beers",
-    "locations",
-    "sensors",
-    "taps",
-    "users"
-]
+__all__ = ["Base", "audit", "beers", "locations", "sensors", "taps", "users"]
 
 
 @event.listens_for(Base.metadata, "before_create")
@@ -341,9 +329,7 @@ class QueryMethodsMixin:
 
         if autocommit:
             try:
-                with convert_exception(
-                    IntegrityError, psycopg2=NotNullViolation, new=local_exc.RequiredParameterNotFound
-                ), convert_exception(
+                with convert_exception(IntegrityError, psycopg2=NotNullViolation, new=local_exc.RequiredParameterNotFound), convert_exception(
                     IntegrityError, psycopg2=UniqueViolation, new=local_exc.ItemAlreadyExists, str_match="_pkey"
                 ):
                     session.commit()

@@ -10,14 +10,14 @@ if __name__ == "__main__":
 
     patch_psycopg()
 
-from datetime import timedelta
 import argparse
 import json as official_json
 import os
 import sys
 import uuid
+from datetime import timedelta
 
-from flask import Flask, make_response, send_from_directory, redirect
+from flask import Flask, make_response, redirect, send_from_directory
 from flask.logging import create_logger
 from flask_cors import CORS
 from flask_login import LoginManager
@@ -31,15 +31,18 @@ from db.users import Users as UsersDB
 from lib import json, logging
 from lib.config import Config
 from resources.assets import UploadImage
-from resources.auth import GoogleLogin, Logout, GoogleCallback, AuthUser, Login
-from resources.beers import Beers, Beer
+from resources.auth import AuthUser, GoogleCallback, GoogleLogin, Login, Logout
+from resources.beers import Beer, Beers
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
 from resources.locations import Location, Locations
-from resources.pages import ManagemantBeers, ManagemantDashboard, ManagemantLocations, ManagemantSensors, ManagemantTaps, Profile, ManagemantUsers, Home, LocationView, Login as LoginPage
-from resources.sensors import Sensor, Sensors, SensorData, SensorTypes
+from resources.pages import Home, LocationView
+from resources.pages import Login as LoginPage
+from resources.pages import ManagemantBeers, ManagemantDashboard, ManagemantLocations, ManagemantSensors, ManagemantTaps, ManagemantUsers, Profile
+from resources.sensors import Sensor, SensorData, Sensors, SensorTypes
 from resources.settings import Settings
 from resources.taps import Tap, Taps
-from resources.users import CurrentUser, Users, User
+from resources.users import CurrentUser, User, Users
+
 
 class IgnoringLogAdapter(LoggingLogAdapter):
     """
@@ -87,8 +90,10 @@ app_config.setup(config_files=["default.json"])
 def health():
     return "healthy 👍"
 
+
 login_manager = LoginManager()
 login_manager.init_app(app)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -96,9 +101,11 @@ def load_user(user_id):
         print("refreshing user %s" % user_id)
         return AuthUser.from_user(UsersDB.get_by_pkey(db_session, user_id))
 
+
 @login_manager.unauthorized_handler
 def redirect_not_logged_in():
     return redirect("/login")
+
 
 # API resources for UI:
 api.add_resource(Beers, "/api/v1/beers")
@@ -124,8 +131,8 @@ api.add_resource(UploadImage, "/api/v1/uploads/images/<image_type>")
 api.add_resource(GoogleLogin, "/login/google")
 api.add_resource(GoogleCallback, "/login/google/callback")
 api.add_resource(Logout, "/logout")
-api.add_resource(Login, "/login", endpoint="submit_login", methods=['POST'])
-api.add_resource(LoginPage, "/login", endpoint="display_login", methods=['GET'])
+api.add_resource(Login, "/login", endpoint="submit_login", methods=["POST"])
+api.add_resource(LoginPage, "/login", endpoint="display_login", methods=["GET"])
 api.add_resource(Home, "/")
 api.add_resource(LocationView, "/view/<location>")
 
@@ -200,7 +207,7 @@ if __name__ == "__main__":
             max_age=3000,
             vary_header=True,
         )
-    
+
     with session_scope(app_config) as db_session:
         users = UsersDB.query(db_session)
 
@@ -214,7 +221,7 @@ if __name__ == "__main__":
             if not google_sso_enabled and not set_init_user_pass:
                 logger.error("Can create an initial user!  auth.initial_user.set_pass and google authentication is disabled!")
                 sys.exit(1)
-                
+
             data = {"email": init_user_email}
             if init_user_fname:
                 data["first_name"] = init_user_fname

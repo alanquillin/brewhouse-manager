@@ -9,8 +9,8 @@ from sqlalchemy.exc import ProgrammingError
 
 sys.path.insert(0, str(pathlib.Path(__file__).absolute().parent.parent))
 
-from lib.config import Config
 from db import *  # pylint: disable=unused-wildcard-import,wildcard-import
+from lib.config import Config
 
 
 # Currently only checks if all the columns match the models - it should probably also check for constraints and indexes.

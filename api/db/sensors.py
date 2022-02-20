@@ -3,20 +3,14 @@ _TABLE_NAME = "sensors"
 _PKEY = "id"
 
 from psycopg2.errors import UniqueViolation  # pylint: disable=no-name-in-module
-from sqlalchemy import CheckConstraint, Column, String, Integer, ForeignKey, func
+from sqlalchemy import CheckConstraint, Column, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import (
-    AuditedMixin,
-    Base,
-    DictifiableMixin,
-    QueryMethodsMixin,
-    generate_audit_trail,
-    locations
-)
+from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail, locations
 from db.types.nested import NestedMutableDict
+
 
 @generate_audit_trail
 class Sensors(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
@@ -31,10 +25,8 @@ class Sensors(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
 
     location = relationship(locations.Locations, backref=backref("Sensors", cascade="all,delete"))
 
-    __table_args__ = (
-        Index("ix_sensor_location_id", location_id, unique=False),
-    )
-        
+    __table_args__ = (Index("ix_sensor_location_id", location_id, unique=False),)
+
     @classmethod
     def get_by_location(cls, session, location_id, **kwargs):
         return session.query(cls).filter_by(location_id=location_id, **kwargs)

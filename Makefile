@@ -108,9 +108,13 @@ lint-py:
 lint-ts:
 	yarn run lint
 
+lint: lint-py lint-ts
+
 format-py:
-	$(ISORT) api tests deploy
-	$(BLACK) api tests deploy
+	$(ISORT) api
+	$(BLACK) api
+
+format: format-py
 
 # Clean up targets
 

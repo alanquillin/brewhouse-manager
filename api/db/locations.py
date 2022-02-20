@@ -9,13 +9,8 @@ from sqlalchemy import Column, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import Index
 
-from db import (
-    AuditedMixin,
-    Base,
-    DictifiableMixin,
-    QueryMethodsMixin,
-    generate_audit_trail,
-)
+from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail
+
 
 @generate_audit_trail
 class Locations(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
@@ -30,9 +25,9 @@ class Locations(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     @staticmethod
     def _replace_name(data):
         if "name" in data and data["name"]:
-            data["name"] = re.sub('[^a-zA-Z0-9-]', "", data["name"].replace(" ", "-")).lower()
+            data["name"] = re.sub("[^a-zA-Z0-9-]", "", data["name"].replace(" ", "-")).lower()
         return data
-    
+
     @classmethod
     def create(cls, session, **kwargs):
         kwargs = cls._replace_name(kwargs)

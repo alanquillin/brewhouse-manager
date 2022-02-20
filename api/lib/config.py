@@ -5,6 +5,7 @@ import os
 from lib import Error, ThreadSafeSingleton
 from lib.util import flatten_dict
 
+
 class RequiredConfigKeyNotFound(Error):
     def __init__(self, key, message=None):
         if not message:
@@ -19,6 +20,7 @@ class RequiredConfigKeysNotFound(Error):
             message = f"The following config keys are required but not provided: {keys}"
         super().__init__(message)
         self.missing_keys = keys
+
 
 def value_converter(func):
     def wrapper(val, *args):
@@ -174,9 +176,7 @@ class Config(metaclass=ThreadSafeSingleton):
         if config_path:
             config_files.append(config_path)
 
-        base_dir = os.environ.get(
-            self.gen_key("CONFIG_BASE_DIR"), os.path.dirname(os.path.abspath(__file__)) if not base_dir else base_dir
-        )
+        base_dir = os.environ.get(self.gen_key("CONFIG_BASE_DIR"), os.path.dirname(os.path.abspath(__file__)) if not base_dir else base_dir)
         self.set("CONFIG_BASE_DIR", base_dir)
 
         for config_file in config_files:
@@ -215,10 +215,7 @@ class Config(metaclass=ThreadSafeSingleton):
             children = {k: v for k, v in self.data_flat.items() if k.startswith(f"{_key}_")}
             if children:
                 self.logger.debug(
-                    (
-                        "No value found for key '%s', but child values were found.  "
-                        "Assuming the caller wanted a dict, so returning a ConfigHelper"
-                    ),
+                    ("No value found for key '%s', but child values were found.  " "Assuming the caller wanted a dict, so returning a ConfigHelper"),
                     key,
                 )
                 return self.get_helper(key)

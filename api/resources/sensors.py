@@ -1,10 +1,13 @@
 from flask_login import login_required
 
-from resources import BaseResource, ResourceMixinBase, NotFoundError, ClientError
-from resources.locations import LocationsResourceMixin
 from db import session_scope
-from db.sensors import Sensors as SensorsDB, _PKEY as sensors_pk
-from lib.sensors import get_sensor_lib, InvalidDataType, get_types as get_sensor_types
+from db.sensors import _PKEY as sensors_pk
+from db.sensors import Sensors as SensorsDB
+from lib.sensors import InvalidDataType, get_sensor_lib
+from lib.sensors import get_types as get_sensor_types
+from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase
+from resources.locations import LocationsResourceMixin
+
 
 class SensorResourceMixin(ResourceMixinBase):
     @staticmethod
@@ -13,7 +16,7 @@ class SensorResourceMixin(ResourceMixinBase):
 
         if sensor.location:
             data["location"] = LocationsResourceMixin.transform_response(sensor.location)
-            
+
         return ResourceMixinBase.transform_response(data)
 
 
@@ -43,35 +46,29 @@ class Sensor(BaseResource, SensorResourceMixin):
         with session_scope(self.config) as db_session:
             sensor = None
             if location:
-                query = {
-                    "location_id": self.get_location_id(location, db_session),
-                    sensors_pk: sensor_id
-                }
+                query = {"location_id": self.get_location_id(location, db_session), sensors_pk: sensor_id}
                 resp = SensorsDB.query(db_session, **query)
                 if resp:
                     sensor = resp[0]
-            else:    
+            else:
                 sensor = SensorsDB.get_by_pkey(db_session, sensor_id)
-            
+
             if not sensor:
                 raise NotFoundError()
 
             return self.transform_response(sensor)
-    
+
     @login_required
     def patch(self, sensor_id, location=None):
         with session_scope(self.config) as db_session:
             if location:
-                query = {
-                    "location_id": self.get_location_id(location, db_session),
-                    sensors_pk: sensor_id
-                }
+                query = {"location_id": self.get_location_id(location, db_session), sensors_pk: sensor_id}
                 resp = SensorsDB.query(db_session, **query)
                 if resp:
                     sensor = resp[0]
-            else:    
+            else:
                 sensor = SensorsDB.get_by_pkey(db_session, sensor_id)
-            
+
             if not sensor:
                 raise NotFoundError()
 
@@ -84,16 +81,13 @@ class Sensor(BaseResource, SensorResourceMixin):
     def delete(self, sensor_id, location=None):
         with session_scope(self.config) as db_session:
             if location:
-                query = {
-                    "location_id": self.get_location_id(location, db_session),
-                    sensors_pk: sensor_id
-                }
+                query = {"location_id": self.get_location_id(location, db_session), sensors_pk: sensor_id}
                 resp = SensorsDB.query(db_session, **query)
                 if resp:
                     sensor = resp[0]
-            else:    
+            else:
                 sensor = SensorsDB.get_by_pkey(db_session, sensor_id)
-            
+
             if not sensor:
                 raise NotFoundError()
 
@@ -101,29 +95,28 @@ class Sensor(BaseResource, SensorResourceMixin):
 
             return True
 
+
 class SensorData(BaseResource, SensorResourceMixin):
     def get(self, sensor_id, data_type, location=None):
         with session_scope(self.config) as db_session:
             sensor = None
             if location:
-                query = {
-                    "location_id": self.get_location_id(location, db_session),
-                    sensors_pk: sensor_id
-                }
+                query = {"location_id": self.get_location_id(location, db_session), sensors_pk: sensor_id}
                 resp = SensorsDB.query(db_session, **query)
                 if resp:
                     sensor = resp[0]
-            else:    
+            else:
                 sensor = SensorsDB.get_by_pkey(db_session, sensor_id)
-            
+
             if not sensor:
                 raise NotFoundError()
-                
+
             sensor_lib = get_sensor_lib(sensor.sensor_type)
             try:
                 return sensor_lib.get(data_type, sensor=sensor)
             except InvalidDataType as ex:
                 raise ClientError(user_msg=ex.message)
+
 
 class SensorTypes(BaseResource, SensorResourceMixin):
     def get(self):

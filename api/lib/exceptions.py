@@ -6,8 +6,10 @@ class Error(Exception):
     def __str__(self):
         return self.message
 
+
 class InvalidEnum(ValueError):
     pass
+
 
 class InvalidParameter(Error):
     def __init__(self, param, allowed_params=None):
@@ -42,6 +44,7 @@ class InvalidExternalBrewingTool(Error):
         super().__init__(message)
         self.name = name
 
+
 class InvalidSensorType(Error):
     def __init__(self, sensor_type, message=None):
         if not message:
@@ -49,6 +52,7 @@ class InvalidSensorType(Error):
 
         super().__init__(message)
         self.sensor_type = sensor_type
+
 
 class InvalidTapType(Error):
     def __init__(self, tap_type, message=None):
