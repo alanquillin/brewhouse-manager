@@ -34,6 +34,7 @@ from resources.assets import UploadImage
 from resources.auth import AuthUser, GoogleCallback, GoogleLogin, Login, Logout
 from resources.beers import Beer, Beers
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
+from resources.fermentation_ctrl import FermentationController, FermentationControllers, FermentationControllerStats, FermentationControllerDeviceActions, FermentationControllerDeviceData
 from resources.locations import Location, Locations
 from resources.pages import Home, LocationView
 from resources.pages import Login as LoginPage
@@ -126,6 +127,14 @@ api.add_resource(User, "/api/v1/users/<user_id>")
 api.add_resource(CurrentUser, "/api/v1/users/current")
 api.add_resource(Settings, "/api/v1/settings")
 api.add_resource(UploadImage, "/api/v1/uploads/images/<image_type>")
+api.add_resource(FermentationControllers, "/api/v1/fermentation/controllers", endpoint="fermentation_controllers")
+api.add_resource(FermentationControllers, "/api/v1/fermentation/controllers/find", endpoint="find_fermentation_controllers", methods=["GET"])
+api.add_resource(FermentationController, "/api/v1/fermentation/controllers/<fermentation_controller_id>")
+api.add_resource(FermentationControllerStats, "/api/v1/fermentation/controllers/<fermentation_controller_id>/stats")
+api.add_resource(FermentationControllerDeviceActions, "/api/v1/fermentation/controllers/<fermentation_controller_id>/actions", endpoint="fermentation_controllers_action_rpc", methods=["POST"])
+api.add_resource(FermentationControllerDeviceActions, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<action>", endpoint="fermentation_controllers_valueless_action", methods=["POST"])
+api.add_resource(FermentationControllerDeviceActions, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<action>/<value>", methods=["POST"])
+api.add_resource(FermentationControllerDeviceData, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<key>", methods=["GET"])
 
 # session management APIs
 api.add_resource(GoogleLogin, "/login/google")

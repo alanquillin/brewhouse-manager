@@ -10,7 +10,8 @@
     "db.port": "int",
     "taps.refresh.base_sec": "int",
     "taps.refresh.variable": "int",
-    "uploads.images.allowed_file_extensions": "list"
+    "uploads.images.allowed_file_extensions": "list",
+    "particle.device_services.enabled": "bool"
   },
   "api": {
     "host": "localhost",
@@ -51,6 +52,12 @@
     "base_dir": "/brewhouse-manager/api/static/assets/uploads",
     "images": {
       "allowed_file_extensions": ["jpg","jpeg","png.","gif","svg"]
+    }
+  },
+  "particle": {
+    "base_url": "https://api.particle.io",
+    "device_services": {
+      "enabled": false
     }
   }
 }

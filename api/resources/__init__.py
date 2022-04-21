@@ -89,6 +89,9 @@ def with_schema_validation(schema):
 
 
 def transform_request_data(original_data):
+    if not original_data:
+        return {}
+
     data = {}
     for k, v in original_data.items():
         if isinstance(v, dict):

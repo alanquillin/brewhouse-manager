@@ -15,12 +15,14 @@ use_parentheses = true
 line-length = 160
 
 [tool.pylint.'MESSAGES CONTROL']
+max-line-length = 160
 disable = [
     "bad-continuation",
     "bad-whitespace",
     "fixme",
     "invalid-name",
     "missing-docstring",
+    "missing-module-docstring",
     "no-member",  # disabling until this issue is resolved: https://github.com/PyCQA/pylint/issues/533
     "too-few-public-methods",
     "too-many-ancestors",
