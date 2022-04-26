@@ -36,9 +36,7 @@ from resources.beers import Beer, Beers
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
 from resources.fermentation_ctrl import FermentationController, FermentationControllers, FermentationControllerStats, FermentationControllerDeviceActions, FermentationControllerDeviceData
 from resources.locations import Location, Locations
-from resources.pages import Home, LocationView
-from resources.pages import Login as LoginPage
-from resources.pages import ManagemantBeers, ManagemantDashboard, ManagemantLocations, ManagemantSensors, ManagemantTaps, ManagemantUsers, Profile
+from resources.pages import RestrictedGenericPageHandler, GenericPageHandler
 from resources.sensors import Sensor, SensorData, Sensors, SensorTypes
 from resources.settings import Settings
 from resources.taps import Tap, Taps
@@ -141,18 +139,19 @@ api.add_resource(GoogleLogin, "/login/google")
 api.add_resource(GoogleCallback, "/login/google/callback")
 api.add_resource(Logout, "/logout")
 api.add_resource(Login, "/login", endpoint="submit_login", methods=["POST"])
-api.add_resource(LoginPage, "/login", endpoint="display_login", methods=["GET"])
-api.add_resource(Home, "/")
-api.add_resource(LocationView, "/view/<location>")
+api.add_resource(GenericPageHandler, "/login", endpoint="display_login", methods=["GET"])
+api.add_resource(GenericPageHandler, "/", endpoint="home")
+api.add_resource(GenericPageHandler, "/view/<location>", endpoint="location_view")
 
 # UI resources
-api.add_resource(ManagemantDashboard, "/manage")
-api.add_resource(ManagemantBeers, "/manage/beers")
-api.add_resource(ManagemantLocations, "/manage/locations")
-api.add_resource(ManagemantSensors, "/manage/sensors")
-api.add_resource(ManagemantTaps, "/manage/taps")
-api.add_resource(ManagemantUsers, "/manage/users")
-api.add_resource(Profile, "/me")
+api.add_resource(RestrictedGenericPageHandler, "/manage", endpoint="management_dashboard")
+api.add_resource(RestrictedGenericPageHandler, "/manage/beers", endpoint="manage_beers")
+api.add_resource(RestrictedGenericPageHandler, "/manage/locations", endpoint="manage_locations")
+api.add_resource(RestrictedGenericPageHandler, "/manage/sensors", endpoint="manage_sensors")
+api.add_resource(RestrictedGenericPageHandler, "/manage/taps", endpoint="manage_taps")
+api.add_resource(RestrictedGenericPageHandler, "/manage/users", endpoint="manage_users")
+api.add_resource(RestrictedGenericPageHandler, "/me", endpoint="profile")
+api.add_resource(GenericPageHandler, "/tools/volume_calculator", endpoint="volume_calculator")
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
 app.secret_key = CONFIG.get("app.secret_key", str(uuid.uuid4()))

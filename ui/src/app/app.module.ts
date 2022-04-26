@@ -57,6 +57,7 @@ import { ManageSensorsComponent } from './manage/sensors/sensors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
 import { ManageUsersComponent } from './manage/users/users.component'
 import { ProfileComponent } from './profile/profile.component';
+import { VolumeCalculatorComponent } from './tools/volume-calculator/volume-calculator.component';
 
 import { WINDOW_PROVIDERS } from './window.provider';
 import { DndDirective } from './_directives/dnd.directive';
@@ -83,6 +84,7 @@ import { ErrorsComponent } from './errors/errors.component';
     ManageUsersComponent,
     ProfileComponent,
     ErrorsComponent,
+    VolumeCalculatorComponent,
   ],
   imports: [
     AppRoutingModule,

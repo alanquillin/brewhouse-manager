@@ -1,0 +1,38 @@
+.actions {
+    order: 3;
+    
+    button {
+        margin-right: 12px;
+        margin-top: 12px;
+    }    
+} 
+
+.vol-calc-form fieldset {
+    display: flex;
+    flex-direction: column;
+    border: none;
+    width: 320px;
+
+    .form-row {
+        display: flex;
+        flex-direction: row;
+    }
+}
+
+.results {
+    display: flex;
+    flex-direction: row;
+
+    .results-desc {
+        margin-right: 12px;
+        font-weight: bold;
+    }
+    
+    .results-value {}
+}
+
+.calc-type {
+    mat-form-field {
+        width: 320px;
+    }
+}

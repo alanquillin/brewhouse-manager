@@ -186,7 +186,27 @@ export class LocationComponent implements OnInit {
     return srm > 40 ? "40plus" : _.toString(_.round(srm))
   }
 
-  ngOnInit() {  
+  ngOnInit() { 
+    console.log(window.navigator.userAgent);
+    // if(window.navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
+    //   console.log("attempting to fullscreen");
+    //   let elem = document.documentElement;
+    //   if (elem.requestFullscreen) {
+    //     console.log("calling full screen");
+    //     elem.requestFullscreen();
+    //   }
+      // else if (elem.mozRequestFullScreen) {
+      //   /* Firefox */
+      //   elem.mozRequestFullScreen();
+      // } else if (elem.webkitRequestFullscreen) {
+      //   /* Chrome, Safari and Opera */
+      //   elem.webkitRequestFullscreen();
+      // } else if (elem.msRequestFullscreen) {
+      //   /* IE/Edge */
+      //   elem.msRequestFullscreen();
+      // }
+    // }
+    
     this.refresh(()=>{
       this.configService.update({title: `On Tap: ${this.location.description}`})
     });

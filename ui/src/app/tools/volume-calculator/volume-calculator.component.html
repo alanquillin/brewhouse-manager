@@ -1,0 +1,80 @@
+<p class="heading">Volume Calculator</p>
+
+<div class="calc-type">
+    <mat-form-field appearance="fill">
+        <mat-label>Calculation type</mat-label>
+        <mat-select [(value)]="calType" (selectionChange)="calTypeChanged()">
+            <mat-option value="byWeight">Volume by weight</mat-option>
+            <mat-option value="byVolume">Weight by target volume</mat-option>
+        </mat-select>
+    </mat-form-field>
+</div>
+<div class="vol-calc-form">
+    <form [formGroup]="volCalcFormGroup">
+        <fieldset>
+            <mat-form-field appearance="fill" class="modify-field" *ngIf="calType === 'byWeight'">
+                <input id="total_weight_input"
+                    class="dp-textfield--input"
+                    formControlName="totalWeight"
+                    matInput />
+                <mat-label>Total Weight</mat-label>
+                <mat-select matSuffix formControlName="totalWeightUnit" name="totalWeightUnit" required>
+                    <mat-option value="kg">kg</mat-option>
+                    <mat-option value="lbs">lbs</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="modify-field" *ngIf="calType === 'byVolume'">
+                <input id="target_volume_input"
+                    class="dp-textfield--input"
+                    formControlName="targetVolume"
+                    matInput />
+                <mat-label>Target Volume</mat-label>
+                <mat-select matSuffix formControlName="targetVolumeUnit" name="targetVolumeUnit" required>
+                    <mat-option value="gal">gal</mat-option>
+                    <mat-option value="liters">liters</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="modify-field">
+                <input id="empty_keg_weight_weight_input"
+                    class="dp-textfield--input"
+                    formControlName="emptyContainerWeight"
+                    matInput
+                    required />
+                <mat-label>Empty Container Weight</mat-label>
+                <mat-select matSuffix formControlName="emptyContainerWeightUnit" name="emptyContainerWeightUnit" required>
+                    <mat-option value="kg">kg</mat-option>
+                    <mat-option value="lbs">lbs</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="modify-field">
+                <input id="gravity_input"
+                    class="dp-textfield--input"
+                    formControlName="gravity"
+                    matInput
+                    required />
+                <mat-label>Gravity</mat-label>
+                <mat-select matSuffix formControlName="gravityUnit" name="gravityUnit" required>
+                    <mat-option value="sg">SG</mat-option>
+                    <mat-option value="plato">&deg;P</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+        </fieldset>
+    </form>
+</div>
+
+<div class="results" *ngIf="resultsG > 0 && calType === 'byWeight'">
+    <span class="results-desc">Results:</span><span class="results-value">{{_.round(resultsG, 2)}} gallons ({{_.round(resultsL, 2)}} Liters)</span>
+</div>
+
+<div class="results" *ngIf="resultsLbs > 0 && calType === 'byVolume'">
+    <span class="results-desc">Results:</span><span class="results-value">{{_.round(resultsLbs, 2)}} lbs ({{_.round(resultsKgs, 2)}} kgs)</span>
+</div>
+
+<div class="actions">
+    <button mat-raised-button color="primary" (click)="calculate()" [disabled]="!volCalcFormGroup.valid"><mat-icon>save</mat-icon> Calculate</button>
+    <button mat-raised-button color="warn" (click)="reset()"><mat-icon>cancel</mat-icon> Reset</button>
+</div>

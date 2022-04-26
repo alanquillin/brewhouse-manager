@@ -13,6 +13,7 @@
                 <button mat-menu-item id="nav_signed_in_as" disabled *ngIf="userInfo">Signed in as {{ name }}</button>
                 <button mat-menu-item id="nav_dashboard" (click)="goto('')"><mat-icon>home</mat-icon>Home</button>
                 <button mat-menu-item [matMenuTriggerFor]="managementOptions" *ngIf="userInfo"><mat-icon>build</mat-icon>Manage</button>
+                <button mat-menu-item [matMenuTriggerFor]="toolsOptions" *ngIf="userInfo"><mat-icon>gear</mat-icon>Tools</button>
                 <button mat-menu-item id="nav_account_profile" (click)="goto('me')" *ngIf="userInfo"><mat-icon>person</mat-icon>Account Profile</button>
                 <button mat-menu-item id="nav_sign_out" (click)="logout()" *ngIf="userInfo">Sign Out</button>
                 <button mat-menu-item id="nav_sign_out" (click)="logout()" *ngIf="!userInfo">Sign In</button>
@@ -25,6 +26,10 @@
                 <button mat-menu-item id="nav_manage_beers" (click)="goto('manage/beers')"><mat-icon>local_drink</mat-icon>Beers</button>
                 <button mat-menu-item id="nav_manage_sensors" (click)="goto('manage/sensors')"><mat-icon>gps_fixed</mat-icon>Sensors</button>
                 <button mat-menu-item id="nav_manage_users" (click)="goto('manage/users')"><mat-icon>group</mat-icon>Users</button>
+            </mat-menu>
+
+            <mat-menu #toolsOptions="matMenu">
+                <button mat-menu-item id="nav_tools_volume_calculator" (click)="goto('tools/volume_calculator')">Volume Calculator</button>
             </mat-menu>
         </span>
     </div>

@@ -12,6 +12,7 @@ import { ManageTapsComponent } from './manage/taps/taps.component';
 import { ManageUsersComponent } from './manage/users/users.component';
 import { ProfileComponent } from './profile/profile.component';
 import { ErrorsComponent } from './errors/errors.component';
+import { VolumeCalculatorComponent } from './tools/volume-calculator/volume-calculator.component';
 
 const routes: Routes = [
   {
@@ -64,6 +65,13 @@ const routes: Routes = [
   {
     path: 'manage/users',
     component: ManageUsersComponent
+  },
+  {
+    path: 'tools/volume_calculator',
+    component: VolumeCalculatorComponent,
+    data: {
+      access: { restricted: false }
+    }
   },
   {
     path: 'unauthorized',
