@@ -5,6 +5,7 @@ import { LocationComponent } from './location/location.component'
 import { LocationSelectorComponent } from './location-selector/location-selector.component'
 import { LoginComponent } from './login/login.component';
 import { ManageBeerComponent } from './manage/beer/beer.component';
+import { ManageBeverageComponent } from './manage/beverage/beverage.component';
 import { ManageComponent } from './manage/manage.component'
 import { ManageLocationsComponent } from './manage/locations/locations.component';
 import { ManageSensorsComponent } from './manage/sensors/sensors.component';
@@ -61,6 +62,10 @@ const routes: Routes = [
   {
     path: 'manage/beers',
     component: ManageBeerComponent
+  },
+  {
+    path: 'manage/beverages',
+    component: ManageBeverageComponent
   },
   {
     path: 'manage/users',

@@ -1,0 +1,178 @@
+<div class="beverages-view" *ngIf="!editing && !adding">
+    <div class="heading"><p>Edit Beverages</p></div>
+    <div *ngIf="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <div class="beverage-view-filters" *ngIf="!loading">
+        <div class="beverage-view-actions">
+            <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add Beverage</button>
+        </div>
+    </div>
+    <div class="beverages-list" *ngIf="!loading">
+        <table mat-table matSort [dataSource]="filteredBeverages" class="mat-elevation-z8" (matSortChange)="filter($event)">
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="name" sortActionDescription="Sort by name"> Name </th>
+                <td mat-cell *matCellDef="let element">{{element.name}}</td>
+            </ng-container>
+        
+            <ng-container matColumnDef="description">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="description" sortActionDescription="Sort by description"> Description </th>
+                <td mat-cell *matCellDef="let element">{{element.description}}</td>
+            </ng-container>
+        
+            <ng-container matColumnDef="brewery">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="brewery" sortActionDescription="Sort by brewery"> Brewery </th>
+                <td mat-cell *matCellDef="let element">{{element.brewery}}</td>
+            </ng-container>
+        
+            <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="type" sortActionDescription="Sort by type"> Type </th>
+                <td mat-cell *matCellDef="let element">{{element.type}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="flavor">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="flavor" sortActionDescription="Sort by flavor"> Flavor </th>
+                <td mat-cell *matCellDef="let element">{{element.flavor}}</td>
+            </ng-container>
+        
+            <ng-container matColumnDef="brewDate">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="brewDate" sortActionDescription="Sort by brew date"> Brew Date </th>
+                <td mat-cell *matCellDef="let element">{{element.getBrewDateDisplay()}}</td>
+            </ng-container>
+        
+            <ng-container matColumnDef="kegDate">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="kegDate" sortActionDescription="Sort by keg date"> Keg Date </th>
+                <td mat-cell *matCellDef="let element">{{element.getKegDateDisplay()}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="imgUrl">
+                <th mat-header-cell *matHeaderCellDef> Image URL </th>
+                <td mat-cell *matCellDef="let element">
+                    <span *ngIf="!isNilOrEmpty(element.imgUrl)">
+                        <ng-template #popupContent><div><img class="beverage-image-preview" src="{{ element.imgUrl }}"/></div></ng-template>
+                        <button mat-icon-button color="primary" [ngbPopover]="popupContent" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="left" (click)="openImagePreviewDialog(element.imgUrl)">
+                            <mat-icon>open_in_new</mat-icon>
+                        </button>
+                    </span>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> </th>
+                <td mat-cell *matCellDef="let element"> 
+                    <div class="actions">
+                        <button mat-icon-button color="primary" aria-label="Edit beverage" (click)="edit(element)">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" aria-label="Delete beverage" (click)="delete(element)">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div> 
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+    </div>
+</div>
+<div class="beverages-modify" *ngIf="editing || adding">
+    <div class="heading"><p> {{ adding ? "Add" : "Edit" }} Beverage</p></div>
+    <div class="modify-form">
+        <form [formGroup]="modifyFormGroup">
+            <fieldset>
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_name_input"
+                        class="dp-textfield--input"
+                        formControlName="name"
+                        [(ngModel)]="modifyBeverage.editValues.name"
+                        matInput
+                        required />
+                    <mat-label>Name</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_description_input"
+                        class="dp-textfield--input"
+                        formControlName="description"
+                        [(ngModel)]="modifyBeverage.editValues.description"
+                        matInput />
+                    <mat-label>Description</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_brewery_input"
+                        class="dp-textfield--input"
+                        formControlName="brewery"
+                        [(ngModel)]="modifyBeverage.editValues.brewery"
+                        matInput
+                        required />
+                    <mat-label>Brewery</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                    <mat-label>Type</mat-label>
+                    <mat-select formControlName="type" name="type" [(ngModel)]="modifyBeverage.editValues.type">
+                        <mat-option *ngFor="let t of supportedTypes" [value]="t">
+                        {{t}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_flavor_input"
+                        class="dp-textfield--input"
+                        formControlName="flavor"
+                        [(ngModel)]="modifyBeverage.editValues.flavor"
+                        matInput
+                        required />
+                    <mat-label>Flavor</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_image_url_id_input"
+                        [disabled]="processing"
+                        class="dp-textfield--input"
+                        formControlName="imgUrl"
+                        [(ngModel)]="modifyBeverage.editValues.imgUrl"
+                        matInput />
+                    <mat-label>Image URL</mat-label>
+                    <ng-template #popupContentMod><div><img class="beverage-image-preview" src="{{ modifyBeverage.editValues.imgUrl }}"/></div></ng-template>
+                    <button *ngIf="!isNilOrEmpty(modifyBeverage.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(modifyBeverage.editValues.imgUrl)">
+                        <mat-icon>open_in_new</mat-icon>
+                    </button>
+                    <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog()">
+                        <mat-icon>photo_library</mat-icon>
+                    </button>
+                    <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog()">
+                        <mat-icon>upload</mat-icon>
+                    </button>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                    <mat-label>Brew Date</mat-label>
+                    <input matInput [matDatepicker]="brewDatePicker" formControlName="brewDate" [(ngModel)]="modifyBeverage.editValues.brewDateObj" [disabled]="processing">
+                    <mat-datepicker-toggle matSuffix [for]="brewDatePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #brewDatePicker></mat-datepicker>
+                </mat-form-field>
+                
+                <mat-form-field appearance="fill">
+                    <mat-label>Keg Date</mat-label>
+                    <input matInput [matDatepicker]="kegDatePicker" formControlName="kegDate" [(ngModel)]="modifyBeverage.editValues.kegDateObj" [disabled]="processing">
+                    <mat-datepicker-toggle matSuffix [for]="kegDatePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #kegDatePicker></mat-datepicker>
+                </mat-form-field>
+
+            </fieldset>
+        </form>
+    </div>
+    
+    <div class="modify-actions" *ngIf="adding">
+        <button mat-raised-button color="primary" (click)="create()" [disabled]="!modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Create</button>
+        <button mat-raised-button color="warn" (click)="cancelAdd()"><mat-icon>cancel</mat-icon> Cancel</button>
+    </div>
+    <div class="modify-actions" *ngIf="editing">
+        <button mat-raised-button color="primary" (click)="save()" [disabled]="!modifyBeverage.hasChanges || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
+        <button mat-raised-button color="warn" (click)="cancelEdit()"><mat-icon>cancel</mat-icon> Cancel</button>
+    </div>
+</div>

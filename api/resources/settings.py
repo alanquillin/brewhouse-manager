@@ -8,5 +8,6 @@ class Settings(BaseResource, ResourceMixinBase):
         data = {
             "googleSSOEnabled": self.config.get("auth.oidc.google.enabled"),
             "taps": {"refresh": {"baseSec": self.config.get("taps.refresh.base_sec"), "variable": self.config.get("taps.refresh.variable")}},
+            "beverages": {"defaultType": self.config.get("beverages.default_type"), "supportedTypes": self.config.get("beverages.supported_types")}
         }
         return data

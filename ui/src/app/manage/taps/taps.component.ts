@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
 
-import { Beer, Location, Tap, Sensor } from '../../models/models';
+import { Beer, Beverage, Location, Tap, Sensor } from '../../models/models';
 
 import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
@@ -22,6 +22,7 @@ export class ManageTapsComponent implements OnInit {
   locations: Location[] = [];
   beers: Beer[] = [];
   sensors: Sensor[] = [];
+  beverages: Beverage[] = [];
   loading = false;
   processing = false;
   adding = false;
@@ -36,6 +37,7 @@ export class ManageTapsComponent implements OnInit {
     beerId: new FormControl(''),
     tapNumber: new FormControl('', [Validators.required, Validators.pattern("^[0-9]*$")]),
     sensorId: new FormControl(''),
+    beverageId: new FormControl(''),
   });
 
   get displayedColumns() {
@@ -45,7 +47,7 @@ export class ManageTapsComponent implements OnInit {
       cols.push('location');
     }
 
-    return _.concat(cols, ['beer', 'sensor', 'actions']);
+    return _.concat(cols, ['beer', 'beverage', 'sensor', 'actions']);
   }
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
@@ -104,7 +106,21 @@ export class ManageTapsComponent implements OnInit {
             this.dataService.getSensors().subscribe({
               next: (sensors: Sensor[]) => {
                 this.sensors = sensors;
-                this.refresh(always, next, error);
+                this.dataService.getBeverages().subscribe({
+                  next: (beverages: Beverage[]) => {
+                    this.beverages = beverages;
+                    this.refresh(always, next, error);
+                  },
+                  error: (err:DataError) => {
+                    this.displayError(err.message);
+                    if(!_.isNil(error)){
+                      error();
+                    }
+                    if(!_.isNil(always)){
+                      always();
+                    }
+                  }
+                })
               },
               error: (err:DataError) => {
                 this.displayError(err.message);
@@ -162,8 +178,7 @@ export class ManageTapsComponent implements OnInit {
     var data: any = {
       description: this.modifyTap.editValues.description,
       tapNumber: this.modifyTap.editValues.tapNumber,
-      locationId: this.modifyTap.editValues.locationId,
-      tapType: "beer",
+      locationId: this.modifyTap.editValues.locationId
     }
 
     if(!_.isNil(this.modifyTap.editValues.beerId) && this.modifyTap.editValues.beerId !== "-1") {
@@ -172,6 +187,10 @@ export class ManageTapsComponent implements OnInit {
 
     if(!_.isNil(this.modifyTap.editValues.sensorId) && this.modifyTap.editValues.sensorId !== "-1") {
       data["sensorId"] = this.modifyTap.editValues.sensorId;
+    }
+
+    if(!_.isNil(this.modifyTap.editValues.beverageId) && this.modifyTap.editValues.beverageId !== "-1") {
+      data["beverageId"] = this.modifyTap.editValues.beverageId;
     }
 
     this.processing = true;
@@ -206,6 +225,10 @@ export class ManageTapsComponent implements OnInit {
 
     if(_.has(updateData, "sensorId") && (updateData.sensorId === "-1" || _.isNil(updateData.sensorId))){
       updateData.sensorId = null;
+    }
+
+    if(_.has(updateData, "beverageId") && (updateData.beverageId === "-1" || _.isNil(updateData.beverageId))){
+      updateData.beverageId = null;
     }
 
     this.processing = true;
@@ -327,6 +350,21 @@ export class ManageTapsComponent implements OnInit {
     }
 
     return name;
+  }
+
+  getBeverageName(beverage: Beverage | undefined, beverageId?: string): string {
+    if(_.isNil(beverage) && !_.isNil(beverageId)){
+      beverage = _.find(this.beverages, (b) => {return b.id == beverageId});
+      if(_.isNil(beverage)) {
+        return beverageId;
+      }
+    }
+    
+    if(_.isNil(beverage)) {
+      return "";
+    }
+
+    return beverage.name;
   }
 
   getSensorsForLocation(locationId: string | undefined): Sensor[] {

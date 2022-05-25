@@ -52,12 +52,3 @@ class InvalidSensorType(Error):
 
         super().__init__(message)
         self.sensor_type = sensor_type
-
-
-class InvalidTapType(Error):
-    def __init__(self, tap_type, message=None):
-        if not message:
-            message = f"Invalid tap type: {tap_type}"
-
-        super().__init__(message)
-        self.tap_type = tap_type

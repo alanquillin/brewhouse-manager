@@ -33,6 +33,7 @@ from lib.config import Config
 from resources.assets import UploadImage
 from resources.auth import AuthUser, GoogleCallback, GoogleLogin, Login, Logout
 from resources.beers import Beer, Beers
+from resources.beverage import Beverage, Beverages
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
 from resources.fermentation_ctrl import FermentationController, FermentationControllers, FermentationControllerStats, FermentationControllerDeviceActions, FermentationControllerDeviceData
 from resources.locations import Location, Locations
@@ -109,6 +110,8 @@ def redirect_not_logged_in():
 # API resources for UI:
 api.add_resource(Beers, "/api/v1/beers")
 api.add_resource(Beer, "/api/v1/beers/<beer_id>")
+api.add_resource(Beverages, "/api/v1/beverages")
+api.add_resource(Beverage, "/api/v1/beverages/<beverage_id>")
 api.add_resource(Locations, "/api/v1/locations")
 api.add_resource(Location, "/api/v1/locations/<location>")
 api.add_resource(Taps, "/api/v1/taps", "/api/v1/locations/<location>/taps")
@@ -146,6 +149,7 @@ api.add_resource(GenericPageHandler, "/view/<location>", endpoint="location_view
 # UI resources
 api.add_resource(RestrictedGenericPageHandler, "/manage", endpoint="management_dashboard")
 api.add_resource(RestrictedGenericPageHandler, "/manage/beers", endpoint="manage_beers")
+api.add_resource(RestrictedGenericPageHandler, "/manage/beverages", endpoint="manage_beverages")
 api.add_resource(RestrictedGenericPageHandler, "/manage/locations", endpoint="manage_locations")
 api.add_resource(RestrictedGenericPageHandler, "/manage/sensors", endpoint="manage_sensors")
 api.add_resource(RestrictedGenericPageHandler, "/manage/taps", endpoint="manage_taps")

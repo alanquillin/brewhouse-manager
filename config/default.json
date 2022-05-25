@@ -3,6 +3,7 @@
     "api.port": "int",
     "auth.initial_user.set_password": "bool",
     "auth.oidc.google.enabled": "bool",
+    "beverages.supported_types": "list",
     "external_brew_tools.brewfather.enabled": "bool",
     "external_brew_tools.brewfather.completed_statuses": "list",
     "external_brew_tools.brewfather.refresh_buffer_sec.hard": "int",
@@ -31,6 +32,10 @@
         "discovery_url": "https://accounts.google.com/.well-known/openid-configuration"
       }
     }
+  },
+  "beverages": {
+    "default_type": "cold-brew",
+    "supported_types": ["cold-brew", "soda", "kombucha"]
   },
   "external_brew_tools": {
     "brewfather": {

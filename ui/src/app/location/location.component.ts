@@ -4,8 +4,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, TapSettings } from './../models/models';
-import { isNilOrEmpty } from '../utils/helpers';
+import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage } from './../models/models';
+import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
 
@@ -52,6 +52,8 @@ export class LocationComponent implements OnInit {
   taps: TapDetails[] = [];
   isNilOrEmpty: Function = isNilOrEmpty;
   tapRefreshSettings: TapRefreshSettings = new TapRefreshSettings();
+  isFullscreen: boolean = false;
+  enableFullscreen: boolean = false;
 
   _ = _; //allow the html template to access lodash
 
@@ -94,9 +96,6 @@ export class LocationComponent implements OnInit {
                 }
               }
             });
-
-
-
           }, error: (err: DataError) => {
             if (err.statusCode === 404) {
               this.router.navigate(["/"]);
@@ -127,19 +126,24 @@ export class LocationComponent implements OnInit {
 
   setTapDetails(tap: TapDetails): TapDetails {
     tap.isEmpty = this.isTapEmpty(tap);
-  
+
     if(!tap.isEmpty) {
-      tap.beer = new Beer(tap.beer);
       tap.isLoading = true
+      tap.beer = new Beer();
+      tap.beverage = new Beverage();
+
       if(tap.tapType === "beer"){
         this.dataService.getBeer(tap.beerId).subscribe((beer: Beer) => {
           const _beer = new Beer(beer)
           tap.beer = _beer;
         })
       }
-      // fix when coldbrew is implemented
-      if(tap.tapType === "cold-brew") {
-        tap.isLoading = false;
+      
+      if(tap.tapType === "beverage") {
+        this.dataService.getBeverage(tap.beverageId).subscribe((beverage: Beverage) => {
+          const _beverage = new Beverage(beverage)
+          tap.beverage = _beverage;
+        })
       }
 
       if(!_.isEmpty(tap.sensorId)) {
@@ -171,7 +175,7 @@ export class LocationComponent implements OnInit {
   }
 
   isTapEmpty(tap: TapDetails): boolean {
-    if(_.isEmpty(tap.beerId)){
+    if(isNilOrEmpty(tap.beerId) && isNilOrEmpty(tap.beverageId)){
       return true;
     }
     
@@ -187,26 +191,12 @@ export class LocationComponent implements OnInit {
   }
 
   ngOnInit() { 
-    console.log(window.navigator.userAgent);
-    // if(window.navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
-    //   console.log("attempting to fullscreen");
-    //   let elem = document.documentElement;
-    //   if (elem.requestFullscreen) {
-    //     console.log("calling full screen");
-    //     elem.requestFullscreen();
-    //   }
-      // else if (elem.mozRequestFullScreen) {
-      //   /* Firefox */
-      //   elem.mozRequestFullScreen();
-      // } else if (elem.webkitRequestFullscreen) {
-      //   /* Chrome, Safari and Opera */
-      //   elem.webkitRequestFullscreen();
-      // } else if (elem.msRequestFullscreen) {
-      //   /* IE/Edge */
-      //   elem.msRequestFullscreen();
-      // }
-    // }
-    
+    // const isIOS = /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    // const isSafari = navigator.userAgent.indexOf("Safari") !== -1 && navigator.userAgent.indexOf("CriOS") === -1 && navigator.userAgent.indexOf("FxiOS") === -1
+
+    // this.enableFullscreen = isIOS && isSafari;
+    this.enableFullscreen = true;
+
     this.refresh(()=>{
       this.configService.update({title: `On Tap: ${this.location.description}`})
     });
@@ -243,5 +233,15 @@ export class LocationComponent implements OnInit {
     }
 
     return tap.sensor.percentBeerRemaining;
+  }
+
+  toggleFullscreen() {
+    if(this.isFullscreen)
+      closeFullscreen(document);
+    else
+      openFullscreen(document);
+      
+
+    this.isFullscreen = !this.isFullscreen;
   }
 }

@@ -52,14 +52,6 @@ class InvalidEnum(ValueError):
     pass
 
 
-class InvalidTapType(InvalidEnum):
-    def __init__(self, tap_type, message=None):
-        if not message:
-            message = f"{tap_type} is an invalid tap type"
-        super().__init__(message)
-        self.tap_type = tap_type
-
-
 class InvalidSensorType(InvalidEnum):
     def __init__(self, sensor_type, message=None):
         if not message:

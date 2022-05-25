@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from datetime import datetime
 import logging
 import os
 import sys
@@ -8,7 +9,7 @@ from time import sleep
 
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from db import Base, beers, locations, sensors, session_scope, taps
+from db import Base, beers, beverages, locations, sensors, session_scope, taps
 from lib.config import Config
 
 location1_id = "fb139af3-2905-4006-9196-62f54bb262ab"
@@ -126,7 +127,6 @@ TAPS = [
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location1_id,
-        "tap_type": "beer",
         "beer_id": beer_l1b1_id,
         "sensor_id": sensor_l1s1_id
     },
@@ -135,7 +135,6 @@ TAPS = [
         "tap_number": 2,
         "description": "Tap 2",
         "location_id": location1_id,
-        "tap_type": "beer",
         "beer_id": beer_l1b2_id,
         "sensor_id": sensor_l1s2_id
     },
@@ -144,7 +143,6 @@ TAPS = [
         "tap_number": 3,
         "description": "Tap 3",
         "location_id": location1_id,
-        "tap_type": "beer",
         "beer_id": beer_l1b3_id,
         "sensor_id": sensor_l1s3_id
     },
@@ -153,7 +151,6 @@ TAPS = [
         "tap_number": 4,
         "description": "Tap 4",
         "location_id": location1_id,
-        "tap_type": "beer",
         "beer_id": beer_l1b4_id,
         "sensor_id": sensor_l1s4_id
     },
@@ -162,7 +159,6 @@ TAPS = [
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location2_id,
-        "tap_type": "beer",
         "sensor_id": sensor_l2s1_id
     },
     {
@@ -170,7 +166,42 @@ TAPS = [
         "tap_number": 2,
         "description": "Tap 2",
         "location_id": location2_id,
-        "tap_type": "beer"
+    }
+]
+
+BEVERAGES = [
+    {
+        "id": "9c517bc0-6c21-42f7-834a-2d4adb3b7041",
+        "name": "Test Cold Brew",
+        "description": "This is a test cold brew",
+        "brewery": "My Brewing Co.",
+        "type": "cold-brew",
+        "flavor": "Medium Roast",
+        "brew_date": datetime(2022, 1, 1),
+        "keg_date": datetime(2022, 1, 4)
+        
+    },
+    {
+        "id": "6742d48e-2470-4762-856e-d01f33682579",
+        "name": "Test Soda",
+        "description": "This is a test soda",
+        "brewery": "My Soda Co.",
+        "type": "soda",
+        "flavor": "Cherry",
+        "brew_date": datetime(2022, 2, 19),
+        "keg_date": datetime(2022, 2, 21)
+        
+    },
+    {
+        "id": "82b47f65-b176-4ff9-94d6-81044e0b6b7f",
+        "name": "Test Kombucha",
+        "description": "This is a test kombucha",
+        "brewery": "My Kombucha Co.",
+        "type": "kombucha",
+        "flavor": "Orange",
+        "brew_date": datetime(2022, 3, 2),
+        "keg_date": datetime(2022, 3, 8)
+        
     }
 ]
 
@@ -235,6 +266,7 @@ if __name__ == "__main__":
 
         seed_db(db_session, locations.Locations, LOCATIONS)
         seed_db(db_session, beers.Beers, BEERS)
+        seed_db(db_session, beverages.Beverages, BEVERAGES)
         seed_db(db_session, sensors.Sensors, SENSORS)
         seed_db(db_session, taps.Taps, TAPS)
             

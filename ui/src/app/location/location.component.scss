@@ -48,6 +48,12 @@ div.tap-logo {
     order: 4;
 }
 
+div.tap-logo-cold-brew {
+    order: 3 !important;
+    margin-left: auto;
+    margin-right: 12px;
+}
+
 div.tap-logo,
 div.tap-image {
     img {
@@ -63,8 +69,15 @@ div.tap-logo img {
 .tap-gauge {
     display: block;
     border-radius: 3px;
-    background-image: url("/assets/img/generic_beer_gauge.png");
     background-size: contain;
+}
+
+.tap-gauge-beer {
+    background-image: url("/assets/img/generic_beer_gauge.png");
+}
+
+.tap-gauge-cold-brew {
+    background-image: url("/assets/img/generic_cold_brew_guage.png");
 }
 
 .tap-qrcode {
@@ -99,4 +112,12 @@ div.tap-logo img {
 
 .footer {
     display: none !important;
+}
+
+.fab-container {
+    position:fixed;
+    bottom:24px;
+    right:24px;
+    cursor:pointer;
+    z-index: 1000;
 }

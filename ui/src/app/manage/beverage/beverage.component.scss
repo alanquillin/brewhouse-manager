@@ -1,0 +1,62 @@
+.beverages-view {
+    display: flex;
+    flex-direction: column;
+
+    .beverage-view-filters {
+        padding: 0px 0px 12px;
+        display: flex;
+        flex-direction: row;
+
+        * {
+            margin-right: 12px;
+        }
+
+        .beverage-view-actions {
+            height: fit-content;
+        }
+    }
+    
+    .beverages-list {
+        table {
+            .mat-header-cell,
+            .mat-cell {
+                padding: 2px 8px;
+            }
+        
+            .actions {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+        }
+
+    }
+}
+
+.beverages-modify {
+    display: flex;
+    flex-direction: column;
+
+    .heading {
+        order: 1;
+    }
+
+    .modify-form {
+        order: 2;
+    }
+
+    .modify-actions {
+        order: 3;
+        
+        button {
+            margin: 2px 6px
+        }    
+    } 
+}
+
+.beverages-modify fieldset {
+    display: flex;
+    flex-direction: column;
+    border: none;
+    width: 400px;
+}

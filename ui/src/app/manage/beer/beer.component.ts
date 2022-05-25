@@ -10,7 +10,7 @@ import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/fil
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
 import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component'
 
-import { Beer, Location, beerTransformFns } from '../../models/models';
+import { Beer, beerTransformFns } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
 
 import * as _ from 'lodash';

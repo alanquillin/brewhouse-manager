@@ -39,6 +39,11 @@
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="beer" sortActionDescription="Sort by beer"> Beer </th>
                 <td mat-cell *matCellDef="let element">{{ getBeerName(element.beer, element.beerId) }}</td>
             </ng-container>
+
+            <ng-container matColumnDef="beverage">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="beverage" sortActionDescription="Sort by beverage"> Beverage </th>
+                <td mat-cell *matCellDef="let element">{{ getBeverageName(element.beverage, element.beverageId) }}</td>
+            </ng-container>
         
             <ng-container matColumnDef="location">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="locationName" sortActionDescription="Sort by location"> Location </th>
@@ -110,6 +115,16 @@
                         <mat-option value="-1">-- None --</mat-option>
                         <mat-option *ngFor="let beer of beers" [value]="beer.id">
                         {{ getBeerName(beer) }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                    <mat-label>Beverage</mat-label>
+                    <mat-select formControlName="beverageId" name="beverageId" [(ngModel)]="modifyTap.editValues.beverageId">
+                        <mat-option value="-1">-- None --</mat-option>
+                        <mat-option *ngFor="let beverage of beverages" [value]="beverage.id">
+                        {{ getBeverageName(beverage) }}
                         </mat-option>
                     </mat-select>
                 </mat-form-field>

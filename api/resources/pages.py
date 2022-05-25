@@ -4,9 +4,9 @@ from resources import ResourceMixinBase, UIBaseResource
 
 class RestrictedGenericPageHandler(UIBaseResource, ResourceMixinBase):
     @login_required
-    def get(self):
+    def get(self, *args, **kwargs):
         return self.serve_app()
 
 class GenericPageHandler(UIBaseResource, ResourceMixinBase):
-    def get(self):
+    def get(self, *args, **kwargs):
         return self.serve_app()

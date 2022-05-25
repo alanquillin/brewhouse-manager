@@ -3,12 +3,15 @@ from flask_login import login_required
 from db import session_scope
 from db.taps import _PKEY as taps_pk
 from db.taps import Taps as TapsDB
-from resources import BaseResource, NotFoundError, ResourceMixinBase
+from resources import BaseResource, NotFoundError, ResourceMixinBase, ClientError
 from resources.beers import BeerResourceMixin
 from resources.locations import LocationsResourceMixin
 from resources.sensors import SensorResourceMixin
 
 
+class BeerOrBeverageOnlyError(ClientError):
+    def __init__(self, response_code=400, **kwargs):
+        super().__init__(response_code, "You only associate a beer or a beverage to the selected tap, not both", **kwargs)
 class TapsResourceMixin(ResourceMixinBase):
     @staticmethod
     def transform_response(tap, db_session=None):
@@ -43,6 +46,12 @@ class Taps(BaseResource, TapsResourceMixin):
 
             if not "location_id" in data and location:
                 data["location_id"] = self.get_location_id(location, db_session)
+
+            beer_id = data.get("beer_id")
+            beverage_id = data.get("beverage_id")
+
+            if beer_id and beverage_id:
+                raise BeerOrBeverageOnlyError()
 
             tap = TapsDB.create(db_session, **data)
 
@@ -81,6 +90,19 @@ class Tap(BaseResource, TapsResourceMixin):
                 raise NotFoundError()
 
             data = self.get_request_data()
+
+            beer_id = data.get("beer_id")
+            beverage_id = data.get("beverage_id")
+
+            if beer_id and beverage_id:
+                raise BeerOrBeverageOnlyError()
+
+            # if the beer or beverage id come in as empty string, then null them out
+            if beer_id == "":
+                data["beer_id"] = None
+            if beverage_id == "":
+                data["beverage_id"] = None
+
             tap = TapsDB.update(db_session, tap_id, **data)
 
             return self.transform_response(tap, db_session=db_session)

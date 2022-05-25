@@ -1,5 +1,5 @@
 # pylint: disable=wrong-import-position
-_TABLE_NAME = "beers"
+_TABLE_NAME = "beverages"
 _PKEY = "id"
 
 from psycopg2.errors import UniqueViolation  # pylint: disable=no-name-in-module
@@ -14,7 +14,7 @@ from lib.exceptions import InvalidExternalBrewingTool
 
 
 @generate_audit_trail
-class Beers(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class Beverages(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
 
     __tablename__ = _TABLE_NAME
 
@@ -22,15 +22,10 @@ class Beers(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     name = Column(String, nullable=True)
     description = Column(String, nullable=True)
     brewery = Column(String, nullable=True)
-    external_brewing_tool = Column(String, nullable=True)
-    external_brewing_tool_meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
-    style = Column(String, nullable=True)
-    abv = Column(Float, nullable=True)
-    ibu = Column(Float, nullable=True)
-    srm = Column(Float, nullable=True)
+    type = Column(String, nullable=True)
+    flavor = Column(String, nullable=True)
     img_url = Column(String, nullable=True)
-    untappd_id = Column(String, nullable=True)
     brew_date = Column(Date, nullable=True)
     keg_date = Column(Date, nullable=True)
 
-    __table_args__ = (Index("beer_name_lower_ix", func.lower(name), unique=True),)
+    __table_args__ = (Index("beverage_name_lower_ix", func.lower(name), unique=True),)

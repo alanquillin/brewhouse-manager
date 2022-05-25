@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from db import session_scope
 from resources import BaseResource, ClientError, ResourceMixinBase
 
+allowed_image_types = ["beer", "user", "beverage"]
 
 class UploadImage(BaseResource, ResourceMixinBase):
     def __init__(self):
@@ -31,7 +32,7 @@ class UploadImage(BaseResource, ResourceMixinBase):
 
     @login_required
     def get(self, image_type):
-        if image_type not in ["beer", "user"]:
+        if image_type not in allowed_image_types:
             raise ClientError(user_msg=f"Invalid image type '{image_type}'.  Must be either 'beer' or 'user'")
 
         parent_path = self.get_parent_dir(image_type)
@@ -40,7 +41,7 @@ class UploadImage(BaseResource, ResourceMixinBase):
 
     @login_required
     def post(self, image_type):
-        if image_type not in ["beer", "user"]:
+        if image_type not in allowed_image_types:
             raise ClientError(user_msg=f"Invalid image type '{image_type}'.  Must be either 'beer' or 'user'")
 
         if "file" not in request.files:

@@ -6,7 +6,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Location, Tap, Beer, Sensor, UserInfo, Settings } from '../models/models';
+import { Location, Tap, Beer, Beverage, Sensor, UserInfo, Settings } from '../models/models';
 import { WINDOW } from '../window.provider';
 import { isNilOrEmpty } from '../utils/helpers';
 
@@ -290,7 +290,36 @@ export class DataService {
     return this.uploadImage('beer', file);
   }
 
+  uploadBeverageImage(file: File): Observable<any> {
+    return this.uploadImage('beverage', file);
+  }
+
   uploadUserImage(file: File): Observable<any> {
     return this.uploadImage('user', file);
+  }
+
+  getBeverages(): Observable<Beverage[]> {
+    const url = `${this.apiBaseUrl}/beverages`;
+    return this.http.get<Beverage[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  createBeverage(data: any): Observable<Beverage> {
+    const url = `${this.apiBaseUrl}/beverages`;
+    return this.http.post<Beverage>(url, data).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  getBeverage(beverageId: string): Observable<Beverage> {
+    const url = `${this.apiBaseUrl}/beverages/${beverageId}`;
+    return this.http.get<Beverage>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  deleteBeverage(beverageId: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/beverages/${beverageId}`;
+    return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  updateBeverage(beverageId: string, data: any): Observable<Beverage> {
+    const url = `${this.apiBaseUrl}/beverages/${beverageId}`;
+    return this.http.patch<Beverage>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 }

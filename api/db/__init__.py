@@ -20,7 +20,7 @@ from lib import json
 
 Base = declarative_base()
 
-__all__ = ["Base", "audit", "beers", "locations", "sensors", "taps", "users", "fermentation_ctrl", "fermentation_ctrl_stats"]
+__all__ = ["Base", "audit", "beers", "beverages", "locations", "sensors", "taps", "users", "fermentation_ctrl", "fermentation_ctrl_stats"]
 
 
 @event.listens_for(Base.metadata, "before_create")

@@ -101,14 +101,24 @@ export class Tap extends EditableBase {
   tapNumber!: number;
   locationId!: string;
   location: Location | undefined;
-  tapType!: string;
   beerId!: string;
   beer: Beer | undefined;
+  beverageId!: string;
+  beverage: Beverage | undefined;
   sensorId!: string;
   sensor: Sensor | undefined;
 
+  get tapType(): string | undefined {
+    if (!isNilOrEmpty(this.beerId))
+      return "beer";
+
+    if (!isNilOrEmpty(this.beverageId))
+      return "beverage";
+    return undefined;
+  }
+
   constructor(from?: any) {
-    super(["description", "tapNumber", "locationId", "tapType", "beerId", "sensorId"], from);
+    super(["description", "tapNumber", "locationId", "beerId", "sensorId", "beverageId"], from);
   }
 }
 
@@ -116,6 +126,7 @@ export class Beer extends EditableBase {
   id!: string;
   description!: string;
   name!: string;
+  brewery!: string;
   externalBrewingTool!: string;
   externalBrewingToolMeta!: any;
   style!: number;
@@ -260,17 +271,75 @@ export class TapSettings {
   }
 }
 
+export class BeverageSettings {
+  defaultType!: string;
+  supportedTypes: string[];
+
+  constructor(from?: any) {
+    this.supportedTypes = [];
+
+    if(!isNilOrEmpty(from)) {
+      Object.assign(this, from);
+    }
+  }
+}
+
 export class Settings {
   googleSSOEnabled: boolean;
   taps: TapSettings;
+  beverages: BeverageSettings;
 
   constructor(from?: any) {
     this.googleSSOEnabled = false;
-    this.taps = new TapSettings
+    this.taps = new TapSettings;
+    this.beverages = new BeverageSettings;
 
 
     if(!isNilOrEmpty(from)) {
       Object.assign(this, from);
     }
+  }
+}
+
+export class Beverage extends EditableBase {
+  id!: string;
+  description!: string;
+  name!: string;
+  brewery!: string;
+  type!: string;
+  flavor!: string;
+  imgUrl!: string;
+  kegDate!: number;
+  brewDate!: number;
+
+  constructor(from?: any) {
+    super(["name", "description", "brewery", "type", "flavor", "imgUrl", "kegDate", "brewDate"], from);
+  }
+
+  override cloneValuesForEditing() {
+    super.cloneValuesForEditing();
+    this.editValues["brewDateObj"] = isNilOrEmpty(this.brewDate) ? undefined : fromUnixTimestamp(this.brewDate)
+    this.editValues["kegDateObj"] = isNilOrEmpty(this.kegDate) ? undefined : fromUnixTimestamp(this.kegDate)
+  }
+
+  override get changes() {
+    this.editValues["brewDate"] = isNilOrEmpty(this.editValues["brewDateObj"]) ? undefined : toUnixTimestamp(this.editValues["brewDateObj"]);
+    this.editValues["kegDate"] = isNilOrEmpty(this.editValues["kegDateObj"]) ? undefined : toUnixTimestamp(this.editValues["kegDateObj"]);
+        
+    var changes = super.changes;
+
+    return changes;
+  }
+
+  #getDateDisplay(d: number) : string | undefined {
+    return isNilOrEmpty(d) ? undefined : formatDate(fromUnixTimestamp(d))
+  }
+
+  getBrewDateDisplay() : string | undefined {
+    return this.#getDateDisplay(this.brewDate);
+  }
+
+  getKegDateDisplay() : string | undefined {
+    return this.#getDateDisplay(this.kegDate);
   }
 }

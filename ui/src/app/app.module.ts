@@ -50,6 +50,7 @@ import { LocationQRCodeDialog } from './_dialogs/qrcode-dialog/qrcode-dialog.com
 import { LocationSelectorComponent } from './location-selector/location-selector.component';
 import { LoginComponent } from './login/login.component';
 import { ManageBeerComponent } from './manage/beer/beer.component';
+import { ManageBeverageComponent } from './manage/beverage/beverage.component';
 import { ManageComponent } from './manage/manage.component';
 import { HeaderComponent } from './_components/header/header.component';
 import { ManageLocationsComponent } from './manage/locations/locations.component';
@@ -67,8 +68,10 @@ import { ErrorsComponent } from './errors/errors.component';
   declarations: [
     AppComponent,
     DndDirective,
+    ErrorsComponent,
     FileUploadDialogComponent,
     FileUploaderComponent,
+    HeaderComponent,
     ImageSelectorDialogComponent,
     LocationComponent,
     LocationImageDialog,
@@ -76,14 +79,13 @@ import { ErrorsComponent } from './errors/errors.component';
     LocationSelectorComponent,
     LoginComponent,
     ManageBeerComponent,
+    ManageBeverageComponent,
     ManageComponent,
-    HeaderComponent,
     ManageLocationsComponent,
     ManageSensorsComponent,
     ManageTapsComponent,
     ManageUsersComponent,
     ProfileComponent,
-    ErrorsComponent,
     VolumeCalculatorComponent,
   ],
   imports: [
