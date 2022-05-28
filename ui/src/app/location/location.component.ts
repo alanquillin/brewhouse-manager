@@ -48,7 +48,9 @@ export class LocationComponent implements OnInit {
 
   isLoading = false;
   location_identifier: any;
+  locations: Location[] = [];
   location!: Location;
+  showHomeBtn: boolean = true;
   taps: TapDetails[] = [];
   isNilOrEmpty: Function = isNilOrEmpty;
   tapRefreshSettings: TapRefreshSettings = new TapRefreshSettings();
@@ -72,22 +74,34 @@ export class LocationComponent implements OnInit {
     this.dataService.getSettings().subscribe({
       next: (data: Settings) => {
         this.tapRefreshSettings = new TapRefreshSettings(data.taps.refresh);
-
         this.dataService.getLocation(this.location_identifier).subscribe({
           next: (location: Location) => {
             this.location = location;
-
-
             this.dataService.getTaps(location.id).subscribe({
               next: (taps: Tap[]) => {
                 _.forEach(taps, (tap: Tap) => {
                   this.taps.push(this.setTapDetails(new TapDetails(tap)))
                 })
                 this.taps = _.sortBy(this.taps, (t) => {return t.tapNumber});
-                this.isLoading = false;
-                if(!_.isNil(next)){
-                  next();
-                }
+                this.dataService.getLocations().subscribe({
+                  next: (locations: Location[]) => {
+                    this.locations = locations;
+                    this.showHomeBtn = !isNilOrEmpty(locations) && _.size(locations) > 1;
+                    this.isLoading = false;
+                    if(!_.isNil(next)){
+                      next();
+                    }
+                    if(!_.isNil(always)) {
+                      always();
+                    }
+                  },
+                  error: (err: DataError) => {
+                    this.displayError(err.message);
+                    if(!_.isNil(always)) {
+                      always();
+                    }
+                  }
+                });
               },
               error: (err: DataError) => {
                 this.displayError(err.message);
@@ -243,5 +257,12 @@ export class LocationComponent implements OnInit {
       
 
     this.isFullscreen = !this.isFullscreen;
+  }
+
+  goto(path: string): void {
+    if(path === 'home') {
+      path = "";
+    }
+    window.location.href = `/${path}`;
   }
 }

@@ -1,4 +1,7 @@
-<div class="fab-container" *ngIf="enableFullscreen"><button mat-icon-button (click)="toggleFullscreen()"><mat-icon>fullscreen{{ isFullscreen ? "_exit" : "" }}</mat-icon></button></div>
+<div class="fab-container" *ngIf="enableFullscreen">
+    <button mat-icon-button (click)="goto('home')" *ngIf="!isFullscreen && showHomeBtn"><mat-icon>home</mat-icon></button>
+    <button mat-icon-button (click)="toggleFullscreen()"><mat-icon>fullscreen{{ isFullscreen ? "_exit" : "" }}</mat-icon></button>
+</div>
 <div class="tap-list" *ngFor="let tap of taps">
     <mat-card class=tap-card>
         <mat-card-subtitle>Tap {{tap.tapNumber}}: {{ tap.description }}</mat-card-subtitle>
