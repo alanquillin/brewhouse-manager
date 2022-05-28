@@ -19,13 +19,17 @@ TAG_LATEST := false
 DOCKER_IMAGE ?= brewhouse-manager
 DOCKER_DB_SEED_IMAGE ?= brewhouse-manager-db-seed
 DOCKER_IMAGE_TAG_DEV ?= dev
-DOCKER := docker
+DOCKER := $(shell which docker)
 IMAGE_REPOSITORY := alanquillin
 REPOSITORY_IMAGE ?= $(DOCKER_IMAGE)
 PLATFORMS ?= linux/amd64,linux/arm64,linux/arm
 
 ifeq ($(POETRY),)
 $(error Poetry is not installed and is required)
+endif
+
+ifeq ($(DOCKER),)
+$(error Docker is not installed and is required)
 endif
 
 ifneq ("$(wildcard .env)","")
