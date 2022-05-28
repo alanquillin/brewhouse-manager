@@ -24,6 +24,10 @@ IMAGE_REPOSITORY := alanquillin
 REPOSITORY_IMAGE ?= $(DOCKER_IMAGE)
 PLATFORMS ?= linux/amd64,linux/arm64,linux/arm
 
+ifeq ($(POETRY),)
+$(error Poetry is not installed and is required)
+endif
+
 ifneq ("$(wildcard .env)","")
     include .env
 	export $(shell sed 's/=.*//' .env)
