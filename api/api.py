@@ -35,9 +35,15 @@ from resources.auth import AuthUser, GoogleCallback, GoogleLogin, Login, Logout
 from resources.beers import Beer, Beers
 from resources.beverage import Beverage, Beverages
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
-from resources.fermentation_ctrl import FermentationController, FermentationControllers, FermentationControllerStats, FermentationControllerDeviceActions, FermentationControllerDeviceData
+from resources.fermentation_ctrl import (
+    FermentationController,
+    FermentationControllerDeviceActions,
+    FermentationControllerDeviceData,
+    FermentationControllers,
+    FermentationControllerStats,
+)
 from resources.locations import Location, Locations
-from resources.pages import RestrictedGenericPageHandler, GenericPageHandler
+from resources.pages import GenericPageHandler, RestrictedGenericPageHandler
 from resources.sensors import Sensor, SensorData, Sensors, SensorTypes
 from resources.settings import Settings
 from resources.taps import Tap, Taps
@@ -132,8 +138,18 @@ api.add_resource(FermentationControllers, "/api/v1/fermentation/controllers", en
 api.add_resource(FermentationControllers, "/api/v1/fermentation/controllers/find", endpoint="find_fermentation_controllers", methods=["GET"])
 api.add_resource(FermentationController, "/api/v1/fermentation/controllers/<fermentation_controller_id>")
 api.add_resource(FermentationControllerStats, "/api/v1/fermentation/controllers/<fermentation_controller_id>/stats")
-api.add_resource(FermentationControllerDeviceActions, "/api/v1/fermentation/controllers/<fermentation_controller_id>/actions", endpoint="fermentation_controllers_action_rpc", methods=["POST"])
-api.add_resource(FermentationControllerDeviceActions, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<action>", endpoint="fermentation_controllers_valueless_action", methods=["POST"])
+api.add_resource(
+    FermentationControllerDeviceActions,
+    "/api/v1/fermentation/controllers/<fermentation_controller_id>/actions",
+    endpoint="fermentation_controllers_action_rpc",
+    methods=["POST"],
+)
+api.add_resource(
+    FermentationControllerDeviceActions,
+    "/api/v1/fermentation/controllers/<fermentation_controller_id>/<action>",
+    endpoint="fermentation_controllers_valueless_action",
+    methods=["POST"],
+)
 api.add_resource(FermentationControllerDeviceActions, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<action>/<value>", methods=["POST"])
 api.add_resource(FermentationControllerDeviceData, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<key>", methods=["GET"])
 

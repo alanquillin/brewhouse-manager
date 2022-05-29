@@ -2,17 +2,12 @@
 _TABLE_NAME = "fermentation_controller_stats"
 _PKEY = "id"
 
-from sqlalchemy import Column, String, Integer, Float, func, ForeignKey, DateTime
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import (
-    Base,
-    DictifiableMixin,
-    QueryMethodsMixin,
-    fermentation_ctrl
-)
+from db import Base, DictifiableMixin, QueryMethodsMixin, fermentation_ctrl
 
 
 class FermentationControllerStats(Base, DictifiableMixin, QueryMethodsMixin):

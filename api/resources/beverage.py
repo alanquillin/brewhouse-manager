@@ -22,7 +22,7 @@ class BeverageResourceMixin(ResourceMixinBase):
     @staticmethod
     def transform_response(beverage):
         data = beverage.to_dict()
-        
+
         for k in ["brew_date", "keg_date"]:
             d = data.get(k)
             if k in data and isinstance(d, date):

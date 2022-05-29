@@ -7,7 +7,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, beers, column_as_enum, generate_audit_trail, locations, sensors, beverages
+from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, beers, beverages, column_as_enum, generate_audit_trail, locations, sensors
+
 
 @generate_audit_trail
 class Taps(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):

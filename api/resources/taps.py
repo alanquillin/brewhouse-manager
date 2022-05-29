@@ -3,7 +3,7 @@ from flask_login import login_required
 from db import session_scope
 from db.taps import _PKEY as taps_pk
 from db.taps import Taps as TapsDB
-from resources import BaseResource, NotFoundError, ResourceMixinBase, ClientError
+from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase
 from resources.beers import BeerResourceMixin
 from resources.locations import LocationsResourceMixin
 from resources.sensors import SensorResourceMixin
@@ -12,6 +12,8 @@ from resources.sensors import SensorResourceMixin
 class BeerOrBeverageOnlyError(ClientError):
     def __init__(self, response_code=400, **kwargs):
         super().__init__(response_code, "You only associate a beer or a beverage to the selected tap, not both", **kwargs)
+
+
 class TapsResourceMixin(ResourceMixinBase):
     @staticmethod
     def transform_response(tap, db_session=None):

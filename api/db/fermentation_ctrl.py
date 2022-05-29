@@ -2,11 +2,12 @@
 _TABLE_NAME = "fermentation_controller"
 _PKEY = "id"
 
-from sqlalchemy import Column, String, Integer, func, Float, Boolean
+from sqlalchemy import Boolean, Column, Float, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import Index
 
 from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail
+
 
 @generate_audit_trail
 class FermentationController(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
@@ -21,10 +22,8 @@ class FermentationController(Base, DictifiableMixin, AuditedMixin, QueryMethodsM
     target_temperature = Column(Float)
     calibration_differential = Column(Float)
     temperature_precision = Column(Float)
-    cooling_differential = Column(Float) # This is value of allowed drift from the target temp before cooling is started
-    heating_differential = Column(Float) # This is value of allowed drift from the target temp before heating is started
+    cooling_differential = Column(Float)  # This is value of allowed drift from the target temp before cooling is started
+    heating_differential = Column(Float)  # This is value of allowed drift from the target temp before heating is started
     program = Column(String)
-    
-    __table_args__ = (
-        Index("ix_unique_manufacturer_manufacturer_id_model", manufacturer_id, manufacturer, model, unique=True),
-    )
+
+    __table_args__ = (Index("ix_unique_manufacturer_manufacturer_id_model", manufacturer_id, manufacturer, model, unique=True),)

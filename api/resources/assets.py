@@ -10,6 +10,7 @@ from resources import BaseResource, ClientError, ResourceMixinBase
 
 allowed_image_types = ["beer", "user", "beverage"]
 
+
 class UploadImage(BaseResource, ResourceMixinBase):
     def __init__(self):
         super().__init__()
