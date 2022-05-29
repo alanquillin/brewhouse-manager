@@ -24,12 +24,16 @@
     display: flex;
     flex-direction: column;
 
-    .change-password-form {
+    .heading {
         order: 1;
     }
 
-    .profile-actions {
+    .edit-form {
         order: 2;
+    }
+
+    .profile-actions {
+        order: 3;
     }
 }
 
@@ -37,12 +41,16 @@
     display: flex;
     flex-direction: column;
 
-    .change-password-form {
+    .heading {
         order: 1;
     }
 
-    .profile-actions {
+    .change-password-form {
         order: 2;
+    }
+
+    .profile-actions {
+        order: 3;
     }
 }
 

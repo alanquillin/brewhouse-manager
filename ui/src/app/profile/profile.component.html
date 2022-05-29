@@ -13,17 +13,15 @@
 </div>
 
 <div class="edit-profile" *ngIf="userInfo && editing">
-    <div class="title"><p>Edit Profile</p></div>
-    
+    <div class="heading"><p>Edit Profile</p></div>
     <div class="edit-form">
         <form [formGroup]="editFormGroup">
             <fieldset>
-
                 <mat-form-field appearance="fill" class="edit-field">
                     <input id="edit_email_input"
                         class="dp-textfield--input"
                         formControlName="email"
-                        [(ngModel)]="editUserInfo.email"
+                        [(ngModel)]="userInfo.editValues.email"
                         matInput
                         required />
                     <mat-label>Email</mat-label>
@@ -33,7 +31,7 @@
                     <input id="edit_first_name_input"
                         class="dp-textfield--input"
                         formControlName="firstName"
-                        [(ngModel)]="editUserInfo.firstName"
+                        [(ngModel)]="userInfo.editValues.firstName"
                         matInput
                         required />
                     <mat-label>First Name</mat-label>
@@ -43,7 +41,7 @@
                     <input id="edit_last_name_input"
                         class="dp-textfield--input"
                         formControlName="lastName"
-                        [(ngModel)]="editUserInfo.lastName"
+                        [(ngModel)]="userInfo.editValues.lastName"
                         matInput
                         required />
                     <mat-label>Last Name</mat-label>
@@ -53,9 +51,8 @@
                     <input id="edit_profile_pic_input"
                         class="dp-textfield--input"
                         formControlName="profilePic"
-                        [(ngModel)]="editUserInfo.profilePic"
-                        matInput
-                        required />
+                        [(ngModel)]="userInfo.editValues.profilePic"
+                        matInput />
                     <mat-label>Profile Picture URL</mat-label>
                 </mat-form-field>
             </fieldset>
@@ -64,14 +61,14 @@
     
     
     <div class="profile-actions">
-        <button mat-raised-button color="primary" (click)="save()" [disabled]="!editFormGroup.valid || processing || _.isEmpty(getChanges())"><mat-icon>save</mat-icon> Save</button>
+        <button mat-raised-button color="primary" (click)="save()" [disabled]="!userInfo.hasChanges || !editFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
         <button mat-raised-button color="warn" (click)="cancelEditing()"><mat-icon>cancel</mat-icon> Cancel</button>
         <button mat-raised-button (click)="disablePassword()" *ngIf="userInfo.passwordEnabled">Disable Password</button>
     </div>
 </div>
 
 <div class="change-password" *ngIf="userInfo && changePassword">
-    <div class="title"><p>Change Password</p></div>
+    <div class="heading"><p>Change Password</p></div>
     <div class="change-password-form">
         <form [formGroup]="changePasswordFormGroup">
             <fieldset>

@@ -18,8 +18,7 @@ import * as _ from 'lodash';
 })
 export class ProfileComponent implements OnInit {
   
-  userInfo!: UserInfo;
-  editUserInfo!: UserInfo;
+  userInfo: UserInfo = new UserInfo();
   editing = false;
   changePassword = false;
   processing = false;
@@ -32,7 +31,7 @@ export class ProfileComponent implements OnInit {
     email: new FormControl('', [Validators.required, Validators.email]),
     firstName: new FormControl('', [Validators.required]),
     lastName: new FormControl('', [Validators.required]),
-    profilePic: new FormControl('', [Validators.required])
+    profilePic: new FormControl('', [])
   });
 
   changePasswordFormGroup: FormGroup = new FormGroup({
@@ -46,65 +45,56 @@ export class ProfileComponent implements OnInit {
     this._snackBar.open("Error: " + errMsg, "Close");
   }
 
-  ngOnInit() {
+  refresh(always?:Function, next?: Function, error?: Function) {
     this.dataService.getCurrentUser().subscribe({
       next: (userInfo: UserInfo) => {
-        this.userInfo = userInfo;
-      },
-      error: (err: DataError) => { 
+        this.userInfo = new UserInfo(userInfo);
+        if(!_.isNil(next)){
+          next();
+        }
+        if(!_.isNil(always)){
+          always();
+        }
+      }, 
+      error: (err: DataError) => {
         this.displayError(err.message);
+        if(!_.isNil(error)){
+          error();
+        }
+        if(!_.isNil(always)){
+          always();
+        }
       }
-    });
+    })
+  }
+
+  ngOnInit() {
+    this.refresh();
   }
 
   cancelEditing(): void {
     this.editing = false;
+    this.userInfo.disableEditing();
   }
 
   startEditing(): void {
+    this.userInfo.enableEditing();
     this.editing = true;
-    this.editUserInfo.enableEditing()
-  }
-
-  getChanges() {
-    var updateData: any = {}
-
-    if(this.editUserInfo.firstName !== this.userInfo.firstName) {
-      updateData.firstName = this.editUserInfo.firstName;
-    }
-    if(this.editUserInfo.lastName !== this.userInfo.lastName) {
-      updateData.lastName = this.editUserInfo.lastName;
-    }
-    if(this.editUserInfo.profilePic !== this.userInfo.profilePic) {
-      updateData.profilePic = this.editUserInfo.profilePic;
-    }
-    if(this.editUserInfo.email !== this.userInfo.email) {
-      updateData.email = this.editUserInfo.email;
-    }
-
-    return updateData;
   }
 
   save(): void {
     if (this.editFormGroup.invalid) {
       return;
     }
-
-    var updateData = this.getChanges();
-
-    if(_.isEmpty(updateData)) {
-      this.editing = false;
-      return;
-    }
     
     this.processing = true;
     
-    this.dataService.updateUser(this.userInfo.id, updateData).subscribe({
+    this.dataService.updateUser(this.userInfo.id, this.userInfo.changes).subscribe({
       next: (data: UserInfo) => {
-        this.userInfo = data;
+        this.userInfo = new UserInfo(data);
         this.editing = false;
         this.processing = false;
-        this.editUserInfo.disableEditing()
+        this.userInfo.disableEditing();
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -131,15 +121,14 @@ export class ProfileComponent implements OnInit {
     this.processing = true;
     this.dataService.updateUser(this.userInfo.id, {password: this.newPassword}).subscribe({
       next: (data: UserInfo) => {
-        this.userInfo = data;
+        this.userInfo = new UserInfo(data);
         this.changePassword = false;
-        this.processing = false;
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
       }
-    })
+    });
   }
 
   disablePassword(): void {
@@ -147,7 +136,7 @@ export class ProfileComponent implements OnInit {
       this.processing = true;
       this.dataService.updateUser(this.userInfo.id, {password: null}).subscribe({
         next: (data: UserInfo) => {
-          this.userInfo = data;
+          this.userInfo = new UserInfo(data);
           this.editing = false;
           this.processing = false;
         },
@@ -155,7 +144,7 @@ export class ProfileComponent implements OnInit {
           this.displayError(err.message);
           this.processing = false;
         }
-      })
+      });
     }
   }
 
