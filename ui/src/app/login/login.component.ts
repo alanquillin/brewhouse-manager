@@ -63,8 +63,7 @@ export class LoginComponent implements OnInit {
     this.processing = true;
     this.dataService.login(this.email, this.password).subscribe({
       next: (data: any) => {
-
-        this.router.navigate(["/manage"]);
+        window.location.href = "/manage";
       },
       error: (err: DataError) => {
         if (err.statusCode === 400) {
