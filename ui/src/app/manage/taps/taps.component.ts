@@ -269,7 +269,7 @@ export class ManageTapsComponent implements OnInit {
   }
 
   filter(sort?: Sort): void {
-    var sortBy:string = "description";
+    var sortBy:string = "tapNumber";
     var asc: boolean = true;
     if(!_.isNil(sort) && !_.isEmpty(this.sort.active) && !_.isEmpty(this.sort.direction)) {
       sortBy = this.sort.active;
