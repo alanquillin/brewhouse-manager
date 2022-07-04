@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage } from './../models/models';
+import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew } from './../models/models';
 import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
@@ -155,8 +155,10 @@ export class LocationComponent implements OnInit {
       
       if(tap.tapType === "beverage") {
         this.dataService.getBeverage(tap.beverageId).subscribe((beverage: Beverage) => {
-          const _beverage = new Beverage(beverage)
-          tap.beverage = _beverage;
+          tap.beverage = new Beverage(beverage);
+          if(beverage.type === "cold-brew") {
+            tap.coldBrew = new ColdBrew(beverage);
+          }
         })
       }
 

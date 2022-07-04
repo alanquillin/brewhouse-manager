@@ -20,14 +20,19 @@
                 <td mat-cell *matCellDef="let element">{{element.description}}</td>
             </ng-container>
         
-            <ng-container matColumnDef="brewery">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header="brewery" sortActionDescription="Sort by brewery"> Brewery </th>
-                <td mat-cell *matCellDef="let element">{{element.brewery}}</td>
-            </ng-container>
-        
             <ng-container matColumnDef="type">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="type" sortActionDescription="Sort by type"> Type </th>
                 <td mat-cell *matCellDef="let element">{{element.type}}</td>
+            </ng-container>
+        
+            <ng-container matColumnDef="brewery">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="brewery" sortActionDescription="Sort by brewery"> Brewery </th>
+                <td mat-cell *matCellDef="let element">{{element.brewery}}<a href="{{element.breweryLink}}" *ngIf="!isNilOrEmpty(element.breweryLink)" target="_blank">&nbsp;<mat-icon>open_in_new</mat-icon></a></td>
+            </ng-container>
+
+            <ng-container matColumnDef="roastery">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="roastery" sortActionDescription="Sort by roastery"> Roastery </th>
+                <td mat-cell *matCellDef="let element">{{element.meta.roastery}}<a href="{{element.meta.roasteryLink}}" *ngIf="!isNilOrEmpty(element.meta.roasteryLink)" target="_blank">&nbsp;<mat-icon>open_in_new</mat-icon></a></td>
             </ng-container>
 
             <ng-container matColumnDef="flavor">
@@ -100,16 +105,6 @@
                     <mat-label>Description</mat-label>
                 </mat-form-field>
 
-                <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_brewery_input"
-                        class="dp-textfield--input"
-                        formControlName="brewery"
-                        [(ngModel)]="modifyBeverage.editValues.brewery"
-                        matInput
-                        required />
-                    <mat-label>Brewery</mat-label>
-                </mat-form-field>
-
                 <mat-form-field appearance="fill">
                     <mat-label>Type</mat-label>
                     <mat-select formControlName="type" name="type" [(ngModel)]="modifyBeverage.editValues.type">
@@ -120,12 +115,47 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_brewery_input"
+                        class="dp-textfield--input"
+                        formControlName="brewery"
+                        [(ngModel)]="modifyBeverage.editValues.brewery"
+                        matInput />
+                    <mat-label>Brewery</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_brewery_link_input"
+                        class="dp-textfield--input"
+                        formControlName="breweryLink"
+                        [(ngModel)]="modifyBeverage.editValues.breweryLink"
+                        matInput />
+                    <mat-label>Brewery Link</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field" *ngIf="modifyBeverage.editValues.type === 'cold-brew'">
+                    <input id="modify_roastery_input"
+                        class="dp-textfield--input"
+                        formControlName="roastery"
+                        [(ngModel)]="modifyBeverage.editValues.meta.roastery"
+                        matInput />
+                    <mat-label>Roastery</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field" *ngIf="modifyBeverage.editValues.type === 'cold-brew'">
+                    <input id="modify_roastery_link_input"
+                        class="dp-textfield--input"
+                        formControlName="roasteryLink"
+                        [(ngModel)]="modifyBeverage.editValues.meta.roasteryLink"
+                        matInput />
+                    <mat-label>Roastery Link</mat-label>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
                     <input id="modify_flavor_input"
                         class="dp-textfield--input"
                         formControlName="flavor"
                         [(ngModel)]="modifyBeverage.editValues.flavor"
-                        matInput
-                        required />
+                        matInput />
                     <mat-label>Flavor</mat-label>
                 </mat-form-field>
 

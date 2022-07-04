@@ -30,7 +30,7 @@
                         <p>Style: {{ tap.beer.getStyle() }}</p>
                         <p>{{ tap.beer.getAbv() }}% alc./vol.</p>
                         <p>IBU: {{ tap.beer.getIbu() }}</p>
-                        <p *ngIf="tap.showTotalBeerRemaining">Total Remaining: {{_.round(tap.sensor.totalBeerRemaining, 2)}} {{tap.sensor.beerRemainingUnit}}.</p>
+                        <p *ngIf="tap.showTotalBeerRemaining">Total Remaining: {{_.round(tap.sensor.totalBeerRemaining, 2)}} {{tap.sensor.beerRemainingUnit}}</p>
                     </div>
                     <div class="tap-qrcode">
                         <div class="tap-qrcode-container" *ngIf="!isNilOrEmpty(tap.beer.untappdId)">
@@ -51,7 +51,7 @@
                     </div>
                 </div>
                 <div *ngIf="!_.isNil(tap.beverage) && tap.tapType === 'beverage'">
-                    <div class="tap-display" *ngIf="tap.beverage.type === 'cold-brew'">
+                    <div class="tap-display" *ngIf="!_.isNil(tap.coldBrew) && tap.beverage.type === 'cold-brew'">
                         <div class="tap-volume" *ngIf="!_.isNil(tap.sensor) && !_.isNaN(tap.sensor.percentBeerRemaining)">
                             <mwl-gauge
                                 [max]="100"
@@ -68,11 +68,13 @@
                         </div>
                         <div class=tap-details>
                             <p class="title">Cold Brew: {{ tap.beverage.name }}</p>
-                            <p *ngIf="!isNilOrEmpty(tap.beverage.brewery)">Brewery: {{ tap.beverage.brewery }}</p>
-                            <p *ngIf="!isNilOrEmpty(tap.beverage.flavor)">Coffee Type: {{ tap.beverage.flavor }}</p>
+                            <p *ngIf="!isNilOrEmpty(tap.beverage.brewery) && isNilOrEmpty(tap.coldBrew.roastery)">Brewed and roasted by: {{ tap.beverage.brewery }}</p>
+                            <p *ngIf="!isNilOrEmpty(tap.beverage.brewery) && !isNilOrEmpty(tap.coldBrew.roastery)">Brewed by: {{ tap.beverage.brewery }}</p>
+                            <p *ngIf="!isNilOrEmpty(tap.coldBrew.roastery)">Roasted by: {{ tap.coldBrew.roastery }}</p>
+                            <p *ngIf="!isNilOrEmpty(tap.beverage.flavor)">Flavor: {{ tap.beverage.flavor }}</p>
                             <p *ngIf="!isNilOrEmpty(tap.beverage.brewDate)">Brewed On: {{ tap.beverage.getBrewDateDisplay() }}</p>
                             <p *ngIf="!isNilOrEmpty(tap.beverage.kegDate)">Kegged On: {{ tap.beverage.getKegDateDisplay() }}</p>
-                            <p *ngIf="tap.showTotalBeerRemaining">Total Remaining: {{_.round(tap.sensor.totalBeerRemaining, 2)}} {{tap.sensor.beerRemainingUnit}}.</p>
+                            <p *ngIf="tap.showTotalBeerRemaining">Total Remaining: {{_.round(tap.sensor.totalBeerRemaining, 2)}} {{tap.sensor.beerRemainingUnit}} ({{getRemainingBeerValue(tap)}}%)</p>
                         </div>
                         <div class="tap-logo tap-logo-cold-brew" *ngIf="!_.isEmpty(tap.beverage.imgUrl)">
                             <a (click)="openImageDialog(tap.beverage.imgUrl)">

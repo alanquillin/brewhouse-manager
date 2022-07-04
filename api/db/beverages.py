@@ -22,10 +22,12 @@ class Beverages(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     name = Column(String, nullable=True)
     description = Column(String, nullable=True)
     brewery = Column(String, nullable=True)
+    brewery_link = Column(String, nullable=True)
     type = Column(String, nullable=True)
     flavor = Column(String, nullable=True)
     img_url = Column(String, nullable=True)
     brew_date = Column(Date, nullable=True)
     keg_date = Column(Date, nullable=True)
+    meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
 
     __table_args__ = (Index("beverage_name_lower_ix", func.lower(name), unique=True),)

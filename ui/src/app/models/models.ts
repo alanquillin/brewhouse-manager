@@ -107,6 +107,7 @@ export class Tap extends EditableBase {
   beverage: Beverage | undefined;
   sensorId!: string;
   sensor: Sensor | undefined;
+  coldBrew: ColdBrew | undefined;
 
   get tapType(): string | undefined {
     if (!isNilOrEmpty(this.beerId))
@@ -306,14 +307,19 @@ export class Beverage extends EditableBase {
   description!: string;
   name!: string;
   brewery!: string;
+  breweryLink!: string;
   type!: string;
   flavor!: string;
   imgUrl!: string;
   kegDate!: number;
   brewDate!: number;
+  meta!: any;
 
   constructor(from?: any) {
-    super(["name", "description", "brewery", "type", "flavor", "imgUrl", "kegDate", "brewDate"], from);
+    super(["name", "description", "brewery", "breweryLink", "type", "flavor", "imgUrl", "kegDate", "brewDate", "meta"], from);
+    if(isNilOrEmpty(this.meta)){
+      this.meta = {};
+    }
   }
 
   override cloneValuesForEditing() {
@@ -341,5 +347,24 @@ export class Beverage extends EditableBase {
 
   getKegDateDisplay() : string | undefined {
     return this.#getDateDisplay(this.kegDate);
+  }
+}
+
+export class ColdBrew extends Beverage {
+  roastery: string | undefined;
+  roasteryLink: string | undefined;
+
+  constructor(from?: any) {
+    super(from);
+
+    this.roastery = this.#getMeta("roastery");
+    this.roasteryLink = this.#getMeta("roasteryLink");
+  }
+
+  #getMeta(path: string): any {
+    if (!isNilOrEmpty(this.meta))
+      return _.get(this.meta, path);
+
+    return undefined;
   }
 }

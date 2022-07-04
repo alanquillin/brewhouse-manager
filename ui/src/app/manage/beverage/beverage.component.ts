@@ -38,16 +38,19 @@ export class ManageBeverageComponent implements OnInit {
   modifyFormGroup: FormGroup = new FormGroup({
     name: new FormControl('', [Validators.required]),
     type: new FormControl('', [Validators.required]),
-    description: new FormControl('', [Validators.required]),
-    brewery: new FormControl('', [Validators.required]),
-    flavor: new FormControl('', [Validators.required]),
-    brewDate: new FormControl(new Date(), [Validators.required]),
-    kegDate: new FormControl(new Date(), [Validators.required]),
+    description: new FormControl('', []),
+    brewery: new FormControl('', []),
+    breweryLink: new FormControl('', []),
+    flavor: new FormControl('', []),
+    brewDate: new FormControl(new Date(), []),
+    kegDate: new FormControl(new Date(), []),
     imgUrl: new FormControl('', []),
+    roastery: new FormControl('', []),
+    roasteryLink: new FormControl('', []),
   });
 
   get displayedColumns(): string[] {
-    return ["name", "description", "brewery", "type", "flavor", "kegDate", "brewDate", "imgUrl", "actions"];
+    return ["name", "description", "type", "brewery", "roastery", "flavor", "kegDate", "brewDate", "imgUrl", "actions"];
   }
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
@@ -113,7 +116,7 @@ export class ManageBeverageComponent implements OnInit {
 
   add(): void {
     this.modifyFormGroup.reset();
-    var data: any = {type: this.defaultType}
+    var data: any = {type: this.defaultType, meta: {}}
 
     this.modifyBeverage = new Beverage(data);
     this.modifyBeverage.editValues = data;
@@ -131,10 +134,12 @@ export class ManageBeverageComponent implements OnInit {
       description: this.modifyBeverage.editValues.description,
       type: this.modifyBeverage.editValues.type,
       brewery: this.modifyBeverage.editValues.brewery,
+      breweryLink: this.modifyBeverage.editValues.breweryLink,
       flavor: this.modifyBeverage.editValues.flavor,
       imgUrl: this.modifyBeverage.editValues.imgUrl,
       brewDate: this.dateToNumber(this.modifyBeverage.editValues.brewDateObj),
-      kegDate: this.dateToNumber(this.modifyBeverage.editValues.kegDateObj)
+      kegDate: this.dateToNumber(this.modifyBeverage.editValues.kegDateObj),
+      meta: this.modifyBeverage.editValues.meta
     }
     console.log(data);
     this.dataService.createBeverage(data).subscribe({
