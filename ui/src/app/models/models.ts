@@ -108,6 +108,8 @@ export class Tap extends EditableBase {
   sensorId!: string;
   sensor: Sensor | undefined;
   coldBrew: ColdBrew | undefined;
+  namePrefix!: string;
+  nameSuffix!: string;
 
   get tapType(): string | undefined {
     if (!isNilOrEmpty(this.beerId))
@@ -119,7 +121,37 @@ export class Tap extends EditableBase {
   }
 
   constructor(from?: any) {
-    super(["description", "tapNumber", "locationId", "beerId", "sensorId", "beverageId"], from);
+    super(["description", "tapNumber", "locationId", "beerId", "sensorId", "beverageId", "namePrefix", "nameSuffix"], from);
+  }
+
+  getDisplayName(name?: string) : string | undefined {
+    if (isNilOrEmpty(name)) {
+      if (this.beer) {
+        name = this.beer.getName();
+      }
+
+      if (this.coldBrew) {
+        name = this.coldBrew.name;
+      }
+
+      if (this.beverage) {
+        name = this.beverage.name;
+      }
+
+      if (isNilOrEmpty(name)) {
+        return name;
+      }
+    }
+
+    if (!isNilOrEmpty(this.namePrefix)) {
+      name = this.namePrefix + name;
+    }
+
+    if (!isNilOrEmpty(this.nameSuffix)) {
+      name = name + this.nameSuffix;
+    }
+    
+    return name;
   }
 }
 

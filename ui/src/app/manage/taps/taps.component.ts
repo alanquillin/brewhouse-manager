@@ -32,16 +32,19 @@ export class ManageTapsComponent implements OnInit {
   selectedLocationFilters: string[] = [];
 
   modifyFormGroup: FormGroup = new FormGroup({
+    displayName: new FormControl('', []),
     description: new FormControl('', [Validators.required]),
     locationId: new FormControl('', [Validators.required]),
     beerId: new FormControl(''),
     tapNumber: new FormControl('', [Validators.required, Validators.pattern("^[0-9]*$")]),
     sensorId: new FormControl(''),
     beverageId: new FormControl(''),
+    namePrefix: new FormControl('', []),
+    nameSuffix: new FormControl('', [])
   });
 
   get displayedColumns() {
-    var cols = ['description', 'tapNumber'];
+    var cols = ['displayName', 'description', 'tapNumber'];
 
     if(this.locations.length > 1) {
       cols.push('location');
@@ -66,6 +69,16 @@ export class ManageTapsComponent implements OnInit {
           var _tap = new Tap(tap)
           if (!isNilOrEmpty(_tap.beer)) {
             _tap.beer = new Beer(_tap.beer);
+          }
+          if (isNilOrEmpty(_tap.beer) && !isNilOrEmpty(_tap.beerId)) {
+            _tap.beer = this.findBeer(_tap.beerId);
+          }
+          
+          if (!isNilOrEmpty(_tap.beverage)) {
+            _tap.beverage = new Beverage(_tap.beverage);
+          }
+          if (isNilOrEmpty(_tap.beverage) && !isNilOrEmpty(_tap.beverageId)) {
+            _tap.beverage = this.findBeverage(_tap.beverageId);
           }
           this.taps.push(_tap)
         });
@@ -99,16 +112,20 @@ export class ManageTapsComponent implements OnInit {
           next: (beers: Beer[]) => {
             this.beers = []
             _.forEach(beers, (beer) => { 
-              var _beer = new Beer();
-              Object.assign(_beer, beer);
-              this.beers.push(_beer);
+              // var _beer = new Beer();
+              // Object.assign(_beer, beer);
+              // this.beers.push(_beer);
+              this.beers.push(new Beer(beer));
             });
             this.dataService.getSensors().subscribe({
               next: (sensors: Sensor[]) => {
                 this.sensors = sensors;
                 this.dataService.getBeverages().subscribe({
                   next: (beverages: Beverage[]) => {
-                    this.beverages = beverages;
+                    this.beverages = [];
+                    _.forEach(beverages, (beverage) => {
+                      this.beverages.push(new Beverage(beverage));
+                    });
                     this.refresh(always, next, error);
                   },
                   error: (err:DataError) => {
@@ -178,7 +195,9 @@ export class ManageTapsComponent implements OnInit {
     var data: any = {
       description: this.modifyTap.editValues.description,
       tapNumber: this.modifyTap.editValues.tapNumber,
-      locationId: this.modifyTap.editValues.locationId
+      locationId: this.modifyTap.editValues.locationId,
+      namePrefix: this.modifyTap.editValues.namePrefix,
+      nameSuffix: this.modifyTap.editValues.nameSuffix
     }
 
     if(!_.isNil(this.modifyTap.editValues.beerId) && this.modifyTap.editValues.beerId !== "-1") {
@@ -313,9 +332,13 @@ export class ManageTapsComponent implements OnInit {
     return `${name} (${sensor.sensorType})`
   }
 
+  findBeer(beerId: string) {
+    return _.find(this.beers, (b) => {return b.id == beerId});
+  }
+
   getBeerName(beer: Beer | undefined, beerId?: string): string {
     if(_.isNil(beer) && !_.isNil(beerId)){
-      beer = _.find(this.beers, (b) => {return b.id == beerId});
+      beer = this.findBeer(beerId);
     }
     if(_.isNil(beer)) {
       return "";
@@ -352,9 +375,13 @@ export class ManageTapsComponent implements OnInit {
     return name;
   }
 
+  findBeverage(beverageId: string) {
+    return _.find(this.beverages, (b) => {return b.id == beverageId});
+  }
+
   getBeverageName(beverage: Beverage | undefined, beverageId?: string): string {
     if(_.isNil(beverage) && !_.isNil(beverageId)){
-      beverage = _.find(this.beverages, (b) => {return b.id == beverageId});
+      beverage = this.findBeverage(beverageId);
       if(_.isNil(beverage)) {
         return beverageId;
       }
@@ -382,4 +409,13 @@ export class ManageTapsComponent implements OnInit {
   get modifyForm(): { [key: string]: AbstractControl } {
     return this.modifyFormGroup.controls;
   } 
+
+  getDisplayNameTooltip(tap: Tap) {
+    return `Prefix: '${tap.namePrefix}'
+    Suffix: '${tap.nameSuffix}'`;
+  }
+
+  showDisplayNameToolTip(tap: Tap) {
+    return !isNilOrEmpty(tap.namePrefix) && !isNilOrEmpty(tap.nameSuffix);
+  }
 }

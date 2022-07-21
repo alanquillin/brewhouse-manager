@@ -26,7 +26,7 @@
                         <img src="assets/img/generic_beer.png" class="srm-{{getSrm(tap.beer)}}" />
                     </div>
                     <div class=tap-details>
-                        <p class="title">{{ tap.beer.getName() }}</p>
+                        <p class="title">{{ tap.getDisplayName(tap.beer.getName()) }}</p>
                         <p>Style: {{ tap.beer.getStyle() }}</p>
                         <p>{{ tap.beer.getAbv() }}% alc./vol.</p>
                         <p>IBU: {{ tap.beer.getIbu() }}</p>
@@ -67,7 +67,7 @@
                             <img src="assets/img/generic_cold_brew.png" />
                         </div>
                         <div class=tap-details>
-                            <p class="title">Cold Brew: {{ tap.beverage.name }}</p>
+                            <p class="title">{{ tap.getDisplayName(tap.beverage.name) }}</p>
                             <p *ngIf="!isNilOrEmpty(tap.beverage.brewery) && isNilOrEmpty(tap.coldBrew.roastery)">Brewed and roasted by: {{ tap.beverage.brewery }}</p>
                             <p *ngIf="!isNilOrEmpty(tap.beverage.brewery) && !isNilOrEmpty(tap.coldBrew.roastery)">Brewed by: {{ tap.beverage.brewery }}</p>
                             <p *ngIf="!isNilOrEmpty(tap.coldBrew.roastery)">Roasted by: {{ tap.coldBrew.roastery }}</p>

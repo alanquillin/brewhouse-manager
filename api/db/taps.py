@@ -22,6 +22,8 @@ class Taps(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     beer_id = Column(UUID, ForeignKey(f"{beers._TABLE_NAME}.{beers._PKEY}"))
     beverage_id = Column(UUID, ForeignKey(f"{beverages._TABLE_NAME}.{beers._PKEY}"))
     sensor_id = Column(UUID, ForeignKey(f"{sensors._TABLE_NAME}.{sensors._PKEY}"))
+    name_prefix = Column(String)
+    name_suffix = Column(String)
 
     location = relationship(locations.Locations, backref=backref("Taps", cascade="all,delete"))
     beer = relationship(beers.Beers)
