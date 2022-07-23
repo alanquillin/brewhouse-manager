@@ -24,7 +24,7 @@ export class ManageBeerComponent implements OnInit {
   loading = false;
   beers: Beer[] = [];
   filteredBeers: Beer[] = [];
-  displayedColumns: string[] = ['name', 'description', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', "untappdId", 'imgUrl', 'actions'];
+  displayedColumns: string[] = ['name', 'description', 'tapped', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', "untappdId", 'imgUrl', 'actions'];
   processing = false;
   adding = false;
   editing = false;
@@ -434,5 +434,9 @@ export class ManageBeerComponent implements OnInit {
     }
 
     return "";
+  }
+
+  isTapped(beer: Beer): boolean{
+    return !isNilOrEmpty(beer.taps);
   }
 }
