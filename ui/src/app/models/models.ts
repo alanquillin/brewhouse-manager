@@ -170,6 +170,7 @@ export class Beer extends EditableBase {
   brewDate!: number;
   srm!: number;
   untappdId!: string;
+  taps: Tap[] | undefined;
 
   constructor(from?: any) {
     super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm", "untappdId"], from, beerTransformFns);

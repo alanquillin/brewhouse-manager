@@ -10,7 +10,7 @@ import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/fil
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
 import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component'
 
-import { Beer, beerTransformFns } from '../../models/models';
+import { Beer, beerTransformFns, TapSettings } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
 
 import * as _ from 'lodash';
@@ -93,7 +93,7 @@ export class ManageBeerComponent implements OnInit {
   }
 
   refresh(always?:Function, next?: Function, error?: Function) {
-    this.dataService.getBeers().subscribe({
+    this.dataService.getBeers(true).subscribe({
       next: (beers: Beer[]) => {
         this.beers = [];
         _.forEach(beers, (beer) => {
@@ -215,19 +215,61 @@ export class ManageBeerComponent implements OnInit {
 
   delete(beer: Beer): void {
     if(confirm(`Are you sure you want to delete beer '${beer.getName()}'?`)) {
-      this.processing = true;
-      this.dataService.deleteBeer(beer.id).subscribe({
-        next: (resp: any) => {
-          this.processing = false;
-          this.loading = true;
-          this.refresh(()=>{this.loading = false});
-        },
-        error: (err: DataError) => {
-          this.displayError(err.message);
-          this.processing = false;
+      if(!_.isNil(beer.taps) && beer.taps.length > 0){
+        if(confirm(`The beer is associated with one or more taps.  Clear from tap(s)?`)) {
+          var tapIds : string[] = [];
+          _.forEach(beer.taps, (t)=>{
+            tapIds.push(t.id);
+          });
+
+          this.clearFromNextTap(tapIds, () => {
+              this._delete(beer);
+            }, (err: DataError) => {
+              this.displayError(err.message);
+              this.processing = false;
+            });
         }
-      })
+      } else {
+        this._delete(beer);
+      }
     }
+  }
+
+  clearFromNextTap(tapIds: string[], next: Function, error: Function): void {
+    if(isNilOrEmpty(tapIds))
+      return next();
+
+    var tapId = tapIds.pop();
+    if(!tapId)
+      return next();
+      
+    this._clearFromTap(tapId, () => { this.clearFromNextTap(tapIds, next, error) }, error);
+  }
+
+  _clearFromTap(tapId: string, next: Function, error: Function): void {
+    this.dataService.clearBeerFromTap(tapId).subscribe({
+      next: (resp: any) => {
+        next();
+      },
+      error: (err: DataError) => {
+        error(err);
+      }
+    });
+  }
+
+  _delete(beer: Beer): void {
+    this.processing = true;
+    this.dataService.deleteBeer(beer.id).subscribe({
+      next: (resp: any) => {
+        this.processing = false;
+        this.loading = true;
+        this.refresh(()=>{this.loading = false});
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    });
   }
 
   filter(sort?: Sort) {
