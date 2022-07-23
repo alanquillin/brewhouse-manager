@@ -41,7 +41,7 @@ class BeerResourceMixin(ResourceMixinBase):
         if include_tap_details:
             taps = TapsDB.get_by_beer(db_session, beer.id)
             if taps:
-                data["taps"] = [tap.to_dict() for tap in taps]
+                data["taps"] = [ResourceMixinBase.transform_response(tap.to_dict()) for tap in taps]
 
         if not skip_meta_refresh and db_session:
             force_refresh = request.args.get("force_refresh", "false").lower() in ["true", "yes", "", "1"]
