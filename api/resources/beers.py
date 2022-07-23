@@ -8,6 +8,7 @@ from db import session_scope
 from db.beers import _PKEY as beers_pk
 from db.beers import Beers as BeersDB
 from db.locations import Locations as LocationsDB
+from db.taps import Taps as TapsDB
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.time import parse_iso8601_utc, utcnow_aware
@@ -35,7 +36,14 @@ class BeerResourceMixin(ResourceMixinBase):
         data = beer.to_dict()
         G_LOGGER.debug(data)
 
-        if not skip_meta_refresh:
+        include_tap_details = request.args.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
+
+        if include_tap_details:
+            taps = TapsDB.get_by_beer(db_session, beer.id)
+            if taps:
+                data["taps"] = [tap.to_dict() for tap in taps]
+
+        if not skip_meta_refresh and db_session:
             force_refresh = request.args.get("force_refresh", "false").lower() in ["true", "yes", "", "1"]
 
             tool_type = beer.external_brewing_tool
@@ -108,7 +116,7 @@ class Beers(BaseResource, BeerResourceMixin):
                 beers = BeersDB.get_by_location(db_session, location_id)
             else:
                 beers = BeersDB.query(db_session)
-            return [self.transform_response(b) for b in beers]
+            return [self.transform_response(b, db_session=db_session) for b in beers]
 
     @login_required
     def post(self):
@@ -129,7 +137,7 @@ class Beer(BaseResource, BeerResourceMixin):
             if not beer:
                 raise NotFoundError()
 
-            return self.transform_response(beer)
+            return self.transform_response(beer, db_session=db_session)
 
     @login_required
     def patch(self, beer_id):
