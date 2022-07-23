@@ -381,4 +381,16 @@ export class ManageBeerComponent implements OnInit {
       },
     });
   }
+
+  getBeerLink(beer: Beer) : string {
+    if (_.isNil(beer))
+      return "";
+
+    var batchId = _.get(beer.externalBrewingToolMeta, "batchId");
+    if (beer.externalBrewingTool === "brewfather" && beer.externalBrewingToolMeta && !isNilOrEmpty(batchId)) {
+      return `https://web.brewfather.app/tabs/batches/batch/${batchId}`;
+    }
+
+    return "";
+  }
 }

@@ -33,14 +33,13 @@
                         <span *ngIf="!_.isEmpty(_.get(element.externalBrewingToolMeta, 'details'))">
                             <ng-template #popupExternalBrewingToolMeta>
                                 <div>
+                                    <p><strong>Batch ID</strong>: {{_.get(element.externalBrewingToolMeta, "batchId")}}</p>
                                     <p *ngFor="let property of _.get(element.externalBrewingToolMeta, 'details') | keyvalue">
                                         <strong>{{property.key}}</strong>: {{property.value}}
                                     </p>
                                 </div>
                             </ng-template>
-                            <button mat-icon-button color="primary" [ngbPopover]="popupExternalBrewingToolMeta" popoverTitle="External Tool Metadata" triggers="mouseenter:mouseleave" placement="right">
-                                <mat-icon>open_in_new</mat-icon>
-                            </button>
+                            <a href="{{ getBeerLink(element) }}" target="_blank" [ngbPopover]="popupExternalBrewingToolMeta" popoverTitle="External Tool Metadata" triggers="mouseenter:mouseleave" placement="right"><mat-icon>info</mat-icon></a>
                         </span>
                     </span>
                 </td>

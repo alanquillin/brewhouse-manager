@@ -343,36 +343,52 @@ export class ManageTapsComponent implements OnInit {
     if(_.isNil(beer)) {
       return "";
     }
-    var name = beer.name;
+    var name = beer.getName();
+    var style = beer.getStyle();
+
+    if(!_.isEmpty(style)){
+      name = `${name} [${style}]`;
+    }
+
+    return name;
+  }
+
+  getUniqueBeerName(beer: Beer | undefined, beerId?: string): string {
+    if(_.isNil(beer) && !_.isNil(beerId)){
+      beer = this.findBeer(beerId);
+    }
+    if(_.isNil(beer)) {
+      return "";
+    }
+
+    let name: string = this.getBeerName(beer);
+    const beers: Beer[] = _.filter(this.beers, (b) => {return this.getBeerName(b).trim() === name.trim()});
+
+    if (beers.length <= 1)
+      return name;
+    
     var tool = beer.externalBrewingTool;
     var batchNumber: string | undefined
-    var style = beer.style;
     if(!_.isEmpty(tool)){
       if(!_.isEmpty(beer.externalBrewingToolMeta)){
         if(_.isEmpty(name)){
           name = _.get(beer.externalBrewingToolMeta, 'details.name')
         }
-        if(_.isEmpty(style)){
-          style = _.get(beer.externalBrewingToolMeta, 'details.style')
-        }
         batchNumber = _.get(beer.externalBrewingToolMeta, 'details.batchNumber')
       }
-    }
 
-    if(_.isEmpty(name)) {
-      name = "--NO NAME--";
-    }
-    if(!_.isEmpty(style)){
-      name = `${name} [${style}]`;
-    }
-    if(!_.isEmpty(tool)) {
-      if (!_.isEmpty(_.toString(batchNumber))){
-        tool = `${tool} - batch #${batchNumber})`;
+      if(_.isEmpty(tool)) {
+        tool = "--UNKNOWN EXTERNAL TOOL--";
+      } else {
+        if (!_.isEmpty(_.toString(batchNumber))){
+          tool = `${tool} - batch #${batchNumber})`;
+        }
       }
-      name = `${name} (${tool})`
-    }
 
-    return name;
+      return `${name} (${tool})`;
+    }
+    
+    return `${name} (${beer.getAbv()} alc./vol., brewed on: ${beer.getBrewDate()})`;
   }
 
   findBeverage(beverageId: string) {
@@ -382,9 +398,6 @@ export class ManageTapsComponent implements OnInit {
   getBeverageName(beverage: Beverage | undefined, beverageId?: string): string {
     if(_.isNil(beverage) && !_.isNil(beverageId)){
       beverage = this.findBeverage(beverageId);
-      if(_.isNil(beverage)) {
-        return beverageId;
-      }
     }
     
     if(_.isNil(beverage)) {
@@ -392,6 +405,24 @@ export class ManageTapsComponent implements OnInit {
     }
 
     return beverage.name;
+  }
+
+  getUniqueBeverageName(beverage: Beverage | undefined, beverageId?: string): string {
+    if(_.isNil(beverage) && !_.isNil(beverageId)) {
+      beverage = this.findBeverage(beverageId);
+    }
+
+    if(_.isNil(beverage)) {
+      return "";
+    }
+
+    const name: string = beverage.name;
+    const beverages : Beverage[] = _.filter(this.beverages, (b) => {return b.name.trim() === name.trim()});
+
+    if (beverages.length <= 1)
+      return name;
+
+    return `${name} (Brewed by ${beverage.brewery} on ${beverage.getBrewDateDisplay()})`
   }
 
   getSensorsForLocation(locationId: string | undefined): Sensor[] {
@@ -408,11 +439,6 @@ export class ManageTapsComponent implements OnInit {
 
   get modifyForm(): { [key: string]: AbstractControl } {
     return this.modifyFormGroup.controls;
-  } 
-
-  getDisplayNameTooltip(tap: Tap) {
-    return `Prefix: '${tap.namePrefix}'
-    Suffix: '${tap.nameSuffix}'`;
   }
 
   showDisplayNameToolTip(tap: Tap) {

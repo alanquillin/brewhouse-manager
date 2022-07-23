@@ -27,7 +27,18 @@
 
             <ng-container matColumnDef="displayName">
                 <th mat-header-cell *matHeaderCellDef> Display Name </th>
-                <td mat-cell *matCellDef="let element">{{element.getDisplayName()}} <mat-icon *ngIf="showDisplayNameToolTip(element)" [matTooltip]="getDisplayNameTooltip(element)" matTooltipPosition="right">info</mat-icon></td>
+                <td mat-cell *matCellDef="let element">
+                    {{element.getDisplayName()}}
+                    <span *ngIf="showDisplayNameToolTip(element)">
+                        <ng-template #popupNameDetails>
+                            <div>
+                                <p>Prefix: {{ element.namePrefix }}</p>
+                                <p>Suffix: {{ element.nameSuffix }}</p>
+                            </div>
+                        </ng-template>
+                        <mat-icon [ngbPopover]="popupNameDetails" popoverTitle="Display name details" triggers="mouseenter:mouseleave" placement="right">info</mat-icon>
+                    </span>
+                </td>
             </ng-container>
         
             <ng-container matColumnDef="description">
@@ -42,12 +53,12 @@
 
             <ng-container matColumnDef="beer">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="beer" sortActionDescription="Sort by beer"> Beer </th>
-                <td mat-cell *matCellDef="let element">{{ getBeerName(element.beer, element.beerId) }}</td>
+                <td mat-cell *matCellDef="let element">{{ getUniqueBeerName(element.beer, element.beerId) }}</td>
             </ng-container>
 
             <ng-container matColumnDef="beverage">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="beverage" sortActionDescription="Sort by beverage"> Beverage </th>
-                <td mat-cell *matCellDef="let element">{{ getBeverageName(element.beverage, element.beverageId) }}</td>
+                <td mat-cell *matCellDef="let element">{{ getUniqueBeverageName(element.beverage, element.beverageId) }}</td>
             </ng-container>
         
             <ng-container matColumnDef="location">
@@ -137,7 +148,7 @@
                     <mat-select formControlName="beerId" name="beerId" [(ngModel)]="modifyTap.editValues.beerId">
                         <mat-option value="-1">-- None --</mat-option>
                         <mat-option *ngFor="let beer of beers" [value]="beer.id">
-                        {{ getBeerName(beer) }}
+                            <div title="{{ getUniqueBeerName(beer) }}">{{ getUniqueBeerName(beer) }}</div>
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
@@ -147,7 +158,7 @@
                     <mat-select formControlName="beverageId" name="beverageId" [(ngModel)]="modifyTap.editValues.beverageId">
                         <mat-option value="-1">-- None --</mat-option>
                         <mat-option *ngFor="let beverage of beverages" [value]="beverage.id">
-                        {{ getBeverageName(beverage) }}
+                            <div title="{{ getUniqueBeverageName(beverage) }}">{{ getUniqueBeverageName(beverage) }}</div>
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
