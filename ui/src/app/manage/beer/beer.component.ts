@@ -215,6 +215,7 @@ export class ManageBeerComponent implements OnInit {
 
   delete(beer: Beer): void {
     if(confirm(`Are you sure you want to delete beer '${beer.getName()}'?`)) {
+      this.processing = true;
       if(!_.isNil(beer.taps) && beer.taps.length > 0){
         if(confirm(`The beer is associated with one or more taps.  Clear from tap(s)?`)) {
           var tapIds : string[] = [];

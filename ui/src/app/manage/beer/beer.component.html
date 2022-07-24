@@ -33,6 +33,7 @@
                             <div *ngFor="let tap of element.taps">
                                 <p>Description: {{ tap.description }}</p>
                                 <p>Tap Number: {{ tap.tapNumber }}</p>
+                                <p>Location: {{ tap.location ? tap.location.description : "UNKNOWN" }}</p>
                             </div>
                         </ng-template>
                         <mat-icon [ngbPopover]="popupNameDetails" popoverTitle="Associated taps" triggers="mouseenter:mouseleave" placement="right">check</mat-icon>
