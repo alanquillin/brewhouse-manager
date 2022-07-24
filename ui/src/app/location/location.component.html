@@ -7,7 +7,15 @@
         <mat-card-subtitle>Tap {{tap.tapNumber}}: {{ tap.description }}</mat-card-subtitle>
         <mat-card-content>
             <div *ngIf="tap.isEmpty">
-                <p>Empty :(</p>
+                <div class="tap-display">
+                    <div class="tap-image">
+                        <img src="assets/img/empty_tap.png" />
+                    </div>
+                    <div class=tap-details>
+                        <p class="title">Sorry, currently nothing assigned to the tap :(</p>
+                        <p>Please check back often as we should have something tapped soon!</p>
+                    </div>
+                </div>
             </div>
             <div *ngIf="!tap.isEmpty">
                 <div class="tap-display" *ngIf="!_.isNil(tap.beer) && tap.tapType === 'beer'">
