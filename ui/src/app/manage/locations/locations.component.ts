@@ -84,7 +84,7 @@ export class ManageLocationsComponent implements OnInit {
   }
 
   delete(location: Location): void {
-    if(confirm(`Are you sure you want to delete location '${location.name}'?`)){
+    if(confirm(`Are you sure you want to delete location '${location.name}'?  All associated taps and sensors will be deleted as well.`)){
       this.processing = true;
       this.dataService.deleteLocation(location.id).subscribe({
         error: (err: DataError) => {
