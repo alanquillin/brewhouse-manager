@@ -5,6 +5,7 @@ from db.taps import _PKEY as taps_pk
 from db.taps import Taps as TapsDB
 from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase
 from resources.beers import BeerResourceMixin
+from resources.beverage import BeverageResourceMixin
 from resources.locations import LocationsResourceMixin
 from resources.sensors import SensorResourceMixin
 
@@ -21,6 +22,9 @@ class TapsResourceMixin(ResourceMixinBase):
 
         if tap.beer:
             data["beer"] = BeerResourceMixin.transform_response(tap.beer, db_session=db_session, skip_meta_refresh=True)
+        
+        if tap.beverage:
+            data["beverage"] = BeverageResourceMixin.transform_response(tap.beverage)
 
         if tap.location:
             data["location"] = LocationsResourceMixin.transform_response(tap.location)

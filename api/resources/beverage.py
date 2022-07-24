@@ -7,7 +7,7 @@ from flask_login import login_required
 from db import session_scope
 from db.beverages import _PKEY as beverages_pk
 from db.beverages import Beverages as BeveragesDB
-from db.locations import Locations as LocationsDB
+from db.taps import Taps as TapsDB
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.time import parse_iso8601_utc, utcnow_aware
@@ -20,8 +20,23 @@ G_CONFIG = Config()
 
 class BeverageResourceMixin(ResourceMixinBase):
     @staticmethod
-    def transform_response(beverage):
+    def transform_tap_response(tap):
+        data = tap.to_dict()
+
+        if tap.location:
+            data["location"] = LocationsResourceMixin.transform_response(tap.location)
+        
+        return ResourceMixinBase.transform_response(data)
+
+    @staticmethod
+    def transform_response(beverage, db_session=None):
         data = beverage.to_dict()
+
+        include_tap_details = request.args.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
+        if include_tap_details and db_session:
+            taps = TapsDB.get_by_beverage(db_session, beverage.id)
+            if taps:
+                data["taps"] = [BeverageResourceMixin.transform_tap_response(tap) for tap in taps]
 
         for k in ["brew_date", "keg_date"]:
             d = data.get(k)
@@ -49,7 +64,7 @@ class Beverages(BaseResource, BeverageResourceMixin):
                 beverages = BeveragesDB.get_by_location(db_session, location_id)
             else:
                 beverages = BeveragesDB.query(db_session)
-            return [self.transform_response(b) for b in beverages]
+            return [self.transform_response(b, db_session=db_session) for b in beverages]
 
     @login_required
     def post(self):
@@ -70,7 +85,7 @@ class Beverage(BaseResource, BeverageResourceMixin):
             if not beverage:
                 raise NotFoundError()
 
-            return self.transform_response(beverage)
+            return self.transform_response(beverage, db_session=db_session)
 
     @login_required
     def patch(self, beverage_id):

@@ -43,3 +43,7 @@ class Taps(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     @classmethod
     def get_by_beer(cls, session, beer_id, **kwargs):
         return session.query(cls).filter_by(beer_id=beer_id, **kwargs)
+
+    @classmethod
+    def get_by_beverage(cls, session, beverage_id, **kwargs):
+        return session.query(cls).filter_by(beverage_id=beverage_id, **kwargs)

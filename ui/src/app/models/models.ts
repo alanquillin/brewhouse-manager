@@ -347,6 +347,7 @@ export class Beverage extends EditableBase {
   kegDate!: number;
   brewDate!: number;
   meta!: any;
+  taps: Tap[] | undefined;
 
   constructor(from?: any) {
     super(["name", "description", "brewery", "breweryLink", "type", "flavor", "imgUrl", "kegDate", "brewDate", "meta"], from);

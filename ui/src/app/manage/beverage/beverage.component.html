@@ -19,6 +19,22 @@
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="description" sortActionDescription="Sort by description"> Description </th>
                 <td mat-cell *matCellDef="let element">{{element.description}}</td>
             </ng-container>
+
+            <ng-container matColumnDef="tapped">
+                <th mat-header-cell *matHeaderCellDef> Tapped? </th>
+                <td mat-cell *matCellDef="let element">
+                    <span *ngIf="isTapped(element)">
+                        <ng-template #popupNameDetails>
+                            <div *ngFor="let tap of element.taps">
+                                <p>Description: {{ tap.description }}</p>
+                                <p>Tap Number: {{ tap.tapNumber }}</p>
+                                <p>Location: {{ tap.location ? tap.location.description : "UNKNOWN" }}</p>
+                            </div>
+                        </ng-template>
+                        <mat-icon [ngbPopover]="popupNameDetails" popoverTitle="Associated taps" triggers="mouseenter:mouseleave" placement="right">check</mat-icon>
+                    </span>
+                </td>
+            </ng-container>
         
             <ng-container matColumnDef="type">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="type" sortActionDescription="Sort by type"> Type </th>

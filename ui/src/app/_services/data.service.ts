@@ -306,8 +306,8 @@ export class DataService {
     return this.uploadImage('user', file);
   }
 
-  getBeverages(): Observable<Beverage[]> {
-    const url = `${this.apiBaseUrl}/beverages`;
+  getBeverages(includeTapDetails:boolean = false): Observable<Beverage[]> {
+    const url = `${this.apiBaseUrl}/beverages${includeTapDetails ? "?include_tap_details" : ""}`;
     return this.http.get<Beverage[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
@@ -316,8 +316,8 @@ export class DataService {
     return this.http.post<Beverage>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getBeverage(beverageId: string): Observable<Beverage> {
-    const url = `${this.apiBaseUrl}/beverages/${beverageId}`;
+  getBeverage(beverageId: string, includeTapDetails:boolean = false): Observable<Beverage> {
+    const url = `${this.apiBaseUrl}/beverages/${beverageId}${includeTapDetails ? "?include_tap_details" : ""}`;
     return this.http.get<Beverage>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 

@@ -50,7 +50,7 @@ export class ManageBeverageComponent implements OnInit {
   });
 
   get displayedColumns(): string[] {
-    return ["name", "description", "type", "brewery", "roastery", "flavor", "kegDate", "brewDate", "imgUrl", "actions"];
+    return ["name", "description", 'tapped', "type", "brewery", "roastery", "flavor", "kegDate", "brewDate", "imgUrl", "actions"];
   }
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
@@ -67,7 +67,7 @@ export class ManageBeverageComponent implements OnInit {
         this.defaultType = data.beverages.defaultType;
         this.supportedTypes = data.beverages.supportedTypes;
 
-        this.dataService.getBeverages().subscribe({
+        this.dataService.getBeverages(true).subscribe({
           next: (beverages: Beverage[]) => {
             this.beverages = [];
             _.forEach(beverages, (beverage) => {
@@ -188,18 +188,60 @@ export class ManageBeverageComponent implements OnInit {
   delete(beverage: Beverage): void {
     if(confirm(`Are you sure you want to delete beverage '${beverage.name}'?`)) {
       this.processing = true;
-      this.dataService.deleteBeverage(beverage.id).subscribe({
-        next: (resp: any) => {
-          this.processing = false;
-          this.loading = true;
-          this.refresh(()=>{ this.loading = false; });
-        },
-        error: (err: DataError) => {
-          this.displayError(err.message);
-          this.processing = false;
+      if(!_.isNil(beverage.taps) && beverage.taps.length > 0){
+        if(confirm(`The beverage is associated with one or more taps.  Clear from tap(s)?`)) {
+          var tapIds : string[] = [];
+          _.forEach(beverage.taps, (t)=>{
+            tapIds.push(t.id);
+          });
+
+          this.clearFromNextTap(tapIds, () => {
+              this._delete(beverage);
+            }, (err: DataError) => {
+              this.displayError(err.message);
+              this.processing = false;
+            });
         }
-      })
+      } else {
+        this._delete(beverage);
+      }
     }
+  }
+
+  clearFromNextTap(tapIds: string[], next: Function, error: Function): void {
+    if(isNilOrEmpty(tapIds))
+      return next();
+
+    var tapId = tapIds.pop();
+    if(!tapId)
+      return next();
+      
+    this._clearFromTap(tapId, () => { this.clearFromNextTap(tapIds, next, error) }, error);
+  }
+
+  _clearFromTap(tapId: string, next: Function, error: Function): void {
+    this.dataService.clearBeverageFromTap(tapId).subscribe({
+      next: (resp: any) => {
+        next();
+      },
+      error: (err: DataError) => {
+        error(err);
+      }
+    });
+  }
+
+  _delete(beverage: Beverage) {
+    this.dataService.deleteBeverage(beverage.id).subscribe({
+      next: (resp: any) => {
+        this.processing = false;
+        this.loading = true;
+        this.refresh(()=>{ this.loading = false; });
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    })
   }
 
   filter(sort?: Sort) {
@@ -262,5 +304,11 @@ export class ManageBeverageComponent implements OnInit {
         imgUrl: imgUrl,
       },
     });
+  }
+
+
+
+  isTapped(beverage: Beverage): boolean{
+    return !isNilOrEmpty(beverage.taps);
   }
 }
