@@ -3,7 +3,7 @@ _TABLE_NAME = "beverages"
 _PKEY = "id"
 
 from psycopg2.errors import UniqueViolation  # pylint: disable=no-name-in-module
-from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String, func
+from sqlalchemy import Column, Date, Float, ForeignKey, Boolean, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.schema import Index
 
@@ -26,8 +26,22 @@ class Beverages(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     type = Column(String, nullable=True)
     flavor = Column(String, nullable=True)
     img_url = Column(String, nullable=True)
+    empty_img_url = Column(String, nullable=True)
     brew_date = Column(Date, nullable=True)
     keg_date = Column(Date, nullable=True)
     meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
+    image_transitions_enabled = Column(Boolean, nullable=False)
 
     __table_args__ = (Index("beverage_name_lower_ix", func.lower(name), unique=True),)
+
+    @classmethod
+    def create(cls, session, **kwargs):
+        if not kwargs.get("image_transitions_enabled"):
+            kwargs["image_transitions_enabled"] = False
+        return super().create(session, **kwargs)
+
+    @classmethod
+    def update(cls, session, pkey, **kwargs):
+        if not kwargs.get("image_transitions_enabled"):
+            kwargs["image_transitions_enabled"] = False
+        return super().update(session, pkey, **kwargs)

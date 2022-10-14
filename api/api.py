@@ -42,6 +42,7 @@ from resources.fermentation_ctrl import (
     FermentationControllers,
     FermentationControllerStats,
 )
+from resources.image_transitions import ImageTransition
 from resources.locations import Location, Locations
 from resources.pages import GenericPageHandler, RestrictedGenericPageHandler
 from resources.sensors import Sensor, SensorData, Sensors, SensorTypes
@@ -152,6 +153,7 @@ api.add_resource(
 )
 api.add_resource(FermentationControllerDeviceActions, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<action>/<value>", methods=["POST"])
 api.add_resource(FermentationControllerDeviceData, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<key>", methods=["GET"])
+api.add_resource(ImageTransition, "/api/v1/image_transitions/<image_transition_id>", methods=["DELETE"])
 
 # session management APIs
 api.add_resource(GoogleLogin, "/login/google")

@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from flask import request
 from flask_login import login_required
