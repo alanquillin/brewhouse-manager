@@ -155,7 +155,45 @@ export class Tap extends EditableBase {
   }
 }
 
-export class Beer extends EditableBase {
+export class ImageTransitionalBase extends EditableBase {
+  emptyImgUrl!: string;
+  imageTransitions: ImageTransition[] | undefined;
+  imageTransitionsEnabled!: boolean;
+  imgUrl!: string;
+
+  constructor(fields: string[], from?: any, transformFns?: any) {
+    super(fields, from, transformFns);
+    if(!isNilOrEmpty(from) && !isNilOrEmpty(from.imageTransitions)) {
+      this.imageTransitions = [];
+      for(let i of from.imageTransitions) {
+        this.imageTransitions.push(new ImageTransition(i));
+      }
+      this.imageTransitions = _.orderBy(this.imageTransitions, ["changePercent"], ["desc"]);
+    }
+  }
+
+  override enableEditing(): void {
+    super.enableEditing();
+
+    if(this.imageTransitions) {
+      for(let i of this.imageTransitions) {
+        i.enableEditing();
+      }
+    }
+  }
+
+  override disableEditing(): void {
+    super.disableEditing();
+
+    if(this.imageTransitions) {
+      for(let i of this.imageTransitions) {
+        i.disableEditing();
+      }
+    }
+  }
+}
+
+export class Beer extends ImageTransitionalBase {
   id!: string;
   description!: string;
   name!: string;
@@ -164,7 +202,6 @@ export class Beer extends EditableBase {
   externalBrewingToolMeta!: any;
   style!: number;
   abv!: string;
-  imgUrl!: string;
   ibu!: number;
   kegDate!: number;
   brewDate!: number;
@@ -173,10 +210,11 @@ export class Beer extends EditableBase {
   taps: Tap[] | undefined;
 
   constructor(from?: any) {
-    super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm", "untappdId"], from, beerTransformFns);
+    super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm", "untappdId", "emptyImgUrl", "imageTransitions", "imageTransitionsEnabled"], from, beerTransformFns);
     if(isNilOrEmpty(this.externalBrewingToolMeta)) {
       this.externalBrewingToolMeta = {}
     }
+    
   }
 
   #getVal(key: string, transformFn?: Function, brewToolTransformFn?: any): any{
@@ -400,5 +438,17 @@ export class ColdBrew extends Beverage {
       return _.get(this.meta, path);
 
     return undefined;
+  }
+}
+
+export class ImageTransition extends EditableBase {
+  id!: string;
+  beerId!: string;
+  beverageId!: string;
+  imgUrl!: string;
+  changePercent!: number;
+
+  constructor(from?: any) {
+    super(["imgUrl", "changePercent"], from);
   }
 }

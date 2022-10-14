@@ -10,7 +10,7 @@ import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/fil
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
 import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component'
 
-import { Beer, beerTransformFns, TapSettings } from '../../models/models';
+import { Beer, beerTransformFns, ImageTransition, TapSettings } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
 
 import * as _ from 'lodash';
@@ -30,6 +30,7 @@ export class ManageBeerComponent implements OnInit {
   editing = false;
   modifyBeer: Beer = new Beer();
   isNilOrEmpty: Function = isNilOrEmpty;
+  imageTransitionsToDelete: string[] = [];
   _ = _;
 
   transformFns = beerTransformFns;
@@ -69,6 +70,22 @@ export class ManageBeerComponent implements OnInit {
     }
   }
 
+  requiredIfImageTransitionsEnabled(comp: ManageBeerComponent): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null  => {
+      var imageTransitionsEnabled = _.get(comp.modifyBeer.editValues, "imageTransitionsEnabled")
+      
+      if(!imageTransitionsEnabled){
+        return null;
+      }
+      
+      if(isNilOrEmpty(control.value)) {
+        return { requiredIfImageTransitionsEnabled: true };
+      }
+
+      return null;
+    }
+  }
+
   modifyFormGroup: FormGroup = new FormGroup({
     name: new FormControl('', [this.requiredIfNoBrewTool(this)]),
     description: new FormControl('', [this.requiredIfNoBrewTool(this)]),
@@ -77,9 +94,11 @@ export class ManageBeerComponent implements OnInit {
     srm: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
     ibu: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
     externalBrewingTool: new FormControl(-1),
-    brewDate: new FormControl(new Date(), [this.requiredIfNoBrewTool(this)]),
-    kegDate: new FormControl(new Date(), [this.requiredIfNoBrewTool(this)]),
-    imgUrl: new FormControl(''),
+    brewDate: new FormControl(new Date(), []),
+    kegDate: new FormControl(new Date(), []),
+    imgUrl: new FormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
+    imageTransitionsEnabled: new FormControl(''),
+    emptyImgUrl: new FormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
     brewfatherBatchId: new FormControl('', [this.requiredForBrewingTool(this, "brewfather")]),
     untappdId: new FormControl('')
   });
@@ -97,9 +116,7 @@ export class ManageBeerComponent implements OnInit {
       next: (beers: Beer[]) => {
         this.beers = [];
         _.forEach(beers, (beer) => {
-          var _beer = new Beer()
-          Object.assign(_beer, beer);
-          this.beers.push(_beer)
+          this.beers.push(new Beer(beer))
         })
         this.filter();
       }, 
@@ -139,7 +156,7 @@ export class ManageBeerComponent implements OnInit {
   create(): void {
     var data: any = {}
     const name = _.get(this.modifyBeer.editValues, "name");
-    const keys = ['name', 'description', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl', 'externalBrewingToolMeta']
+    const keys = ['name', 'description', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl', 'externalBrewingToolMeta', 'emptyImgUrl', 'imageTransitionsEnabled']
     const checkKeys = {"brewDate": "brewDateObj", "kegDate": "kegDateObj"}
     
     _.forEach(keys, (k) => {
@@ -155,6 +172,16 @@ export class ManageBeerComponent implements OnInit {
       }
       data[k] = val;
     })
+
+    if (this.modifyBeer.imageTransitions) {
+      let imageTransitions: ImageTransition[] = [];
+      for(let i of this.modifyBeer.imageTransitions) {
+        imageTransitions.push(i);
+      }
+      if(imageTransitions){
+        data["imageTransitions"] = imageTransitions;
+      }
+    }
 
     if(_.has(data, "externalBrewingTool")){
       const tool = data["externalBrewingTool"];
@@ -188,6 +215,7 @@ export class ManageBeerComponent implements OnInit {
   edit(beer: Beer): void {
     beer.enableEditing();
     this.modifyBeer = beer;
+    this.imageTransitionsToDelete = [];
     this.editing = true;
     this.modifyFormGroup.reset();
     this.reRunValidation();
@@ -195,22 +223,59 @@ export class ManageBeerComponent implements OnInit {
 
   save(): void {  
     this.processing = true;
-    this.dataService.updateBeer(this.modifyBeer.id, this.changes).subscribe({
-      next: (beer: Beer) => {
-        this.refresh(()=> {this.processing = false;}, () => {
-          this.editing = false;
-        })
-      },
-      error: (err: DataError) => {
-        this.displayError(err.message);
-        this.processing = false;
+    this.deleteImageTransitionRecursive();
+  }
+
+  deleteImageTransitionRecursive(): void {
+    if(_.isEmpty(this.imageTransitionsToDelete)) {
+      this.saveBeer();
+    } else {
+      let imageTransitionId = this.imageTransitionsToDelete.pop();
+      if(!imageTransitionId) {
+        return this.saveBeer();
       }
-    })
+
+      this.dataService.deleteImageTransition(imageTransitionId).subscribe({
+        next: (_: any) => {
+          this.deleteImageTransitionRecursive()
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+        }
+      })
+    }
+  }
+
+  saveBeer(): void {
+    if(isNilOrEmpty(this.changes)) {
+      this.refresh(()=> {this.processing = false;}, () => {
+        this.editing = false;
+      });
+    } else {
+      this.dataService.updateBeer(this.modifyBeer.id, this.changes).subscribe({
+        next: (beer: Beer) => {
+          this.refresh(()=> {this.processing = false;}, () => {
+            this.editing = false;
+          })
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+        }
+      });
+    }
   }
 
   cancelEdit(): void {
     this.modifyBeer.disableEditing();
-    this.editing = false;
+    if(!isNilOrEmpty(this.imageTransitionsToDelete)) {
+      this.refresh(()=> {this.processing = false;}, () => {
+        this.editing = false;
+      });
+    } else {
+      this.editing = false;
+    }
   }
 
   delete(beer: Beer): void {
@@ -351,11 +416,11 @@ export class ManageBeerComponent implements OnInit {
   }
 
   get hasChanges(): boolean {
-    if(!this.modifyBeer.hasChanges) {
-      return false;
-    }
+    // if(!this.modifyBeer.hasChanges) {
+    //   return false;
+    // }
 
-    return !_.isEmpty(this.changes)
+    return !_.isEmpty(this.changes) || !isNilOrEmpty(this.imageTransitionsToDelete);
   }
 
   get changes(): any {
@@ -375,6 +440,20 @@ export class ManageBeerComponent implements OnInit {
     if(_.has(_.get(changes, "externalBrewingToolMeta", {}), "details")) {
       delete changes["externalBrewingToolMeta"]["details"]
     }
+    
+    if (_.has(changes, "imageTransitions") && this.modifyBeer.imageTransitions) {
+      let imageTransitions : ImageTransition[] = [];
+      for(let i of this.modifyBeer.imageTransitions) {
+        if(i.hasChanges) {
+          imageTransitions.push({id: i.id, ...i.changes});
+        }
+      }
+      if(isNilOrEmpty(imageTransitions)) {
+        delete changes["imageTransitions"];
+      } else {
+        changes["imageTransitions"] = imageTransitions;
+      }
+    }
 
     const keys = ['name', 'description', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl']
     _.forEach(keys, (k) => {
@@ -387,7 +466,7 @@ export class ManageBeerComponent implements OnInit {
     return changes;
   }
 
-  openUploadDialog(): void {
+  openUploadDialog(targetObj: any, key: string): void {
     const dialogRef = this.dialog.open(FileUploadDialogComponent, {
       data: {
         imageType: "beer"
@@ -397,12 +476,12 @@ export class ManageBeerComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (!isNilOrEmpty(result)) {
         const f = result[0];
-        this.modifyBeer.editValues.imgUrl = f.path;
+        _.set(targetObj, key, f.path);
       }
     });
   }
 
-  openImageSelectorDialog(): void {
+  openImageSelectorDialog(targetObj: any, key: string): void {
     const dialogRef = this.dialog.open(ImageSelectorDialogComponent, {
       width: '1200px',
       data: {
@@ -412,7 +491,7 @@ export class ManageBeerComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (!isNilOrEmpty(result)) {
-        this.modifyBeer.editValues.imgUrl = result;
+        _.set(targetObj, key, result);
       }
     });
   }
@@ -439,5 +518,65 @@ export class ManageBeerComponent implements OnInit {
 
   isTapped(beer: Beer): boolean{
     return !isNilOrEmpty(beer.taps);
+  }
+
+  addImageTransition(): void {
+    if(!this.modifyBeer.imageTransitions){
+      this.modifyBeer.imageTransitions = [];
+    }
+    let i = new ImageTransition();
+    i.enableEditing();
+    this.modifyBeer.imageTransitions.push(i)
+  }
+
+  get areImageTransitionsValid() : boolean {
+    if(_.isNil(this.modifyBeer.editValues) || _.isNil(this.modifyBeer.imageTransitions) || !this.modifyBeer.imageTransitionsEnabled) {
+      return true;
+    }
+
+    for (let imageTransition of this.modifyBeer.imageTransitions) {
+      if(isNilOrEmpty(imageTransition.editValues.changePercent) || isNilOrEmpty(imageTransition.editValues.imgUrl) || imageTransition.editValues.changePercent < 1 || imageTransition.editValues.changePercent > 99) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  removeImageTransitionItemFromList(imageTransition: ImageTransition) : void {
+    if(!isNilOrEmpty(imageTransition.id)) {
+      return this.removeImageTransitionItemFromListById(imageTransition);
+    }
+
+    if(isNilOrEmpty(imageTransition) || isNilOrEmpty(this.modifyBeer) || !this.modifyBeer.imageTransitions) {
+      return;
+    }
+
+    let changePercent = imageTransition.isEditing ? imageTransition.editValues.changePercent : imageTransition.editValues;
+    let imgUrl = imageTransition.isEditing ? imageTransition.editValues.imgUrl : imageTransition.imgUrl;
+    let list: ImageTransition[] = [];
+    for(let i of this.modifyBeer.imageTransitions) {
+      let _changePercent = i.isEditing ? i.editValues.changePercent : i.editValues;
+      let _imgUrl = i.isEditing ? i.editValues.imgUrl : i.imgUrl;
+      if(_changePercent !== changePercent && _imgUrl !== imgUrl) {
+        list.push(i)
+      }
+    }
+    this.modifyBeer.imageTransitions = list;
+  }
+
+  removeImageTransitionItemFromListById(imageTransition: ImageTransition) : void {
+    if(isNilOrEmpty(imageTransition) || isNilOrEmpty(imageTransition.id) || isNilOrEmpty(this.modifyBeer) || !this.modifyBeer.imageTransitions) {
+      return;
+    }
+
+    let list: ImageTransition[] = [];
+    for(let i of this.modifyBeer.imageTransitions) {
+      if(i.id !== imageTransition.id) {
+        list.push(i)
+      }
+    }
+    this.modifyBeer.imageTransitions = list;
+    this.imageTransitionsToDelete.push(imageTransition.id);
   }
 }

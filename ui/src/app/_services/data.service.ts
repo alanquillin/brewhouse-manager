@@ -330,4 +330,9 @@ export class DataService {
     const url = `${this.apiBaseUrl}/beverages/${beverageId}`;
     return this.http.patch<Beverage>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
+
+  deleteImageTransition(imageTransitionId: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/image_transitions/${imageTransitionId}`;
+    return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
 }

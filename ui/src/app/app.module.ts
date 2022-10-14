@@ -35,6 +35,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { GaugeModule } from 'angular-gauge';
 import { NgbPopoverModule, NgbAlertModule } from '@ng-bootstrap/ng-bootstrap'
@@ -100,6 +101,7 @@ import { ErrorsComponent } from './errors/errors.component';
     MatButtonModule,
     MatButtonToggleModule,
     MatCardModule,
+    MatCheckboxModule,
     MatChipsModule,
     MatDatepickerModule,
     MatDialogModule,
