@@ -191,6 +191,10 @@ export class ImageTransitionalBase extends EditableBase {
       }
     }
   }
+
+  getImgUrl() {
+    return this.imgUrl;
+  }
 }
 
 export class Beer extends ImageTransitionalBase {
@@ -267,7 +271,7 @@ export class Beer extends ImageTransitionalBase {
     return this.#getVal("abv");
   }
 
-  getImgUrl() {
+  override getImgUrl() {
     return this.#getVal("imgUrl");
   }
 
@@ -373,7 +377,7 @@ export class Settings {
   }
 }
 
-export class Beverage extends EditableBase {
+export class Beverage extends ImageTransitionalBase {
   id!: string;
   description!: string;
   name!: string;
@@ -381,7 +385,6 @@ export class Beverage extends EditableBase {
   breweryLink!: string;
   type!: string;
   flavor!: string;
-  imgUrl!: string;
   kegDate!: number;
   brewDate!: number;
   meta!: any;

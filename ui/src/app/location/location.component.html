@@ -52,9 +52,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tap-logo" *ngIf="!_.isNil(tap.beer) && !_.isEmpty(tap.beer.getImgUrl())">
-                        <a (click)="openImageDialog(tap.beer.getImgUrl())">
-                            <img src="{{tap.beer.getImgUrl()}}" />
+                    <div class="tap-logo" *ngIf="!isNilOrEmpty(getImageUrl(tap))">
+                        <a (click)="openImageDialog(getImageUrl(tap))">
+                            <img src="{{getImageUrl(tap)}}" />
                         </a>
                     </div>
                 </div>
@@ -84,9 +84,9 @@
                             <p *ngIf="!isNilOrEmpty(tap.beverage.kegDate)">Kegged On: {{ tap.beverage.getKegDateDisplay() }}</p>
                             <p *ngIf="tap.showTotalBeerRemaining">Total Remaining: {{_.round(tap.sensor.totalBeerRemaining, 2)}} {{tap.sensor.beerRemainingUnit}} ({{getRemainingBeerValue(tap)}}%)</p>
                         </div>
-                        <div class="tap-logo tap-logo-cold-brew" *ngIf="!_.isEmpty(tap.beverage.imgUrl)">
-                            <a (click)="openImageDialog(tap.beverage.imgUrl)">
-                                <img src="{{ tap.beverage.imgUrl }}" />
+                        <div class="tap-logo tap-logo-cold-brew" *ngIf="!isNilOrEmpty(getImageUrl(tap))">
+                            <a (click)="openImageDialog(getImageUrl(tap))">
+                                <img src="{{ getImageUrl(tap) }}" />
                             </a>
                         </div>
                     </div>

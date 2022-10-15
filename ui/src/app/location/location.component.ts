@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew } from './../models/models';
+import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase } from './../models/models';
 import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
@@ -249,6 +249,48 @@ export class LocationComponent implements OnInit {
     }
 
     return tap.sensor.percentBeerRemaining;
+  }
+
+  getImageUrl(tap: TapDetails): string {
+    if(tap.isLoading) {
+      return "";
+    }
+    
+    let b: ImageTransitionalBase | undefined = tap.tapType === "beer" ? tap.beer : tap.beverage;
+
+    if (!b) {
+      return "";
+    }
+
+    let imageUrl = b.getImgUrl();
+    if(!tap.sensor) {
+      return imageUrl;
+    }
+    
+    if(b.imageTransitionsEnabled) {
+      let percentBeerRemaining = tap.sensor.percentBeerRemaining;
+
+      if(isNilOrEmpty(percentBeerRemaining)) {
+        return imageUrl;
+      };
+
+      if(percentBeerRemaining <= 0) {
+        return b.emptyImgUrl;
+      }
+      
+      if(b.imageTransitions && !isNilOrEmpty(b.imageTransitions)) {
+        for(let i of b.imageTransitions) {
+          if(percentBeerRemaining > i.changePercent) {
+            break;
+          }
+          imageUrl = i.imgUrl;
+        }
+      }
+
+      return imageUrl;
+    } else {
+      return imageUrl;
+    }
   }
 
   toggleFullscreen() {
