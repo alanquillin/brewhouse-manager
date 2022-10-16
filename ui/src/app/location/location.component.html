@@ -38,7 +38,7 @@
                         <p>Style: {{ tap.beer.getStyle() }}</p>
                         <p>{{ tap.beer.getAbv() }}% alc./vol.</p>
                         <p>IBU: {{ tap.beer.getIbu() }}</p>
-                        <p *ngIf="tap.showTotalBeerRemaining">Total Remaining: {{_.round(tap.sensor.totalBeerRemaining, 2)}} {{tap.sensor.beerRemainingUnit}}</p>
+                        <p *ngIf="tap.showTotalBeerRemaining">Total Remaining: {{_.round(tap.sensor.totalBeerRemaining, 2)}} {{tap.sensor.beerRemainingUnit}} ({{getRemainingBeerValue(tap)}}%)</p>
                     </div>
                     <div class="tap-qrcode">
                         <div class="tap-qrcode-container" *ngIf="!isNilOrEmpty(tap.beer.untappdId)">
