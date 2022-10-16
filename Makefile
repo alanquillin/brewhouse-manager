@@ -124,6 +124,11 @@ format-py:
 
 format: format-py
 
+# Migrations
+
+create-migration: 
+	pushd ./api && ./migrate.sh create $@ && popd
+
 # Clean up targets
 
 clean:

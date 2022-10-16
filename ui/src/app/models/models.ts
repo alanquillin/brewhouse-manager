@@ -155,7 +155,52 @@ export class Tap extends EditableBase {
   }
 }
 
-export class Beer extends EditableBase {
+export class ImageTransitionalBase extends EditableBase {
+  emptyImgUrl!: string;
+  imageTransitions: ImageTransition[] | undefined;
+  imageTransitionsEnabled!: boolean;
+  imgUrl!: string;
+
+  constructor(fields: string[], from?: any, transformFns?: any) {
+    fields.push("emptyImgUrl");
+    fields.push("imageTransitions");
+    fields.push("imageTransitionsEnabled");
+    super(fields, from, transformFns);
+    if(!isNilOrEmpty(from) && !isNilOrEmpty(from.imageTransitions)) {
+      this.imageTransitions = [];
+      for(let i of from.imageTransitions) {
+        this.imageTransitions.push(new ImageTransition(i));
+      }
+      this.imageTransitions = _.orderBy(this.imageTransitions, ["changePercent"], ["desc"]);
+    }
+  }
+
+  override enableEditing(): void {
+    super.enableEditing();
+
+    if(this.imageTransitions) {
+      for(let i of this.imageTransitions) {
+        i.enableEditing();
+      }
+    }
+  }
+
+  override disableEditing(): void {
+    super.disableEditing();
+
+    if(this.imageTransitions) {
+      for(let i of this.imageTransitions) {
+        i.disableEditing();
+      }
+    }
+  }
+
+  getImgUrl() {
+    return this.imgUrl;
+  }
+}
+
+export class Beer extends ImageTransitionalBase {
   id!: string;
   description!: string;
   name!: string;
@@ -164,7 +209,6 @@ export class Beer extends EditableBase {
   externalBrewingToolMeta!: any;
   style!: number;
   abv!: string;
-  imgUrl!: string;
   ibu!: number;
   kegDate!: number;
   brewDate!: number;
@@ -177,6 +221,7 @@ export class Beer extends EditableBase {
     if(isNilOrEmpty(this.externalBrewingToolMeta)) {
       this.externalBrewingToolMeta = {}
     }
+    
   }
 
   #getVal(key: string, transformFn?: Function, brewToolTransformFn?: any): any{
@@ -229,7 +274,7 @@ export class Beer extends EditableBase {
     return this.#getVal("abv");
   }
 
-  getImgUrl() {
+  override getImgUrl() {
     return this.#getVal("imgUrl");
   }
 
@@ -335,7 +380,7 @@ export class Settings {
   }
 }
 
-export class Beverage extends EditableBase {
+export class Beverage extends ImageTransitionalBase {
   id!: string;
   description!: string;
   name!: string;
@@ -343,7 +388,6 @@ export class Beverage extends EditableBase {
   breweryLink!: string;
   type!: string;
   flavor!: string;
-  imgUrl!: string;
   kegDate!: number;
   brewDate!: number;
   meta!: any;
@@ -400,5 +444,17 @@ export class ColdBrew extends Beverage {
       return _.get(this.meta, path);
 
     return undefined;
+  }
+}
+
+export class ImageTransition extends EditableBase {
+  id!: string;
+  beerId!: string;
+  beverageId!: string;
+  imgUrl!: string;
+  changePercent!: number;
+
+  constructor(from?: any) {
+    super(["imgUrl", "changePercent"], from);
   }
 }

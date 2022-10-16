@@ -11,7 +11,7 @@ from db.taps import Taps as TapsDB
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.time import parse_iso8601_utc, utcnow_aware
-from resources import BaseResource, NotFoundError, ResourceMixinBase
+from resources import BaseResource, NotFoundError, ResourceMixinBase, ImageTransitionMixin, ImageTransitionResourceMixin
 from resources.locations import LocationsResourceMixin
 
 G_LOGGER = logging.getLogger(__name__)
@@ -36,8 +36,9 @@ class BeerResourceMixin(ResourceMixinBase):
             data["location"] = LocationsResourceMixin.transform_response(tap.location)
         
         return ResourceMixinBase.transform_response(data)
+
     @staticmethod
-    def transform_response(beer, db_session=None, skip_meta_refresh=False, **kwargs):
+    def transform_response(beer, db_session=None, skip_meta_refresh=False, image_transitions=None, **kwargs):
         if not beer:
             return beer
 
@@ -103,7 +104,7 @@ class BeerResourceMixin(ResourceMixinBase):
             if k in data and isinstance(d, date):
                 data[k] = datetime.timestamp(datetime.fromordinal(d.toordinal()))
 
-        return ResourceMixinBase.transform_response(data, **kwargs)
+        return ImageTransitionResourceMixin.transform_response(data, image_transitions, db_session, beer_id=beer.id, **kwargs)
 
     @staticmethod
     def get_request_data(remove_key=[]):
@@ -116,7 +117,7 @@ class BeerResourceMixin(ResourceMixinBase):
         return data
 
 
-class Beers(BaseResource, BeerResourceMixin):
+class Beers(BaseResource, BeerResourceMixin, ImageTransitionMixin):
     def get(self, location=None):
         with session_scope(self.config) as db_session:
             if location:
@@ -129,15 +130,17 @@ class Beers(BaseResource, BeerResourceMixin):
     @login_required
     def post(self):
         with session_scope(self.config) as db_session:
-            data = self.get_request_data()
+            data = self.get_request_data(remove_key=["id", "imageTransitions"])
 
             self.logger.debug("Creating beer with: %s", data)
             beer = BeersDB.create(db_session, **data)
 
-            return self.transform_response(beer)
+            transitions = self.process_image_transitions(db_session, beer_id=beer.id)
+
+            return self.transform_response(beer, image_transitions=transitions)
 
 
-class Beer(BaseResource, BeerResourceMixin):
+class Beer(BaseResource, BeerResourceMixin, ImageTransitionMixin):
     def get(self, beer_id):
         with session_scope(self.config) as db_session:
             beer = BeersDB.get_by_pkey(db_session, beer_id)
@@ -155,15 +158,21 @@ class Beer(BaseResource, BeerResourceMixin):
             if not beer:
                 raise NotFoundError()
 
-            data = self.get_request_data(remove_key=["id"])
+            data = self.get_request_data(remove_key=["id", "imageTransitions"])
 
             external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
             if external_brewing_tool_meta and beer.external_brewing_tool_meta:
                 data["external_brewing_tool_meta"] = {**beer.external_brewing_tool_meta} | external_brewing_tool_meta
 
-            beer = self.update(beer_id, data, db_session=db_session)
+            self.logger.debug("Updating beer %s with data: %s", beer_id, data)
 
-            return self.transform_response(beer)
+            if data:
+                beer = self.update(beer_id, data, db_session=db_session)
+
+            image_transitions = self.process_image_transitions(db_session, beer_id=beer_id)
+            beer = BeersDB.get_by_pkey(db_session, beer_id)
+
+            return self.transform_response(beer, db_session=db_session, image_transitions=image_transitions)
 
     @login_required
     def delete(self, beer_id):

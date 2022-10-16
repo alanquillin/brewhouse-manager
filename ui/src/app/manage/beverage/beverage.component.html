@@ -187,13 +187,92 @@
                     <button *ngIf="!isNilOrEmpty(modifyBeverage.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(modifyBeverage.editValues.imgUrl)">
                         <mat-icon>open_in_new</mat-icon>
                     </button>
-                    <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog()">
+                    <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog(this.modifyBeverage.editValues, 'imgUrl')">
                         <mat-icon>photo_library</mat-icon>
                     </button>
-                    <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog()">
+                    <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog(this.modifyBeverage.editValues, 'imgUrl')">
                         <mat-icon>upload</mat-icon>
                     </button>
+
+                    <mat-error *ngIf="modifyForm['imgUrl'].errors && modifyForm['imgUrl'].errors['requiredIfImageTransitionsEnabled']">
+                        Image URL is required if image transitions are enabled
+                    </mat-error>
                 </mat-form-field>
+    
+                <mat-checkbox id="modify_image_transition_enabled"
+                    formControlName="imageTransitionsEnabled" 
+                    [(ngModel)]="modifyBeverage.editValues.imageTransitionsEnabled"
+                    (change)="reRunValidation()">Enable Image Transitions?</mat-checkbox>
+                
+                <div *ngIf="modifyBeverage.editValues.imageTransitionsEnabled">
+                    <mat-form-field appearance="fill" class="modify-field fs-lg">
+                        <input id="modify_empty_image_url_id_input"
+                            [disabled]="processing"
+                            class="dp-textfield--input"
+                            formControlName="emptyImgUrl"
+                            [(ngModel)]="modifyBeverage.editValues.emptyImgUrl"
+                            matInput />
+                        <mat-label>Empty Keg Image URL</mat-label>
+                        <ng-template #popupContentMod><div><img class="beer-image-preview" src="{{ modifyBeverage.editValues.emptyImgUrl }}"/></div></ng-template>
+                        <button *ngIf="!isNilOrEmpty(modifyBeverage.editValues.emptyImgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(modifyBeverage.editValues.emptyImgUrl)">
+                            <mat-icon>open_in_new</mat-icon>
+                        </button>
+                        <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog(this.modifyBeverage.editValues, 'emptyImgUrl')">
+                            <mat-icon>photo_library</mat-icon>
+                        </button>
+                        <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog(this.modifyBeverage.editValues, 'emptyImgUrl')">
+                            <mat-icon>upload</mat-icon>
+                        </button>
+                        <mat-error *ngIf="modifyForm['emptyImgUrl'].errors && modifyForm['emptyImgUrl'].errors['requiredIfImageTransitionsEnabled']">
+                            Empty image URL is required if image transitions are enabled
+                        </mat-error>
+                    </mat-form-field>
+
+                    <div class="section">
+                        <button mat-raised-button color="primary" class="add-transition" aria-label="Add new Image Transition" (click)="addImageTransition()" [disabled]="!areImageTransitionsValid">
+                            <mat-icon>add</mat-icon> Add Image Transition
+                        </button>
+
+                        <div class="items" *ngFor="let imageTransition of this.modifyBeverage.imageTransitions">
+                            <mat-form-field appearance="fill" class="modify-field fs-small">
+                                <input id="modify_changePercent_input_{{imageTransition.changePercent}}"
+                                    [disabled]="processing"
+                                    class="dp-textfield--input fs-small"
+                                    [(ngModel)]="imageTransition.editValues.changePercent"
+                                    [ngModelOptions]="{standalone: true}"
+                                    required
+                                    matInput
+                                    type="number" 
+                                    [max]="99"
+                                    [min]="1" />
+                                <mat-label>Change after %</mat-label>
+                            </mat-form-field>
+                            <mat-form-field appearance="fill" class="modify-field fs-med">
+                                <input id="modify_image_transition_image_input_{{imageTransition.changePercent}}"
+                                    [disabled]="processing"
+                                    class="dp-textfield--input fs-med"
+                                    [(ngModel)]="imageTransition.editValues.imgUrl"
+                                    [ngModelOptions]="{standalone: true}"
+                                    required
+                                    matInput />
+                                <mat-label>Empty Keg Image URL</mat-label>
+                                <ng-template #popupContentMod><div><img class="beer-image-preview" src="{{ imageTransition.editValues.imgUrl }}"/></div></ng-template>
+                                <button *ngIf="!isNilOrEmpty(imageTransition.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(imageTransition.editValues.imgUrl)">
+                                    <mat-icon>open_in_new</mat-icon>
+                                </button>
+                                <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog(imageTransition.editValues, 'imgUrl')">
+                                    <mat-icon>photo_library</mat-icon>
+                                </button>
+                                <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog(imageTransition.editValues, 'imgUrl')">
+                                    <mat-icon>upload</mat-icon>
+                                </button>
+                            </mat-form-field>
+                            <button mat-icon-button color="warn" aria-label="Delete image transition" (click)="removeImageTransitionItemFromList(imageTransition)">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <mat-form-field appearance="fill">
                     <mat-label>Brew Date</mat-label>
@@ -214,11 +293,11 @@
     </div>
     
     <div class="modify-actions" *ngIf="adding">
-        <button mat-raised-button color="primary" (click)="create()" [disabled]="!modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Create</button>
+        <button mat-raised-button color="primary" (click)="create()" [disabled]="!modifyFormGroup.valid || processing || !areImageTransitionsValid"><mat-icon>save</mat-icon> Create</button>
         <button mat-raised-button color="warn" (click)="cancelAdd()"><mat-icon>cancel</mat-icon> Cancel</button>
     </div>
     <div class="modify-actions" *ngIf="editing">
-        <button mat-raised-button color="primary" (click)="save()" [disabled]="!modifyBeverage.hasChanges || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
+        <button mat-raised-button color="primary" (click)="save()" [disabled]="!hasChanges || !modifyFormGroup.valid || processing || !areImageTransitionsValid"><mat-icon>save</mat-icon> Save</button>
         <button mat-raised-button color="warn" (click)="cancelEdit()"><mat-icon>cancel</mat-icon> Cancel</button>
     </div>
 </div>

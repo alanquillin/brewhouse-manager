@@ -1,4 +1,5 @@
 import logging
+from operator import truediv
 import os
 import urllib.parse
 from functools import wraps
@@ -11,6 +12,7 @@ from flask_restful import Resource
 from schema import Schema, SchemaError, SchemaMissingKeyError
 
 from db import session_scope
+from db.image_transitions import ImageTransitions as ImageTransitionsDB
 from db.locations import Locations as LocationsDB
 from lib import util
 from lib.config import Config
@@ -96,6 +98,8 @@ def transform_request_data(original_data):
     for k, v in original_data.items():
         if isinstance(v, dict):
             v = transform_request_data(v)
+        if isinstance(v, list):
+            v = [transform_request_data(i) for i in v]
         data[util.camel_to_snake(k)] = v
     return data
 
@@ -211,7 +215,7 @@ class ResourceMixinBase:
         return transform_request_data(data)
 
     @staticmethod
-    def transform_response(entity, filtered_keys=None):
+    def transform_response(entity, filtered_keys=None, **kwargs):
         return transform_response(entity, filtered_keys=filtered_keys)
 
     def _get_location_id(self, location_name, db_session=None):
@@ -230,3 +234,49 @@ class ResourceMixinBase:
             return location
 
         return self._get_location_id(location, db_session)
+
+class ImageTransitionMixin:
+    def __init__(self):
+        super().__init__()
+
+        self.config = Config()
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+    def process_image_transitions(self, db_session, **kwargs):
+        j = request.get_json()
+        data = transform_request_data(j)
+        self.logger.debug("transformed request data: %s", data)
+
+        transitions = data.get("image_transitions")
+        self.logger.debug("image transition data: %s", transitions)
+
+        if transitions:
+            ret_data = []
+            for transition in transitions:
+                if kwargs:
+                    transition.update(kwargs)
+                if transition.get("id"):
+                    id = transition.pop("id")
+                    self.logger.debug("Updating image transition %s with: %s", id, transition)
+                    ret_data.append(ImageTransitionsDB.update(db_session, id, **transition))
+                else:
+                    self.logger.debug("Creating image transition with: %s", transition)
+                    ret_data.append(ImageTransitionsDB.create(db_session, **transition))
+            return ret_data
+        return None
+
+class ImageTransitionResourceMixin(ResourceMixinBase):
+    
+    @staticmethod
+    def transform_response(data, image_transitions, db_session=None, **kwargs):
+        if not db_session:
+            with session_scope(config) as db_session:
+                return ImageTransitionResourceMixin.transform_response(data, image_transitions, db_session=db_session, **kwargs)
+
+        if not image_transitions:
+            image_transitions = ImageTransitionsDB.query(db_session, **kwargs)
+
+        if image_transitions:
+            data["image_transitions"] = [ResourceMixinBase.transform_response(it.to_dict()) for it in image_transitions]
+
+        return ResourceMixinBase.transform_response(data, **kwargs)

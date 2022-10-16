@@ -56,12 +56,46 @@
         button {
             margin: 2px 6px
         }    
-    } 
+    }
+
+    .section {
+        display: flex;
+        flex-direction: column;
+
+        border: 1px solid rgba(0,0,0,.2);
+        border-radius: 4px;
+        margin:6px 0px 18px 0px;
+        padding: 6px;
+
+        button.add-transition {
+            width: 200px;
+            margin-bottom: 12px;
+        }
+
+        .items {
+            display: flex;
+            flex-direction: row;
+            margin-top: 6px 0px 0px 0px;
+        }
+    }
 }
 
-.beverages-modify fieldset {
+fieldset {
     display: flex;
     flex-direction: column;
     border: none;
+}
+
+.fs-small {
+    width: 160px;
+    margin-right: 6px;
+}
+
+.fs-med {
     width: 400px;
+}
+
+fieldset, 
+.fs-lg {
+    width: 600px;
 }

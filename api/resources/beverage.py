@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from flask import request
 from flask_login import login_required
@@ -11,7 +11,7 @@ from db.taps import Taps as TapsDB
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.time import parse_iso8601_utc, utcnow_aware
-from resources import BaseResource, NotFoundError, ResourceMixinBase
+from resources import BaseResource, NotFoundError, ResourceMixinBase, ImageTransitionMixin, ImageTransitionResourceMixin
 from resources.locations import LocationsResourceMixin
 
 G_LOGGER = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ class BeverageResourceMixin(ResourceMixinBase):
         return ResourceMixinBase.transform_response(data)
 
     @staticmethod
-    def transform_response(beverage, db_session=None):
+    def transform_response(beverage, db_session=None, image_transitions=None):
         data = beverage.to_dict()
 
         include_tap_details = request.args.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
@@ -43,7 +43,7 @@ class BeverageResourceMixin(ResourceMixinBase):
             if k in data and isinstance(d, date):
                 data[k] = datetime.timestamp(datetime.fromordinal(d.toordinal()))
 
-        return ResourceMixinBase.transform_response(data)
+        return ImageTransitionResourceMixin.transform_response(data, image_transitions, db_session, beverage_id=beverage.id)
 
     @staticmethod
     def get_request_data(remove_key=[]):
@@ -56,7 +56,7 @@ class BeverageResourceMixin(ResourceMixinBase):
         return data
 
 
-class Beverages(BaseResource, BeverageResourceMixin):
+class Beverages(BaseResource, BeverageResourceMixin, ImageTransitionMixin):
     def get(self, location=None):
         with session_scope(self.config) as db_session:
             if location:
@@ -69,15 +69,16 @@ class Beverages(BaseResource, BeverageResourceMixin):
     @login_required
     def post(self):
         with session_scope(self.config) as db_session:
-            data = self.get_request_data()
+            data = self.get_request_data(remove_key=["id", "imageTransitions"])
 
             self.logger.debug("Creating beverage with: %s", data)
             beverage = BeveragesDB.create(db_session, **data)
+            transitions = self.process_image_transitions(db_session, beverage_id=beverage.id)
 
-            return self.transform_response(beverage)
+            return self.transform_response(beverage, db_session, transitions)
 
 
-class Beverage(BaseResource, BeverageResourceMixin):
+class Beverage(BaseResource, BeverageResourceMixin, ImageTransitionMixin):
     def get(self, beverage_id):
         with session_scope(self.config) as db_session:
             beverage = BeveragesDB.get_by_pkey(db_session, beverage_id)
@@ -95,11 +96,14 @@ class Beverage(BaseResource, BeverageResourceMixin):
             if not beverage:
                 raise NotFoundError()
 
-            data = self.get_request_data(remove_key=["id"])
+            data = self.get_request_data(remove_key=["id", "imageTransitions"])
 
-            beverage = BeveragesDB.update(db_session, beverage_id, **data)
-
-            return self.transform_response(beverage)
+            if data:
+                beverage = BeveragesDB.update(db_session, beverage_id, **data)
+            
+            image_transitions = self.process_image_transitions(db_session, beverage_id=beverage_id)
+            beverage = BeveragesDB.get_by_pkey(db_session, beverage_id)
+            return self.transform_response(beverage, db_session, image_transitions)
 
     @login_required
     def delete(self, beverage_id):
