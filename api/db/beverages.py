@@ -39,9 +39,3 @@ class Beverages(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
         if not kwargs.get("image_transitions_enabled"):
             kwargs["image_transitions_enabled"] = False
         return super().create(session, **kwargs)
-
-    @classmethod
-    def update(cls, session, pkey, **kwargs):
-        if not kwargs.get("image_transitions_enabled"):
-            kwargs["image_transitions_enabled"] = False
-        return super().update(session, pkey, **kwargs)
