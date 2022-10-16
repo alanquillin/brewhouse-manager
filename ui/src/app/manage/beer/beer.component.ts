@@ -174,9 +174,12 @@ export class ManageBeerComponent implements OnInit {
     })
 
     if (this.modifyBeer.imageTransitions) {
-      let imageTransitions: ImageTransition[] = [];
+      let imageTransitions: any[] = [];
       for(let i of this.modifyBeer.imageTransitions) {
-        imageTransitions.push(i);
+        imageTransitions.push({
+          changePercent: i.editValues.changePercent,
+          imgUrl: i.editValues.imgUrl
+        });
       }
       if(imageTransitions){
         data["imageTransitions"] = imageTransitions;
@@ -416,10 +419,6 @@ export class ManageBeerComponent implements OnInit {
   }
 
   get hasChanges(): boolean {
-    // if(!this.modifyBeer.hasChanges) {
-    //   return false;
-    // }
-
     return !_.isEmpty(this.changes) || !isNilOrEmpty(this.imageTransitionsToDelete);
   }
 
