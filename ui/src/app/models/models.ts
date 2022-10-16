@@ -162,6 +162,9 @@ export class ImageTransitionalBase extends EditableBase {
   imgUrl!: string;
 
   constructor(fields: string[], from?: any, transformFns?: any) {
+    fields.push("emptyImgUrl");
+    fields.push("imageTransitions");
+    fields.push("imageTransitionsEnabled");
     super(fields, from, transformFns);
     if(!isNilOrEmpty(from) && !isNilOrEmpty(from.imageTransitions)) {
       this.imageTransitions = [];
@@ -214,7 +217,7 @@ export class Beer extends ImageTransitionalBase {
   taps: Tap[] | undefined;
 
   constructor(from?: any) {
-    super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm", "untappdId", "emptyImgUrl", "imageTransitions", "imageTransitionsEnabled"], from, beerTransformFns);
+    super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm", "untappdId"], from, beerTransformFns);
     if(isNilOrEmpty(this.externalBrewingToolMeta)) {
       this.externalBrewingToolMeta = {}
     }
