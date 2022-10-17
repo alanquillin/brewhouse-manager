@@ -30,6 +30,7 @@ export class ManageTapsComponent implements OnInit {
   modifyTap: Tap = new Tap();
   _ = _;
   selectedLocationFilters: string[] = [];
+  isNilOrEmpty = isNilOrEmpty;
 
   modifyFormGroup: FormGroup = new FormGroup({
     displayName: new FormControl('', []),
@@ -443,5 +444,22 @@ export class ManageTapsComponent implements OnInit {
 
   showDisplayNameToolTip(tap: Tap) {
     return !isNilOrEmpty(tap.namePrefix) && !isNilOrEmpty(tap.nameSuffix);
+  }
+
+  clear(tap: Tap) {
+    if(confirm(`Are you sure you want to clear the tap?`)) {
+      this.processing = true;
+      this.dataService.updateTap(tap.id, {beerId: null, beverageId:null}).subscribe({
+        next: (resp: any) => {
+          this.processing = false;
+          this.loading = true;
+          this.refresh(()=>{ this.loading = false; });
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+        }
+      })
+    }
   }
 }
