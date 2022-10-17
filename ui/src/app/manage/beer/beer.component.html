@@ -166,16 +166,13 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_description_input"
+                    <textarea id="modify_description_input"
                         [disabled]="processing"
                         class="dp-textfield--input"
                         formControlName="description"
                         [(ngModel)]="modifyBeer.editValues.description"
-                        matInput />
+                        matInput></textarea>
                     <mat-label>Description</mat-label>
-                    <mat-error *ngIf="modifyForm['description'].errors && modifyForm['description'].errors['requiredIfNoToolSelected']">
-                        Description is required if not external brew tool is selected
-                    </mat-error>
                 </mat-form-field>
 
                 <mat-form-field appearance="fill" class="modify-field">

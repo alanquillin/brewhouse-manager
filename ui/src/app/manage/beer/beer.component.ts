@@ -88,7 +88,7 @@ export class ManageBeerComponent implements OnInit {
 
   modifyFormGroup: FormGroup = new FormGroup({
     name: new FormControl('', [this.requiredIfNoBrewTool(this)]),
-    description: new FormControl('', [this.requiredIfNoBrewTool(this)]),
+    description: new FormControl('', []),
     style: new FormControl('', [this.requiredIfNoBrewTool(this)]),
     abv: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
     srm: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
