@@ -578,4 +578,28 @@ export class ManageBeerComponent implements OnInit {
     this.modifyBeer.imageTransitions = list;
     this.imageTransitionsToDelete.push(imageTransition.id);
   }
+
+  getDescriptionDisplay(beer: Beer) : string {
+    let desc = beer.getDescription();
+
+    if(isNilOrEmpty(desc)) {
+      return "";
+    }
+    if(this.isDescriptionTooLong(beer)) {
+      return _.truncate(desc, {'length': 48});
+    }
+    return desc;
+  }
+
+  isDescriptionTooLong(beer: Beer) : boolean {
+    let desc = beer.getDescription();
+
+    if(isNilOrEmpty(desc)) {
+      return false;
+    }
+    if(_.size(desc) > 48) {
+      return true;
+    }
+    return false;
+  }
 }
