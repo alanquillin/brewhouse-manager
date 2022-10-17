@@ -17,7 +17,15 @@
         
             <ng-container matColumnDef="description">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="description" sortActionDescription="Sort by description"> Description </th>
-                <td mat-cell *matCellDef="let element">{{element.description}}</td>
+                <td mat-cell *matCellDef="let element">
+                    {{ getDescriptionDisplay(element) }}
+                    <span *ngIf="isDescriptionTooLong(element)">
+                        <ng-template #popupDescription>
+                            <p>{{ element.description }}</p>
+                        </ng-template>
+                        <span [ngbPopover]="popupDescription" popoverTitle="Description" triggers="mouseenter:mouseleave" placement="right"><mat-icon>info</mat-icon></span>
+                    </span>
+                </td>
             </ng-container>
 
             <ng-container matColumnDef="tapped">

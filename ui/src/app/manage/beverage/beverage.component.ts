@@ -470,4 +470,26 @@ export class ManageBeverageComponent implements OnInit {
     this.modifyBeverage.imageTransitions = list;
     this.imageTransitionsToDelete.push(imageTransition.id);
   }
+
+  getDescriptionDisplay(beverage: Beverage) : string {
+    if(isNilOrEmpty(beverage.description)) {
+      return "";
+    }
+
+    if(this.isDescriptionTooLong(beverage)) {
+      return _.truncate(beverage.description, {'length': 48});
+    }
+    return beverage.description;
+  }
+
+  isDescriptionTooLong(beverage: Beverage) : boolean {
+    if(isNilOrEmpty(beverage)) {
+      return false;
+    }
+
+    if(_.size(beverage.description) > 48) {
+      return true;
+    }
+    return false;
+  }
 }
