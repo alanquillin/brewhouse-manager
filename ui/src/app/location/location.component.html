@@ -35,6 +35,7 @@
                     </div>
                     <div class=tap-details>
                         <p class="title">{{ tap.getDisplayName(tap.beer.getName()) }}</p>
+                        <p *ngIf="!isNilOrEmpty(tap.beer.getDescription())">{{ tap.beer.getDescription() }}</p>
                         <p>Style: {{ tap.beer.getStyle() }}</p>
                         <p>{{ tap.beer.getAbv() }}% alc./vol.</p>
                         <p>IBU: {{ tap.beer.getIbu() }}</p>
@@ -76,9 +77,19 @@
                         </div>
                         <div class=tap-details>
                             <p class="title">{{ tap.getDisplayName(tap.beverage.name) }}</p>
-                            <p *ngIf="!isNilOrEmpty(tap.beverage.brewery) && isNilOrEmpty(tap.coldBrew.roastery)">Brewed and roasted by: {{ tap.beverage.brewery }}</p>
-                            <p *ngIf="!isNilOrEmpty(tap.beverage.brewery) && !isNilOrEmpty(tap.coldBrew.roastery)">Brewed by: {{ tap.beverage.brewery }}</p>
-                            <p *ngIf="!isNilOrEmpty(tap.coldBrew.roastery)">Roasted by: {{ tap.coldBrew.roastery }}</p>
+                            <p *ngIf="!isNilOrEmpty(tap.beverage.description)">{{ tap.beverage.description }}</p>
+                            <p *ngIf="!isNilOrEmpty(tap.beverage.brewery) && isNilOrEmpty(tap.coldBrew.roastery)">Brewed and roasted by: 
+                                <span *ngIf="isNilOrEmpty(tap.beverage.breweryLink)">{{ tap.beverage.brewery }}</span>
+                                <a *ngIf="!isNilOrEmpty(tap.beverage.breweryLink)" href="{{tap.beverage.breweryLink}}" target="_blank">{{ tap.beverage.brewery }}</a>
+                            </p>
+                            <p *ngIf="!isNilOrEmpty(tap.beverage.brewery) && !isNilOrEmpty(tap.coldBrew.roastery)">Brewed by: 
+                                <span *ngIf="isNilOrEmpty(tap.beverage.breweryLink)">{{ tap.beverage.brewery }}</span>
+                                <a *ngIf="!isNilOrEmpty(tap.beverage.breweryLink)" href="{{tap.beverage.breweryLink}}" target="_blank">{{ tap.beverage.brewery }}</a>
+                            </p>
+                            <p *ngIf="!isNilOrEmpty(tap.coldBrew.roastery)">Roasted by: 
+                                <span *ngIf="isNilOrEmpty(tap.coldBrew.roasteryLink)">{{ tap.coldBrew.roastery }}</span>
+                                <a *ngIf="!isNilOrEmpty(tap.coldBrew.roasteryLink)" href="{{ tap.coldBrew.roasteryLink }}" target="_blank">{{ tap.coldBrew.roastery }}</a>
+                            </p>
                             <p *ngIf="!isNilOrEmpty(tap.beverage.flavor)">Flavor: {{ tap.beverage.flavor }}</p>
                             <p *ngIf="!isNilOrEmpty(tap.beverage.brewDate)">Brewed On: {{ tap.beverage.getBrewDateDisplay() }}</p>
                             <p *ngIf="!isNilOrEmpty(tap.beverage.kegDate)">Kegged On: {{ tap.beverage.getKegDateDisplay() }}</p>
