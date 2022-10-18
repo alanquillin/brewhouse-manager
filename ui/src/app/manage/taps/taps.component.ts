@@ -112,19 +112,17 @@ export class ManageTapsComponent implements OnInit {
         this.dataService.getBeers().subscribe({
           next: (beers: Beer[]) => {
             this.beers = []
-            _.forEach(beers, (beer) => { 
-              // var _beer = new Beer();
-              // Object.assign(_beer, beer);
-              // this.beers.push(_beer);
+            _.forEach(beers, (beer) => {
               this.beers.push(new Beer(beer));
             });
+            this.beers = _.sortBy(this.beers, (beer) => { return beer.getName(); });
             this.dataService.getSensors().subscribe({
               next: (sensors: Sensor[]) => {
                 this.sensors = sensors;
                 this.dataService.getBeverages().subscribe({
                   next: (beverages: Beverage[]) => {
                     this.beverages = [];
-                    _.forEach(beverages, (beverage) => {
+                    _.forEach(_.sortBy(beverages, ["name"]), (beverage) => {
                       this.beverages.push(new Beverage(beverage));
                     });
                     this.refresh(always, next, error);
