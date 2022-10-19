@@ -2,6 +2,7 @@
 # ############################################################
 FROM node:16-buster as node-base
 
+RUN yarn config set network-timeout 1200000 -g
 RUN yarn global add @angular/cli
 COPY ui/angular.json ui/tsconfig.app.json ui/tsconfig.json ui/package.json ui/.browserslistrc /ui/
 WORKDIR /ui
@@ -19,11 +20,11 @@ RUN pip install -U pip
 RUN pip install setuptools wheel
 ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
 RUN pip install "cryptography<3.5"
-RUN pip install "poetry>=1.1.12"
+RUN pip install "poetry>=1.2.2"
 
 RUN poetry config virtualenvs.in-project true
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-interaction --no-ansi --no-dev --no-root
+RUN poetry install --no-interaction --no-ansi --only main --no-root
 RUN poetry run pip install psycopg2-binary
 
 RUN apt-get purge -y --auto-remove gcc build-essential libffi-dev libssl-dev
