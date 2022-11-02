@@ -1,9 +1,9 @@
 <p class="heading">Management Dashboard</p>
 <div class="nav">
-    <button mat-raised-button color="primary" (click)="goto('manage/locations')"><mat-icon>store</mat-icon> Manage Locations</button>
+    <button mat-raised-button color="primary" (click)="goto('manage/locations')" *ngIf="admin"><mat-icon>store</mat-icon> Manage Locations</button>
     <button mat-raised-button color="primary" (click)="goto('manage/taps')"><mat-icon>kitchen</mat-icon> Manage Taps</button>
     <button mat-raised-button color="primary" (click)="goto('manage/beers')"><mat-icon>local_drink</mat-icon> Manage Beers</button>
     <button mat-raised-button color="primary" (click)="goto('manage/beverages')"><mat-icon>local_drink</mat-icon> Manage Beverages</button>
     <button mat-raised-button color="primary" (click)="goto('manage/sensors')"><mat-icon>gps_fixed</mat-icon> Manage Sensors</button>
-    <button mat-raised-button color="primary" (click)="goto('manage/users')"><mat-icon>group</mat-icon> Manage Users</button>
+    <button mat-raised-button color="primary" (click)="goto('manage/users')" *ngIf="admin"><mat-icon>group</mat-icon> Manage Users</button>
 </div>

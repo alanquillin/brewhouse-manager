@@ -10,7 +10,7 @@ import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/fil
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
 import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component'
 
-import { Beer, beerTransformFns, ImageTransition, TapSettings } from '../../models/models';
+import { Beer, beerTransformFns, ImageTransition, Location } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
 
 import * as _ from 'lodash';
@@ -24,18 +24,29 @@ export class ManageBeerComponent implements OnInit {
   loading = false;
   beers: Beer[] = [];
   filteredBeers: Beer[] = [];
-  displayedColumns: string[] = ['name', 'description', 'tapped', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', "untappdId", 'imgUrl', 'actions'];
   processing = false;
   adding = false;
   editing = false;
   modifyBeer: Beer = new Beer();
   isNilOrEmpty: Function = isNilOrEmpty;
   imageTransitionsToDelete: string[] = [];
+  locations: Location[] = [];
+  selectedLocationFilters: string[] = [];
   _ = _;
 
   transformFns = beerTransformFns;
 
   externalBrewingTools: string[] = ["brewfather"]
+
+  get displayedColumns() {
+    var cols = ['name', 'description'];
+
+    if(!isNilOrEmpty(this.locations) && this.locations.length > 1) {
+      cols.push('location');
+    }
+
+    return _.concat(cols, ['tapped', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', "untappdId", 'imgUrl', 'actions']);
+  }
 
   decimalRegex = /^-?\d*[.]?\d{0,2}$/;
   decimalValidator = Validators.pattern(this.decimalRegex); 
@@ -89,6 +100,7 @@ export class ManageBeerComponent implements OnInit {
   modifyFormGroup: FormGroup = new FormGroup({
     name: new FormControl('', [this.requiredIfNoBrewTool(this)]),
     description: new FormControl('', []),
+    locationId: new FormControl('', [Validators.required]),
     style: new FormControl('', [this.requiredIfNoBrewTool(this)]),
     abv: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
     srm: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
@@ -112,13 +124,38 @@ export class ManageBeerComponent implements OnInit {
   }
 
   refresh(always?:Function, next?: Function, error?: Function) {
-    this.dataService.getBeers(true).subscribe({
-      next: (beers: Beer[]) => {
-        this.beers = [];
-        _.forEach(beers, (beer) => {
-          this.beers.push(new Beer(beer))
-        })
-        this.filter();
+    this.dataService.getLocations().subscribe({
+      next: (locations: Location[]) => {
+        this.locations = [];
+        for(let location of locations) {
+          this.locations.push(new Location(location));
+        }
+        this.dataService.getBeers(true).subscribe({
+          next: (beers: Beer[]) => {
+            this.beers = [];
+            _.forEach(beers, (beer) => {
+              this.beers.push(new Beer(beer))
+            })
+            this.filter();
+          }, 
+          error: (err: DataError) => {
+            this.displayError(err.message);
+            if(!_.isNil(error)){
+              error();
+            }
+            if(!_.isNil(always)){
+              always();
+            }
+          },
+          complete: () => {
+            if(!_.isNil(next)){
+              next();
+            }
+            if(!_.isNil(always)){
+              always();
+            }
+          }
+        });
       }, 
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -128,16 +165,8 @@ export class ManageBeerComponent implements OnInit {
         if(!_.isNil(always)){
           always();
         }
-      },
-      complete: () => {
-        if(!_.isNil(next)){
-          next();
-        }
-        if(!_.isNil(always)){
-          always();
-        }
       }
-    })
+    });
   }
 
   ngOnInit(): void {
@@ -149,14 +178,18 @@ export class ManageBeerComponent implements OnInit {
 
   add(): void {
     this.modifyFormGroup.reset();
-    this.modifyBeer = new Beer();
+    var data:any = {}
+    if(this.locations.length === 1) {
+      data["locationId"] = this.locations[0].id;
+    }
+    this.modifyBeer = new Beer(data);
+    this.modifyBeer.editValues = data;
     this.adding = true;
   }
 
   create(): void {
     var data: any = {}
-    const name = _.get(this.modifyBeer.editValues, "name");
-    const keys = ['name', 'description', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl', 'externalBrewingToolMeta', 'emptyImgUrl', 'imageTransitionsEnabled']
+    const keys = ['name', 'description', 'locationId', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl', 'externalBrewingToolMeta', 'emptyImgUrl', 'imageTransitionsEnabled']
     const checkKeys = {"brewDate": "brewDateObj", "kegDate": "kegDateObj"}
     
     _.forEach(keys, (k) => {
@@ -351,6 +384,11 @@ export class ManageBeerComponent implements OnInit {
     }
 
     var filteredData: Beer[] = this.beers;
+
+    if(!_.isEmpty(this.selectedLocationFilters)){
+      filteredData = <Beer[]>_.filter(this.beers, (b) => { return this.selectedLocationFilters.includes(b.locationId) });
+    }
+
     filteredData= _.sortBy(filteredData, [
       (d: Beer) => { 
         if (sortBy === "name") {

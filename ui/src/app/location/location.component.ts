@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase } from './../models/models';
+import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard } from './../models/models';
 import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
@@ -74,42 +74,18 @@ export class LocationComponent implements OnInit {
     this.dataService.getSettings().subscribe({
       next: (data: Settings) => {
         this.tapRefreshSettings = new TapRefreshSettings(data.taps.refresh);
-        this.dataService.getLocation(this.location_identifier).subscribe({
-          next: (location: Location) => {
-            this.location = location;
-            this.dataService.getTaps(location.id).subscribe({
-              next: (taps: Tap[]) => {
-                _.forEach(taps, (tap: Tap) => {
-                  this.taps.push(this.setTapDetails(new TapDetails(tap)))
-                })
-                this.taps = _.sortBy(this.taps, (t) => {return t.tapNumber});
-                this.dataService.getLocations().subscribe({
-                  next: (locations: Location[]) => {
-                    this.locations = locations;
-                    this.showHomeBtn = !isNilOrEmpty(locations) && _.size(locations) > 1;
-                    this.isLoading = false;
-                    if(!_.isNil(next)){
-                      next();
-                    }
-                    if(!_.isNil(always)) {
-                      always();
-                    }
-                  },
-                  error: (err: DataError) => {
-                    this.displayError(err.message);
-                    if(!_.isNil(always)) {
-                      always();
-                    }
-                  }
-                });
-              },
-              error: (err: DataError) => {
-                this.displayError(err.message);
-                if(!_.isNil(always)) {
-                  always();
-                }
-              }
-            });
+        this.dataService.getDashboard(this.location_identifier).subscribe({
+          next: (dashboard: Dashboard) => {
+            this.location = new Location(dashboard.location);
+            this.locations = [];
+            for(let location of dashboard.locations) {
+              this.locations.push(new Location(location));
+            }
+            this.taps = [];
+            for(let tap of dashboard.taps) {
+              this.taps.push(this.setTapDetails(new TapDetails(tap)));
+            }
+            this.isLoading = false;
           }, error: (err: DataError) => {
             if (err.statusCode === 404) {
               this.router.navigate(["/"]);
@@ -132,7 +108,7 @@ export class LocationComponent implements OnInit {
   }
 
   refreshTap(tap: TapDetails) {
-    this.dataService.getTap(tap.id).subscribe((_tap: Tap) => {
+    this.dataService.getDashboardTap(tap.id).subscribe((_tap: Tap) => {
       tap.from(_tap);
       this.setTapDetails(tap);
     })
@@ -147,14 +123,14 @@ export class LocationComponent implements OnInit {
       tap.beverage = new Beverage();
 
       if(tap.tapType === "beer"){
-        this.dataService.getBeer(tap.beerId).subscribe((beer: Beer) => {
+        this.dataService.getDashboardBeer(tap.beerId).subscribe((beer: Beer) => {
           const _beer = new Beer(beer)
           tap.beer = _beer;
         })
       }
       
       if(tap.tapType === "beverage") {
-        this.dataService.getBeverage(tap.beverageId).subscribe((beverage: Beverage) => {
+        this.dataService.getDashboardBeverage(tap.beverageId).subscribe((beverage: Beverage) => {
           tap.beverage = new Beverage(beverage);
           if(beverage.type === "cold-brew") {
             tap.coldBrew = new ColdBrew(beverage);
@@ -163,7 +139,7 @@ export class LocationComponent implements OnInit {
       }
 
       if(!_.isEmpty(tap.sensorId)) {
-        this.dataService.getSensor(tap.sensorId).subscribe((sensor: Sensor) => {
+        this.dataService.getDashboardSensor(tap.sensorId).subscribe((sensor: Sensor) => {
           let sensorData = <SensorData>sensor;
           tap.sensor = sensorData;
 

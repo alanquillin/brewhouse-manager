@@ -21,12 +21,12 @@
 
             <mat-menu #managementOptions="matMenu">
                 <button mat-menu-item id="nav_manage_dashboard" (click)="goto('manage')"><mat-icon>home</mat-icon>Dashboard</button>
-                <button mat-menu-item id="nav_manage_locations" (click)="goto('manage/locations')"><mat-icon>store</mat-icon>Locations</button>
+                <button mat-menu-item id="nav_manage_locations" (click)="goto('manage/locations')" *ngIf="admin"><mat-icon>store</mat-icon>Locations</button>
                 <button mat-menu-item id="nav_manage_taps" (click)="goto('manage/taps')"><mat-icon>kitchen</mat-icon>Taps</button>
                 <button mat-menu-item id="nav_manage_beers" (click)="goto('manage/beers')"><mat-icon>local_drink</mat-icon>Beers</button>
                 <button mat-menu-item id="nav_manage_beers" (click)="goto('manage/beverages')"><mat-icon>local_drink</mat-icon>Beverages</button>
                 <button mat-menu-item id="nav_manage_sensors" (click)="goto('manage/sensors')"><mat-icon>gps_fixed</mat-icon>Sensors</button>
-                <button mat-menu-item id="nav_manage_users" (click)="goto('manage/users')"><mat-icon>group</mat-icon>Users</button>
+                <button mat-menu-item id="nav_manage_users" (click)="goto('manage/users')" *ngIf="admin"><mat-icon>group</mat-icon>Users</button>
             </mat-menu>
 
             <mat-menu #toolsOptions="matMenu">

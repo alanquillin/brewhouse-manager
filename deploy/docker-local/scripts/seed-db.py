@@ -9,7 +9,7 @@ from time import sleep
 
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from db import Base, beers, beverages, locations, sensors, session_scope, taps
+from db import Base, beers, beverages, locations, sensors, session_scope, taps, users, user_locations
 from lib.config import Config
 
 location1_id = "fb139af3-2905-4006-9196-62f54bb262ab"
@@ -40,7 +40,8 @@ BEERS = [
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "batch_id": "OxLBTCdfmPN5Z5DbrNidISXo67NMN3"
-        }
+        },
+        "location_id": location1_id,
     },
     {
         "id": beer_l1b2_id,
@@ -49,7 +50,8 @@ BEERS = [
         "style": "Lager",
         "abv": 5.2,
         "ibu": 17,
-        "srm": 4.1
+        "srm": 4.1,
+        "location_id": location1_id,
     },
     {
         "id": beer_l1b3_id,
@@ -57,14 +59,16 @@ BEERS = [
         "external_brewing_tool_meta": {
             "batch_id": "k9MRi0BeqW3sFdltMhqy4CnHtSwDOG"
         },
-        "style": "Christmas Ale"
+        "style": "Christmas Ale",
+        "location_id": location1_id,
     },
     {
         "id": beer_l1b4_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "batch_id": "S0spuNZL8PcQM2f2ioCgAoR8A0tv2q"
-        }
+        },
+        "location_id": location2_id,
     }
 ]
 
@@ -151,7 +155,6 @@ TAPS = [
         "tap_number": 4,
         "description": "Tap 4",
         "location_id": location1_id,
-        "beer_id": beer_l1b4_id,
         "sensor_id": sensor_l1s4_id
     },
     {
@@ -159,6 +162,7 @@ TAPS = [
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location2_id,
+        "beer_id": beer_l1b4_id,
         "sensor_id": sensor_l2s1_id
     },
     {
@@ -178,7 +182,8 @@ BEVERAGES = [
         "type": "cold-brew",
         "flavor": "Medium Roast",
         "brew_date": datetime(2022, 1, 1),
-        "keg_date": datetime(2022, 1, 4)
+        "keg_date": datetime(2022, 1, 4),
+        "location_id": location1_id,
         
     },
     {
@@ -189,7 +194,8 @@ BEVERAGES = [
         "type": "soda",
         "flavor": "Cherry",
         "brew_date": datetime(2022, 2, 19),
-        "keg_date": datetime(2022, 2, 21)
+        "keg_date": datetime(2022, 2, 21),
+        "location_id": location1_id,
         
     },
     {
@@ -200,10 +206,30 @@ BEVERAGES = [
         "type": "kombucha",
         "flavor": "Orange",
         "brew_date": datetime(2022, 3, 2),
-        "keg_date": datetime(2022, 3, 8)
+        "keg_date": datetime(2022, 3, 8),
+        "location_id": location1_id,
         
     }
 ]
+
+user1_id = "022041b5-89af-45ee-87ef-135f68c25f3f"
+USERS = [{
+    "id": user1_id,
+    "email": "user1@foo.bar",
+    "first_name": "That",
+    "last_name": "Guy",
+    "profile_pic": None,
+    "google_oidc_id": None,
+    "admin": False,
+    "api_key": "e86842d3-ef54-4db4-af74-278da4f3dda6",
+    "password": "foobar"
+}]
+
+USER_LOCATIONS = [{
+    "id": "fd430679-ba57-455f-99b4-9240480a0cde",
+    "user_id": user1_id,
+    "location_id": location1_id
+}]
 
 def seed_db(db_session, db, items, pk="id"):
     for item in items:
@@ -217,6 +243,33 @@ def seed_db(db_session, db, items, pk="id"):
         except IntegrityError as ex:
                 logger.debug("Item already exists or a constraint was violated: %s", ex)
 
+
+def get_initial_user(db_session):
+    init_user_email = config.get("auth.initial_user.email")
+    set_init_user_pass = config.get("auth.initial_user.set_password")
+    init_user_fname = config.get("auth.initial_user.first_name")
+    init_user_lname = config.get("auth.initial_user.last_name")
+    google_sso_enabled = config.get("auth.oidc.google.enabled")
+
+    if not google_sso_enabled and not set_init_user_pass:
+        logger.error("Can create an initial user!  auth.initial_user.set_pass and google authentication is disabled!")
+        raise Exception()
+
+    data = {"email": init_user_email, "admin": True}
+    if init_user_fname:
+        data["first_name"] = init_user_fname
+    if init_user_lname:
+        data["last_name"] = init_user_lname
+
+    logger.info("No users exist, creating initial user: %s", data)
+    if set_init_user_pass:
+        data["password"] = app_config.get("auth.initial_user.password")
+
+    user = users.Users.query(db_session, email=init_user_email)
+    if user:
+        data["id"] = user[0].id
+
+    return data
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -269,4 +322,16 @@ if __name__ == "__main__":
         seed_db(db_session, beverages.Beverages, BEVERAGES)
         seed_db(db_session, sensors.Sensors, SENSORS)
         seed_db(db_session, taps.Taps, TAPS)
+        initial_user_data = get_initial_user(db_session)
+        if initial_user_data:
+            USERS.append(initial_user_data)
+        seed_db(db_session, users.Users, USERS)
+        if initial_user_data:
+            initial_user = users.Users.query(db_session, email=initial_user_data["email"])
+            if initial_user:
+                for l in LOCATIONS:
+                    ulm = user_locations.UserLocations.query(db_session, user_id=initial_user[0].id, location_id=l["id"])
+                    if not ulm:
+                        USER_LOCATIONS.append({"user_id": initial_user[0].id ,"location_id": l["id"]})
+        seed_db(db_session, user_locations.UserLocations, USER_LOCATIONS)
             

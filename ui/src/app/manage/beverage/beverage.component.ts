@@ -10,7 +10,7 @@ import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/fil
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
 import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component'
 
-import { Beverage, ImageTransition, Settings } from '../../models/models';
+import { Beverage, ImageTransition, Settings, Location } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
 import { toUnixTimestamp } from '../../utils/datetime';
 
@@ -33,6 +33,8 @@ export class ManageBeverageComponent implements OnInit {
   isNilOrEmpty: Function = isNilOrEmpty;
   defaultType!: string;
   supportedTypes: string[] = [];
+  locations: Location[] = [];
+  selectedLocationFilters: string[] = [];
   _ = _;
   imageTransitionsToDelete: string[] = [];
 
@@ -56,6 +58,7 @@ export class ManageBeverageComponent implements OnInit {
     name: new FormControl('', [Validators.required]),
     type: new FormControl('', [Validators.required]),
     description: new FormControl('', []),
+    locationId: new FormControl('', [Validators.required]),
     brewery: new FormControl('', []),
     breweryLink: new FormControl('', []),
     flavor: new FormControl('', []),
@@ -68,8 +71,14 @@ export class ManageBeverageComponent implements OnInit {
     roasteryLink: new FormControl('', []),
   });
 
-  get displayedColumns(): string[] {
-    return ["name", "description", 'tapped', "type", "brewery", "roastery", "flavor", "kegDate", "brewDate", "imgUrl", "actions"];
+  get displayedColumns() {
+    var cols = ['name', 'description'];
+
+    if(!isNilOrEmpty(this.locations) && this.locations.length > 1) {
+      cols.push('location');
+    }
+
+    return _.concat(cols, ['tapped', "type", "brewery", "roastery", "flavor", "kegDate", "brewDate", "imgUrl", "actions"]);
   }
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
@@ -85,28 +94,45 @@ export class ManageBeverageComponent implements OnInit {
       next: (data: Settings) => {
         this.defaultType = data.beverages.defaultType;
         this.supportedTypes = data.beverages.supportedTypes;
-
-        this.dataService.getBeverages(true).subscribe({
-          next: (beverages: Beverage[]) => {
-            this.beverages = [];
-            _.forEach(beverages, (beverage) => {
-              var _beverage = new Beverage(beverage)
-              this.beverages.push(_beverage)
-            })
-            this.filter();
-          }, 
+        
+        this.dataService.getLocations().subscribe({
+          next: (locations: Location[]) => {
+            this.locations = [];
+            for(let location of locations) {
+              this.locations.push(new Location(location));
+            }
+            this.dataService.getBeverages(true).subscribe({
+              next: (beverages: Beverage[]) => {
+                this.beverages = [];
+                _.forEach(beverages, (beverage) => {
+                  var _beverage = new Beverage(beverage)
+                  this.beverages.push(_beverage)
+                })
+                this.filter();
+              }, 
+              error: (err: DataError) => {
+                this.displayError(err.message);
+                if(!_.isNil(error)){
+                  error();
+                }
+                if(!_.isNil(always)){
+                  always();
+                }
+              },
+              complete: () => {
+                if(!_.isNil(next)){
+                  next();
+                }
+                if(!_.isNil(always)){
+                  always();
+                }
+              }
+            });
+          },
           error: (err: DataError) => {
             this.displayError(err.message);
             if(!_.isNil(error)){
               error();
-            }
-            if(!_.isNil(always)){
-              always();
-            }
-          },
-          complete: () => {
-            if(!_.isNil(next)){
-              next();
             }
             if(!_.isNil(always)){
               always();
@@ -136,7 +162,9 @@ export class ManageBeverageComponent implements OnInit {
   add(): void {
     this.modifyFormGroup.reset();
     var data: any = {type: this.defaultType, meta: {}}
-
+    if(this.locations.length === 1) {
+      data["locationId"] = this.locations[0].id;
+    }
     this.modifyBeverage = new Beverage(data);
     this.modifyBeverage.editValues = data;
     this.adding = true;
@@ -151,6 +179,7 @@ export class ManageBeverageComponent implements OnInit {
     var data: any = {
       name: this.modifyBeverage.editValues.name,
       description: this.modifyBeverage.editValues.description,
+      locationId: this.modifyBeverage.editValues.locationId,
       type: this.modifyBeverage.editValues.type,
       brewery: this.modifyBeverage.editValues.brewery,
       breweryLink: this.modifyBeverage.editValues.breweryLink,

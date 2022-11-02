@@ -29,6 +29,18 @@
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="lastName" sortActionDescription="Sort by last name"> Last Name </th>
                 <td mat-cell *matCellDef="let element">{{ element.lastName }}</td>
             </ng-container>
+        
+            <ng-container matColumnDef="admin">
+                <th mat-header-cell *matHeaderCellDef> Admin? </th>
+                <td mat-cell *matCellDef="let element">
+                    <mat-icon *ngIf="element.admin">check_mark</mat-icon>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="locationCount">
+                <th mat-header-cell *matHeaderCellDef> # Locations </th>
+                <td mat-cell *matCellDef="let element">{{ isNilOrEmpty(element.locations) ? 0 : element.locations.length }}</td>
+            </ng-container>
 
             <ng-container matColumnDef="profilePic">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="profilePic" sortActionDescription="Sort by profile"> Profile Pic </th>
@@ -45,11 +57,11 @@
             <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef> </th>
                 <td mat-cell *matCellDef="let element"> 
-                    <div class="actions" *ngIf="me.id !== element.id">
-                        <button mat-icon-button color="primary" aria-label="Edit user" (click)="edit(element)">
+                    <div class="actions">
+                        <button mat-icon-button color="primary" aria-label="Edit user" (click)="edit(element)" *ngIf="me.id === element.id || me.admin">
                             <mat-icon>edit</mat-icon>
                         </button>
-                        <button mat-icon-button color="warn" aria-label="Delete user" (click)="delete(element)">
+                        <button mat-icon-button color="warn" aria-label="Delete user" (click)="delete(element)" *ngIf="me.id !== element.id && me.admin">
                             <mat-icon>delete</mat-icon>
                         </button>
                     </div> 
@@ -94,6 +106,11 @@
                     <mat-label>Last Name</mat-label>
                 </mat-form-field>
 
+                <mat-checkbox id="modify_admin"
+                    formControlName="admin" 
+                    [(ngModel)]="modifyUser.editValues.admin"
+                    (change)="reRunValidation()">Admin</mat-checkbox>
+
                 <mat-form-field appearance="fill" class="modify-field">
                     <input id="modify_profile_pic_input"
                         class="dp-textfield--input"
@@ -117,13 +134,21 @@
             </fieldset>
         </form>
     </div>
+
+    <div class="user-location-list">
+        <div class="user-location" *ngFor="let location of locations">
+            <mat-checkbox id="modify_locations_{{location.id}}"
+                    [checked]="selectedLocations[location.id]"
+                    (change)="changeLocationsSelection($event.checked, location)">{{ location.description }}</mat-checkbox>
+        </div>
+    </div>
     
     <div class="modify-actions" *ngIf="adding">
         <button mat-raised-button color="primary" (click)="create()" [disabled]="!modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Create</button>
         <button mat-raised-button color="warn" (click)="cancelAdd()"><mat-icon>cancel</mat-icon> Cancel</button>
     </div>
     <div class="modify-actions" *ngIf="editing">
-        <button mat-raised-button color="primary" (click)="save()" [disabled]="!modifyUser.hasChanges || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
+        <button mat-raised-button color="primary" (click)="save()" [disabled]="!changes || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
         <button mat-raised-button color="warn" (click)="cancelEdit()"><mat-icon>cancel</mat-icon> Cancel</button>
     </div>
 </div>

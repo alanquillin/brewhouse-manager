@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { UserInfo } from '../../models/models';
 
 import * as _ from 'lodash';
+import { isNilOrEmpty } from '../../utils/helpers';
 
 @Component({
   selector: 'app-header',
@@ -49,5 +50,13 @@ export class HeaderComponent implements OnInit {
       return "UNKNOWN";
     }
     return `${this.userInfo.firstName} ${this.userInfo.lastName}`;
+  }
+
+  get admin(): boolean {
+    if(isNilOrEmpty(this.userInfo)) {
+      return false
+    }
+
+    return this.userInfo.admin;
   }
 }

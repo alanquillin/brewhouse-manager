@@ -13,7 +13,7 @@ from resources import BaseResource, ClientError, ForbiddenError, NotAuthorizedEr
 
 
 class AuthUser(UserMixin):
-    def __init__(self, id_, first_name, last_name, email, profile_pic, google_oidc_id):
+    def __init__(self, id_, first_name, last_name, email, profile_pic, google_oidc_id, api_key, admin, locations):
         super().__init__()
 
         self.id = id_
@@ -22,13 +22,16 @@ class AuthUser(UserMixin):
         self.email = email
         self.profile_pic = profile_pic
         self.google_oidc_id = google_oidc_id
+        self.api_key = api_key
+        self.admin = admin
+        self.locations = [l.id for l in locations]
 
     @staticmethod
     def from_user(user):
         if not user:
             return None
 
-        return AuthUser(user.id, user.first_name, user.last_name, user.email, user.profile_pic, user.google_oidc_id)
+        return AuthUser(user.id, user.first_name, user.last_name, user.email, user.profile_pic, user.google_oidc_id, user.api_key, user.admin, user.locations)
 
 
 class GoogleResourceMixin(ResourceMixinBase):

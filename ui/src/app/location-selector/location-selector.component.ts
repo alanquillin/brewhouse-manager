@@ -24,7 +24,7 @@ export class LocationSelectorComponent implements OnInit {
 
   refresh() {
     this.loading = true;
-    this.dataService.getLocations().subscribe({
+    this.dataService.getDashboardLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = locations
         if (locations.length == 0) {

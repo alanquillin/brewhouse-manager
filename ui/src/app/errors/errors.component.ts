@@ -1,9 +1,15 @@
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+
+import { DataService, DataError } from '../_services/data.service';
 import { gsap } from 'gsap'
+import { UserInfo } from '../models/models';
 
+
+import { isNilOrEmpty } from '../utils/helpers';
 import * as _ from 'lodash';
-
 
 @Component({
   selector: 'app-errors',
@@ -13,16 +19,56 @@ import * as _ from 'lodash';
 export class ErrorsComponent implements OnInit, AfterViewInit {
 
   errorType: string | undefined;
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  userInfo!: UserInfo;
+  loading: boolean = false;
+  
+  isNilOrEmpty = isNilOrEmpty;
 
-  ngOnInit(): void {
+  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private _snackBar: MatSnackBar) { }
+
+  displayError(errMsg: string) {
+    this._snackBar.open("Error: " + errMsg, "Close");
+  }
+
+  ngOnInit() {
+    this.loading = true;
     this.errorType = this.route.snapshot.data["error"];
+
+    this.dataService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo) => {
+        if(this.errorType === 'unauthorized' && isNilOrEmpty(userInfo)){
+          return this.goto("login");
+        }
+
+        this.userInfo = userInfo;
+        this.loading = false;
+      },
+      error: (err: DataError) => {
+        console.log(err)
+        if(err.statusCode !== 401) {
+          return this.goto("login");
+        }
+        this.loading = false;
+      }
+    });
   }
 
   ngAfterViewInit(): void {
     if(this.errorType === 'notFound') {
       this.animateSpaceman();
     }
+  }
+
+  get statusCode(): string {
+    if(this.errorType === 'forbidden'){
+      return "403"
+    }
+
+    if(this.errorType === 'unauthorized'){
+      return "401"
+    }
+
+    return "<unknown status code>"
   }
 
   animateSpaceman() {
@@ -108,6 +154,10 @@ export class ErrorsComponent implements OnInit, AfterViewInit {
   }
   
   goHome(): void {
-    window.location.href = "/";
+    this.goto("");
+  }
+
+  goto(path: string): void {
+    window.location.href = `/${path}`;
   }
 }

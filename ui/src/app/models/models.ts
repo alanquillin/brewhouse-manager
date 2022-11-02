@@ -215,9 +215,11 @@ export class Beer extends ImageTransitionalBase {
   srm!: number;
   untappdId!: string;
   taps: Tap[] | undefined;
+  locationId!: string;
+  location: Location | undefined;
 
   constructor(from?: any) {
-    super(["name", "description", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm", "untappdId"], from, beerTransformFns);
+    super(["name", "description", "locationId", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm", "untappdId"], from, beerTransformFns);
     if(isNilOrEmpty(this.externalBrewingToolMeta)) {
       this.externalBrewingToolMeta = {}
     }
@@ -318,9 +320,12 @@ export class UserInfo extends EditableBase {
   lastName!: string;
   profilePic!: string;
   passwordEnabled!: boolean;
+  admin!: boolean;
+  apiKey!: string;
+  locations: Location[] | undefined;
 
   constructor(from?: any) {
-    super(["email", "firstName", "lastName", "profilePic"], from);
+    super(["email", "firstName", "lastName", "profilePic", "admin"], from);
   }
 }
 
@@ -392,9 +397,11 @@ export class Beverage extends ImageTransitionalBase {
   brewDate!: number;
   meta!: any;
   taps: Tap[] | undefined;
+  locationId!: string;
+  location: Location | undefined;
 
   constructor(from?: any) {
-    super(["name", "description", "brewery", "breweryLink", "type", "flavor", "imgUrl", "kegDate", "brewDate", "meta"], from);
+    super(["name", "description", "locationId", "brewery", "breweryLink", "type", "flavor", "imgUrl", "kegDate", "brewDate", "meta"], from);
     if(isNilOrEmpty(this.meta)){
       this.meta = {};
     }
@@ -457,4 +464,10 @@ export class ImageTransition extends EditableBase {
   constructor(from?: any) {
     super(["imgUrl", "changePercent"], from);
   }
+}
+
+export class Dashboard {
+  location!: Location;
+  taps!: Tap[];
+  locations!: Location[];
 }

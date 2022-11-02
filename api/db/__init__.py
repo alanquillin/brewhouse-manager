@@ -1,3 +1,4 @@
+import logging
 import re
 from contextlib import contextmanager
 from functools import wraps
@@ -5,7 +6,7 @@ from urllib.parse import quote
 
 from psycopg2.errors import InvalidTextRepresentation, NotNullViolation, UniqueViolation  # pylint: disable=no-name-in-module
 from psycopg2.extensions import QuotedString, register_adapter
-from sqlalchemy import DDL, Column, DateTime, Integer, String, create_engine, event, func, text
+from sqlalchemy import DDL, Column, DateTime, String, create_engine, event, func, text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -20,8 +21,9 @@ from lib import json
 
 Base = declarative_base()
 
-__all__ = ["Base", "audit", "beers", "beverages", "locations", "sensors", "taps", "users", "fermentation_ctrl", "fermentation_ctrl_stats", "image_transitions"]
+__all__ = ["Base", "audit", "beers", "beverages", "locations", "sensors", "taps", "users", "fermentation_ctrl", "fermentation_ctrl_stats", "image_transitions", "user_locations"]
 
+LOGGER = logging.getLogger(__name__)
 
 @event.listens_for(Base.metadata, "before_create")
 def create_extensions(_target, connection, **_):
@@ -165,6 +167,33 @@ class DictMethodsMixin:
     def __contains__(self, key):
         return hasattr(self, key)
 
+audit_column_names = [
+    "created_app",
+    "created_user",
+    "created_on",
+    "updated_app",
+    "updated_user",
+    "updated_on"
+]
+
+audit_columns = [
+    Column("created_app", String, server_default=func.current_setting("application_name"), nullable=False),
+    Column("created_user", String, server_default=func.current_user(), nullable=False),
+    Column("created_on", DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False),
+    Column("updated_app",
+        String,
+        server_default=func.current_setting("application_name"),
+        onupdate=func.current_setting("application_name"),
+        nullable=False,
+    ),
+    Column("updated_user", String, server_default=func.current_user(), onupdate=func.current_user(), nullable=False),
+    Column("updated_on", 
+        DateTime(timezone=True),
+        server_default=func.current_timestamp(),
+        onupdate=func.current_timestamp(),
+        nullable=False,
+    )
+]
 
 class AuditedMixin:
     created_app = Column(String, server_default=func.current_setting("application_name"), nullable=False)
@@ -281,12 +310,20 @@ def _merge_into(target, updates):
 
 class QueryMethodsMixin:
     @classmethod
-    def query(cls, session, q=None, slice_start=None, slice_end=None, **kwargs):
+    def query(cls, session, q=None, slice_start=None, slice_end=None, ids=None, locations=None, **kwargs):
         if q is None:
             q = session.query(cls).filter_by(**kwargs)
 
         if not None in [slice_start, slice_end]:
             q = q.slice(slice_start, slice_end)
+
+        if locations:
+            LOGGER.debug("filtering query by locations: %s", locations)
+            q = q.filter(cls.location_id.in_(locations))
+
+        if ids:
+            LOGGER.debug("filtering query by ids: %s", ids)
+            q = q.filter(cls.id.in_(ids))
 
         try:
             return q.all()
@@ -374,6 +411,17 @@ class QueryMethodsMixin:
     @classmethod
     def delete(cls, session, pkey, autocommit=True):
         session.delete(cls.get_by_pkey(session, pkey))
+
+        if autocommit:
+            try:
+                session.commit()
+            except:
+                session.rollback()
+                raise
+    
+    @classmethod
+    def delete_by(cls, session, autocommit=True, **kwargs):
+        session.query(cls).filter_by(**kwargs).delete()
 
         if autocommit:
             try:
