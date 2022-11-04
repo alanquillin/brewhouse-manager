@@ -160,14 +160,14 @@ export class ManageBeerComponent implements OnInit {
     const checkKeys = {"brewDate": "brewDateObj", "kegDate": "kegDateObj"}
     
     _.forEach(keys, (k) => {
-      const checkKey = _.get(checkKeys, k, k);
+      const checkKey: any = _.get(checkKeys, k, k);
 
       var val: any = _.get(this.modifyBeer.editValues, checkKey);
       if(isNilOrEmpty(val)){
         return;
       }
-      const transformFn = _.get(this.transformFns, k);
-      if(!_.isNil(transformFn)){
+      const transformFn: any = _.get(this.transformFns, k);
+      if(!_.isNil(transformFn) && typeof transformFn === 'function'){
         val = transformFn(val);
       }
       data[k] = val;
