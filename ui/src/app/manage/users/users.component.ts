@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
+import { Validation } from '../../utils/form-validators';
 
 import { Location, UserInfo } from '../../models/models';
 
@@ -21,14 +22,17 @@ export class ManageUsersComponent implements OnInit {
   me: UserInfo = new UserInfo();
   users: UserInfo[] = [];
   filteredUsers: UserInfo[] = [];
-  displayedColumns: string[] = ['email', 'firstName', 'lastName', "admin", "locationCount", 'profilePic', 'actions'];
+  displayedColumns: string[] = ['email', 'firstName', 'lastName', "admin", "locationCount", "isPasswordEnabled", "profilePic", "actions"];
   processing = false;
   adding = false;
   editing = false;
+  changePassword = false;
   modifyUser: UserInfo = new UserInfo();
   hidePassword = true;
   locations: Location[] = [];
   selectedLocations: any = {};
+  newPassword = "";
+  confirmNewPassword = "";
 
   isNilOrEmpty = isNilOrEmpty;
   _ = _;
@@ -41,6 +45,11 @@ export class ManageUsersComponent implements OnInit {
     password: new FormControl(''),
     admin: new FormControl('')
   });
+
+  changePasswordFormGroup: FormGroup = new FormGroup({
+    password: new FormControl('', [Validators.required, Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&]).{8,}')]),
+    confirmPassword: new FormControl('', [Validators.required])
+  }, { validators: [Validation.match('password', 'confirmPassword')] });
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
 
@@ -318,5 +327,53 @@ export class ManageUsersComponent implements OnInit {
 
   get changes(): boolean {
     return this.modifyUser.hasChanges || this.selectedLocationChanges();
+  }
+
+  cancelChangePassword(): void {
+    this.changePassword = false;
+  }
+
+  startChangePassword(): void {
+    this.newPassword = "";
+    this.confirmNewPassword = "";
+    this.changePassword = true;
+  }
+
+  savePassword(): void {
+    if (this.changePasswordFormGroup.invalid) {
+      return;
+    }
+    
+    this.processing = true;
+    this.dataService.updateUser(this.modifyUser.id, {password: this.newPassword}).subscribe({
+      next: (data: UserInfo) => {
+        this.edit(new UserInfo(data));
+        this.changePassword = false;
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    });
+  }
+
+  disablePassword(): void {
+    if(confirm("Are you sure you want to disable the user's password?  Doing so will prevent them from logging in with username and password.  You will need to log in via Google instead.")) {
+      this.processing = true;
+      this.dataService.updateUser(this.modifyUser.id, {password: null}).subscribe({
+        next: (data: UserInfo) => {
+          this.edit(new UserInfo(data));
+          this.processing = false;
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+        }
+      });
+    }
+  }
+
+  get changePasswordForm(): { [key: string]: AbstractControl } {
+    return this.changePasswordFormGroup.controls;
   }
 }

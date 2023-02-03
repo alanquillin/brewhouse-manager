@@ -1,4 +1,4 @@
-<div class="users-view" *ngIf="!editing && !adding">
+<div class="users-view" *ngIf="!editing && !adding && !changePassword">
     <div class="heading"><p>Edit Users</p></div>
     <div class="taps-list-loading" *ngIf="loading">
         <mat-spinner></mat-spinner>
@@ -42,6 +42,13 @@
                 <td mat-cell *matCellDef="let element">{{ isNilOrEmpty(element.locations) ? 0 : element.locations.length }}</td>
             </ng-container>
 
+            <ng-container matColumnDef="isPasswordEnabled">
+                <th mat-header-cell *matHeaderCellDef> Password Enabled? </th>
+                <td mat-cell *matCellDef="let element">
+                    <mat-icon *ngIf="element.passwordEnabled">check_mark</mat-icon>
+                </td>
+            </ng-container>
+
             <ng-container matColumnDef="profilePic">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="profilePic" sortActionDescription="Sort by profile"> Profile Pic </th>
                 <td mat-cell *matCellDef="let element">
@@ -73,7 +80,7 @@
         </table>
     </div>
 </div>
-<div class="users-modify" *ngIf="editing || adding">
+<div class="users-modify" *ngIf="(editing || adding) && !changePassword">
     <div class="heading"><p> {{ adding ? "Add" : "Edit" }} User</p></div>
     <div class="modify-form">
         <form [formGroup]="modifyFormGroup">
@@ -150,5 +157,47 @@
     <div class="modify-actions" *ngIf="editing">
         <button mat-raised-button color="primary" (click)="save()" [disabled]="!changes || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
         <button mat-raised-button color="warn" (click)="cancelEdit()"><mat-icon>cancel</mat-icon> Cancel</button>
+        <button mat-raised-button (click)="startChangePassword()" [disabled]="processing">{{ modifyUser.passwordEnabled ? "Change" : "Set" }} Password</button>
+        <button mat-raised-button color="accent" (click)="disablePassword()" *ngIf="modifyUser.passwordEnabled">Disable Password</button>
+    </div>
+</div>
+
+<div class="change-password" *ngIf="changePassword">
+    <div class="heading"><p>Change Password</p></div>
+    <div class="change-password-form">
+        <form [formGroup]="changePasswordFormGroup">
+            <fieldset>
+                <mat-form-field appearance="fill" class="change-password-field">
+                    <input type="password"
+                        id="change_password_password_input"
+                        class="dp-textfield--input"
+                        formControlName="password"
+                        [(ngModel)]="newPassword"
+                        matInput
+                        required />
+                    <mat-label>Password</mat-label>
+                    <mat-error *ngIf="changePasswordForm['password'].errors && changePasswordForm['password'].errors['pattern']">
+                        Password must be at least 8 characters and contain at least 1 lowercase letter, uppercase letter, number and a special character
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="change-password-field">
+                    <input type="password"
+                        id="change_password_confirm_password_input"
+                        class="dp-textfield--input"
+                        formControlName="confirmPassword"
+                        [(ngModel)]="confirmNewPassword"
+                        matInput
+                        required />
+                    <mat-label>Confirm Password</mat-label>
+                </mat-form-field>
+            </fieldset>
+        </form>
+    </div>
+    <div class="profile-actions">
+        <button mat-raised-button color="primary" (click)="savePassword()" [disabled]="!changePasswordFormGroup.valid || processing">
+            <mat-icon>save</mat-icon> Save
+        </button>
+        <button mat-raised-button color="warn" (click)="cancelChangePassword()" [disabled]="processing"><mat-icon>cancel</mat-icon> Cancel</button>
     </div>
 </div>
