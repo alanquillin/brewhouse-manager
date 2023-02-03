@@ -378,6 +378,11 @@ export class ManageBeverageComponent implements OnInit {
     }
 
     var filteredData: Beverage[] = this.beverages;
+
+    if(!_.isEmpty(this.selectedLocationFilters)){
+      filteredData = <Beverage[]>_.filter(this.beverages, (b) => { return this.selectedLocationFilters.includes(b.locationId) });
+    }
+
     
     filteredData = _.sortBy(filteredData, [(d: Beverage) => {
         return _.get(d, sortBy);
