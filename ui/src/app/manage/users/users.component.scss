@@ -26,7 +26,7 @@
             .actions {
                 width: 100%;
                 display: flex;
-                justify-content: center;
+                justify-content: left;
             }
         }
 
@@ -45,8 +45,19 @@
         order: 2;
     }
 
-    .modify-actions {
+    .user-location-list {
         order: 3;
+        display: flex;
+        flex-direction: column;
+
+        .user-location {
+            display: flex;
+            flex-direction: row;
+        }
+    }
+
+    .modify-actions {
+        order: 4;
         
         button {
             margin: 2px 6px

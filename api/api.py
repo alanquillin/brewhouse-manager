@@ -11,6 +11,7 @@ if __name__ == "__main__":
     patch_psycopg()
 
 import argparse
+import base64
 import json as official_json
 import os
 import sys
@@ -44,11 +45,12 @@ from resources.fermentation_ctrl import (
 )
 from resources.image_transitions import ImageTransition
 from resources.locations import Location, Locations
-from resources.pages import GenericPageHandler, RestrictedGenericPageHandler
+from resources.pages import GenericPageHandler, RestrictedGenericPageHandler, AdminRestrictedGenericPageHandler
 from resources.sensors import Sensor, SensorData, Sensors, SensorTypes
 from resources.settings import Settings
 from resources.taps import Tap, Taps
-from resources.users import CurrentUser, User, Users
+from resources.users import CurrentUser, User, Users, UserAPIKey, UserLocations
+from resources.dashboard import Dashboard, DashboardBeer, DashboardBeverage, DashboardLocations, DashboardTap, DashboardSensor
 
 
 class IgnoringLogAdapter(LoggingLogAdapter):
@@ -92,6 +94,8 @@ official_json.dumps = json.dumps
 app_config = CONFIG
 app_config.setup(config_files=["default.json"])
 
+LOGGER = logging.getLogger(__name__)
+
 
 @app.route("/health")
 def health():
@@ -115,10 +119,10 @@ def redirect_not_logged_in():
 
 
 # API resources for UI:
-api.add_resource(Beers, "/api/v1/beers")
-api.add_resource(Beer, "/api/v1/beers/<beer_id>")
-api.add_resource(Beverages, "/api/v1/beverages")
-api.add_resource(Beverage, "/api/v1/beverages/<beverage_id>")
+api.add_resource(Beers, "/api/v1/beers", "/api/v1/locations/<location>/beers")
+api.add_resource(Beer, "/api/v1/beers/<beer_id>", "/api/v1/locations/<location>/beers/<beer_id>")
+api.add_resource(Beverages, "/api/v1/beverages", "/api/v1/locations/<location>/beverages")
+api.add_resource(Beverage, "/api/v1/beverages/<beverage_id>", "/api/v1/locations/<location>/beverages/<beer_id>")
 api.add_resource(Locations, "/api/v1/locations")
 api.add_resource(Location, "/api/v1/locations/<location>")
 api.add_resource(Taps, "/api/v1/taps", "/api/v1/locations/<location>/taps")
@@ -132,6 +136,9 @@ api.add_resource(ExternalBrewTool, "/api/v1/external_brew_tools/<tool_name>")
 api.add_resource(SearchExternalBrewTool, "/api/v1/external_brew_tools/<tool_name>/search")
 api.add_resource(Users, "/api/v1/users")
 api.add_resource(User, "/api/v1/users/<user_id>")
+api.add_resource(UserLocations, "/api/v1/users/<user_id>/locations")
+api.add_resource(UserAPIKey, "/api/v1/users/<user_id>/api_key", endpoint="delete_user_api_key", methods=["GET", "DELETE"])
+api.add_resource(UserAPIKey, "/api/v1/users/<user_id>/api_key/generate", endpoint="gen_user_api_key", methods=["POST"])
 api.add_resource(CurrentUser, "/api/v1/users/current")
 api.add_resource(Settings, "/api/v1/settings")
 api.add_resource(UploadImage, "/api/v1/uploads/images/<image_type>")
@@ -154,6 +161,12 @@ api.add_resource(
 api.add_resource(FermentationControllerDeviceActions, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<action>/<value>", methods=["POST"])
 api.add_resource(FermentationControllerDeviceData, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<key>", methods=["GET"])
 api.add_resource(ImageTransition, "/api/v1/image_transitions/<image_transition_id>", methods=["DELETE"])
+api.add_resource(Dashboard, "/api/v1/dashboard/locations/<location_id>")
+api.add_resource(DashboardLocations, "/api/v1/dashboard/locations")
+api.add_resource(DashboardBeer, "/api/v1/dashboard/beers/<beer_id>")
+api.add_resource(DashboardBeverage, "/api/v1/dashboard/beverages/<beverage_id>")
+api.add_resource(DashboardTap, "/api/v1/dashboard/taps/<tap_id>")
+api.add_resource(DashboardSensor, "/api/v1/dashboard/sensors/<sensor_id>")
 
 # session management APIs
 api.add_resource(GoogleLogin, "/login/google")
@@ -168,10 +181,10 @@ api.add_resource(GenericPageHandler, "/view/<location>", endpoint="location_view
 api.add_resource(RestrictedGenericPageHandler, "/manage", endpoint="management_dashboard")
 api.add_resource(RestrictedGenericPageHandler, "/manage/beers", endpoint="manage_beers")
 api.add_resource(RestrictedGenericPageHandler, "/manage/beverages", endpoint="manage_beverages")
-api.add_resource(RestrictedGenericPageHandler, "/manage/locations", endpoint="manage_locations")
+api.add_resource(AdminRestrictedGenericPageHandler, "/manage/locations", endpoint="manage_locations")
 api.add_resource(RestrictedGenericPageHandler, "/manage/sensors", endpoint="manage_sensors")
 api.add_resource(RestrictedGenericPageHandler, "/manage/taps", endpoint="manage_taps")
-api.add_resource(RestrictedGenericPageHandler, "/manage/users", endpoint="manage_users")
+api.add_resource(AdminRestrictedGenericPageHandler, "/manage/users", endpoint="manage_users")
 api.add_resource(RestrictedGenericPageHandler, "/me", endpoint="profile")
 api.add_resource(GenericPageHandler, "/tools/volume_calculator", endpoint="volume_calculator")
 
@@ -200,6 +213,31 @@ def index(path="index.html", **_):
 @app.errorhandler(404)
 def send_404(_):
     return index(), 404
+
+@login_manager.request_loader
+def load_user_from_request(request):
+
+    # first, try to login using the api_key url arg
+    api_key = request.args.get('api_key')
+
+    if not api_key:
+        # next, try to login using Basic Auth
+        api_key = request.headers.get('Authorization')
+        if api_key:
+            api_key = api_key.replace('Basic ', '', 1).strip()
+            try:
+                api_key = base64.b64decode(api_key).decode('ascii')
+            except TypeError as e:
+                pass
+
+    if api_key:
+        with session_scope(app_config) as db_session:
+            user = UsersDB.get_by_api_key(db_session, api_key)
+            if user:
+                return AuthUser.from_user(user)
+
+    # finally, return None if both methods did not login the user
+    return None
 
 
 if __name__ == "__main__":
@@ -252,7 +290,7 @@ if __name__ == "__main__":
                 logger.error("Can create an initial user!  auth.initial_user.set_pass and google authentication is disabled!")
                 sys.exit(1)
 
-            data = {"email": init_user_email}
+            data = {"email": init_user_email, "admin": True}
             if init_user_fname:
                 data["first_name"] = init_user_fname
             if init_user_lname:

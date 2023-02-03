@@ -1,3 +1,4 @@
+<div *ngIf="!loading">
 <div class="error" *ngIf="errorType === 'unknown'">
   <div class="main-error-page">
     <svg
@@ -613,7 +614,7 @@
     </main>
 </div>
 
-<div class="forbidden" *ngIf="errorType === 'forbidden'">
+<div class="forbidden" *ngIf="errorType === 'forbidden' || errorType === 'unauthorized'">
   <div class="gandalf">
     <div class="fireball"></div>
     <div class="skirt"></div>
@@ -628,11 +629,8 @@
     </div>
   </div>
   <div class="message">
-  <h1>403 - You Shall Not Pass</h1>
+  <h1>{{ statusCode }} - You Shall Not Pass</h1>
   <p>You are not authorized to use the requested resource</p>
   </div>
 </div>
-
-<div class="unauthorized" *ngIf="errorType === 'unauthorized'">
-dude... login first
 </div>

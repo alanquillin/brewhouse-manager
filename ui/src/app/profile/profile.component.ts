@@ -7,6 +7,7 @@ import { AbstractControl, FormGroup, Validators, FormControl } from '@angular/fo
 
 import { UserInfo } from '../models/models';
 import { Validation } from '../utils/form-validators';
+import { isNilOrEmpty } from '../utils/helpers';
 
 import * as _ from 'lodash';
 
@@ -22,6 +23,8 @@ export class ProfileComponent implements OnInit {
   editing = false;
   changePassword = false;
   processing = false;
+
+  isNilOrEmpty = isNilOrEmpty;
   _ = _;
 
   newPassword: string= "";
@@ -46,9 +49,11 @@ export class ProfileComponent implements OnInit {
   }
 
   refresh(always?:Function, next?: Function, error?: Function) {
+    this.processing = true;
     this.dataService.getCurrentUser().subscribe({
       next: (userInfo: UserInfo) => {
         this.userInfo = new UserInfo(userInfo);
+        this.processing = false;
         if(!_.isNil(next)){
           next();
         }
@@ -58,6 +63,7 @@ export class ProfileComponent implements OnInit {
       }, 
       error: (err: DataError) => {
         this.displayError(err.message);
+        this.processing = false;
         if(!_.isNil(error)){
           error();
         }
@@ -138,6 +144,47 @@ export class ProfileComponent implements OnInit {
         next: (data: UserInfo) => {
           this.userInfo = new UserInfo(data);
           this.editing = false;
+          this.processing = false;
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+        }
+      });
+    }
+  }
+
+  _generateAPIKey(user: UserInfo): void {
+    this.processing = true;
+    this.dataService.generateUserAPIKey(user.id).subscribe({
+      next: (resp: string) => {
+        user.apiKey = resp;
+        this.processing = false;
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    })
+  }
+
+  generateAPIKey(): void {
+    let user = this.userInfo;
+    if(!isNilOrEmpty(user.apiKey)) {
+      if(confirm(`Are you sure you want to regenerate your API key?  The previous key will be invalidated.`)) {
+        this._generateAPIKey(user);
+      }
+    } else {
+      this._generateAPIKey(user);
+    }
+  }
+
+  deleteAPIKey(): void {
+    this.processing = true;
+    if(confirm(`Are you sure you want to delete your API key?`)) {
+      this.dataService.deleteUserAPIKey(this.userInfo.id).subscribe({
+        next: (resp: string) => {
+          this.userInfo.apiKey = "";
           this.processing = false;
         },
         error: (err: DataError) => {

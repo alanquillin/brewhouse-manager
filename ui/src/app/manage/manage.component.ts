@@ -1,6 +1,12 @@
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { Component, OnInit } from '@angular/core';
-import { DataService } from '../_services/data.service';
+import { DataService, DataError } from '../_services/data.service';
 import { Router } from '@angular/router';
+import { UserInfo } from '../models/models';
+
+
+import { isNilOrEmpty } from '../utils/helpers';
 
 @Component({
   selector: 'manage',
@@ -12,14 +18,37 @@ export class ManageComponent implements OnInit {
 
   isLoading = false;
 
-  constructor(private dataService: DataService, private router: Router) {}
+  userInfo!: UserInfo;
 
+  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) {}
 
-  ngOnInit() {  
+  displayError(errMsg: string) {
+    this._snackBar.open("Error: " + errMsg, "Close");
+  }
+
+  ngOnInit() {
+    this.dataService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo) => {
+        this.userInfo = userInfo;
+      },
+      error: (err: DataError) => {
+        if(err.statusCode !== 401) {
+          this.displayError(err.message);
+        }
+      }
+    });
   }
 
   goto(path: string): void {
     window.location.href = `/${path}`;
+  }
+
+  get admin(): boolean {
+    if(isNilOrEmpty(this.userInfo)) {
+      return false
+    }
+
+    return this.userInfo.admin;
   }
 }
 

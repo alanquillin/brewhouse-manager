@@ -2,7 +2,7 @@ import logging
 from datetime import date, datetime, timedelta
 
 from flask import request
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 from db import session_scope
 from db.beers import _PKEY as beers_pk
@@ -11,7 +11,7 @@ from db.taps import Taps as TapsDB
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.time import parse_iso8601_utc, utcnow_aware
-from resources import BaseResource, NotFoundError, ResourceMixinBase, ImageTransitionMixin, ImageTransitionResourceMixin
+from resources import BaseResource, NotAuthorizedError, NotFoundError, ResourceMixinBase, ImageTransitionMixin, ImageTransitionResourceMixin
 from resources.locations import LocationsResourceMixin
 
 G_LOGGER = logging.getLogger(__name__)
@@ -43,7 +43,9 @@ class BeerResourceMixin(ResourceMixinBase):
             return beer
 
         data = beer.to_dict()
-        G_LOGGER.debug(data)
+
+        if beer.location:
+            data["location"] = LocationsResourceMixin.transform_response(beer.location)
 
         include_tap_details = request.args.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
 
@@ -118,19 +120,34 @@ class BeerResourceMixin(ResourceMixinBase):
 
 
 class Beers(BaseResource, BeerResourceMixin, ImageTransitionMixin):
+    @login_required
     def get(self, location=None):
         with session_scope(self.config) as db_session:
+            kwargs = {}
             if location:
                 location_id = self.get_location_id(location, db_session)
-                beers = BeersDB.get_by_location(db_session, location_id)
-            else:
-                beers = BeersDB.query(db_session)
+                if not current_user.admin and not location_id in current_user.locations:
+                    raise NotAuthorizedError()
+                kwargs["locations"] = [location_id]
+            elif not current_user.admin:
+                kwargs["locations"] = current_user.locations
+            
+            beers = BeersDB.query(db_session, **kwargs)
             return [self.transform_response(b, db_session=db_session) for b in beers]
 
     @login_required
-    def post(self):
+    def post(self, location=None):
         with session_scope(self.config) as db_session:
-            data = self.get_request_data(remove_key=["id", "imageTransitions"])
+            data = self.get_request_data(remove_key=["id", "imageTransitions", "location"])
+
+            if location:
+                location_id = self.get_location_id(location, db_session)
+                if not current_user.admin and not location_id in current_user.locations:
+                    raise NotAuthorizedError()
+                data["location_id"] = location_id
+
+            if not current_user.admin and not data.get("location_id") in current_user.locations:
+                raise NotAuthorizedError()
 
             self.logger.debug("Creating beer with: %s", data)
             beer = BeersDB.create(db_session, **data)
@@ -141,24 +158,38 @@ class Beers(BaseResource, BeerResourceMixin, ImageTransitionMixin):
 
 
 class Beer(BaseResource, BeerResourceMixin, ImageTransitionMixin):
-    def get(self, beer_id):
-        with session_scope(self.config) as db_session:
-            beer = BeersDB.get_by_pkey(db_session, beer_id)
+    def _get_beer(self, db_session, beer_id, location=None):
+        kwargs = {beers_pk: beer_id}
 
-            if not beer:
-                raise NotFoundError()
+        if location:
+            location_id = self.get_location_id(location, db_session)
+            if not current_user.admin and not location_id in current_user.locations:
+                raise NotAuthorizedError()
+            kwargs["locations"] = [location_id]
+
+        beer = BeersDB.query(db_session, **kwargs)
+
+        if not beer:
+            raise NotFoundError()
+
+        beer = beer[0]
+
+        if not current_user.admin and not beer.location_id in current_user.locations:
+            raise NotAuthorizedError()
+        return beer
+
+    @login_required
+    def get(self, beer_id, location=None):
+        with session_scope(self.config) as db_session:
+            beer = self._get_beer(db_session, beer_id, location=location)
 
             return self.transform_response(beer, db_session=db_session)
 
     @login_required
-    def patch(self, beer_id):
+    def patch(self, beer_id, location=None):
         with session_scope(self.config) as db_session:
-            beer = BeersDB.get_by_pkey(db_session, beer_id)
-
-            if not beer:
-                raise NotFoundError()
-
-            data = self.get_request_data(remove_key=["id", "imageTransitions"])
+            beer = self._get_beer(db_session, beer_id, location=location)
+            data = self.get_request_data(remove_key=["id", "imageTransitions", "location"])
 
             external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
             if external_brewing_tool_meta and beer.external_brewing_tool_meta:
@@ -175,12 +206,9 @@ class Beer(BaseResource, BeerResourceMixin, ImageTransitionMixin):
             return self.transform_response(beer, db_session=db_session, image_transitions=image_transitions)
 
     @login_required
-    def delete(self, beer_id):
+    def delete(self, beer_id, location=None):
         with session_scope(self.config) as db_session:
-            beer = BeersDB.get_by_pkey(db_session, beer_id)
+            beer = self._get_beer(db_session, beer_id, location=location)
 
-            if not beer:
-                raise NotFoundError()
-
-            BeersDB.delete(db_session, beer_id)
+            BeersDB.delete(db_session, beer.id)
             return True

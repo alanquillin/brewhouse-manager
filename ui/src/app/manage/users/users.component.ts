@@ -4,8 +4,9 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
+import { Validation } from '../../utils/form-validators';
 
-import { UserInfo } from '../../models/models';
+import { Location, UserInfo } from '../../models/models';
 
 import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
@@ -21,13 +22,19 @@ export class ManageUsersComponent implements OnInit {
   me: UserInfo = new UserInfo();
   users: UserInfo[] = [];
   filteredUsers: UserInfo[] = [];
-  displayedColumns: string[] = ['email', 'firstName', 'lastName', 'profilePic', 'actions'];
+  displayedColumns: string[] = ['email', 'firstName', 'lastName', "admin", "locationCount", "isPasswordEnabled", "profilePic", "actions"];
   processing = false;
   adding = false;
   editing = false;
+  changePassword = false;
   modifyUser: UserInfo = new UserInfo();
   hidePassword = true;
+  locations: Location[] = [];
+  selectedLocations: any = {};
+  newPassword = "";
+  confirmNewPassword = "";
 
+  isNilOrEmpty = isNilOrEmpty;
   _ = _;
 
   modifyFormGroup: FormGroup = new FormGroup({
@@ -35,8 +42,14 @@ export class ManageUsersComponent implements OnInit {
     firstName: new FormControl(''),
     lastName: new FormControl(''),
     profilePic: new FormControl(''),
-    password: new FormControl('')
+    password: new FormControl(''),
+    admin: new FormControl('')
   });
+
+  changePasswordFormGroup: FormGroup = new FormGroup({
+    password: new FormControl('', [Validators.required, Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&]).{8,}')]),
+    confirmPassword: new FormControl('', [Validators.required])
+  }, { validators: [Validation.match('password', 'confirmPassword')] });
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
 
@@ -47,16 +60,42 @@ export class ManageUsersComponent implements OnInit {
   }
 
   refresh(always?:Function, next?: Function, error?: Function) {
-    this.dataService.getUsers().subscribe({
-      next: (users: UserInfo[]) => {
-        this.users = [];
-        _.forEach(users, (user) => {
-          var _user = new UserInfo()
-          Object.assign(_user, user);
-          this.users.push(_user)
-        })
-        this.filter();
-      }, 
+    this.dataService.getLocations().subscribe({
+      next: (locations: Location[]) => {
+        this.locations = [];
+        for(let l of locations) {
+          this.selectedLocations[l.id] = false;
+          this.locations.push(new Location(l));
+        }
+        this.dataService.getUsers().subscribe({
+          next: (users: UserInfo[]) => {
+            this.users = [];
+            _.forEach(users, (user) => {
+              var _user = new UserInfo()
+              Object.assign(_user, user);
+              this.users.push(_user)
+            })
+            this.filter();
+          }, 
+          error: (err: DataError) => {
+            this.displayError(err.message);
+            if(!_.isNil(error)){
+              error();
+            }
+            if(!_.isNil(always)){
+              always();
+            }
+          },
+          complete: () => {
+            if(!_.isNil(next)){
+              next();
+            }
+            if(!_.isNil(always)){
+              always();
+            }
+          }
+        });
+      },
       error: (err: DataError) => {
         this.displayError(err.message);
         if(!_.isNil(error)){
@@ -74,7 +113,7 @@ export class ManageUsersComponent implements OnInit {
           always();
         }
       }
-    })
+    });
   }
 
   ngOnInit(): void {
@@ -96,6 +135,7 @@ export class ManageUsersComponent implements OnInit {
     this.modifyFormGroup.reset();
     this.modifyUser = new UserInfo();
     this.adding = true;
+    this.resetSelectedLocations();
   }
 
   create(): void {
@@ -117,7 +157,9 @@ export class ManageUsersComponent implements OnInit {
     this.processing = true;
     this.dataService.createUser(data).subscribe({
       next: (user: UserInfo) => {
-        this.refresh(() => {this.processing = false;}, () => {this.adding = false;});
+        this.saveLocations(new UserInfo(user), () => {
+          this.refresh(() => {this.processing = false;}, () => {this.adding = false;});
+        });
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -135,16 +177,57 @@ export class ManageUsersComponent implements OnInit {
     this.modifyUser = user;
     this.editing = true;
     this.modifyFormGroup.reset();
+    this.resetSelectedLocations();
+    if(user.locations) {
+      for(let l of user.locations) {
+        this.selectedLocations[l.id] = true;
+      }
+    }
   }
 
   save(): void {
-    this.processing = true;
-    this.dataService.updateUser(this.modifyUser.id, this.modifyUser.changes).subscribe({
-      next: (user: UserInfo) => {
+    if(!this.modifyUser.hasChanges) {
+      return this.saveLocations(this.modifyUser, () => {
         this.modifyUser.disableEditing();
         this.refresh(()=> {this.processing = false;}, () => {
           this.editing = false;
         })
+      });
+    }
+
+    this.processing = true;
+    this.dataService.updateUser(this.modifyUser.id, this.modifyUser.changes).subscribe({
+      next: (user: UserInfo) => {
+        return this.saveLocations(this.modifyUser, () => {
+          this.modifyUser.disableEditing();
+          this.refresh(()=> {this.processing = false;}, () => {
+            this.editing = false;
+          });
+        });
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    })
+  }
+
+  saveLocations(user: UserInfo, next:Function): void {
+    if(!this.selectedLocationChanges()) {
+      next();
+      return;
+    }
+    this.processing = true;
+    let locations: string[] = [];
+    _.each(this.selectedLocations, (value, key) => {
+      if(value === true) {
+        locations.push(key)
+      }
+    }); 
+
+    this.dataService.updateUserLocations(user.id, {"locationIds": locations}).subscribe({
+      next: (res: any) => {
+        next();
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -204,5 +287,93 @@ export class ManageUsersComponent implements OnInit {
 
   get modifyForm(): { [key: string]: AbstractControl } {
     return this.modifyFormGroup.controls;
-  }  
+  } 
+
+  reRunValidation(): void {
+    _.forEach(this.modifyForm, (ctrl) => {
+      ctrl.updateValueAndValidity();
+    });
+  }
+
+  changeLocationsSelection(selected: boolean, location: Location) : void {
+    this.selectedLocations[location.id] = selected;
+  }
+
+  selectedLocationChanges(): boolean {
+    let expected: string[] = [];
+    if(this.modifyUser.locations) {
+      for(let l of this.modifyUser.locations) {
+        expected.push(l.id)
+      }
+    }
+    expected.sort();
+
+    let actual: string[] = [];
+    _.each(this.selectedLocations, (value, key) => {
+      if(value === true) {
+        actual.push(key);
+      }
+    });
+    actual.sort();
+
+    return !_.isEqual(expected, actual);
+  }
+
+  resetSelectedLocations(): void {
+    for(let l of this.locations) {
+      this.selectedLocations[l.id] = false;
+    }
+  }
+
+  get changes(): boolean {
+    return this.modifyUser.hasChanges || this.selectedLocationChanges();
+  }
+
+  cancelChangePassword(): void {
+    this.changePassword = false;
+  }
+
+  startChangePassword(): void {
+    this.newPassword = "";
+    this.confirmNewPassword = "";
+    this.changePassword = true;
+  }
+
+  savePassword(): void {
+    if (this.changePasswordFormGroup.invalid) {
+      return;
+    }
+    
+    this.processing = true;
+    this.dataService.updateUser(this.modifyUser.id, {password: this.newPassword}).subscribe({
+      next: (data: UserInfo) => {
+        this.edit(new UserInfo(data));
+        this.changePassword = false;
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    });
+  }
+
+  disablePassword(): void {
+    if(confirm("Are you sure you want to disable the user's password?  Doing so will prevent them from logging in with username and password.  You will need to log in via Google instead.")) {
+      this.processing = true;
+      this.dataService.updateUser(this.modifyUser.id, {password: null}).subscribe({
+        next: (data: UserInfo) => {
+          this.edit(new UserInfo(data));
+          this.processing = false;
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+        }
+      });
+    }
+  }
+
+  get changePasswordForm(): { [key: string]: AbstractControl } {
+    return this.changePasswordFormGroup.controls;
+  }
 }

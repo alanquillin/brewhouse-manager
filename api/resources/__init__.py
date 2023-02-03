@@ -9,6 +9,7 @@ import dns.resolver
 import sqlalchemy
 from flask import redirect, request, send_from_directory, session
 from flask_restful import Resource
+from flask_login import current_user
 from schema import Schema, SchemaError, SchemaMissingKeyError
 
 from db import session_scope
@@ -64,7 +65,12 @@ def convert_ui_exceptions(func):
             return func(*args, **kwargs)
         except NotAuthorizedError as exc:
             LOGGER.error(exc.server_msg)
-            return redirect("/login?error=%s" % urllib.parse.quote_plus(exc.user_msg))
+            if not current_user:
+                LOGGER.debug("No user logged in... redirecting to login page")
+                return redirect("/login?error=%s" % urllib.parse.quote_plus(exc.user_msg))
+            else:
+                LOGGER.debug("User %s logged in... redirecting to /unauthorized", current_user.email)
+                return redirect("/unauthorized")
         except ForbiddenError as exc:
             LOGGER.error(exc.server_msg)
             return redirect("/forbidden")
@@ -94,6 +100,9 @@ def transform_request_data(original_data):
     if not original_data:
         return {}
 
+    if not isinstance(original_data, dict):
+        return original_data
+    
     data = {}
     for k, v in original_data.items():
         if isinstance(v, dict):
@@ -104,69 +113,47 @@ def transform_request_data(original_data):
     return data
 
 
-def transform_response(data, transform_keys=None, filtered_keys=None):
+def transform_response(data, transform_keys=None, remove_keys=None):
     if not data:
         return data
 
+    if getattr(data, "to_dict", None):
+        return transform_response(data.to_dict(), transform_keys=transform_keys, remove_keys=remove_keys)
+
     if isinstance(data, BaseResource):
-        return transform_response(data.to_dict())
+        return transform_response(data.to_dict(), transform_keys=transform_keys, remove_keys=remove_keys)
+
+    if isinstance(data, list):
+        return [transform_response(d, transform_keys=transform_keys, remove_keys=remove_keys) for d in data]
+
     transformed = {}
 
     if not transform_keys:
         transform_keys = {}
 
-    if not filtered_keys:
-        filtered_keys = {}
-
-    def get_filtered(obj, paths):
-        if paths == {}:
-            return None
-        if not paths:
-            return obj
-        deleted = []
-        for key in obj:
-            obj[key] = get_filtered(obj.get(key), paths.get(key))
-            if not obj[key]:
-                deleted.append(key)
-
-        for key in deleted:
-            del obj[key]
-        return obj
+    if not remove_keys:
+        remove_keys = []
 
     for key, val in data.items():
-        val = get_filtered(val, filtered_keys.get(key))
+        if key in remove_keys:
+            continue
 
         if val is None:
             continue
 
         if key in transform_keys:
             _key = transform_keys[key]
-        else:
+        elif "_" in key:
             _key = "".join([key.title() if ix > 0 else key.lower() for ix, key in enumerate(key.split("_"))])
+        else:
+            _key = key
 
         if isinstance(val, dict):
-            val = transform_response(val)
+            val = transform_response(val, transform_keys=transform_keys, remove_keys=remove_keys)
 
         transformed[_key] = val
 
     return transformed
-
-
-def generate_filtered_keys(key_list):
-    def get(obj, key):
-        obj[key] = obj.get(key, {})
-        return obj[key]
-
-    key_set = {}
-    for key in key_list:
-        path = str.split(key, ".")
-        current = key_set
-
-        for field in path:
-            current = get(current, field)
-
-    return key_set
-
 
 class BaseResource(Resource):
     schema = Schema({})
@@ -215,8 +202,8 @@ class ResourceMixinBase:
         return transform_request_data(data)
 
     @staticmethod
-    def transform_response(entity, filtered_keys=None, **kwargs):
-        return transform_response(entity, filtered_keys=filtered_keys)
+    def transform_response(entity, remove_keys=None, **kwargs):
+        return transform_response(entity, remove_keys=remove_keys)
 
     def _get_location_id(self, location_name, db_session=None):
         if not db_session:
@@ -280,3 +267,11 @@ class ImageTransitionResourceMixin(ResourceMixinBase):
             data["image_transitions"] = [ResourceMixinBase.transform_response(it.to_dict()) for it in image_transitions]
 
         return ResourceMixinBase.transform_response(data, **kwargs)
+
+
+def requires_admin(func):
+    def wrapper(*args, **kwargs):
+        if not current_user.admin:
+            raise NotAuthorizedError()
+        return func(*args, **kwargs)
+    return wrapper

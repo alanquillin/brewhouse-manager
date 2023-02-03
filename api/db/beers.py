@@ -2,8 +2,8 @@
 _TABLE_NAME = "beers"
 _PKEY = "id"
 
-from psycopg2.errors import UniqueViolation  # pylint: disable=no-name-in-module
 from sqlalchemy import Column, Date, Float, ForeignKey, Boolean, String, func
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.schema import Index
 
@@ -34,6 +34,9 @@ class Beers(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     brew_date = Column(Date, nullable=True)
     keg_date = Column(Date, nullable=True)
     image_transitions_enabled = Column(Boolean, nullable=False)
+    location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"), nullable=False)
+
+    location = relationship(locations.Locations, backref=backref("Beers", cascade="all,delete"))
 
     __table_args__ = (Index("beer_name_lower_ix", func.lower(name), unique=True),)
 

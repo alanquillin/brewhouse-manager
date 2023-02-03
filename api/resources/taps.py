@@ -1,9 +1,9 @@
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 from db import session_scope
 from db.taps import _PKEY as taps_pk
 from db.taps import Taps as TapsDB
-from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase
+from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase, NotAuthorizedError
 from resources.beers import BeerResourceMixin
 from resources.beverage import BeverageResourceMixin
 from resources.locations import LocationsResourceMixin
@@ -36,22 +36,33 @@ class TapsResourceMixin(ResourceMixinBase):
 
 
 class Taps(BaseResource, TapsResourceMixin):
+    @login_required
     def get(self, location=None):
         with session_scope(self.config) as db_session:
+            kwargs = {}
             if location:
                 location_id = self.get_location_id(location, db_session)
-                taps = TapsDB.get_by_location(db_session, location_id)
-            else:
-                taps = TapsDB.query(db_session)
+                if not current_user.admin and not location_id in current_user.locations:
+                    raise NotAuthorizedError()
+                kwargs["locations"] = [location_id]
+            elif not current_user.admin:
+                kwargs["locations"] = current_user.locations
+            
+            taps = TapsDB.query(db_session, **kwargs)
             return [self.transform_response(t, db_session=db_session) for t in taps]
 
     @login_required
     def post(self, location=None):
         with session_scope(self.config) as db_session:
             data = self.get_request_data()
+            if location:
+                location_id = self.get_location_id(location, db_session)
+                if not current_user.admin and not location_id in current_user.locations:
+                    raise NotAuthorizedError()
+                data["location_id"] = location_id
 
-            if not "location_id" in data and location:
-                data["location_id"] = self.get_location_id(location, db_session)
+            if not current_user.admin and not data.get("location_id") in current_user.locations:
+                raise NotAuthorizedError()
 
             beer_id = data.get("beer_id")
             beverage_id = data.get("beverage_id")
@@ -65,35 +76,35 @@ class Taps(BaseResource, TapsResourceMixin):
 
 
 class Tap(BaseResource, TapsResourceMixin):
+    def _get_tap(self, db_session, tap_id, location=None):
+        kwargs = {taps_pk: tap_id}
+        if location:
+            location_id = self.get_location_id(location, db_session)
+            if not current_user.admin and not location_id in current_user.locations:
+                raise NotAuthorizedError()
+            kwargs["locations"] = [location_id]
+        tap = TapsDB.query(db_session, **kwargs)
+
+        if not tap:
+            raise NotFoundError()
+
+        tap = tap[0]
+            
+        if not current_user.admin and not tap.location_id in current_user.locations:
+            raise NotAuthorizedError()
+        return tap
+
+    @login_required
     def get(self, tap_id, location=None):
         with session_scope(self.config) as db_session:
-            tap = None
-            if location:
-                query = {"location_id": self.get_location_id(location, db_session), taps_pk: tap_id}
-                res = TapsDB.query(db_session, **query)
-                if res:
-                    tap = res[0]
-            else:
-                tap = TapsDB.get_by_pkey(db_session, tap_id)
-
-            if not tap:
-                raise NotFoundError()
+            tap = self._get_tap(db_session, tap_id, location=location)
 
             return self.transform_response(tap, db_session=db_session)
 
     @login_required
     def patch(self, tap_id, location=None):
         with session_scope(self.config) as db_session:
-            if location:
-                query = {"location_id": self.get_location_id(location, db_session), taps_pk: tap_id}
-                resp = TapsDB.query(db_session, **query)
-                if resp:
-                    tap = resp[0]
-            else:
-                tap = TapsDB.get_by_pkey(db_session, tap_id)
-
-            if not tap:
-                raise NotFoundError()
+            tap = self._get_tap(db_session, tap_id, location=location)
 
             data = self.get_request_data()
 
@@ -109,24 +120,15 @@ class Tap(BaseResource, TapsResourceMixin):
             if beverage_id == "":
                 data["beverage_id"] = None
 
-            tap = TapsDB.update(db_session, tap_id, **data)
+            tap = TapsDB.update(db_session, tap.id, **data)
 
             return self.transform_response(tap, db_session=db_session)
 
     @login_required
     def delete(self, tap_id, location=None):
         with session_scope(self.config) as db_session:
-            if location:
-                query = {"location_id": self.get_location_id(location, db_session), taps_pk: tap_id}
-                resp = TapsDB.query(db_session, **query)
-                if resp:
-                    tap = resp[0]
-            else:
-                tap = TapsDB.get_by_pkey(db_session, tap_id)
+            tap = self._get_tap(db_session, tap_id, location=location)
 
-            if not tap:
-                raise NotFoundError()
-
-            TapsDB.delete(db_session, tap_id)
+            TapsDB.delete(db_session, tap.id)
 
             return True

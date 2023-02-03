@@ -6,7 +6,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Location, Tap, Beer, Beverage, Sensor, UserInfo, Settings } from '../models/models';
+import { Location, Tap, Beer, Beverage, Sensor, UserInfo, Settings, Dashboard } from '../models/models';
 import { WINDOW } from '../window.provider';
 import { isNilOrEmpty } from '../utils/helpers';
 
@@ -277,6 +277,21 @@ export class DataService {
     return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
+  generateUserAPIKey(userId: string): Observable<string> {
+    const url = `${this.apiBaseUrl}/users/${userId}/api_key/generate?regen=true`;
+    return this.http.post<string>(url, {}).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  deleteUserAPIKey(userId: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/users/${userId}/api_key`;
+    return this.http.delete<any>(url, {}).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  updateUserLocations(userId: string, data: any): Observable<any> {
+    const url = `${this.apiBaseUrl}/users/${userId}/locations`;
+    return this.http.post<any>(url, data).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
   getSettings(): Observable<Settings> {
     const url = `${this.apiBaseUrl}/settings`;
     return this.http.get<Settings>(url).pipe(catchError((err) => {return this.getError(err)}));
@@ -334,5 +349,35 @@ export class DataService {
   deleteImageTransition(imageTransitionId: string): Observable<any> {
     const url = `${this.apiBaseUrl}/image_transitions/${imageTransitionId}`;
     return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  getDashboard(locationId: string) : Observable<Dashboard> {
+    const url = `${this.apiBaseUrl}/dashboard/locations/${locationId}`;
+    return this.http.get<Dashboard>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+  
+  getDashboardLocations() : Observable<Location[]> {
+    const url = `${this.apiBaseUrl}/dashboard/locations`;
+    return this.http.get<Location[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+  
+  getDashboardTap(tapId: string) : Observable<Tap> {
+    const url = `${this.apiBaseUrl}/dashboard/taps/${tapId}`;
+    return this.http.get<Tap>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+  
+  getDashboardBeer(beerId: string) : Observable<Beer> {
+    const url = `${this.apiBaseUrl}/dashboard/beers/${beerId}`;
+    return this.http.get<Beer>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+  
+  getDashboardBeverage(beverageId: string) : Observable<Beverage> {
+    const url = `${this.apiBaseUrl}/dashboard/taps/${beverageId}`;
+    return this.http.get<Beverage>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+  
+  getDashboardSensor(sensorId: string) : Observable<Sensor> {
+    const url = `${this.apiBaseUrl}/dashboard/sensors/${sensorId}`;
+    return this.http.get<Sensor>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 }

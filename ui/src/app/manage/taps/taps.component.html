@@ -148,9 +148,9 @@
 
                 <mat-form-field appearance="fill">
                     <mat-label>Beer</mat-label>
-                    <mat-select formControlName="beerId" name="beerId" [(ngModel)]="modifyTap.editValues.beerId">
+                    <mat-select formControlName="beerId" name="beerId" [(ngModel)]="modifyTap.editValues.beerId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
                         <mat-option value="-1">-- None --</mat-option>
-                        <mat-option *ngFor="let beer of beers" [value]="beer.id">
+                        <mat-option *ngFor="let beer of getBeersForLocation(modifyTap.editValues.locationId)" [value]="beer.id">
                             <div title="{{ getUniqueBeerName(beer) }}">{{ getUniqueBeerName(beer) }}</div>
                         </mat-option>
                     </mat-select>
@@ -158,9 +158,9 @@
 
                 <mat-form-field appearance="fill">
                     <mat-label>Beverage</mat-label>
-                    <mat-select formControlName="beverageId" name="beverageId" [(ngModel)]="modifyTap.editValues.beverageId">
+                    <mat-select formControlName="beverageId" name="beverageId" [(ngModel)]="modifyTap.editValues.beverageId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
                         <mat-option value="-1">-- None --</mat-option>
-                        <mat-option *ngFor="let beverage of beverages" [value]="beverage.id">
+                        <mat-option *ngFor="let beverage of getBeveragesForLocation(modifyTap.editValues.locationId)" [value]="beverage.id">
                             <div title="{{ getUniqueBeverageName(beverage) }}">{{ getUniqueBeverageName(beverage) }}</div>
                         </mat-option>
                     </mat-select>
