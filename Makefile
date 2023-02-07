@@ -71,7 +71,7 @@ update-depends:
 # Targets for building containers
 
 # prod
-build: update-depends docker-build
+build: depends docker-build
 
 docker-build:
 ifeq ($(VERSION),)
