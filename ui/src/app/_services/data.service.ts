@@ -372,7 +372,7 @@ export class DataService {
   }
   
   getDashboardBeverage(beverageId: string) : Observable<Beverage> {
-    const url = `${this.apiBaseUrl}/dashboard/taps/${beverageId}`;
+    const url = `${this.apiBaseUrl}/dashboard/beverages/${beverageId}`;
     return this.http.get<Beverage>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
   
