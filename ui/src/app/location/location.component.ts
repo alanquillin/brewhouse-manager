@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard } from './../models/models';
+import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings } from './../models/models';
 import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
@@ -54,8 +54,10 @@ export class LocationComponent implements OnInit {
   taps: TapDetails[] = [];
   isNilOrEmpty: Function = isNilOrEmpty;
   tapRefreshSettings: TapRefreshSettings = new TapRefreshSettings();
+  dashboardSettings: DashboardSettings = new DashboardSettings();
   isFullscreen: boolean = false;
   enableFullscreen: boolean = false;
+  serviceAvailable: boolean = false;
 
   _ = _; //allow the html template to access lodash
 
@@ -63,17 +65,47 @@ export class LocationComponent implements OnInit {
     this.route.params.subscribe( (params: any) => this.location_identifier = params['location'] );
   }
 
+  scheduleHealthCheck(): void {
+    setTimeout(() => {this.checkHealth()}, 30000);
+  }
+
+  checkHealth(next?: Function): void {
+    this.dataService.isAvailable().subscribe({
+      next: (res: any) => {
+        console.log("yay, the service is available!");
+        this.serviceAvailable = true;
+        this.scheduleHealthCheck();
+        if(next) {
+          console.log("looks like 'next' is provided... calling it")
+          next();
+        } else {
+          console.log("no 'next' provided")
+        }
+      },
+      error: (err: DataError) => {
+        console.log("oh crap, the service is unavailable");
+        console.log(err.message);
+        console.log(err.statusCode);
+        console.log(err.name);
+        this.serviceAvailable = false;
+        this.scheduleHealthCheck();
+      }
+    })
+  }
+
   displayError(errMsg: string) {
     this._snackBar.open("Error: " + errMsg, "Close");
   }
 
   refresh(next?: Function, always?: Function) {
+    console.log("refreshing")
     this.isLoading = true;
     this.taps = [];
 
     this.dataService.getSettings().subscribe({
       next: (data: Settings) => {
         this.tapRefreshSettings = new TapRefreshSettings(data.taps.refresh);
+        this.dashboardSettings = new DashboardSettings(data.dashboard);
         this.dataService.getDashboard(this.location_identifier).subscribe({
           next: (dashboard: Dashboard) => {
             this.location = new Location(dashboard.location);
@@ -83,7 +115,9 @@ export class LocationComponent implements OnInit {
             }
             this.taps = [];
             for(let tap of dashboard.taps) {
-              this.taps.push(this.setTapDetails(new TapDetails(tap)));
+              let _tap = this.setTapDetails(new TapDetails(tap));
+              this.taps.push(_tap);
+              this.scheduleTapRefresh(_tap);
             }
             this.isLoading = false;
           }, error: (err: DataError) => {
@@ -107,11 +141,26 @@ export class LocationComponent implements OnInit {
     });
   }
 
+  scheduleTapRefresh(tap: TapDetails): void {
+    const refreshInMs = (this.tapRefreshSettings.baseSec + _.random(this.tapRefreshSettings.variable * -1, this.tapRefreshSettings.variable))*1000;
+    setTimeout(() => {this.refreshTap(tap)}, refreshInMs);
+  }
+
   refreshTap(tap: TapDetails) {
-    this.dataService.getDashboardTap(tap.id).subscribe((_tap: Tap) => {
-      tap.from(_tap);
-      this.setTapDetails(tap);
-    })
+    if(this.serviceAvailable) {
+      this.dataService.getDashboardTap(tap.id).subscribe({
+        next: (_tap: Tap) => {
+          tap.from(_tap);
+          tap = this.setTapDetails(tap);
+          this.scheduleTapRefresh(tap);
+        },
+        error: (err: DataError) => {
+          this.scheduleTapRefresh(tap);
+        }
+      });
+    } else {
+      this.scheduleTapRefresh(tap);
+    }
   }
 
   setTapDetails(tap: TapDetails): TapDetails {
@@ -160,9 +209,6 @@ export class LocationComponent implements OnInit {
         tap.isLoading = false;
       }
     }
-
-    const refreshInMs = (this.tapRefreshSettings.baseSec + _.random(this.tapRefreshSettings.variable * -1, this.tapRefreshSettings.variable))*1000;
-    setTimeout(() => {this.refreshTap(tap)}, refreshInMs);
     return tap;
   }
 
@@ -189,8 +235,10 @@ export class LocationComponent implements OnInit {
     // this.enableFullscreen = isIOS && isSafari;
     this.enableFullscreen = true;
 
-    this.refresh(()=>{
-      this.configService.update({title: `On Tap: ${this.location.description}`})
+    this.checkHealth(()=>{
+      this.refresh(()=>{
+        this.configService.update({title: `On Tap: ${this.location.description}`})
+      })
     });
   }
 

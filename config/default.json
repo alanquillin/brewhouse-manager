@@ -12,7 +12,8 @@
     "taps.refresh.base_sec": "int",
     "taps.refresh.variable": "int",
     "uploads.images.allowed_file_extensions": "list",
-    "particle.device_services.enabled": "bool"
+    "particle.device_services.enabled": "bool",
+    "dashboard.refresh_sec": "int"
   },
   "api": {
     "host": "localhost",
@@ -32,6 +33,9 @@
         "discovery_url": "https://accounts.google.com/.well-known/openid-configuration"
       }
     }
+  },
+  "dashboard": {
+    "refresh_sec": 15
   },
   "beverages": {
     "default_type": "cold-brew",

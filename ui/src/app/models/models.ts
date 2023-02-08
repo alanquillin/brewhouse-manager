@@ -368,16 +368,29 @@ export class BeverageSettings {
   }
 }
 
+export class DashboardSettings {
+  refreshSec!: number;
+
+  constructor(from?: any) {
+    this.refreshSec = 15;
+
+    if(!isNilOrEmpty(from)) {
+      Object.assign(this, from);
+    }
+  }
+}
+
 export class Settings {
   googleSSOEnabled: boolean;
   taps: TapSettings;
   beverages: BeverageSettings;
+  dashboard: DashboardSettings;
 
   constructor(from?: any) {
     this.googleSSOEnabled = false;
     this.taps = new TapSettings;
     this.beverages = new BeverageSettings;
-
+    this.dashboard = new DashboardSettings;
 
     if(!isNilOrEmpty(from)) {
       Object.assign(this, from);

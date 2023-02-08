@@ -99,7 +99,7 @@ LOGGER = logging.getLogger(__name__)
 
 @app.route("/health")
 def health():
-    return "healthy 👍"
+    return {"healthy": True}
 
 
 login_manager = LoginManager()

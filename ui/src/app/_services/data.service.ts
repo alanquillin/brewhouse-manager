@@ -380,4 +380,9 @@ export class DataService {
     const url = `${this.apiBaseUrl}/dashboard/sensors/${sensorId}`;
     return this.http.get<Sensor>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
+
+  isAvailable() : Observable<any> {
+    const url = `${this.baseUrl}/health`;
+    return this.http.get<any>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
 }
