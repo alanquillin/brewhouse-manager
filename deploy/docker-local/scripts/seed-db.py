@@ -125,6 +125,48 @@ SENSORS=[
     }
 ]
 
+beverage1_id = "9c517bc0-6c21-42f7-834a-2d4adb3b7041"
+beverage2_id = "6742d48e-2470-4762-856e-d01f33682579"
+beverage3_id = "82b47f65-b176-4ff9-94d6-81044e0b6b7f"
+BEVERAGES = [
+    {
+        "id": beverage1_id,
+        "name": "Test Cold Brew",
+        "description": "This is a test cold brew",
+        "brewery": "My Brewing Co.",
+        "type": "cold-brew",
+        "flavor": "Medium Roast",
+        "brew_date": datetime(2022, 1, 1),
+        "keg_date": datetime(2022, 1, 4),
+        "location_id": location1_id,
+        
+    },
+    {
+        "id": beverage2_id,
+        "name": "Test Soda",
+        "description": "This is a test soda",
+        "brewery": "My Soda Co.",
+        "type": "soda",
+        "flavor": "Cherry",
+        "brew_date": datetime(2022, 2, 19),
+        "keg_date": datetime(2022, 2, 21),
+        "location_id": location2_id,
+        
+    },
+    {
+        "id": beverage3_id,
+        "name": "Test Kombucha",
+        "description": "This is a test kombucha",
+        "brewery": "My Kombucha Co.",
+        "type": "kombucha",
+        "flavor": "Orange",
+        "brew_date": datetime(2022, 3, 2),
+        "keg_date": datetime(2022, 3, 8),
+        "location_id": location2_id,
+        
+    }
+]
+
 TAPS = [
     {
         "id": "13353ea9-bf7f-41d3-bd82-97262bf6a97a",
@@ -155,7 +197,8 @@ TAPS = [
         "tap_number": 4,
         "description": "Tap 4",
         "location_id": location1_id,
-        "sensor_id": sensor_l1s4_id
+        "sensor_id": sensor_l1s4_id,
+        "beverage_id": beverage1_id,
     },
     {
         "id": "f92adea8-27f1-4d45-80f0-066a47ce496e",
@@ -170,45 +213,7 @@ TAPS = [
         "tap_number": 2,
         "description": "Tap 2",
         "location_id": location2_id,
-    }
-]
-
-BEVERAGES = [
-    {
-        "id": "9c517bc0-6c21-42f7-834a-2d4adb3b7041",
-        "name": "Test Cold Brew",
-        "description": "This is a test cold brew",
-        "brewery": "My Brewing Co.",
-        "type": "cold-brew",
-        "flavor": "Medium Roast",
-        "brew_date": datetime(2022, 1, 1),
-        "keg_date": datetime(2022, 1, 4),
-        "location_id": location1_id,
-        
-    },
-    {
-        "id": "6742d48e-2470-4762-856e-d01f33682579",
-        "name": "Test Soda",
-        "description": "This is a test soda",
-        "brewery": "My Soda Co.",
-        "type": "soda",
-        "flavor": "Cherry",
-        "brew_date": datetime(2022, 2, 19),
-        "keg_date": datetime(2022, 2, 21),
-        "location_id": location1_id,
-        
-    },
-    {
-        "id": "82b47f65-b176-4ff9-94d6-81044e0b6b7f",
-        "name": "Test Kombucha",
-        "description": "This is a test kombucha",
-        "brewery": "My Kombucha Co.",
-        "type": "kombucha",
-        "flavor": "Orange",
-        "brew_date": datetime(2022, 3, 2),
-        "keg_date": datetime(2022, 3, 8),
-        "location_id": location1_id,
-        
+        "beverage_id": beverage2_id,
     }
 ]
 
