@@ -46,7 +46,7 @@ addopts = "--cov api --cov-report term-missing --cov-fail-under 80 --log-level D
 
 [tool.poetry]
 name = "brewhouse-manager"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["Immuta"]
 description = "Immuta Brewing Company: Brewhouse Manager"
 
