@@ -1,5 +1,5 @@
 <div class="connection-error alert alert-danger" role="alert" *ngIf="!serviceAvailable">
-    There was an error connecting to the backend service.
+    There was an error connecting to the backend service.  Last successful connection on <strong>{{ lastServiceAvailDT.toLocaleString("en-US") }}</strong>
 </div>
 <div class="fab-container" *ngIf="enableFullscreen">
     <button mat-icon-button (click)="goto('home')" *ngIf="!isFullscreen && showHomeBtn"><mat-icon>home</mat-icon></button>

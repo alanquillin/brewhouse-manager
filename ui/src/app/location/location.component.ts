@@ -58,6 +58,7 @@ export class LocationComponent implements OnInit {
   isFullscreen: boolean = false;
   enableFullscreen: boolean = false;
   serviceAvailable: boolean = false;
+  lastServiceAvailDT: Date = new Date(Date.now());
 
   _ = _; //allow the html template to access lodash
 
@@ -74,6 +75,7 @@ export class LocationComponent implements OnInit {
       next: (res: any) => {
         console.log("yay, the service is available!");
         this.serviceAvailable = true;
+        this.lastServiceAvailDT = new Date(Date.now());
         this.scheduleHealthCheck();
         if(next) {
           console.log("looks like 'next' is provided... calling it")
@@ -110,11 +112,11 @@ export class LocationComponent implements OnInit {
           next: (dashboard: Dashboard) => {
             this.location = new Location(dashboard.location);
             this.locations = [];
-            for(let location of dashboard.locations) {
+            for(let location of _.sortBy(dashboard.locations, (l) => {return l.description})) {
               this.locations.push(new Location(location));
             }
             this.taps = [];
-            for(let tap of dashboard.taps) {
+            for(let tap of _.sortBy(dashboard.taps, (t) => {return t.tapNumber})) {
               let _tap = this.setTapDetails(new TapDetails(tap));
               this.taps.push(_tap);
               this.scheduleTapRefresh(_tap);

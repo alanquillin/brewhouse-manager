@@ -5,6 +5,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Location } from './../models/models';
 
+import * as _ from 'lodash';
+
 @Component({
   selector: 'location-selector',
   templateUrl: './location-selector.component.html',
@@ -26,7 +28,7 @@ export class LocationSelectorComponent implements OnInit {
     this.loading = true;
     this.dataService.getDashboardLocations().subscribe({
       next: (locations: Location[]) => {
-        this.locations = locations
+        this.locations = _.sortBy(locations, (l) => {return l.description})
         if (locations.length == 0) {
           // redirect via the window to make sure the backend code is hit in case the user is not logged in yet
           window.location.href = "/manage";
