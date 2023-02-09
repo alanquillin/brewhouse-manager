@@ -19,12 +19,14 @@ div.tap-volume {
     vertical-align: top;
     height: 106px;
     width: 106px;
+    min-width: 106px !important;
 }
 
 div.tap-image {
     order: 1;
     display: inline-block;
     vertical-align: top;
+    min-width: 106px !important;
 }
 
 div.tap-details {

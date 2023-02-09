@@ -212,8 +212,7 @@ TAPS = [
         "id": "e0b83ea2-217b-440b-bad5-24548dc8bef1",
         "tap_number": 2,
         "description": "Tap 2",
-        "location_id": location2_id,
-        "beverage_id": beverage2_id,
+        "location_id": location2_id
     }
 ]
 
