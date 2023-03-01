@@ -202,7 +202,6 @@ export class ManageBeverageComponent implements OnInit {
       }
     }
     
-    console.log(data);
     this.dataService.createBeverage(data).subscribe({
       next: (beverage: Beverage) => {
         this.refresh(() => {this.processing = false;}, () => {this.adding = false;});

@@ -44,7 +44,6 @@ export class ErrorsComponent implements OnInit, AfterViewInit {
         this.loading = false;
       },
       error: (err: DataError) => {
-        console.log(err)
         if(err.statusCode !== 401) {
           return this.goto("login");
         }
