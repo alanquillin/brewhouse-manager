@@ -86,7 +86,7 @@ export class ManageSensorsComponent implements OnInit {
   refreshAll(always?:Function, next?: Function, error?: Function) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
-        this.locations = _.orderBy(locations, ["name"]);
+        this.locations = _.sortBy(locations, [(l:Location) => {return l.description}]);
         this.dataService.getSensorType().subscribe({
           next: (sensorTypes: string[]) => {
             this.sensorTypes = _.orderBy(sensorTypes, ["name"]);

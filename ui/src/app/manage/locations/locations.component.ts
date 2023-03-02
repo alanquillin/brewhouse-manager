@@ -45,7 +45,7 @@ export class ManageLocationsComponent implements OnInit {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = [];
-        _.forEach(locations, (location) => {
+        _.forEach(_.sortBy(locations, [(l:Location) => {return l.description}]), (location) => {
           var eLoc = new Location()
           Object.assign(eLoc, location);
           this.locations.push(eLoc)

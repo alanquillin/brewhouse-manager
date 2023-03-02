@@ -98,7 +98,7 @@ export class ManageBeverageComponent implements OnInit {
         this.dataService.getLocations().subscribe({
           next: (locations: Location[]) => {
             this.locations = [];
-            for(let location of locations) {
+            for(let location of _.sortBy(locations, [(l:Location) => {return l.description}])) {
               this.locations.push(new Location(location));
             }
             this.dataService.getBeverages(true).subscribe({

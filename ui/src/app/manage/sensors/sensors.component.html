@@ -9,7 +9,7 @@
                 <mat-label>Filter By Location</mat-label>
                 <mat-select [(value)]="selectedLocationFilters" (selectionChange)="filter()" multiple>
                     <mat-option *ngFor="let location of locations" [value]="location.id">
-                        {{ location.name }}
+                        {{ location.description }}
                     </mat-option>
                 </mat-select>
             </mat-form-field>
