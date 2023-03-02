@@ -484,7 +484,7 @@ export class ManageTapsComponent implements OnInit {
   }
 
   showDisplayNameToolTip(tap: Tap) {
-    return !isNilOrEmpty(tap.namePrefix) && !isNilOrEmpty(tap.nameSuffix);
+    return !isNilOrEmpty(tap.namePrefix) || !isNilOrEmpty(tap.nameSuffix);
   }
 
   clear(tap: Tap) {
