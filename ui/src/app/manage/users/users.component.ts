@@ -63,7 +63,7 @@ export class ManageUsersComponent implements OnInit {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = [];
-        for(let l of locations) {
+        for(let l of _.sortBy(locations, [(l:Location) => {return l.description}])) {
           this.selectedLocations[l.id] = false;
           this.locations.push(new Location(l));
         }

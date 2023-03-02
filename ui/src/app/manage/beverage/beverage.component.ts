@@ -10,7 +10,7 @@ import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/fil
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
 import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component'
 
-import { Beverage, ImageTransition, Settings, Location } from '../../models/models';
+import { Beverage, ImageTransition, Settings, Location, UserInfo } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
 import { toUnixTimestamp } from '../../utils/datetime';
 
@@ -37,6 +37,8 @@ export class ManageBeverageComponent implements OnInit {
   selectedLocationFilters: string[] = [];
   _ = _;
   imageTransitionsToDelete: string[] = [];
+
+  userInfo!: UserInfo;
 
   requiredIfImageTransitionsEnabled(comp: ManageBeverageComponent): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null  => {
@@ -154,9 +156,25 @@ export class ManageBeverageComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.refresh(()=> {
-      this.loading = false;
-    })
+    this.dataService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo) => {
+        this.userInfo = userInfo;
+
+        if(this.userInfo.locations && this.userInfo.admin) {
+          for(let l of this.userInfo.locations) {
+            this.selectedLocationFilters.push(l.id);
+          }
+        }
+        this.refresh(()=> {
+          this.loading = false;
+        });
+      },
+      error: (err: DataError) => {
+        if(err.statusCode !== 401) {
+          this.displayError(err.message);
+        }
+      }
+    });
   }
 
   add(): void {

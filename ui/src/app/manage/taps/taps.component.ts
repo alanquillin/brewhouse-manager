@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
 
-import { Beer, Beverage, Location, Tap, Sensor } from '../../models/models';
+import { Beer, Beverage, Location, Tap, Sensor, UserInfo } from '../../models/models';
 
 import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
@@ -31,6 +31,8 @@ export class ManageTapsComponent implements OnInit {
   _ = _;
   selectedLocationFilters: string[] = [];
   isNilOrEmpty = isNilOrEmpty;
+
+  userInfo!: UserInfo;
 
   modifyFormGroup: FormGroup = new FormGroup({
     displayName: new FormControl('', []),
@@ -174,9 +176,26 @@ export class ManageTapsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.refreshAll(()=> {
-      this.loading = false;
-    })
+    
+    this.dataService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo) => {
+        this.userInfo = userInfo;
+
+        if(this.userInfo.locations && this.userInfo.admin) {
+          for(let l of this.userInfo.locations) {
+            this.selectedLocationFilters.push(l.id);
+          }
+        }
+        this.refreshAll(()=> {
+          this.loading = false;
+        });
+      },
+      error: (err: DataError) => {
+        if(err.statusCode !== 401) {
+          this.displayError(err.message);
+        }
+      }
+    });
   }
 
   add(): void {

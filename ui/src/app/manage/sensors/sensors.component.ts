@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
 
-import { Sensor, Location } from '../../models/models';
+import { Sensor, Location, UserInfo } from '../../models/models';
 
 import * as _ from 'lodash';
 
@@ -27,6 +27,8 @@ export class ManageSensorsComponent implements OnInit {
   modifySensor: Sensor = new Sensor();
   _ = _;
   selectedLocationFilters: string[] = [];
+
+  userInfo!: UserInfo;
 
   modifyFormGroup: FormGroup = new FormGroup({
     name: new FormControl('', [Validators.required]),
@@ -117,9 +119,25 @@ export class ManageSensorsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.refreshAll(()=> {
-      this.loading = false;
-    })
+    this.dataService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo) => {
+        this.userInfo = userInfo;
+
+        if(this.userInfo.locations && this.userInfo.admin) {
+          for(let l of this.userInfo.locations) {
+            this.selectedLocationFilters.push(l.id);
+          }
+        }
+        this.refreshAll(()=> {
+          this.loading = false;
+        });
+      },
+      error: (err: DataError) => {
+        if(err.statusCode !== 401) {
+          this.displayError(err.message);
+        }
+      }
+    });
   }
 
   add(): void {
