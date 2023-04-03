@@ -3,8 +3,8 @@ services:
   nginx: 
     image : nginx:latest 
     ports : 
-        - 5000:5000
-        - 5443:5443
+        - 8000:8000
+        - 8443:8443
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
       - ./certs/localhost.crt:/etc/nginx/certs/localhost.crt
