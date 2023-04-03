@@ -9,7 +9,7 @@ from time import sleep
 
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from db import Base, beers, beverages, locations, sensors, session_scope, taps, users, user_locations
+from db import Base, beers, beverages, locations, sensors, session_scope, taps, users, user_locations, on_tap
 from lib.config import Config
 
 location1_id = "fb139af3-2905-4006-9196-62f54bb262ab"
@@ -167,49 +167,86 @@ BEVERAGES = [
     }
 ]
 
+on_tap_id1 = "a28fe129-edd1-49ef-904b-fadcfbc28fe5"
+on_tap_id2 = "472f77a3-ee37-4fad-a3ba-f91fb92710de"
+on_tap_id3 = "1d66886c-e5f4-4cd7-9931-bf3b1e0ee83e"
+on_tap_id4 = "bf2ecf10-96da-4abc-820f-94fac1c03d9f"
+on_tap_id5 = "4d2ec0d6-e5a2-463e-bd0c-e2b18e5bc5ad"
+
+ON_TAP = [
+    {
+        "id": on_tap_id1,
+        "beer_id": beer_l1b1_id
+    },
+    {
+        "id": on_tap_id2,
+        "beer_id": beer_l1b2_id
+    },
+    {
+        "id": on_tap_id3,
+        "beer_id": beer_l1b3_id
+    },
+    {
+        "id": on_tap_id4,
+        "beverage_id": beverage1_id
+    },
+    {
+        "id": on_tap_id5,
+        "beer_id": beer_l1b4_id
+    },
+]
+
+
+tap_l1t1_id = "13353ea9-bf7f-41d3-bd82-97262bf6a97a"
+tap_l1t2_id = "c342d381-d913-46a1-83d0-6e6cda4475c6"
+tap_l1t3_id = "e24fd19e-cfed-45e8-91c5-544ec5db4ad5"
+tap_l1t4_id = "572dcdba-4d37-4061-9c5c-20225de45513"
+tap_l2t1_id = "f92adea8-27f1-4d45-80f0-066a47ce496e"
+tap_l2t2_id = "e0b83ea2-217b-440b-bad5-24548dc8bef1"
+
 TAPS = [
     {
-        "id": "13353ea9-bf7f-41d3-bd82-97262bf6a97a",
+        "id": tap_l1t1_id,
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location1_id,
-        "beer_id": beer_l1b1_id,
+        "on_tap_id": on_tap_id1,
         "sensor_id": sensor_l1s1_id
     },
     {
-        "id": "c342d381-d913-46a1-83d0-6e6cda4475c6",
+        "id": tap_l1t2_id,
         "tap_number": 2,
         "description": "Tap 2",
         "location_id": location1_id,
-        "beer_id": beer_l1b2_id,
+        "on_tap_id": on_tap_id2,
         "sensor_id": sensor_l1s2_id
     },
     {
-        "id": "e24fd19e-cfed-45e8-91c5-544ec5db4ad5",
+        "id": tap_l1t3_id,
         "tap_number": 3,
         "description": "Tap 3",
         "location_id": location1_id,
-        "beer_id": beer_l1b3_id,
+        "on_tap_id": on_tap_id3,
         "sensor_id": sensor_l1s3_id
     },
     {
-        "id": "572dcdba-4d37-4061-9c5c-20225de45513",
+        "id": tap_l1t4_id,
         "tap_number": 4,
         "description": "Tap 4",
         "location_id": location1_id,
         "sensor_id": sensor_l1s4_id,
-        "beverage_id": beverage1_id,
+        "on_tap_id": on_tap_id4,
     },
     {
-        "id": "f92adea8-27f1-4d45-80f0-066a47ce496e",
+        "id": tap_l2t1_id,
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location2_id,
-        "beer_id": beer_l1b4_id,
+        "on_tap_id": on_tap_id5,
         "sensor_id": sensor_l2s1_id
     },
     {
-        "id": "e0b83ea2-217b-440b-bad5-24548dc8bef1",
+        "id": tap_l2t2_id,
         "tap_number": 2,
         "description": "Tap 2",
         "location_id": location2_id
@@ -325,6 +362,7 @@ if __name__ == "__main__":
         seed_db(db_session, beers.Beers, BEERS)
         seed_db(db_session, beverages.Beverages, BEVERAGES)
         seed_db(db_session, sensors.Sensors, SENSORS)
+        seed_db(db_session, on_tap.OnTap, ON_TAP)
         seed_db(db_session, taps.Taps, TAPS)
         initial_user_data = get_initial_user(db_session)
         if initial_user_data:

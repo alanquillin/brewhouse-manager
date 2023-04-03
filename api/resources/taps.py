@@ -1,8 +1,10 @@
 from flask_login import login_required, current_user
+from datetime import datetime
 
 from db import session_scope
 from db.taps import _PKEY as taps_pk
 from db.taps import Taps as TapsDB
+from db.on_tap import OnTap as OnTapDB
 from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase, NotAuthorizedError
 from resources.beers import BeerResourceMixin
 from resources.beverage import BeverageResourceMixin
@@ -18,13 +20,17 @@ class BeerOrBeverageOnlyError(ClientError):
 class TapsResourceMixin(ResourceMixinBase):
     @staticmethod
     def transform_response(tap, db_session=None):
-        data = ResourceMixinBase.transform_response(tap.to_dict())
+        data = ResourceMixinBase.transform_response(tap.to_dict(), remove_keys=["on_tap_id"])
 
-        if tap.beer:
-            data["beer"] = BeerResourceMixin.transform_response(tap.beer, db_session=db_session, skip_meta_refresh=True)
-        
-        if tap.beverage:
-            data["beverage"] = BeverageResourceMixin.transform_response(tap.beverage)
+        if tap.on_tap_id:
+            on_tap = OnTapDB.get_by_pkey(db_session, tap.on_tap_id)
+            if on_tap.beer:
+                data["beer"] = BeerResourceMixin.transform_response(on_tap.beer, db_session=db_session, skip_meta_refresh=True)
+                data["beerId"] = data["beer"].get("id")
+            
+            if on_tap.beverage:
+                data["beverage"] = BeverageResourceMixin.transform_response(on_tap.beverage)
+                data["beverageId"] = data["beverage"].get("id")
 
         if tap.location:
             data["location"] = LocationsResourceMixin.transform_response(tap.location)
@@ -65,10 +71,18 @@ class Taps(BaseResource, TapsResourceMixin):
                 raise NotAuthorizedError()
 
             beer_id = data.get("beer_id")
+            if beer_id == "":
+                beer_id = None
             beverage_id = data.get("beverage_id")
+            if beverage_id == "":
+                beverage_id = None
 
             if beer_id and beverage_id:
                 raise BeerOrBeverageOnlyError()
+            
+            if beer_id or beverage_id:
+                on_tap = OnTapDB.create(db_session, tap_id=tap_id, beer_id=beer_id, beverage_id=beverage_id, tapped_on=datetime.utcnow())
+                data["on_tap_id"] = on_tap.id
 
             tap = TapsDB.create(db_session, **data)
 
@@ -109,16 +123,23 @@ class Tap(BaseResource, TapsResourceMixin):
             data = self.get_request_data()
 
             beer_id = data.get("beer_id")
+            if beer_id == "":
+                beer_id = None
             beverage_id = data.get("beverage_id")
+            if beverage_id == "":
+                beverage_id = None
 
             if beer_id and beverage_id:
                 raise BeerOrBeverageOnlyError()
 
             # if the beer or beverage id come in as empty string, then null them out
-            if beer_id == "":
-                data["beer_id"] = None
-            if beverage_id == "":
-                data["beverage_id"] = None
+            if beer_id != tap.beer_id or beverage_id != tap.beverage_id:
+                if tap.on_tap_id:
+                    OnTapDB.update(db_session, untapped_on=datetime.utcnow())
+                    data["on_tap_id"] = None
+                if beer_id or beverage_id:
+                    on_tap = OnTapDB.create(db_session, tap_id=tap_id, beer_id=beer_id, beverage_id=beverage_id, tapped_on=datetime.utcnow())
+                    data["on_tap_id"] = on_tap.id
 
             tap = TapsDB.update(db_session, tap.id, **data)
 
