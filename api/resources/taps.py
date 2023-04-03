@@ -22,7 +22,7 @@ class TapsResourceMixin(ResourceMixinBase):
     def transform_response(tap, db_session=None):
         data = ResourceMixinBase.transform_response(tap.to_dict(), remove_keys=["on_tap_id"])
 
-        if tap.on_tap_id:
+        if tap.on_tap_id and db_session:
             on_tap = OnTapDB.get_by_pkey(db_session, tap.on_tap_id)
             if on_tap.beer:
                 data["beer"] = BeerResourceMixin.transform_response(on_tap.beer, db_session=db_session, skip_meta_refresh=True)
