@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
-import { FormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, FormGroup } from '@angular/forms';
+import { UntypedFormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, UntypedFormGroup } from '@angular/forms';
 
 import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/file-upload-dialog.component';
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
@@ -99,22 +99,22 @@ export class ManageBeerComponent implements OnInit {
     }
   }
 
-  modifyFormGroup: FormGroup = new FormGroup({
-    name: new FormControl('', [this.requiredIfNoBrewTool(this)]),
-    description: new FormControl('', []),
-    locationId: new FormControl('', [Validators.required]),
-    style: new FormControl('', [this.requiredIfNoBrewTool(this)]),
-    abv: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
-    srm: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
-    ibu: new FormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
-    externalBrewingTool: new FormControl(-1),
-    brewDate: new FormControl(new Date(), []),
-    kegDate: new FormControl(new Date(), []),
-    imgUrl: new FormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
-    imageTransitionsEnabled: new FormControl(''),
-    emptyImgUrl: new FormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
-    brewfatherBatchId: new FormControl('', [this.requiredForBrewingTool(this, "brewfather")]),
-    untappdId: new FormControl('')
+  modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    name: new UntypedFormControl('', [this.requiredIfNoBrewTool(this)]),
+    description: new UntypedFormControl('', []),
+    locationId: new UntypedFormControl('', [Validators.required]),
+    style: new UntypedFormControl('', [this.requiredIfNoBrewTool(this)]),
+    abv: new UntypedFormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
+    srm: new UntypedFormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
+    ibu: new UntypedFormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
+    externalBrewingTool: new UntypedFormControl(-1),
+    brewDate: new UntypedFormControl(new Date(), []),
+    kegDate: new UntypedFormControl(new Date(), []),
+    imgUrl: new UntypedFormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
+    imageTransitionsEnabled: new UntypedFormControl(''),
+    emptyImgUrl: new UntypedFormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
+    brewfatherBatchId: new UntypedFormControl('', [this.requiredForBrewingTool(this, "brewfather")]),
+    untappdId: new UntypedFormControl('')
   });
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }

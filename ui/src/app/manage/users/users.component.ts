@@ -3,7 +3,7 @@ import { DataService, DataError } from '../../_services/data.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
-import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
+import { UntypedFormControl, AbstractControl, Validators, UntypedFormGroup } from '@angular/forms';
 import { Validation } from '../../utils/form-validators';
 
 import { Location, UserInfo } from '../../models/models';
@@ -37,18 +37,18 @@ export class ManageUsersComponent implements OnInit {
   isNilOrEmpty = isNilOrEmpty;
   _ = _;
 
-  modifyFormGroup: FormGroup = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
-    firstName: new FormControl(''),
-    lastName: new FormControl(''),
-    profilePic: new FormControl(''),
-    password: new FormControl(''),
-    admin: new FormControl('')
+  modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    email: new UntypedFormControl('', [Validators.required, Validators.email]),
+    firstName: new UntypedFormControl(''),
+    lastName: new UntypedFormControl(''),
+    profilePic: new UntypedFormControl(''),
+    password: new UntypedFormControl(''),
+    admin: new UntypedFormControl('')
   });
 
-  changePasswordFormGroup: FormGroup = new FormGroup({
-    password: new FormControl('', [Validators.required, Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&]).{8,}')]),
-    confirmPassword: new FormControl('', [Validators.required])
+  changePasswordFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    password: new UntypedFormControl('', [Validators.required, Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&]).{8,}')]),
+    confirmPassword: new UntypedFormControl('', [Validators.required])
   }, { validators: [Validation.match('password', 'confirmPassword')] });
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }

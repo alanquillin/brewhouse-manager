@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, FormGroup } from '@angular/forms';
+import { UntypedFormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, UntypedFormGroup } from '@angular/forms';
 
 import { isNilOrEmpty } from '../../utils/helpers';
 
@@ -30,15 +30,15 @@ export class VolumeCalculatorComponent implements OnInit {
     }
   }
 
-  volCalcFormGroup: FormGroup = new FormGroup({
-    totalWeight: new FormControl('', [this.requiredIfCalcType(this, "byWeight"), this.decimalValidator]),
-    totalWeightUnit: new FormControl('kg', [Validators.required]),
-    targetVolume: new FormControl('', [this.requiredIfCalcType(this, "byVolume"), this.decimalValidator]),
-    targetVolumeUnit: new FormControl('gal', [Validators.required]),
-    emptyContainerWeight: new FormControl('', [Validators.required, this.decimalValidator]),
-    emptyContainerWeightUnit: new FormControl('kg', [Validators.required]),
-    gravity: new FormControl('', [Validators.required, this.decimalValidator]),
-    gravityUnit: new FormControl('sg', [Validators.required]),
+  volCalcFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    totalWeight: new UntypedFormControl('', [this.requiredIfCalcType(this, "byWeight"), this.decimalValidator]),
+    totalWeightUnit: new UntypedFormControl('kg', [Validators.required]),
+    targetVolume: new UntypedFormControl('', [this.requiredIfCalcType(this, "byVolume"), this.decimalValidator]),
+    targetVolumeUnit: new UntypedFormControl('gal', [Validators.required]),
+    emptyContainerWeight: new UntypedFormControl('', [Validators.required, this.decimalValidator]),
+    emptyContainerWeightUnit: new UntypedFormControl('kg', [Validators.required]),
+    gravity: new UntypedFormControl('', [Validators.required, this.decimalValidator]),
+    gravityUnit: new UntypedFormControl('sg', [Validators.required]),
   });
 
   calType: String = "byWeight"

@@ -3,7 +3,7 @@ import { DataService, DataError } from '../../_services/data.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
-import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
+import { UntypedFormControl, AbstractControl, Validators, UntypedFormGroup } from '@angular/forms';
 
 import { Sensor, Location, UserInfo } from '../../models/models';
 
@@ -30,11 +30,11 @@ export class ManageSensorsComponent implements OnInit {
 
   userInfo!: UserInfo;
 
-  modifyFormGroup: FormGroup = new FormGroup({
-    name: new FormControl('', [Validators.required]),
-    sensorType: new FormControl('', [Validators.required]),
-    locationId: new FormControl('', [Validators.required]),
-    metaAuthToken: new FormControl('', [Validators.required])
+  modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    name: new UntypedFormControl('', [Validators.required]),
+    sensorType: new UntypedFormControl('', [Validators.required]),
+    locationId: new UntypedFormControl('', [Validators.required]),
+    metaAuthToken: new UntypedFormControl('', [Validators.required])
   });
 
   get displayedColumns(): string[] {

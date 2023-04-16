@@ -3,7 +3,7 @@ import { DataService, DataError } from '../../_services/data.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
-import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
+import { UntypedFormControl, AbstractControl, Validators, UntypedFormGroup } from '@angular/forms';
 
 import { Beer, Beverage, Location, Tap, Sensor, UserInfo } from '../../models/models';
 
@@ -34,16 +34,16 @@ export class ManageTapsComponent implements OnInit {
 
   userInfo!: UserInfo;
 
-  modifyFormGroup: FormGroup = new FormGroup({
-    displayName: new FormControl('', []),
-    description: new FormControl('', [Validators.required]),
-    locationId: new FormControl('', [Validators.required]),
-    beerId: new FormControl(''),
-    tapNumber: new FormControl('', [Validators.required, Validators.pattern("^[0-9]*$")]),
-    sensorId: new FormControl(''),
-    beverageId: new FormControl(''),
-    namePrefix: new FormControl('', []),
-    nameSuffix: new FormControl('', [])
+  modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    displayName: new UntypedFormControl('', []),
+    description: new UntypedFormControl('', [Validators.required]),
+    locationId: new UntypedFormControl('', [Validators.required]),
+    beerId: new UntypedFormControl(''),
+    tapNumber: new UntypedFormControl('', [Validators.required, Validators.pattern("^[0-9]*$")]),
+    sensorId: new UntypedFormControl(''),
+    beverageId: new UntypedFormControl(''),
+    namePrefix: new UntypedFormControl('', []),
+    nameSuffix: new UntypedFormControl('', [])
   });
 
   get displayedColumns() {

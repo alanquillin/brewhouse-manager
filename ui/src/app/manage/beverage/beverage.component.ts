@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
-import { FormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, FormGroup } from '@angular/forms';
+import { UntypedFormControl, AbstractControl, ValidatorFn, ValidationErrors, Validators, UntypedFormGroup } from '@angular/forms';
 
 import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/file-upload-dialog.component';
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
@@ -56,21 +56,21 @@ export class ManageBeverageComponent implements OnInit {
     }
   }
 
-  modifyFormGroup: FormGroup = new FormGroup({
-    name: new FormControl('', [Validators.required]),
-    type: new FormControl('', [Validators.required]),
-    description: new FormControl('', []),
-    locationId: new FormControl('', [Validators.required]),
-    brewery: new FormControl('', []),
-    breweryLink: new FormControl('', []),
-    flavor: new FormControl('', []),
-    brewDate: new FormControl(new Date(), []),
-    kegDate: new FormControl(new Date(), []),
-    imgUrl: new FormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
-    imageTransitionsEnabled: new FormControl(''),
-    emptyImgUrl: new FormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
-    roastery: new FormControl('', []),
-    roasteryLink: new FormControl('', []),
+  modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    name: new UntypedFormControl('', [Validators.required]),
+    type: new UntypedFormControl('', [Validators.required]),
+    description: new UntypedFormControl('', []),
+    locationId: new UntypedFormControl('', [Validators.required]),
+    brewery: new UntypedFormControl('', []),
+    breweryLink: new UntypedFormControl('', []),
+    flavor: new UntypedFormControl('', []),
+    brewDate: new UntypedFormControl(new Date(), []),
+    kegDate: new UntypedFormControl(new Date(), []),
+    imgUrl: new UntypedFormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
+    imageTransitionsEnabled: new UntypedFormControl(''),
+    emptyImgUrl: new UntypedFormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
+    roastery: new UntypedFormControl('', []),
+    roasteryLink: new UntypedFormControl('', []),
   });
 
   get displayedColumns() {

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService, DataError } from '../_services/data.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormGroup, Validators, FormControl } from '@angular/forms';
+import { UntypedFormGroup, Validators, UntypedFormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Settings } from '../models/models'
@@ -19,9 +19,9 @@ import * as _ from 'lodash';
 export class LoginComponent implements OnInit {
   
   loading = false;
-  loginFormGroup: FormGroup = new FormGroup({
-    email: new FormControl('', [Validators.required]),
-    password: new FormControl('', [Validators.required])
+  loginFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    email: new UntypedFormControl('', [Validators.required]),
+    password: new UntypedFormControl('', [Validators.required])
   });
 
   email!: string;
