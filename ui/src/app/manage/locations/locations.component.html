@@ -18,7 +18,7 @@
                 <td mat-cell *matCellDef="let element">
                     <div *ngIf="!element.isEditing">{{element.name}}</div>
                     <div *ngIf="element.isEditing">
-                        <mat-form-field floatLabel="never">
+                        <mat-form-field>
                             <input matInput [formControl]="nameFormControl" placeholder="Name" [value]="element.name" [(ngModel)]="element.editValues.name">
                             <mat-error *ngIf="nameFormControl.hasError('pattern')">
                                 Name can only contain lowercase letters, number and dashes
@@ -34,7 +34,7 @@
                 <td mat-cell *matCellDef="let element">
                     <div *ngIf="!element.isEditing">{{element.description}}</div>
                     <div *ngIf="element.isEditing">
-                        <mat-form-field floatLabel="never">
+                        <mat-form-field>
                             <input matInput [formControl]="descriptionFormControl" placeholder="Description" [value]="element.description" [(ngModel)]="element.editValues.description">
                         </mat-form-field>
                     </div>
