@@ -120,12 +120,20 @@ class Tap(BaseResource, TapsResourceMixin):
         with session_scope(self.config) as db_session:
             tap = self._get_tap(db_session, tap_id, location=location)
 
+            current_beer_id = None
+            if tap.on_tap:
+                current_beer_id = tap.on_tap.beer_id
+            
+            current_beverage_id = None
+            if tap.on_tap:
+                current_beverage_id = tap.on_tap.beverage_id
+            
             data = self.get_request_data()
 
-            beer_id = data.get("beer_id")
+            beer_id = data.pop("beer_id", current_beer_id)
             if beer_id == "":
                 beer_id = None
-            beverage_id = data.get("beverage_id")
+            beverage_id = data.pop("beverage_id", current_beverage_id)
             if beverage_id == "":
                 beverage_id = None
 
@@ -133,12 +141,14 @@ class Tap(BaseResource, TapsResourceMixin):
                 raise BeerOrBeverageOnlyError()
 
             # if the beer or beverage id come in as empty string, then null them out
-            if beer_id != tap.beer_id or beverage_id != tap.beverage_id:
+            if beer_id != current_beer_id or beverage_id != current_beverage_id:
                 if tap.on_tap_id:
-                    OnTapDB.update(db_session, untapped_on=datetime.utcnow())
-                    data["on_tap_id"] = None
+                    OnTapDB.update(db_session, tap.on_tap_id, untapped_on=datetime.utcnow())
+                
+                data["on_tap_id"] = None
+                
                 if beer_id or beverage_id:
-                    on_tap = OnTapDB.create(db_session, tap_id=tap_id, beer_id=beer_id, beverage_id=beverage_id, tapped_on=datetime.utcnow())
+                    on_tap = OnTapDB.create(db_session, beer_id=beer_id, beverage_id=beverage_id, tapped_on=datetime.utcnow())
                     data["on_tap_id"] = on_tap.id
 
             tap = TapsDB.update(db_session, tap.id, **data)
