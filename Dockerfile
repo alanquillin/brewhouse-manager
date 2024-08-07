@@ -1,6 +1,6 @@
 # NodeJS base
 # ############################################################
-FROM node:18.15.0-buster as node-base
+FROM node:18.20-bullseye AS node-base
 
 RUN yarn config set network-timeout 1200000 -g
 RUN yarn global add @angular/cli
@@ -10,7 +10,7 @@ RUN yarn install --non-interactive
 
 # Python base
 # ############################################################
-FROM python:3.9-slim-buster as python-base
+FROM python:3.11-slim-bullseye as python-base
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc build-essential libpq-dev libffi-dev libssl-dev \
@@ -32,7 +32,7 @@ RUN apt-get purge -y --auto-remove gcc build-essential libffi-dev libssl-dev
 
 # Angular build
 # ############################################################
-FROM node-base as node-build
+FROM node-base AS node-build
 
 ARG build_for=prod
 COPY ui/src /ui/src
@@ -40,7 +40,7 @@ RUN yarn run build:${build_for}
 
 # Final build
 # ############################################################
-FROM python-base as final
+FROM python-base AS final
 
 ARG build_for=prod
 
