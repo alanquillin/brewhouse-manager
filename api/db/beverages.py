@@ -27,8 +27,6 @@ class Beverages(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     flavor = Column(String, nullable=True)
     img_url = Column(String, nullable=True)
     empty_img_url = Column(String, nullable=True)
-    brew_date = Column(Date, nullable=True)
-    keg_date = Column(Date, nullable=True)
     meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
     image_transitions_enabled = Column(Boolean, nullable=False)
     location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"), nullable=False)

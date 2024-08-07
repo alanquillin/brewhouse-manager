@@ -41,10 +41,10 @@ class BeverageResourceMixin(ResourceMixinBase):
             if taps:
                 data["taps"] = [BeverageResourceMixin.transform_tap_response(tap) for tap in taps]
 
-        for k in ["brew_date", "keg_date"]:
-            d = data.get(k)
-            if k in data and isinstance(d, date):
-                data[k] = datetime.timestamp(datetime.fromordinal(d.toordinal()))
+        # for k in ["brew_date", "keg_date"]:
+        #     d = data.get(k)
+        #     if k in data and isinstance(d, date):
+        #         data[k] = datetime.timestamp(datetime.fromordinal(d.toordinal()))
 
         return ImageTransitionResourceMixin.transform_response(data, image_transitions, db_session, beverage_id=beverage.id)
 
@@ -52,9 +52,9 @@ class BeverageResourceMixin(ResourceMixinBase):
     def get_request_data(remove_key=[]):
         data = ResourceMixinBase.get_request_data(remove_key=remove_key)
 
-        for k in ["brew_date", "keg_date"]:
-            if k in data and data.get(k):
-                data[k] = datetime.fromtimestamp(data.get(k))
+        # for k in ["brew_date", "keg_date"]:
+        #     if k in data and data.get(k):
+        #         data[k] = datetime.fromtimestamp(data.get(k))
 
         return data
 

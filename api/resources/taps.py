@@ -5,16 +5,11 @@ from db import session_scope
 from db.taps import _PKEY as taps_pk
 from db.taps import Taps as TapsDB
 from db.on_tap import OnTap as OnTapDB
+from db.batches import Batches as BatchesDB
 from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase, NotAuthorizedError
-from resources.beers import BeerResourceMixin
-from resources.beverage import BeverageResourceMixin
+from resources.batches import BatchesResourceMixin
 from resources.locations import LocationsResourceMixin
 from resources.sensors import SensorResourceMixin
-
-
-class BeerOrBeverageOnlyError(ClientError):
-    def __init__(self, response_code=400, **kwargs):
-        super().__init__(response_code, "You only associate a beer or a beverage to the selected tap, not both", **kwargs)
 
 
 class TapsResourceMixin(ResourceMixinBase):
@@ -24,13 +19,17 @@ class TapsResourceMixin(ResourceMixinBase):
 
         if tap.on_tap_id and db_session:
             on_tap = OnTapDB.get_by_pkey(db_session, tap.on_tap_id)
-            if on_tap.beer:
-                data["beer"] = BeerResourceMixin.transform_response(on_tap.beer, db_session=db_session, skip_meta_refresh=True)
-                data["beerId"] = data["beer"].get("id")
-            
-            if on_tap.beverage:
-                data["beverage"] = BeverageResourceMixin.transform_response(on_tap.beverage)
-                data["beverageId"] = data["beverage"].get("id")
+            batch = BatchesDB.get_by_pkey(db_session, on_tap.batch_id)
+            if batch:
+                batch_data = BatchesResourceMixin.transform_response(batch, db_session=db_session)
+                for k in ["beer", "beverage"]:
+                    if k in batch_data:
+                        b_data = batch_data.get(k)
+                        for k2 in ["keg_date", "brew_date"]:
+                            if k2 in batch_data:
+                                b_data[k2] = batch_data.get(k2)
+                    
+                        data[k] = b_data
 
         if tap.location:
             data["location"] = LocationsResourceMixin.transform_response(tap.location)
@@ -70,18 +69,13 @@ class Taps(BaseResource, TapsResourceMixin):
             if not current_user.admin and not data.get("location_id") in current_user.locations:
                 raise NotAuthorizedError()
 
-            beer_id = data.get("beer_id")
-            if beer_id == "":
-                beer_id = None
-            beverage_id = data.get("beverage_id")
-            if beverage_id == "":
-                beverage_id = None
-
-            if beer_id and beverage_id:
-                raise BeerOrBeverageOnlyError()
+            batch_id = data.get("batch_id")
+            if batch_id == "":
+                batch_id = None
             
-            if beer_id or beverage_id:
-                on_tap = OnTapDB.create(db_session, tap_id=tap_id, beer_id=beer_id, beverage_id=beverage_id, tapped_on=datetime.utcnow())
+            if batch_id:
+                batch = BatchesDB.get_by_pkey(db_session, batch_id)
+                on_tap = OnTapDB.create(db_session, beer_id=batch.beer_id, beverage_id=batch.beverage_id, tapped_on=datetime.utcnow())
                 data["on_tap_id"] = on_tap.id
 
             tap = TapsDB.create(db_session, **data)
@@ -120,35 +114,26 @@ class Tap(BaseResource, TapsResourceMixin):
         with session_scope(self.config) as db_session:
             tap = self._get_tap(db_session, tap_id, location=location)
 
-            current_beer_id = None
+            current_batch_id = None
             if tap.on_tap:
-                current_beer_id = tap.on_tap.beer_id
-            
-            current_beverage_id = None
-            if tap.on_tap:
-                current_beverage_id = tap.on_tap.beverage_id
+                current_batch_id = tap.on_tap.batch_id
             
             data = self.get_request_data()
 
-            beer_id = data.pop("beer_id", current_beer_id)
-            if beer_id == "":
-                beer_id = None
-            beverage_id = data.pop("beverage_id", current_beverage_id)
-            if beverage_id == "":
-                beverage_id = None
-
-            if beer_id and beverage_id:
-                raise BeerOrBeverageOnlyError()
+            batch_id = data.pop("batch_id", current_batch_id)
+            if batch_id == "":
+                batch_id = None
 
             # if the beer or beverage id come in as empty string, then null them out
-            if beer_id != current_beer_id or beverage_id != current_beverage_id:
+            if batch_id != current_batch_id:
                 if tap.on_tap_id:
                     OnTapDB.update(db_session, tap.on_tap_id, untapped_on=datetime.utcnow())
                 
                 data["on_tap_id"] = None
                 
-                if beer_id or beverage_id:
-                    on_tap = OnTapDB.create(db_session, beer_id=beer_id, beverage_id=beverage_id, tapped_on=datetime.utcnow())
+                if batch_id:
+                    batch = BatchesDB.get_by_pkey(db_session, batch_id)
+                    on_tap = OnTapDB.create(db_session, beer_id=batch.beer_id, beverage_id=batch.beverage_id, tapped_on=datetime.utcnow())
                     data["on_tap_id"] = on_tap.id
 
             tap = TapsDB.update(db_session, tap.id, **data)

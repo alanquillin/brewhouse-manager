@@ -101,20 +101,11 @@ class BeerResourceMixin(ResourceMixinBase):
                     else:
                         G_LOGGER.warning("There and error or no details from %s for %s", tool_type, {k: v for k, v in meta.items() if k != "details"})
 
-        for k in ["brew_date", "keg_date"]:
-            d = data.get(k)
-            if k in data and isinstance(d, date):
-                data[k] = datetime.timestamp(datetime.fromordinal(d.toordinal()))
-
         return ImageTransitionResourceMixin.transform_response(data, image_transitions, db_session, beer_id=beer.id, **kwargs)
 
     @staticmethod
     def get_request_data(remove_key=[]):
         data = ResourceMixinBase.get_request_data(remove_key=remove_key)
-
-        for k in ["brew_date", "keg_date"]:
-            if k in data and data.get(k):
-                data[k] = datetime.fromtimestamp(data.get(k))
 
         return data
 

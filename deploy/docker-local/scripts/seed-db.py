@@ -8,8 +8,9 @@ import sys
 from time import sleep
 
 from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.sql import text
 
-from db import Base, beers, beverages, locations, sensors, session_scope, taps, users, user_locations, on_tap
+from db import Base, beers, beverages, locations, sensors, session_scope, taps, users, user_locations, on_tap, batches
 from lib.config import Config
 
 location1_id = "fb139af3-2905-4006-9196-62f54bb262ab"
@@ -136,8 +137,6 @@ BEVERAGES = [
         "brewery": "My Brewing Co.",
         "type": "cold-brew",
         "flavor": "Medium Roast",
-        "brew_date": datetime(2022, 1, 1),
-        "keg_date": datetime(2022, 1, 4),
         "location_id": location1_id,
         
     },
@@ -148,8 +147,6 @@ BEVERAGES = [
         "brewery": "My Soda Co.",
         "type": "soda",
         "flavor": "Cherry",
-        "brew_date": datetime(2022, 2, 19),
-        "keg_date": datetime(2022, 2, 21),
         "location_id": location2_id,
         
     },
@@ -160,11 +157,40 @@ BEVERAGES = [
         "brewery": "My Kombucha Co.",
         "type": "kombucha",
         "flavor": "Orange",
-        "brew_date": datetime(2022, 3, 2),
-        "keg_date": datetime(2022, 3, 8),
         "location_id": location2_id,
         
     }
+]
+
+batch_id1 = "a28fe129-edd1-49ef-904b-fadcfbc28fe5"
+batch_id2 = "472f77a3-ee37-4fad-a3ba-f91fb92710de"
+batch_id3 = "1d66886c-e5f4-4cd7-9931-bf3b1e0ee83e"
+batch_id4 = "bf2ecf10-96da-4abc-820f-94fac1c03d9f"
+batch_id5 = "4d2ec0d6-e5a2-463e-bd0c-e2b18e5bc5ad"
+
+BATCHES = [
+    {
+        "id": batch_id1,
+        "beer_id": beer_l1b1_id
+    },
+    {
+        "id": batch_id2,
+        "beer_id": beer_l1b2_id
+    },
+    {
+        "id": batch_id3,
+        "beer_id": beer_l1b3_id
+    },
+    {
+        "id": batch_id4,
+        "beverage_id": beverage1_id,
+        "brew_date": datetime(2022, 1, 1),
+        "keg_date": datetime(2022, 1, 4),
+    },
+    {
+        "id": batch_id5,
+        "beer_id": beer_l1b4_id
+    },
 ]
 
 on_tap_id1 = "a28fe129-edd1-49ef-904b-fadcfbc28fe5"
@@ -176,23 +202,23 @@ on_tap_id5 = "4d2ec0d6-e5a2-463e-bd0c-e2b18e5bc5ad"
 ON_TAP = [
     {
         "id": on_tap_id1,
-        "beer_id": beer_l1b1_id
+        "batch_id": batch_id1
     },
     {
         "id": on_tap_id2,
-        "beer_id": beer_l1b2_id
+        "batch_id": batch_id2
     },
     {
         "id": on_tap_id3,
-        "beer_id": beer_l1b3_id
+        "batch_id": batch_id3
     },
     {
         "id": on_tap_id4,
-        "beverage_id": beverage1_id
+        "batch_id": batch_id4
     },
     {
         "id": on_tap_id5,
-        "beer_id": beer_l1b4_id
+        "batch_id": batch_id5
     },
 ]
 
@@ -349,7 +375,7 @@ if __name__ == "__main__":
     with session_scope(config) as db_session:
         while True:
             try:
-                db_session.execute("select 1")
+                db_session.execute(text("select 1"))
                 logger.debug("Database ready!")
                 break
             except OperationalError:
@@ -362,6 +388,7 @@ if __name__ == "__main__":
         seed_db(db_session, beers.Beers, BEERS)
         seed_db(db_session, beverages.Beverages, BEVERAGES)
         seed_db(db_session, sensors.Sensors, SENSORS)
+        seed_db(db_session, batches.Batches, BATCHES)
         seed_db(db_session, on_tap.OnTap, ON_TAP)
         seed_db(db_session, taps.Taps, TAPS)
         initial_user_data = get_initial_user(db_session)

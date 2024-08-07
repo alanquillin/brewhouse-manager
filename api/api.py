@@ -224,7 +224,7 @@ def load_user_from_request(request):
         # next, try to login using Basic Auth
         api_key = request.headers.get('Authorization')
         if api_key:
-            api_key = api_key.replace('Basic ', '', 1).strip()
+            api_key = api_key.replace('Bearer ', '', 1).strip()
             try:
                 api_key = base64.b64decode(api_key).decode('ascii')
             except TypeError as e:

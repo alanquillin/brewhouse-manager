@@ -31,8 +31,6 @@ class Beers(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     img_url = Column(String, nullable=True)
     empty_img_url = Column(String, nullable=True)
     untappd_id = Column(String, nullable=True)
-    brew_date = Column(Date, nullable=True)
-    keg_date = Column(Date, nullable=True)
     image_transitions_enabled = Column(Boolean, nullable=False)
     location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"), nullable=False)
 
