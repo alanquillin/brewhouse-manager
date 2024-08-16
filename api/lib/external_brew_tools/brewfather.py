@@ -4,20 +4,20 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from db import session_scope
-from db.beers import Beers
+from db.batches import Batches as BatchesDB
+from db.beers import Beers as BeersDB
 from lib.external_brew_tools import ExternalBrewToolBase
 
-
 class Brewfather(ExternalBrewToolBase):
-    def get_details(self, beer_id=None, beer=None, meta=None):
-        if not beer_id and not beer and not meta:
+    def get_batch_details(self, batch_id=None, batch=None, meta=None):
+        if not batch_id and not batch and not meta:
             raise Exception("WTH!!")
 
         if not meta:
-            if not beer:
+            if not batch:
                 with session_scope as session:
-                    beer = Beers.get_by_pkey(session, beer_id)
-            meta = beer.external_brewing_tool_meta
+                    batch = BatchesDB.get_by_pkey(session, batch_id)
+            meta = batch.external_brewing_tool_meta
 
         fields = [
             "batchNo",
@@ -55,11 +55,45 @@ class Brewfather(ExternalBrewToolBase):
             details["_refresh_reason"] = "The batch was not in a completed status: %s." % ", ".join(complete_statuses)
 
         return details
+    
+    def get_recipe_details(self, beer_id=None, beer=None, meta=None):
+        if not beer_id and not beer and not meta:
+            raise Exception("WTH!!")
 
-    def search(self, meta=None):
-        return self._get_batchs(meta=meta)
+        if not meta:
+            if not beer:
+                with session_scope as session:
+                    beer = BeersDB.get_by_pkey(session, beer_id)
+            meta = beer.external_brewing_tool_meta
 
-    def _get_batchs(self, meta=None):
+        fields = [
+            "measuredAbv",
+            "status",
+            "ibu",
+            "color",
+            "name",
+            "img_url",
+            "style.name",
+            "style.type",
+            "abv"
+        ]
+        recipe = self._get_recipe(meta=meta, params={"include": ",".join(fields)})
+
+        details = {
+            "name": recipe.get("name"),
+            "abv": recipe.get("abv"),
+            "img_url": recipe.get("img_url"),
+            "style": recipe.get("style", {}).get("name"),
+            "ibu": recipe.get("ibu"),
+            "srm": recipe.get("color"),
+        }
+
+        return details
+
+    def search_batches(self, meta=None):
+        return self._get_batches(meta=meta)
+
+    def _get_batches(self, meta=None):
         return self._get(f"v1/batches", meta)
 
     def _get_batch(self, batch_id=None, meta=None, params=None):
@@ -69,6 +103,17 @@ class Brewfather(ExternalBrewToolBase):
         if not batch_id:
             batch_id = meta.get("batch_id")
         return self._get(f"v1/batches/{batch_id}", meta, params=params)
+    
+    def _get_recipes(self, meta=None):
+        return self._get(f"v1/recipes", meta)
+
+    def _get_recipe(self, recipe_id=None, meta=None, params=None):
+        if not recipe_id and not meta:
+            raise Exception("WTH!!")
+
+        if not recipe_id:
+            recipe_id = meta.get("recipe_id")
+        return self._get(f"v1/recipes/{recipe_id}", meta, params=params)
 
     def _get(self, path, meta, params=None):
         url = f"https://api.brewfather.app/{path}"

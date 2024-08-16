@@ -33,6 +33,8 @@ class Beverages(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
 
     location = relationship(locations.Locations, backref=backref("Beverages", cascade="all,delete"))
 
+    batches = relationship("Batches", back_populates="beverage")
+
     __table_args__ = (Index("beverage_name_lower_ix", func.lower(name), unique=True),)
 
     @classmethod

@@ -11,10 +11,10 @@ from resources.locations import LocationsResourceMixin
 
 class SensorResourceMixin(ResourceMixinBase):
     @staticmethod
-    def transform_response(sensor):
+    def transform_response(sensor, include_location=True):
         data = sensor.to_dict()
 
-        if sensor.location:
+        if include_location and sensor.location:
             data["location"] = LocationsResourceMixin.transform_response(sensor.location)
 
         return ResourceMixinBase.transform_response(data)

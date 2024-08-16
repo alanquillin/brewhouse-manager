@@ -8,6 +8,8 @@ from db.on_tap import OnTap as OnTapDB
 from db.batches import Batches as BatchesDB
 from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase, NotAuthorizedError
 from resources.batches import BatchesResourceMixin
+from resources.beers import BeerResourceMixin
+from resources.beverage import BeverageResourceMixin
 from resources.locations import LocationsResourceMixin
 from resources.sensors import SensorResourceMixin
 
@@ -15,29 +17,26 @@ from resources.sensors import SensorResourceMixin
 class TapsResourceMixin(ResourceMixinBase):
     @staticmethod
     def transform_response(tap, db_session=None):
-        data = ResourceMixinBase.transform_response(tap.to_dict(), remove_keys=["on_tap_id"])
+        data = tap.to_dict()
 
-        if tap.on_tap_id and db_session:
-            on_tap = OnTapDB.get_by_pkey(db_session, tap.on_tap_id)
-            batch = BatchesDB.get_by_pkey(db_session, on_tap.batch_id)
-            if batch:
-                batch_data = BatchesResourceMixin.transform_response(batch, db_session=db_session)
-                for k in ["beer", "beverage"]:
-                    if k in batch_data:
-                        b_data = batch_data.get(k)
-                        for k2 in ["keg_date", "brew_date"]:
-                            if k2 in batch_data:
-                                b_data[k2] = batch_data.get(k2)
-                    
-                        data[k] = b_data
+        if tap.on_tap:
+            data["batch"] = BatchesResourceMixin.transform_response(tap.on_tap.batch, db_session=db_session)
+
+            if tap.on_tap.batch.beer:
+                data["beer"] = BeerResourceMixin.transform_response(tap.on_tap.batch.beer, include_batches=False, include_location=False, db_session=db_session)
+                data["beer_id"] = tap.on_tap.batch.beer_id
+
+            if tap.on_tap.batch.beverage:
+                data["beverage"] = BeverageResourceMixin.transform_response(tap.on_tap.batch.beverage, include_batches=False, include_location=False, db_session=db_session)
+                data["beverage_id"] = tap.on_tap.batch.beverage_id
 
         if tap.location:
             data["location"] = LocationsResourceMixin.transform_response(tap.location)
 
         if tap.sensor:
-            data["sensor"] = SensorResourceMixin.transform_response(tap.sensor)
+            data["sensor"] = SensorResourceMixin.transform_response(tap.sensor, include_location=False)
 
-        return data
+        return ResourceMixinBase.transform_response(data, remove_keys=["on_tap_id"])
 
 
 class Taps(BaseResource, TapsResourceMixin):

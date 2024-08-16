@@ -28,10 +28,10 @@ LOCATIONS = [
     }
 ]
 
-beer_l1b1_id = "8e18732d-61bf-4d4d-b133-a96ad63b63e6"
-beer_l1b2_id = "4237761e-95b8-4e6d-bbc3-864e6c80df6e"
-beer_l1b3_id = "7627c611-32ac-473b-953f-9fb42efe97e2"
-beer_l1b4_id = "bb751fe8-4a14-49a6-95e4-382ff0eaf76c"
+beer_l1b1_id = "8e18732d-61bf-4d4d-b133-a96ad63b63e6" # irish stout
+beer_l1b2_id = "4237761e-95b8-4e6d-bbc3-864e6c80df6e" # 4th and lager
+beer_l1b3_id = "7627c611-32ac-473b-953f-9fb42efe97e2" # galactic santa
+beer_l1b4_id = "bb751fe8-4a14-49a6-95e4-382ff0eaf76c" # citrus haze
 beer_l2b1_id = "2988aded-f66d-4e48-8c84-26c5076a2fc2"
 beer_l2b2_id = "94525492-6395-4295-91d4-3022258c8d2b"
 BEERS = [
@@ -40,7 +40,7 @@ BEERS = [
         "description": "An Irish Stout on Nitro",
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
-            "batch_id": "OxLBTCdfmPN5Z5DbrNidISXo67NMN3"
+            "recipe_id": "myK3jrO7URP7Kl8F3eIFxiZHg6kScV" # irish stout
         },
         "location_id": location1_id,
     },
@@ -58,7 +58,7 @@ BEERS = [
         "id": beer_l1b3_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
-            "batch_id": "k9MRi0BeqW3sFdltMhqy4CnHtSwDOG"
+            "recipe_id": "mz58MKrOFrScEPmkM7lhY9a8lKaosp" # galactic santa
         },
         "style": "Christmas Ale",
         "location_id": location1_id,
@@ -67,7 +67,7 @@ BEERS = [
         "id": beer_l1b4_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
-            "batch_id": "S0spuNZL8PcQM2f2ioCgAoR8A0tv2q"
+            "recipe_id": "y3FTmQ3kJOTRCyE4I1LvN4RFbypByV" # citrus haze
         },
         "location_id": location2_id,
     }
@@ -171,15 +171,23 @@ batch_id5 = "4d2ec0d6-e5a2-463e-bd0c-e2b18e5bc5ad"
 BATCHES = [
     {
         "id": batch_id1,
-        "beer_id": beer_l1b1_id
+        "beer_id": beer_l1b1_id,
+        "external_brewing_tool_meta": {
+            "batch_id": "OxLBTCdfmPN5Z5DbrNidISXo67NMN3" # irish stout (batch 23)
+        },
     },
     {
         "id": batch_id2,
-        "beer_id": beer_l1b2_id
+        "beer_id": beer_l1b2_id,
+        "brew_date": datetime(2024, 1, 1),
+        "keg_date": datetime(2024, 1, 21),
     },
     {
         "id": batch_id3,
-        "beer_id": beer_l1b3_id
+        "beer_id": beer_l1b3_id,
+        "external_brewing_tool_meta": {
+            "batch_id": "k9MRi0BeqW3sFdltMhqy4CnHtSwDOG" # galactic santa (batch 25)
+        },
     },
     {
         "id": batch_id4,
@@ -189,7 +197,10 @@ BATCHES = [
     },
     {
         "id": batch_id5,
-        "beer_id": beer_l1b4_id
+        "beer_id": beer_l1b4_id,
+        "external_brewing_tool_meta": {
+            "batch_id": "S0spuNZL8PcQM2f2ioCgAoR8A0tv2q" # citrus haze (batch 26)
+        },
     },
 ]
 

@@ -23,13 +23,16 @@ class Batches(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     external_brewing_tool_meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
     brew_date = Column(Date, nullable=True)
     keg_date = Column(Date, nullable=True)
+    archived_on = Column(Date, nullable=True)
 
     beer = relationship(beers.Beers, backref=backref("Batches", cascade="all,delete"))
     beverage = relationship(beverages.Beverages, backref=backref("Batches", cascade="all,delete"))
 
+    #overrides = relationship("BatchOverrides", back_populates="batch")
+
     __table_args__ = (
-        Index("ix_on_tap_beer_id", beer_id, unique=False),
-        Index("ix_on_tap_beverage_id", beverage_id, unique=False),
+        Index("ix_batches_beer_id", beer_id, unique=False),
+        Index("ix_batches_beverage_id", beverage_id, unique=False),
     )
 
     @classmethod

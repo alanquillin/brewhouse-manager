@@ -20,7 +20,7 @@ class OnTap(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     tapped_on = Column(Date, nullable=True)
     untapped_on = Column(Date, nullable=True)
 
-    batches = relationship(batches.Batches, backref=backref("OnTap", cascade="all,delete"))
+    batch = relationship(batches.Batches, backref=backref("OnTap", cascade="all,delete"))
 
     __table_args__ = (
         Index("ix_on_tap_batch_id", batch_id, unique=False),

@@ -13,6 +13,7 @@ from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.time import parse_iso8601_utc, utcnow_aware
 from resources import BaseResource, NotAuthorizedError, NotFoundError, ResourceMixinBase, ImageTransitionMixin, ImageTransitionResourceMixin
 from resources.locations import LocationsResourceMixin
+from resources.batches import BatchesResourceMixin
 
 G_LOGGER = logging.getLogger(__name__)
 G_CONFIG = Config()
@@ -38,14 +39,17 @@ class BeerResourceMixin(ResourceMixinBase):
         return ResourceMixinBase.transform_response(data)
 
     @staticmethod
-    def transform_response(beer, db_session=None, skip_meta_refresh=False, image_transitions=None, **kwargs):
+    def transform_response(beer, db_session=None, skip_meta_refresh=False, include_batches=True, include_location=True, image_transitions=None, **kwargs):
         if not beer:
             return beer
 
         data = beer.to_dict()
 
-        if beer.location:
+        if include_location and beer.location:
             data["location"] = LocationsResourceMixin.transform_response(beer.location)
+        
+        if include_batches and beer.batches:
+            data["batches"] = [BatchesResourceMixin.transform_response(b, skip_meta_refresh=skip_meta_refresh, db_session=db_session) for b in beer.batches]
 
         include_tap_details = request.args.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
 
@@ -58,45 +62,46 @@ class BeerResourceMixin(ResourceMixinBase):
             force_refresh = request.args.get("force_refresh", "false").lower() in ["true", "yes", "", "1"]
 
             tool_type = beer.external_brewing_tool
-            if tool_type:
+            meta = data.get("external_brewing_tool_meta", {})
+            if tool_type and meta:
                 refresh_data = False
                 refresh_reason = "UNKNOWN"
                 refresh_buffer = G_CONFIG.get(f"external_brew_tools.{tool_type}.refresh_buffer_sec.soft")
                 now = utcnow_aware()
-
-                meta = data.get("external_brewing_tool_meta", {})
-                ex_details = None
-                if meta:
-                    ex_details = meta.get("details", {})
+                
+                ex_details = meta.get("details", {})
 
                 if not ex_details:
                     refresh_data = True
                     refresh_reason = "No cached details exist in DB."
                 elif force_refresh:
                     refresh_data = True
-                    refresh_buffer = G_CONFIG.get(f"external_brew_tools.{tool_type}.refresh_buffer_sec.hard")
                     refresh_reason = "Forced refresh requested via query string parameter."
                 elif ex_details.get("_refresh_on_next_check", False):
                     refresh_data = True
                     refresh_reason = ex_details.get("_refresh_reason", "The beer was marked by the external brewing tool for refresh, reason unknown.")
 
-                if refresh_data and ex_details:
+                if not refresh_data:
                     last_refresh = ex_details.get("_last_refreshed_on")
                     if last_refresh:
                         skip_until = parse_iso8601_utc(last_refresh) + timedelta(seconds=refresh_buffer)
 
-                        G_LOGGER.debug("Checking is last refrech date '%s' > now '%s'", skip_until.isoformat(), now.isoformat())
-                        if skip_until > now:
-                            G_LOGGER.info("Need to skip refreshing data from %s for %s until %s", tool_type, beer.id, skip_until.isoformat())
-                            refresh_data = False
+                        G_LOGGER.debug("Checking is last refresh date '%s' > now '%s'", skip_until.isoformat(), now.isoformat())
+                        if skip_until < now:
+                            G_LOGGER.info("Refresh skip buffer exceeded, refreshing data.  Tool: %s, beer_id: %s, skip_until: %s", tool_type, beer.id, skip_until.isoformat())
+                            refresh_data = True
+                            refresh_reason = "Refresh skip buffer exceeded"
+                    else:
+                        refresh_data = True
+                        refresh_reason = "No _last_refreshed_on date recorded, refreshing."
 
                 if refresh_data:
                     G_LOGGER.info("Refreshing data from %s for %s.  Reason: %s", tool_type, beer.id, refresh_reason)
                     tool = get_external_brewing_tool(tool_type)
-                    ex_details = tool.get_details(beer=beer)
+                    ex_details = tool.get_recipe_details(beer=beer)
                     if ex_details:
                         ex_details["_last_refreshed_on"] = now.isoformat()
-                        G_LOGGER.debug("Extended beer details: %s, updateing database", ex_details)
+                        G_LOGGER.debug("Extended recipe details: %s, updating database", ex_details)
                         BeerResourceMixin.update(beer.id, {"external_brewing_tool_meta": {**meta, "details": ex_details}}, db_session=db_session)
                     else:
                         G_LOGGER.warning("There and error or no details from %s for %s", tool_type, {k: v for k, v in meta.items() if k != "details"})
