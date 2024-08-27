@@ -105,6 +105,8 @@ export class Tap extends EditableBase {
   beer: Beer | undefined;
   beverageId!: string;
   beverage: Beverage | undefined;
+  batchId!: string;
+  batch: Batch | undefined;
   sensorId!: string;
   sensor: Sensor | undefined;
   coldBrew: ColdBrew | undefined;
@@ -121,7 +123,7 @@ export class Tap extends EditableBase {
   }
 
   constructor(from?: any) {
-    super(["description", "tapNumber", "locationId", "beerId", "sensorId", "beverageId", "namePrefix", "nameSuffix"], from);
+    super(["description", "tapNumber", "locationId", "beerId", "sensorId", "beverageId", "namePrefix", "nameSuffix", "batchId"], from);
   }
 
   getDisplayName(name?: string) : string | undefined {
@@ -200,33 +202,25 @@ export class ImageTransitionalBase extends EditableBase {
   }
 }
 
-export class Beer extends ImageTransitionalBase {
-  id!: string;
-  description!: string;
-  name!: string;
-  brewery!: string;
+export class ExtToolBase extends ImageTransitionalBase {
   externalBrewingTool!: string;
   externalBrewingToolMeta!: any;
-  style!: number;
-  abv!: string;
-  ibu!: number;
-  kegDate!: number;
-  brewDate!: number;
-  srm!: number;
-  untappdId!: string;
-  taps: Tap[] | undefined;
-  locationId!: string;
-  location: Location | undefined;
 
-  constructor(from?: any) {
-    super(["name", "description", "locationId", "externalBrewingTool", "externalBrewingToolMeta", "style", "abv", "imgUrl", "ibu", "kegDate", "brewDate", "srm", "untappdId"], from, beerTransformFns);
-    if(isNilOrEmpty(this.externalBrewingToolMeta)) {
-      this.externalBrewingToolMeta = {}
-    }
-    
+  constructor(fields: string[], from?: any, transformFns?: any) {
+    fields.push("externalBrewingTool");
+    fields.push("externalBrewingToolMeta");
+
+    super(fields, from, transformFns);
   }
 
-  #getVal(key: string, transformFn?: Function, brewToolTransformFn?: any): any{
+  getVal(key: string, batch?: Batch|undefined, transformFn?: Function, brewToolTransformFn?: any): any{
+    if (batch !== undefined){
+      var bv = batch.getVal(key, undefined, transformFn, brewToolTransformFn);
+      if(!isNilOrEmpty(bv)){
+        return bv;
+      }
+    }
+    
     var v = _.get(this, key)
     if(isNilOrEmpty(v)) {
       if(!_.isEmpty(this.externalBrewingTool) && !_.isEmpty(this.externalBrewingToolMeta)) {
@@ -246,54 +240,101 @@ export class Beer extends ImageTransitionalBase {
     return v;
   }
 
+  getName(batch?: Batch|undefined) {
+    return this.getVal("name", batch);
+  }
+
+  getDescription(batch?: Batch|undefined) {
+    return this.getVal("description", batch);
+  }
+  getStyle(batch?: Batch|undefined) {
+    return this.getVal("style", batch);
+  }
+
+  getAbv(batch?: Batch|undefined) {
+    return this.getVal("abv", batch);
+  }
+
+  override getImgUrl(batch?: Batch|undefined) {
+    return this.getVal("imgUrl", batch);
+  }
+
+  getIbu(batch?: Batch|undefined) {
+    return this.getVal("ibu", batch);
+  }
+
+  getSrm(batch?: Batch|undefined) {
+    return this.getVal("srm", batch);
+  }
+}
+
+export class Batch extends ExtToolBase {
+  id!: string;
+  beerId!: string;
+  beer: Beer | undefined;
+  beverageId!: string;
+  beverage: Beverage | undefined;
+  kegDate!: number;
+  brewDate!: number;
+  archivedOn!: number;
+
+  constructor(from?: any) {
+    super(["name", "beerId", "beverageId", "kegDate", "brewDate", "archivedOn"], from, beerTransformFns);
+    if(isNilOrEmpty(this.externalBrewingToolMeta)) {
+      this.externalBrewingToolMeta = {}
+    }
+  }
+
   override cloneValuesForEditing() {
     super.cloneValuesForEditing();
     this.editValues["brewDateObj"] = isNilOrEmpty(this.brewDate) ? undefined : fromUnixTimestamp(this.brewDate)
     this.editValues["kegDateObj"] = isNilOrEmpty(this.kegDate) ? undefined : fromUnixTimestamp(this.kegDate)
+    this.editValues["archivedOnObj"] = isNilOrEmpty(this.archivedOn) ? undefined : fromUnixTimestamp(this.archivedOn)
   }
 
   override get changes() {
     this.editValues["brewDate"] = isNilOrEmpty(this.editValues["brewDateObj"]) ? undefined : toUnixTimestamp(this.editValues["brewDateObj"]);
     this.editValues["kegDate"] = isNilOrEmpty(this.editValues["kegDateObj"]) ? undefined : toUnixTimestamp(this.editValues["kegDateObj"]);
+    this.editValues["archivedOn"] = isNilOrEmpty(this.editValues["archivedOnObj"]) ? undefined : toUnixTimestamp(this.editValues["archivedOnObj"]);
         
     var changes = super.changes;
 
     return changes;
   }
 
-  getName() {
-    return this.#getVal("name");
-  }
-
-  getDescription() {
-    return this.#getVal("description");
-  }
-  getStyle() {
-    return this.#getVal("style");
-  }
-
-  getAbv() {
-    return this.#getVal("abv");
-  }
-
-  override getImgUrl() {
-    return this.#getVal("imgUrl");
-  }
-
-  getIbu() {
-    return this.#getVal("ibu");
-  }
-
   getKegDate() {
-    return this.#getVal("kegDate", (v: any) => {return formatDate(fromUnixTimestamp(v));}, {"brewfather": (v: any) => {return formatDate(fromJsTimestamp(v));}});
+    return this.getVal("kegDate", undefined, (v: any) => {return this.#getDateDisplay(v);}, {"brewfather": (v: any) => {return this.#getDateDisplay(v);}});
   }
   
   getBrewDate() {
-    return this.#getVal("brewDate", (v: any) => {return formatDate(fromUnixTimestamp(v));}, {"brewfather": (v: any) => {return formatDate(fromJsTimestamp(v));}});
+    return this.getVal("brewDate", undefined, (v: any) => {return this.#getDateDisplay(v);}, {"brewfather": (v: any) => {return this.#getDateDisplay(v);}});
   }
 
-  getSrm() {
-    return this.#getVal("srm");
+  #getDateDisplay(d: number) : string | undefined {
+    return isNilOrEmpty(d) ? undefined : formatDate(fromUnixTimestamp(d))
+  }
+}
+
+export class Beer extends ExtToolBase {
+  id!: string;
+  description!: string;
+  name!: string;
+  brewery!: string;
+  style!: number;
+  abv!: string;
+  ibu!: number;
+  srm!: number;
+  untappdId!: string;
+  taps: Tap[] | undefined;
+  locationId!: string;
+  location: Location | undefined;
+
+  constructor(from?: any) {
+    super(["name", "description", "locationId", "style", "abv", "imgUrl", "ibu", "srm", "untappdId"], from, beerTransformFns);
+    if(isNilOrEmpty(this.externalBrewingToolMeta)) {
+      this.externalBrewingToolMeta = {}
+    }
+    
   }
 }
 
@@ -406,45 +447,16 @@ export class Beverage extends ImageTransitionalBase {
   breweryLink!: string;
   type!: string;
   flavor!: string;
-  kegDate!: number;
-  brewDate!: number;
   meta!: any;
   taps: Tap[] | undefined;
   locationId!: string;
   location: Location | undefined;
 
   constructor(from?: any) {
-    super(["name", "description", "locationId", "brewery", "breweryLink", "type", "flavor", "imgUrl", "kegDate", "brewDate", "meta"], from);
+    super(["name", "description", "locationId", "brewery", "breweryLink", "type", "flavor", "imgUrl", "meta"], from);
     if(isNilOrEmpty(this.meta)){
       this.meta = {};
     }
-  }
-
-  override cloneValuesForEditing() {
-    super.cloneValuesForEditing();
-    this.editValues["brewDateObj"] = isNilOrEmpty(this.brewDate) ? undefined : fromUnixTimestamp(this.brewDate)
-    this.editValues["kegDateObj"] = isNilOrEmpty(this.kegDate) ? undefined : fromUnixTimestamp(this.kegDate)
-  }
-
-  override get changes() {
-    this.editValues["brewDate"] = isNilOrEmpty(this.editValues["brewDateObj"]) ? undefined : toUnixTimestamp(this.editValues["brewDateObj"]);
-    this.editValues["kegDate"] = isNilOrEmpty(this.editValues["kegDateObj"]) ? undefined : toUnixTimestamp(this.editValues["kegDateObj"]);
-        
-    var changes = super.changes;
-
-    return changes;
-  }
-
-  #getDateDisplay(d: number) : string | undefined {
-    return isNilOrEmpty(d) ? undefined : formatDate(fromUnixTimestamp(d))
-  }
-
-  getBrewDateDisplay() : string | undefined {
-    return this.#getDateDisplay(this.brewDate);
-  }
-
-  getKegDateDisplay() : string | undefined {
-    return this.#getDateDisplay(this.kegDate);
   }
 }
 

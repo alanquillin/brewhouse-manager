@@ -64,8 +64,6 @@ export class ManageBeverageComponent implements OnInit {
     brewery: new UntypedFormControl('', []),
     breweryLink: new UntypedFormControl('', []),
     flavor: new UntypedFormControl('', []),
-    brewDate: new UntypedFormControl(new Date(), []),
-    kegDate: new UntypedFormControl(new Date(), []),
     imgUrl: new UntypedFormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
     imageTransitionsEnabled: new UntypedFormControl(''),
     emptyImgUrl: new UntypedFormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
@@ -80,7 +78,7 @@ export class ManageBeverageComponent implements OnInit {
       cols.push('location');
     }
 
-    return _.concat(cols, ['tapped', "type", "brewery", "roastery", "flavor", "kegDate", "brewDate", "imgUrl", "actions"]);
+    return _.concat(cols, ['tapped', "type", "brewery", "roastery", "flavor", "imgUrl", "actions"]);
   }
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
@@ -203,8 +201,6 @@ export class ManageBeverageComponent implements OnInit {
       breweryLink: this.modifyBeverage.editValues.breweryLink,
       flavor: this.modifyBeverage.editValues.flavor,
       imgUrl: this.modifyBeverage.editValues.imgUrl,
-      brewDate: this.dateToNumber(this.modifyBeverage.editValues.brewDateObj),
-      kegDate: this.dateToNumber(this.modifyBeverage.editValues.kegDateObj),
       meta: this.modifyBeverage.editValues.meta,
       emptyImgUrl: this.modifyBeverage.editValues.emptyImgUrl,
       imageTransitionsEnabled: this.modifyBeverage.editValues.imageTransitionsEnabled

@@ -104,16 +104,13 @@ class BatchesResourceMixin(ResourceMixinBase):
 
 class Batches(BaseResource, BatchesResourceMixin):
     @login_required
-    def get(self, location=None):
+    def get(self, beer_id=None, beverage_id=None):
         with session_scope(self.config) as db_session:
             kwargs = {}
-            if location:
-                location_id = self.get_location_id(location, db_session)
-                if not current_user.admin and not location_id in current_user.locations:
-                    raise NotAuthorizedError()
-                kwargs["locations"] = [location_id]
-            elif not current_user.admin:
-                kwargs["locations"] = current_user.locations
+            if beer_id:
+                kwargs["beer_id"] = beverage_id
+            if beverage_id:
+                kwargs["beverage_id"] = beverage_id
             
             batches = BatchesDB.query(db_session, **kwargs)
             return [self.transform_response(b, db_session=db_session) for b in batches]
@@ -148,13 +145,13 @@ class Batches(BaseResource, BatchesResourceMixin):
 
 
 class Batch(BaseResource, BatchesResourceMixin):
-    def _get_batch(self, db_session, batch_id, location=None):
+    def _get_batch(self, db_session, batch_id, beer_id=None, beverage_id=None):
         kwargs = {batches_pk: batch_id}
-        if location:
-            location_id = self.get_location_id(location, db_session)
-            if not current_user.admin and not location_id in current_user.locations:
-                raise NotAuthorizedError()
-            kwargs["locations"] = [location_id]
+        if beer_id:
+                kwargs["beer_id"] = beverage_id
+        if beverage_id:
+            kwargs["beverage_id"] = beverage_id
+        
         batch = BatchesDB.query(db_session, **kwargs)
 
         if not batch:
@@ -167,16 +164,16 @@ class Batch(BaseResource, BatchesResourceMixin):
         return batch
 
     @login_required
-    def get(self, batch_id, location=None):
+    def get(self, batch_id, beer_id=None, beverage_id=None):
         with session_scope(self.config) as db_session:
-            batch = self._get_batch(db_session, batch_id, location=location)
+            batch = self._get_batch(db_session, batch_id, beer_id=beer_id, beverage_id=beverage_id)
 
             return self.transform_response(batch, db_session=db_session)
 
     @login_required
-    def patch(self, batch_id, location=None):
+    def patch(self, batch_id, beer_id=None, beverage_id=None):
         with session_scope(self.config) as db_session:
-            batch = self._get_batch(db_session, batch_id, location=location)
+            batch = self._get_batch(db_session, batch_id, beer_id=beer_id, beverage_id=beverage_id)
             
             data = self.get_request_data()
 
@@ -193,9 +190,9 @@ class Batch(BaseResource, BatchesResourceMixin):
             return self.transform_response(batch, db_session=db_session)
 
     @login_required
-    def delete(self, batch_id, location=None):
+    def delete(self, batch_id, beer_id=None, beverage_id=None):
         with session_scope(self.config) as db_session:
-            batch = self._get_batch(db_session, batch_id, location=location)
+            batch = self._get_batch(db_session, batch_id, beer_id=beer_id, beverage_id=beverage_id)
 
             BatchesDB.delete(db_session, batch.id)
 

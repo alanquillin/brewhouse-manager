@@ -21,6 +21,7 @@ class TapsResourceMixin(ResourceMixinBase):
 
         if tap.on_tap:
             data["batch"] = BatchesResourceMixin.transform_response(tap.on_tap.batch, db_session=db_session)
+            data["batch_id"] = tap.on_tap.batch_id
 
             if tap.on_tap.batch.beer:
                 data["beer"] = BeerResourceMixin.transform_response(tap.on_tap.batch.beer, include_batches=False, include_location=False, db_session=db_session)

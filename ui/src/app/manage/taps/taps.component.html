@@ -53,12 +53,12 @@
 
             <ng-container matColumnDef="beer">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="beer" sortActionDescription="Sort by beer"> Beer </th>
-                <td mat-cell *matCellDef="let element">{{ getUniqueBeerName(element.beer, element.beerId) }}</td>
+                <td mat-cell *matCellDef="let element">{{ getBeerBatchName(element.batch) }}</td>
             </ng-container>
 
             <ng-container matColumnDef="beverage">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="beverage" sortActionDescription="Sort by beverage"> Beverage </th>
-                <td mat-cell *matCellDef="let element">{{ getUniqueBeverageName(element.beverage, element.beverageId) }}</td>
+                <td mat-cell *matCellDef="let element">{{ getBeverageBatchName(element.batch) }}</td>
             </ng-container>
         
             <ng-container matColumnDef="location">
@@ -148,20 +148,20 @@
 
                 <mat-form-field appearance="fill">
                     <mat-label>Beer</mat-label>
-                    <mat-select formControlName="beerId" name="beerId" [(ngModel)]="modifyTap.editValues.beerId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
+                    <mat-select formControlName="beerBatchId" name="beerBatchId" [(ngModel)]="modifyTap.editValues.batchId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
                         <mat-option value="-1">-- None --</mat-option>
-                        <mat-option *ngFor="let beer of getBeersForLocation(modifyTap.editValues.locationId)" [value]="beer.id">
-                            <div title="{{ getUniqueBeerName(beer) }}">{{ getUniqueBeerName(beer) }}</div>
+                        <mat-option *ngFor="let batch of getBeerBatches(modifyTap.editValues.locationId)" [value]="batch.id">
+                            <div title="{{ getBatchDisplayName(batch) }}">{{ getBatchDisplayName(batch) }}</div>
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
 
                 <mat-form-field appearance="fill">
                     <mat-label>Beverage</mat-label>
-                    <mat-select formControlName="beverageId" name="beverageId" [(ngModel)]="modifyTap.editValues.beverageId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
+                    <mat-select formControlName="beverageBatchId" name="beverageBatchId" [(ngModel)]="modifyTap.editValues.batchId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
                         <mat-option value="-1">-- None --</mat-option>
-                        <mat-option *ngFor="let beverage of getBeveragesForLocation(modifyTap.editValues.locationId)" [value]="beverage.id">
-                            <div title="{{ getUniqueBeverageName(beverage) }}">{{ getUniqueBeverageName(beverage) }}</div>
+                        <mat-option *ngFor="let batch of getBeverageBatches(modifyTap.editValues.locationId)" [value]="batch.id">
+                            <div title="{{ getBatchDisplayName(batch) }}">{{ getBatchDisplayName(batch) }}</div>
                         </mat-option>
                     </mat-select>
                 </mat-form-field>

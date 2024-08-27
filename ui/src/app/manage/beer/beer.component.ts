@@ -47,7 +47,7 @@ export class ManageBeerComponent implements OnInit {
       cols.push('location');
     }
 
-    return _.concat(cols, ['tapped', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', "untappdId", 'imgUrl', 'actions']);
+    return _.concat(cols, ['tapped', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', "untappdId", 'imgUrl', 'actions']);
   }
 
   decimalRegex = /^-?\d*[.]?\d{0,2}$/;
@@ -108,8 +108,6 @@ export class ManageBeerComponent implements OnInit {
     srm: new UntypedFormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
     ibu: new UntypedFormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
     externalBrewingTool: new UntypedFormControl(-1),
-    brewDate: new UntypedFormControl(new Date(), []),
-    kegDate: new UntypedFormControl(new Date(), []),
     imgUrl: new UntypedFormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
     imageTransitionsEnabled: new UntypedFormControl(''),
     emptyImgUrl: new UntypedFormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
@@ -207,8 +205,8 @@ export class ManageBeerComponent implements OnInit {
 
   create(): void {
     var data: any = {}
-    const keys = ['name', 'description', 'locationId', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl', 'externalBrewingToolMeta', 'emptyImgUrl', 'imageTransitionsEnabled']
-    const checkKeys = {"brewDate": "brewDateObj", "kegDate": "kegDateObj"}
+    const keys = ['name', 'description', 'locationId', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'imgUrl', 'externalBrewingToolMeta', 'emptyImgUrl', 'imageTransitionsEnabled']
+    const checkKeys = {}
     
     _.forEach(keys, (k) => {
       const checkKey: any = _.get(checkKeys, k, k);
@@ -429,14 +427,6 @@ export class ManageBeerComponent implements OnInit {
           return d.getIbu();
         }
 
-        if (sortBy === "kegDate") {
-          return d.getKegDate();
-        }
-
-        if (sortBy === "brewDate") {
-          return d.getBrewDate();
-        }
-
         if (sortBy === "srm") {
           return d.getSrm();
         }
@@ -510,7 +500,7 @@ export class ManageBeerComponent implements OnInit {
       }
     }
 
-    const keys = ['name', 'description', 'style', 'abv', 'ibu', 'srm', 'brewDate', 'kegDate', 'imgUrl']
+    const keys = ['name', 'description', 'style', 'abv', 'ibu', 'srm', 'imgUrl']
     _.forEach(keys, (k) => {
       if(_.has(changes, k)) {
         if(isNilOrEmpty(changes[k])) {

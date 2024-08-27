@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { UntypedFormControl, AbstractControl, Validators, UntypedFormGroup } from '@angular/forms';
 
-import { Beer, Beverage, Location, Tap, Sensor, UserInfo } from '../../models/models';
+import { Beer, Beverage, Location, Tap, Sensor, UserInfo, Batch } from '../../models/models';
 
 import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
@@ -23,6 +23,7 @@ export class ManageTapsComponent implements OnInit {
   beers: Beer[] = [];
   sensors: Sensor[] = [];
   beverages: Beverage[] = [];
+  batches: Batch[] = [];
   loading = false;
   processing = false;
   adding = false;
@@ -38,10 +39,10 @@ export class ManageTapsComponent implements OnInit {
     displayName: new UntypedFormControl('', []),
     description: new UntypedFormControl('', [Validators.required]),
     locationId: new UntypedFormControl('', [Validators.required]),
-    beerId: new UntypedFormControl(''),
+    beerBatchId: new UntypedFormControl(''),
     tapNumber: new UntypedFormControl('', [Validators.required, Validators.pattern("^[0-9]*$")]),
     sensorId: new UntypedFormControl(''),
-    beverageId: new UntypedFormControl(''),
+    beverageBatchId: new UntypedFormControl(''),
     namePrefix: new UntypedFormControl('', []),
     nameSuffix: new UntypedFormControl('', [])
   });
@@ -83,6 +84,12 @@ export class ManageTapsComponent implements OnInit {
           if (isNilOrEmpty(_tap.beverage) && !isNilOrEmpty(_tap.beverageId)) {
             _tap.beverage = this.findBeverage(_tap.beverageId);
           }
+
+          if (!isNilOrEmpty(_tap.batchId)) {
+            _tap.batch = this.findBatch(_tap.batchId);
+          }
+
+          console.log(_tap);
           this.taps.push(_tap)
         });
         this.filter();
@@ -127,7 +134,32 @@ export class ManageTapsComponent implements OnInit {
                     _.forEach(_.sortBy(beverages, ["name"]), (beverage) => {
                       this.beverages.push(new Beverage(beverage));
                     });
-                    this.refresh(always, next, error);
+                    this.dataService.getBatches().subscribe({
+                      next: (batches: Batch[]) => {
+                        this.batches = [];
+                        _.forEach(batches, (batch) => {
+                          var b = new Batch(batch);
+                          if (isNilOrEmpty(b.beer) && !isNilOrEmpty(b.beerId)) {
+                            b.beer = this.findBeer(b.beerId);
+                          }
+                          if (isNilOrEmpty(b.beverage) && !isNilOrEmpty(b.beverageId)) {
+                            b.beverage = this.findBeverage(b.beverageId);
+                          }
+                          this.batches.push(b)
+                        });
+
+                        this.refresh(always, next, error);  
+                      },
+                      error: (err:DataError) => {
+                        this.displayError(err.message);
+                        if(!_.isNil(error)){
+                          error();
+                        }
+                        if(!_.isNil(always)){
+                          always();
+                        }
+                      }
+                    })
                   },
                   error: (err:DataError) => {
                     this.displayError(err.message);
@@ -354,93 +386,12 @@ export class ManageTapsComponent implements OnInit {
     return _.find(this.beers, (b) => {return b.id == beerId});
   }
 
-  getBeerName(beer: Beer | undefined, beerId?: string): string {
-    if(_.isNil(beer) && !_.isNil(beerId)){
-      beer = this.findBeer(beerId);
-    }
-    if(_.isNil(beer)) {
-      return "";
-    }
-    var name = beer.getName();
-    var style = beer.getStyle();
-
-    if(!_.isEmpty(style)){
-      name = `${name} [${style}]`;
-    }
-
-    return name;
-  }
-
-  getUniqueBeerName(beer: Beer | undefined, beerId?: string): string {
-    if(_.isNil(beer) && !_.isNil(beerId)){
-      beer = this.findBeer(beerId);
-    }
-    if(_.isNil(beer)) {
-      return "";
-    }
-
-    let name: string = this.getBeerName(beer);
-    const beers: Beer[] = _.filter(this.beers, (b) => {return this.getBeerName(b).trim() === name.trim()});
-
-    if (beers.length <= 1)
-      return name;
-    
-    var tool = beer.externalBrewingTool;
-    var batchNumber: string | undefined
-    if(!_.isEmpty(tool)){
-      if(!_.isEmpty(beer.externalBrewingToolMeta)){
-        if(_.isEmpty(name)){
-          name = _.get(beer.externalBrewingToolMeta, 'details.name')
-        }
-        batchNumber = _.get(beer.externalBrewingToolMeta, 'details.batchNumber')
-      }
-
-      if(_.isEmpty(tool)) {
-        tool = "--UNKNOWN EXTERNAL TOOL--";
-      } else {
-        if (!_.isEmpty(_.toString(batchNumber))){
-          tool = `${tool} - batch #${batchNumber})`;
-        }
-      }
-
-      return `${name} (${tool})`;
-    }
-    
-    return `${name} (${beer.getAbv()} alc./vol., brewed on: ${beer.getBrewDate()})`;
-  }
-
   findBeverage(beverageId: string) {
     return _.find(this.beverages, (b) => {return b.id == beverageId});
   }
 
-  getBeverageName(beverage: Beverage | undefined, beverageId?: string): string {
-    if(_.isNil(beverage) && !_.isNil(beverageId)){
-      beverage = this.findBeverage(beverageId);
-    }
-    
-    if(_.isNil(beverage)) {
-      return "";
-    }
-
-    return beverage.name;
-  }
-
-  getUniqueBeverageName(beverage: Beverage | undefined, beverageId?: string): string {
-    if(_.isNil(beverage) && !_.isNil(beverageId)) {
-      beverage = this.findBeverage(beverageId);
-    }
-
-    if(_.isNil(beverage)) {
-      return "";
-    }
-
-    const name: string = beverage.name;
-    const beverages : Beverage[] = _.filter(this.beverages, (b) => {return b.name.trim() === name.trim()});
-
-    if (beverages.length <= 1)
-      return name;
-
-    return `${name} (Brewed by ${beverage.brewery} on ${beverage.getBrewDateDisplay()})`
+  findBatch(batchId: string) {
+    return _.find(this.batches, (b) => {return b.id == batchId});
   }
 
   getSensorsForLocation(locationId: string | undefined): Sensor[] {
@@ -502,5 +453,76 @@ export class ManageTapsComponent implements OnInit {
         }
       })
     }
+  }
+
+  getBeerBatches(locationId: string): Batch[]{
+    var b: Batch[] = [];
+    _.forEach(this.batches, (batch) => {
+      if(!isNilOrEmpty(batch.beerId) && !isNilOrEmpty(batch.beer)) {
+        if(batch.beer?.locationId === locationId){
+          b.push(batch);
+        }
+      }
+    });
+
+    return b;
+  }
+
+  getBeverageBatches(locationId: string): Batch[]{
+    var b: Batch[] = [];
+    _.forEach(this.batches, (batch) => {
+      if(!isNilOrEmpty(batch.beverageId) && !isNilOrEmpty(batch.beverage)) {
+        if(batch.beverage?.locationId === locationId) {
+          b.push(batch);
+        }
+      }
+    });
+
+    return b;
+  }
+
+  getBeerBatchName(batch?: Batch): string {
+    if(isNilOrEmpty(batch)) {
+      return "";
+    }
+
+    if(isNilOrEmpty(batch?.beer)) {
+      return "";
+    }
+
+    return this.getBatchDisplayName(batch);
+  }
+
+  getBeverageBatchName(batch?: Batch): string {
+    if(isNilOrEmpty(batch)) {
+      return "";
+    }
+
+    if(isNilOrEmpty(batch?.beverage)) {
+      return "";
+    }
+
+    return this.getBatchDisplayName(batch);
+  }
+
+  getBatchDisplayName(batch?: Batch): string {
+    if(isNilOrEmpty(batch)) {
+      return "";
+    }
+
+    var name = batch?.getName();
+
+    if(isNilOrEmpty(name)) {
+      if(!isNilOrEmpty(batch?.beer)) {
+        name = batch?.beer?.getName();
+      }
+      if(!isNilOrEmpty(batch?.beverage)) {
+        name = batch?.beverage?.name;
+      }
+    }
+
+    name = `${name} (keg'd on ${batch?.getKegDate()})`
+
+    return name;
   }
 }

@@ -101,7 +101,9 @@ publish:
 
 # Targets for running the app
 
-run-dev: build-dev build-db-seed
+run-dev: build-dev build-db-seed run-dev-no-build
+
+run-dev-no-build:
 	docker-compose --project-directory deploy/docker-local up
 
 run-web-local:
