@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings } from './../models/models';
+import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings, Batch } from './../models/models';
 import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
@@ -163,6 +163,10 @@ export class LocationComponent implements OnInit {
       tap.isLoading = true
       tap.beer = new Beer();
       tap.beverage = new Beverage();
+
+      if(!isNilOrEmpty(tap.batch)){
+        tap.batch = new Batch(tap.batch)
+      }
 
       if(tap.tapType === "beer"){
         this.dataService.getDashboardBeer(tap.beerId).subscribe((beer: Beer) => {
