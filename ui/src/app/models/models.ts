@@ -223,14 +223,7 @@ export class ExtToolBase extends ImageTransitionalBase {
     
     var v = _.get(this, key)
     if(isNilOrEmpty(v)) {
-      if(!_.isEmpty(this.externalBrewingTool) && !_.isEmpty(this.externalBrewingToolMeta)) {
-        if(this.externalBrewingTool === "brewfather") {
-          v = _.get(this.externalBrewingToolMeta, `details.${key}`);
-        }
-        if(!_.isNil(v) && _.has(brewToolTransformFn, this.externalBrewingTool)) {
-          v = brewToolTransformFn[this.externalBrewingTool](v);
-        }
-      }
+      v = this.getExtToolVal(key, brewToolTransformFn);
     } else {
       if (!_.isNil(transformFn)) {
         v = transformFn(v);
@@ -240,23 +233,21 @@ export class ExtToolBase extends ImageTransitionalBase {
     return v;
   }
 
-  getName(batch?: Batch|undefined) {
-    return this.getVal("name", batch);
-  }
-
-  getDescription(batch?: Batch|undefined) {
-    return this.getVal("description", batch);
-  }
-  getStyle(batch?: Batch|undefined) {
-    return this.getVal("style", batch);
+  getExtToolVal(key: string, brewToolTransformFn?: any) : any {
+    var v = null;
+    if(!_.isEmpty(this.externalBrewingTool) && !_.isEmpty(this.externalBrewingToolMeta)) {
+      if(this.externalBrewingTool === "brewfather") {
+        v = _.get(this.externalBrewingToolMeta, `details.${key}`);
+      }
+      if(!_.isNil(v) && _.has(brewToolTransformFn, this.externalBrewingTool)) {
+        v = brewToolTransformFn[this.externalBrewingTool](v);
+      }
+    }
+    return v;
   }
 
   getAbv(batch?: Batch|undefined) {
     return this.getVal("abv", batch);
-  }
-
-  override getImgUrl(batch?: Batch|undefined) {
-    return this.getVal("imgUrl", batch);
   }
 
   getIbu(batch?: Batch|undefined) {
@@ -274,12 +265,17 @@ export class Batch extends ExtToolBase {
   beer: Beer | undefined;
   beverageId!: string;
   beverage: Beverage | undefined;
+  abv!: string;
+  ibu!: number;
+  srm!: number;
   kegDate!: number;
   brewDate!: number;
   archivedOn!: number;
+  taps!: Tap[] | undefined;
+  batchNumber!: string;
 
   constructor(from?: any) {
-    super(["name", "beerId", "beverageId", "kegDate", "brewDate", "archivedOn"], from, beerTransformFns);
+    super(["name", "beerId", "beverageId", "abv", "ibu", "srm", "kegDate", "brewDate", "archivedOn", "batchNumber"], from, beerTransformFns);
     if(isNilOrEmpty(this.externalBrewingToolMeta)) {
       this.externalBrewingToolMeta = {}
     }
@@ -302,16 +298,23 @@ export class Batch extends ExtToolBase {
     return changes;
   }
 
+  getBatchNumber() {
+    return this.getVal("batchNumber")
+  }
+
   getKegDate() {
-    return this.getVal("kegDate", undefined, (v: any) => {return this.#getDateDisplay(v);}, {"brewfather": (v: any) => {return this.#getDateDisplay(v);}});
+    return this.getVal("kegDate", undefined, (v: any) => {return this.getDateDisplay(v);}, {"brewfather": (v: any) => {return this.getDateDisplay(v);}});
   }
   
   getBrewDate() {
-    return this.getVal("brewDate", undefined, (v: any) => {return this.#getDateDisplay(v);}, {"brewfather": (v: any) => {return this.#getDateDisplay(v);}});
+    return this.getVal("brewDate", undefined, (v: any) => {return this.getDateDisplay(v);}, {"brewfather": (v: any) => {return this.getDateDisplay(v);}});
   }
 
-  #getDateDisplay(d: number) : string | undefined {
-    return isNilOrEmpty(d) ? undefined : formatDate(fromUnixTimestamp(d))
+  getDateDisplay(d: any) : string | undefined {
+    if(isNilOrEmpty(d) || !_.isNumber(d)) {
+      return undefined
+    }
+    return formatDate(fromJsTimestamp(d));
   }
 }
 
@@ -325,7 +328,6 @@ export class Beer extends ExtToolBase {
   ibu!: number;
   srm!: number;
   untappdId!: string;
-  taps: Tap[] | undefined;
   locationId!: string;
   location: Location | undefined;
 
@@ -334,7 +336,21 @@ export class Beer extends ExtToolBase {
     if(isNilOrEmpty(this.externalBrewingToolMeta)) {
       this.externalBrewingToolMeta = {}
     }
-    
+  }
+
+  getName(batch?: Batch|undefined) {
+    return this.getVal("name", batch);
+  }
+
+  getDescription(batch?: Batch|undefined) {
+    return this.getVal("description", batch);
+  }
+  getStyle(batch?: Batch|undefined) {
+    return this.getVal("style", batch);
+  }
+
+  override getImgUrl(batch?: Batch|undefined) {
+    return this.getVal("imgUrl", batch);
   }
 }
 

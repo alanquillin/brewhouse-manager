@@ -132,8 +132,7 @@ class Tap(BaseResource, TapsResourceMixin):
                 data["on_tap_id"] = None
                 
                 if batch_id:
-                    batch = BatchesDB.get_by_pkey(db_session, batch_id)
-                    on_tap = OnTapDB.create(db_session, beer_id=batch.beer_id, beverage_id=batch.beverage_id, tapped_on=datetime.utcnow())
+                    on_tap = OnTapDB.create(db_session, batch_id=batch_id, tapped_on=datetime.utcnow())
                     data["on_tap_id"] = on_tap.id
 
             tap = TapsDB.update(db_session, tap.id, **data)

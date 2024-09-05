@@ -46,7 +46,7 @@ class Brewfather(ExternalBrewToolBase):
             "brew_date": batch.get("brewDate"),
             "keg_date": batch.get("bottlingDate"),
             "srm": batch.get("estimatedColor"),
-            "batch_number": batch.get("batchNo"),
+            "batch_number": str(batch.get("batchNo")),
         }
 
         complete_statuses = self.config.get("external_brew_tools.brewfather.completed_statuses")
@@ -94,7 +94,7 @@ class Brewfather(ExternalBrewToolBase):
         return self._get_batches(meta=meta)
 
     def _get_batches(self, meta=None):
-        return self._get(f"v1/batches", meta)
+        return self._get(f"v2/batches", meta)
 
     def _get_batch(self, batch_id=None, meta=None, params=None):
         if not batch_id and not meta:
@@ -102,10 +102,10 @@ class Brewfather(ExternalBrewToolBase):
 
         if not batch_id:
             batch_id = meta.get("batch_id")
-        return self._get(f"v1/batches/{batch_id}", meta, params=params)
+        return self._get(f"v2/batches/{batch_id}", meta, params=params)
     
     def _get_recipes(self, meta=None):
-        return self._get(f"v1/recipes", meta)
+        return self._get(f"v2/recipes", meta)
 
     def _get_recipe(self, recipe_id=None, meta=None, params=None):
         if not recipe_id and not meta:
@@ -113,7 +113,7 @@ class Brewfather(ExternalBrewToolBase):
 
         if not recipe_id:
             recipe_id = meta.get("recipe_id")
-        return self._get(f"v1/recipes/{recipe_id}", meta, params=params)
+        return self._get(f"v2/recipes/{recipe_id}", meta, params=params)
 
     def _get(self, path, meta, params=None):
         url = f"https://api.brewfather.app/{path}"

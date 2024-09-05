@@ -38,9 +38,5 @@ class Taps(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
         return session.query(cls).filter_by(location_id=location_id, **kwargs)
 
     @classmethod
-    def get_by_beer(cls, session, beer_id, **kwargs):
-        return session.query(cls).join(on_tap.OnTap).filter_by(beer_id=beer_id, **kwargs)
-
-    @classmethod
-    def get_by_beverage(cls, session, beverage_id, **kwargs):
-        return session.query(cls).join(on_tap.OnTap).filter_by(beverage_id=beverage_id, **kwargs)
+    def get_by_batch(cls, session, batch_id, **kwargs):
+        return session.query(cls).join(on_tap.OnTap).filter_by(batch_id=batch_id, **kwargs)

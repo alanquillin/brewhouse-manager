@@ -7,7 +7,6 @@ from flask_login import login_required, current_user
 from db import session_scope
 from db.beers import _PKEY as beers_pk
 from db.beers import Beers as BeersDB
-from db.taps import Taps as TapsDB
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.time import parse_iso8601_utc, utcnow_aware
@@ -30,15 +29,6 @@ class BeerResourceMixin(ResourceMixinBase):
         BeersDB.update(db_session, beer_id, **data)
 
     @staticmethod
-    def transform_tap_response(tap):
-        data = tap.to_dict()
-
-        if tap.location:
-            data["location"] = LocationsResourceMixin.transform_response(tap.location)
-        
-        return ResourceMixinBase.transform_response(data)
-
-    @staticmethod
     def transform_response(beer, db_session=None, skip_meta_refresh=False, include_batches=True, include_location=True, image_transitions=None, **kwargs):
         if not beer:
             return beer
@@ -50,13 +40,6 @@ class BeerResourceMixin(ResourceMixinBase):
         
         if include_batches and beer.batches:
             data["batches"] = [BatchesResourceMixin.transform_response(b, skip_meta_refresh=skip_meta_refresh, db_session=db_session) for b in beer.batches]
-
-        include_tap_details = request.args.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
-
-        if include_tap_details and db_session:
-            taps = TapsDB.get_by_beer(db_session, beer.id)
-            if taps:
-                data["taps"] = [BeerResourceMixin.transform_tap_response(tap) for tap in taps]
 
         if not skip_meta_refresh:
             force_refresh = request.args.get("force_refresh", "false").lower() in ["true", "yes", "", "1"]

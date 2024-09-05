@@ -288,16 +288,12 @@ export class ManageTapsComponent implements OnInit {
   save(): void {
     var updateData:any = _.cloneDeep(this.modifyTap.changes);
 
-    if(_.has(updateData, "beerId") && (updateData.beerId === "-1" || _.isNil(updateData.beerId))){
-      updateData.beerId = null;
+    if(_.has(updateData, "batchId") && (updateData.batchId === "-1" || _.isNil(updateData.batchId))){
+      updateData.batchId = null;
     }
 
     if(_.has(updateData, "sensorId") && (updateData.sensorId === "-1" || _.isNil(updateData.sensorId))){
       updateData.sensorId = null;
-    }
-
-    if(_.has(updateData, "beverageId") && (updateData.beverageId === "-1" || _.isNil(updateData.beverageId))){
-      updateData.beverageId = null;
     }
 
     this.processing = true;
@@ -441,7 +437,7 @@ export class ManageTapsComponent implements OnInit {
   clear(tap: Tap) {
     if(confirm(`Are you sure you want to clear the tap?`)) {
       this.processing = true;
-      this.dataService.updateTap(tap.id, {beerId: null, beverageId:null}).subscribe({
+      this.dataService.clearTap(tap.id).subscribe({
         next: (resp: any) => {
           this.processing = false;
           this.loading = true;
@@ -510,18 +506,20 @@ export class ManageTapsComponent implements OnInit {
       return "";
     }
 
-    var name = batch?.getName();
+    var name : string | undefined = "";
 
+    if(!isNilOrEmpty(batch?.beer)) {
+      name = batch?.beer?.getName();
+    }
+    if(!isNilOrEmpty(batch?.beverage)) {
+      name = batch?.beverage?.name;
+    }
+    
     if(isNilOrEmpty(name)) {
-      if(!isNilOrEmpty(batch?.beer)) {
-        name = batch?.beer?.getName();
-      }
-      if(!isNilOrEmpty(batch?.beverage)) {
-        name = batch?.beverage?.name;
-      }
+      return "";
     }
 
-    name = `${name} (keg'd on ${batch?.getKegDate()})`
+    name = `${name} (batch #${batch?.getBatchNumber()})`
 
     return name;
   }

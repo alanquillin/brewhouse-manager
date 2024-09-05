@@ -8,12 +8,14 @@ from flask_login import login_required, current_user
 from db import session_scope
 from db.batches import _PKEY as batches_pk
 from db.batches import Batches as BatchesDB
+from db.taps import Taps as TapsDB
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.time import parse_iso8601_utc, utcnow_aware
 from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase, NotAuthorizedError
 # from resources.beers import BeerResourceMixin
 # from resources.beverage import BeverageResourceMixin
+from resources.locations import LocationsResourceMixin
 
 G_LOGGER = logging.getLogger(__name__)
 G_CONFIG = Config()
@@ -34,8 +36,24 @@ class BatchesResourceMixin(ResourceMixinBase):
         BatchesDB.update(db_session, batch_id, **data)
 
     @staticmethod
+    def transform_tap_response(tap):
+        data = tap.to_dict()
+
+        if tap.location:
+            data["location"] = LocationsResourceMixin.transform_response(tap.location)
+        
+        return ResourceMixinBase.transform_response(data)
+    
+    @staticmethod
     def transform_response(batch, skip_meta_refresh=False, db_session=None):
         data = batch.to_dict()
+
+        include_tap_details = request.args.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
+
+        if include_tap_details and db_session:
+            taps = TapsDB.get_by_batch(db_session, batch.id)
+            if taps:
+                data["taps"] = [BatchesResourceMixin.transform_tap_response(tap) for tap in taps]
 
         if not skip_meta_refresh:
             force_refresh = request.args.get("force_refresh", "false").lower() in ["true", "yes", "", "1"]
@@ -108,7 +126,7 @@ class Batches(BaseResource, BatchesResourceMixin):
         with session_scope(self.config) as db_session:
             kwargs = {}
             if beer_id:
-                kwargs["beer_id"] = beverage_id
+                kwargs["beer_id"] = beer_id
             if beverage_id:
                 kwargs["beverage_id"] = beverage_id
             
@@ -148,7 +166,7 @@ class Batch(BaseResource, BatchesResourceMixin):
     def _get_batch(self, db_session, batch_id, beer_id=None, beverage_id=None):
         kwargs = {batches_pk: batch_id}
         if beer_id:
-                kwargs["beer_id"] = beverage_id
+            kwargs["beer_id"] = beer_id
         if beverage_id:
             kwargs["beverage_id"] = beverage_id
         

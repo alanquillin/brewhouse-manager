@@ -49,6 +49,8 @@
 
     .modify-form {
         order: 2;
+        display: flex;
+        flex-direction: row;
 
         .section {
             display: flex;
@@ -70,6 +72,15 @@
                 margin-top: 6px 0px 0px 0px;
             }
         }
+
+        .brewfather-details {
+            padding-left: 25px;
+
+            .brewfather-details-title {
+                font-weight: bolder;
+                padding-right: 12px;;
+            }
+        }
     }
 
     .modify-actions {
@@ -80,6 +91,20 @@
         }    
     }
 
+    .beer-batches {
+        order: 4;
+        padding-top: 25px;
+
+        .heading {
+            // display: flex;
+            padding-bottom: 12px;
+
+            // p {
+            //     padding-top: 6px;
+            //     margin-right: 25px;
+            // }
+        }
+    }
 }
 
 fieldset {

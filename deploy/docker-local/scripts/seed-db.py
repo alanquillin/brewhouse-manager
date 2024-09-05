@@ -172,6 +172,7 @@ BATCHES = [
     {
         "id": batch_id1,
         "beer_id": beer_l1b1_id,
+        "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "batch_id": "OxLBTCdfmPN5Z5DbrNidISXo67NMN3" # irish stout (batch 23)
         },
@@ -181,10 +182,13 @@ BATCHES = [
         "beer_id": beer_l1b2_id,
         "brew_date": datetime(2024, 1, 1),
         "keg_date": datetime(2024, 1, 21),
+        "abv": 5.4,
+        "ibu": 14,
     },
     {
         "id": batch_id3,
         "beer_id": beer_l1b3_id,
+        "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "batch_id": "k9MRi0BeqW3sFdltMhqy4CnHtSwDOG" # galactic santa (batch 25)
         },
@@ -198,6 +202,7 @@ BATCHES = [
     {
         "id": batch_id5,
         "beer_id": beer_l1b4_id,
+        "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "batch_id": "S0spuNZL8PcQM2f2ioCgAoR8A0tv2q" # citrus haze (batch 26)
         },

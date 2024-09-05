@@ -10,7 +10,7 @@ import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/fil
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
 import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component'
 
-import { Beer, beerTransformFns, ImageTransition, Location, UserInfo } from '../../models/models';
+import { Beer, beerTransformFns, ImageTransition, Location, UserInfo, Batch, Tap } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
 
 import * as _ from 'lodash';
@@ -24,10 +24,15 @@ export class ManageBeerComponent implements OnInit {
   loading = false;
   beers: Beer[] = [];
   filteredBeers: Beer[] = [];
+  beerBatches: {[batchId: string]: Batch[]} = {};
   processing = false;
   adding = false;
   editing = false;
+  addingBatch = false;
+  editingBatch = false;
   modifyBeer: Beer = new Beer();
+  selectedBatchBeer: Beer = new Beer();
+  modifyBatch: Batch = new Batch();
   isNilOrEmpty: Function = isNilOrEmpty;
   imageTransitionsToDelete: string[] = [];
   locations: Location[] = [];
@@ -47,8 +52,10 @@ export class ManageBeerComponent implements OnInit {
       cols.push('location');
     }
 
-    return _.concat(cols, ['tapped', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', "untappdId", 'imgUrl', 'actions']);
+    return _.concat(cols, ['batchCount', 'tapped', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', "untappdId", 'imgUrl', 'actions']);
   }
+
+  displayedBatchColumns: string[] = ["batchNumber", "tapped", 'externalBrewingTool', 'abv', 'ibu', 'srm', "brewDate", "kegDate", 'actions']
 
   decimalRegex = /^-?\d*[.]?\d{0,2}$/;
   decimalValidator = Validators.pattern(this.decimalRegex); 
@@ -99,7 +106,7 @@ export class ManageBeerComponent implements OnInit {
     }
   }
 
-  modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
+  modifyBeerFormGroup: UntypedFormGroup = new UntypedFormGroup({
     name: new UntypedFormControl('', [this.requiredIfNoBrewTool(this)]),
     description: new UntypedFormControl('', []),
     locationId: new UntypedFormControl('', [Validators.required]),
@@ -111,8 +118,19 @@ export class ManageBeerComponent implements OnInit {
     imgUrl: new UntypedFormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
     imageTransitionsEnabled: new UntypedFormControl(''),
     emptyImgUrl: new UntypedFormControl('', [this.requiredIfImageTransitionsEnabled(this)]),
-    brewfatherBatchId: new UntypedFormControl('', [this.requiredForBrewingTool(this, "brewfather")]),
+    brewfatherRecipeId: new UntypedFormControl('', [this.requiredForBrewingTool(this, "brewfather")]),
     untappdId: new UntypedFormControl('')
+  });
+
+  modifyBatchFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    batchNumber: new UntypedFormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
+    abv: new UntypedFormControl('', [this.decimalValidator]),
+    srm: new UntypedFormControl('', [this.decimalValidator]),
+    ibu: new UntypedFormControl('', [this.decimalValidator]),
+    externalBrewingTool: new UntypedFormControl(-1),
+    brewfatherBatchId: new UntypedFormControl('', [this.requiredForBrewingTool(this, "brewfather")]),
+    brewDate: new UntypedFormControl(new Date(), []),
+    kegDate: new UntypedFormControl(new Date(), []),
   });
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
@@ -130,13 +148,40 @@ export class ManageBeerComponent implements OnInit {
         for(let location of _.sortBy(locations, [(l:Location) => {return l.description}])) {
           this.locations.push(new Location(location));
         }
-        this.dataService.getBeers(true).subscribe({
+        this.dataService.getBeers().subscribe({
           next: (beers: Beer[]) => {
             this.beers = [];
-            _.forEach(beers, (beer) => {
-              this.beers.push(new Beer(beer))
+            _.forEach(beers, (_beer) => {
+              var beer = new Beer(_beer);
+              this.beers.push(beer)
+              this.beerBatches[beer.id] = [];
+              this.dataService.getBeerBatches(beer.id, true).subscribe({
+                next: (batches: Batch[]) =>{
+                  _.forEach(batches, (_batch) => {
+                    var batch = new Batch(_batch)
+                    this.beerBatches[beer.id].push(batch);
+                  });
+                  this.filter();
+                }, 
+                error: (err: DataError) => {
+                  this.displayError(err.message);
+                  if(!_.isNil(error)){
+                    error();
+                  }
+                  if(!_.isNil(always)){
+                    always();
+                  }
+                },
+                complete: () => {
+                  if(!_.isNil(next)){
+                    next();
+                  }
+                  if(!_.isNil(always)){
+                    always();
+                  }
+                }
+              })
             })
-            this.filter();
           }, 
           error: (err: DataError) => {
             this.displayError(err.message);
@@ -192,8 +237,8 @@ export class ManageBeerComponent implements OnInit {
     });
   }
 
-  add(): void {
-    this.modifyFormGroup.reset();
+  addBeer(): void {
+    this.modifyBeerFormGroup.reset();
     var data:any = {}
     if(this.locations.length === 1) {
       data["locationId"] = this.locations[0].id;
@@ -203,7 +248,7 @@ export class ManageBeerComponent implements OnInit {
     this.adding = true;
   }
 
-  create(): void {
+  createBeer(): void {
     var data: any = {}
     const keys = ['name', 'description', 'locationId', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', 'imgUrl', 'externalBrewingToolMeta', 'emptyImgUrl', 'imageTransitionsEnabled']
     const checkKeys = {}
@@ -260,31 +305,31 @@ export class ManageBeerComponent implements OnInit {
     });
   }
 
-  cancelAdd(): void {
+  cancelAddBeer(): void {
     this.adding = false;
   }
 
-  edit(beer: Beer): void {
+  editBeer(beer: Beer): void {
     beer.enableEditing();
     this.modifyBeer = beer;
     this.imageTransitionsToDelete = [];
     this.editing = true;
-    this.modifyFormGroup.reset();
-    this.reRunValidation();
+    this.modifyBeerFormGroup.reset();
+    this.reRunBeerValidation();
   }
 
-  save(): void {  
+  saveBeer(): void {  
     this.processing = true;
     this.deleteImageTransitionRecursive();
   }
 
   deleteImageTransitionRecursive(): void {
     if(_.isEmpty(this.imageTransitionsToDelete)) {
-      this.saveBeer();
+      this.saveBeerActual();
     } else {
       let imageTransitionId = this.imageTransitionsToDelete.pop();
       if(!imageTransitionId) {
-        return this.saveBeer();
+        return this.saveBeerActual();
       }
 
       this.dataService.deleteImageTransition(imageTransitionId).subscribe({
@@ -299,13 +344,13 @@ export class ManageBeerComponent implements OnInit {
     }
   }
 
-  saveBeer(): void {
-    if(isNilOrEmpty(this.changes)) {
+  saveBeerActual(): void {
+    if(isNilOrEmpty(this.beerChanges)) {
       this.refresh(()=> {this.processing = false;}, () => {
         this.editing = false;
       });
     } else {
-      this.dataService.updateBeer(this.modifyBeer.id, this.changes).subscribe({
+      this.dataService.updateBeer(this.modifyBeer.id, this.beerChanges).subscribe({
         next: (beer: Beer) => {
           this.refresh(()=> {this.processing = false;}, () => {
             this.editing = false;
@@ -319,7 +364,7 @@ export class ManageBeerComponent implements OnInit {
     }
   }
 
-  cancelEdit(): void {
+  cancelEditBeer(): void {
     this.modifyBeer.disableEditing();
     if(!isNilOrEmpty(this.imageTransitionsToDelete)) {
       this.refresh(()=> {this.processing = false;}, () => {
@@ -330,30 +375,32 @@ export class ManageBeerComponent implements OnInit {
     }
   }
 
-  delete(beer: Beer): void {
+  deleteBeer(beer: Beer): void {
     if(confirm(`Are you sure you want to delete beer '${beer.getName()}'?`)) {
       this.processing = true;
-      if(!_.isNil(beer.taps) && beer.taps.length > 0){
-        if(confirm(`The beer is associated with one or more taps.  Clear from tap(s)?`)) {
-          var tapIds : string[] = [];
-          _.forEach(beer.taps, (t)=>{
-            tapIds.push(t.id);
-          });
-
-          this.clearFromNextTap(tapIds, () => {
-              this._delete(beer);
+      var tapIds = this.beerBatchesAssocTaps(beer);
+      if(!isNilOrEmpty(tapIds)){
+        if(confirm(`The beer has 1 or more batch associated with one or more taps.  Batches must first be cleared from the tap(s) before deleting. Proceed?`)) {
+          this.clearNextTap(tapIds, () => {
+              this._deleteBeer(beer);
             }, (err: DataError) => {
               this.displayError(err.message);
               this.processing = false;
             });
         }
       } else {
-        this._delete(beer);
+        this._deleteBeer(beer);
       }
     }
   }
 
-  clearFromNextTap(tapIds: string[], next: Function, error: Function): void {
+  beerBatchesAssocTaps(beer: Beer): string[] {
+    var tapIds : string[] = [];
+
+    return tapIds
+  }
+
+  clearNextTap(tapIds: string[], next: Function, error: Function): void {
     if(isNilOrEmpty(tapIds))
       return next();
 
@@ -361,11 +408,11 @@ export class ManageBeerComponent implements OnInit {
     if(!tapId)
       return next();
       
-    this._clearFromTap(tapId, () => { this.clearFromNextTap(tapIds, next, error) }, error);
+    this.clearTap(tapId, () => { this.clearNextTap(tapIds, next, error) }, error);
   }
 
-  _clearFromTap(tapId: string, next: Function, error: Function): void {
-    this.dataService.clearBeerFromTap(tapId).subscribe({
+  clearTap(tapId: string, next: Function, error: Function): void {
+    this.dataService.clearTap(tapId).subscribe({
       next: (resp: any) => {
         next();
       },
@@ -375,7 +422,7 @@ export class ManageBeerComponent implements OnInit {
     });
   }
 
-  _delete(beer: Beer): void {
+  _deleteBeer(beer: Beer): void {
     this.processing = true;
     this.dataService.deleteBeer(beer.id).subscribe({
       next: (resp: any) => {
@@ -439,36 +486,36 @@ export class ManageBeerComponent implements OnInit {
     this.filteredBeers = filteredData;
   }
 
-  brewToolChanges(event?: any) {
-    this.addMissingMeta();
-    this.reRunValidation();
+  beerBrewToolChanges(event?: any) {
+    this.addMissingBeerMeta();
+    this.reRunBeerValidation();
   }
 
-  addMissingMeta() {
+  addMissingBeerMeta() {
     switch(this.modifyBeer.editValues.externalBrewingTool) {
       case "brewfather":
-        if(!_.has(this.modifyBeer.editValues.externalBrewingToolMeta, "batchId")){
-          _.set(this.modifyBeer.editValues, 'externalBrewingToolMeta.batchId', '');
+        if(!_.has(this.modifyBeer.editValues.externalBrewingToolMeta, "recipeId")){
+          _.set(this.modifyBeer.editValues, 'externalBrewingToolMeta.recipeId', '');
         }
         break
     }
   }
 
-  get modifyForm(): { [key: string]: AbstractControl } {
-    return this.modifyFormGroup.controls;
+  get modifyBeerForm(): { [key: string]: AbstractControl } {
+    return this.modifyBeerFormGroup.controls;
   } 
 
-  reRunValidation(): void {
-    _.forEach(this.modifyForm, (ctrl) => {
+  reRunBeerValidation(): void {
+    _.forEach(this.modifyBeerForm, (ctrl) => {
       ctrl.updateValueAndValidity();
     });
   }
 
-  get hasChanges(): boolean {
-    return !_.isEmpty(this.changes) || !isNilOrEmpty(this.imageTransitionsToDelete);
+  get hasBeerChanges(): boolean {
+    return !_.isEmpty(this.beerChanges) || !isNilOrEmpty(this.imageTransitionsToDelete);
   }
 
-  get changes(): any {
+  get beerChanges(): any {
     var changes = _.cloneDeep(this.modifyBeer.changes);
 
     if (_.get(changes, "externalBrewingTool") === "-1") {
@@ -553,16 +600,51 @@ export class ManageBeerComponent implements OnInit {
     if (_.isNil(beer))
       return "";
 
-    var batchId = _.get(beer.externalBrewingToolMeta, "batchId");
-    if (beer.externalBrewingTool === "brewfather" && beer.externalBrewingToolMeta && !isNilOrEmpty(batchId)) {
+    var recipeId = _.get(beer.externalBrewingToolMeta, "recipeId");
+    if (beer.externalBrewingTool === "brewfather" && beer.externalBrewingToolMeta && !isNilOrEmpty(recipeId)) {
+      return `https://web.brewfather.app/tabs/recipes/recipe/${recipeId}`;
+    }
+
+    return "";
+  }
+
+  getBatchLink(batch: Batch) : string {
+    if (_.isNil(batch))
+      return "";
+
+    var batchId = _.get(batch.externalBrewingToolMeta, "batchId");
+    if (batch.externalBrewingTool === "brewfather" && batch.externalBrewingToolMeta && !isNilOrEmpty(batchId)) {
       return `https://web.brewfather.app/tabs/batches/batch/${batchId}`;
     }
 
     return "";
   }
 
-  isTapped(beer: Beer): boolean{
-    return !isNilOrEmpty(beer.taps);
+  isBeerTapped(beer: Beer): boolean {
+    var isTapped = false;
+    _.forEach(this.beerBatches[beer.id], (batch) => {
+      if(!isNilOrEmpty(batch.taps)) {
+        isTapped = true;
+      }
+    })
+    return isTapped;
+  }
+
+  beerAssocTaps(beer: Beer): Tap[] {
+    var tapIds: Tap[] = [];
+
+    _.forEach(this.beerBatches[beer.id], (batch) => {
+      if(!isNilOrEmpty(batch.taps)) {
+        _.forEach(batch.taps, (tap) => {
+          tapIds.push(tap);
+        })
+      }
+    })
+    return tapIds
+  }
+
+  isBatchTapped(batch: Batch): boolean {
+    return !isNilOrEmpty(batch.taps);
   }
 
   addImageTransition(): void {
@@ -647,5 +729,188 @@ export class ManageBeerComponent implements OnInit {
       return true;
     }
     return false;
+  }
+
+  batchBrewToolChanges(event?: any) {
+    this.addMissingBatchMeta();
+    this.reRunBatchValidation();
+  }
+
+  addMissingBatchMeta() {
+    switch(this.modifyBatch.editValues.externalBrewingTool) {
+      case "brewfather":
+        if(!_.has(this.modifyBatch.editValues.externalBrewingToolMeta, "batchId")){
+          _.set(this.modifyBatch.editValues, 'externalBrewingToolMeta.batchId', '');
+        }
+        break
+    }
+  }
+
+  get modifyBatchForm(): { [key: string]: AbstractControl } {
+    return this.modifyBatchFormGroup.controls;
+  } 
+
+  reRunBatchValidation(): void {
+    _.forEach(this.modifyBatchForm, (ctrl) => {
+      ctrl.updateValueAndValidity();
+    });
+  }
+
+  get hasBatchChanges(): boolean {
+    return !_.isEmpty(this.batchChanges);
+  }
+
+  get batchChanges(): any {
+    var changes = _.cloneDeep(this.modifyBatch.changes);
+
+    if (_.get(changes, "externalBrewingTool") === "-1") {
+      changes["externalBrewingTool"] = null;
+      changes["externalBrewingToolMeta"] = null;
+    } else {
+      if (_.has(changes, "externalBrewingToolMeta")) {
+        if(isNilOrEmpty(_.get(this.modifyBatch, "externalBrewingTool"))) {
+          delete changes["externalBrewingToolMeta"];
+        }
+      }
+    }
+
+    const keys = ['abv', 'ibu', 'srm', 'kegDate', 'brewDate']
+    _.forEach(keys, (k) => {
+      if(_.has(changes, k)) {
+        if(isNilOrEmpty(changes[k])) {
+          changes[k] = null;
+        }
+      }
+    });
+    return changes;
+  }
+  
+  addBatch(beer: Beer): void {
+    this.selectedBatchBeer = beer;
+    this.modifyBatchFormGroup.reset();
+    var data:any = {};
+    this.modifyBatch = new Batch(data);
+    this.modifyBatch.editValues = data;
+    this.addingBatch = true;
+  }
+
+  createBatch(): void {
+    var data: any = {beerId: this.selectedBatchBeer.id}
+    const keys = ['externalBrewingTool', 'abv', 'ibu', 'srm', 'externalBrewingToolMeta', 'kegDate', 'brewDate']
+    const checkKeys = {}
+    
+    _.forEach(keys, (k) => {
+      const checkKey: any = _.get(checkKeys, k, k);
+
+      var val: any = _.get(this.modifyBatch.editValues, checkKey);
+      if(isNilOrEmpty(val)){
+        return;
+      }
+      const transformFn: any = _.get(this.transformFns, k);
+      if(!_.isNil(transformFn) && typeof transformFn === 'function'){
+        val = transformFn(val);
+      }
+      data[k] = val;
+    })
+
+    if(_.has(data, "externalBrewingTool")){
+      const tool = data["externalBrewingTool"];
+      if(isNilOrEmpty(tool)) {
+        delete data["externalBrewingTool"];
+      }
+    }
+
+    if (_.has(data, "externalBrewingToolMeta")) {
+      if(isNilOrEmpty(_.get(data, "externalBrewingTool"))) {
+        delete data["externalBrewingToolMeta"];
+      }
+    }
+    
+    this.processing = true;
+    this.dataService.createBatch(data).subscribe({
+      next: (batch: Batch) => {
+        this.refresh(() => {this.processing = false;}, () => {this.addingBatch = false;});
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    });
+  }
+
+  cancelAddBatch(): void {
+    this.addingBatch = false;
+  }
+
+  editBatch(batch: Batch, beer: Beer): void {
+    this.selectedBatchBeer = beer;
+    batch.enableEditing();
+    this.modifyBatch = batch;
+    this.editingBatch = true;
+    this.modifyBatchFormGroup.reset();
+    this.reRunBatchValidation();
+  }
+
+  saveBatch(): void {  
+    this.processing = true;
+    if(isNilOrEmpty(this.batchChanges)) {
+      this.refresh(()=> {this.processing = false;}, () => {
+        this.editingBatch = false;
+      });
+    } else {
+      this.dataService.updateBatch(this.modifyBatch.id, this.batchChanges).subscribe({
+        next: (batch: Batch) => {
+          this.refresh(()=> {this.processing = false;}, () => {
+            this.editingBatch = false;
+          })
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+        }
+      });
+    }
+  }
+
+  cancelEditBatch(): void {
+    this.modifyBatch.disableEditing();
+    this.editingBatch = false;
+  }
+
+  archiveBatch(batch: Batch): void {
+    if(confirm(`Are you sure you want to archive the batch keg'd on ${batch.getKegDate() }?`)) {
+      this.processing = true;
+      if(!_.isNil(batch.taps) && batch.taps.length > 0){
+        var tapIds : string[] = []
+        _.forEach(batch.taps, (tap) => {
+          tapIds.push(tap.id)
+        });
+        if(confirm(`The batch is associated with one or more taps.  It will need to be cleared from tap(s) before archiving.  Proceed?`)) {
+          this.clearNextTap(tapIds, () => {
+              this._archiveBatch(batch);
+            }, (err: DataError) => {
+              this.displayError(err.message);
+              this.processing = false;
+            });
+        }
+      } else {
+        this._archiveBatch(batch);
+      }
+    }
+  }
+
+  _archiveBatch(batch: Batch): void {
+    this.processing = true;
+    this.dataService.updateBatch(batch.id, {archivedOn: Date.now()}).subscribe({
+      next: (resp: any) => {
+        this.processing = false;
+        this.loading = true;
+        this.refresh(()=>{this.loading = false});
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    });
   }
 }

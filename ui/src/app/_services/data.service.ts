@@ -142,15 +142,19 @@ export class DataService {
   }
 
   clearBeerFromTap(tapId: string): Observable<any> {
-    return this.updateTap(tapId, {"beerId": null});
+    return this.clearTap(tapId);
   }
 
   clearBeverageFromTap(tapId: string): Observable<any> {
-    return this.updateTap(tapId, {"beverageId": null});
+    return this.clearTap(tapId);
   }
 
-  getBeers(includeTapDetails:boolean = false): Observable<Beer[]> {
-    const url = `${this.apiBaseUrl}/beers${includeTapDetails ? "?include_tap_details" : ""}`;
+  clearTap(tapId: string): Observable<any> {
+    return this.updateTap(tapId, {"batchId": null});
+  }
+
+  getBeers(): Observable<Beer[]> {
+    const url = `${this.apiBaseUrl}/beers`;
     return this.http.get<Beer[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
@@ -159,8 +163,8 @@ export class DataService {
     return this.http.post<Beer>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getBeer(beerId: string, includeTapDetails:boolean = false): Observable<Beer> {
-    const url = `${this.apiBaseUrl}/beers/${beerId}${includeTapDetails ? "?include_tap_details" : ""}`;
+  getBeer(beerId: string): Observable<Beer> {
+    const url = `${this.apiBaseUrl}/beers/${beerId}`;
     return this.http.get<Beer>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
@@ -388,6 +392,11 @@ export class DataService {
 
   getBatches(): Observable<Batch[]> {
     const url = `${this.apiBaseUrl}/batches`;
+    return this.http.get<Batch[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  getBeerBatches(beerId: string, includeTapDetails:boolean = false): Observable<Batch[]> {
+    const url = `${this.apiBaseUrl}/beers/${beerId}/batches${includeTapDetails ? "?include_tap_details" : ""}`;
     return this.http.get<Batch[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 

@@ -2,7 +2,7 @@
 _TABLE_NAME = "batches"
 _PKEY = "id"
 
-from sqlalchemy import Column, ForeignKey, Integer, String, func, Date, or_
+from sqlalchemy import Column, ForeignKey, Float, String, func, Date, or_
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
@@ -17,10 +17,14 @@ class Batches(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     __tablename__ = _TABLE_NAME
 
     id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
+    batch_number = Column(String, nullable=True)
     beer_id = Column(UUID, ForeignKey(f"{beers._TABLE_NAME}.{beers._PKEY}"), nullable=True)
     beverage_id = Column(UUID, ForeignKey(f"{beverages._TABLE_NAME}.{beers._PKEY}"), nullable=True)
     external_brewing_tool = Column(String, nullable=True)
     external_brewing_tool_meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
+    abv = Column(Float, nullable=True)
+    ibu = Column(Float, nullable=True)
+    srm = Column(Float, nullable=True)
     brew_date = Column(Date, nullable=True)
     keg_date = Column(Date, nullable=True)
     archived_on = Column(Date, nullable=True)
