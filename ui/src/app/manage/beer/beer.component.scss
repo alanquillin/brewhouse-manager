@@ -62,7 +62,7 @@
             padding: 6px;
 
             button.add-transition {
-                width: 200px;
+                width: 250px;
                 margin-bottom: 12px;
             }
 
@@ -132,7 +132,8 @@ fieldset,
     height: auto;
 }
 
-.imported-value {
+.imported-value,
+.hint-value {
     color: gray;
     font-style: italic;
 }

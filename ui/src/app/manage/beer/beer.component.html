@@ -274,8 +274,7 @@
                         [(ngModel)]="modifyBeer.editValues.imgUrl"
                         matInput />
                     <mat-label>Image URL</mat-label>
-                    <ng-template #popupContentMod><div><img class="beer-image-preview" src="{{ modifyBeer.editValues.imgUrl }}"/></div></ng-template>
-                    <button *ngIf="!isNilOrEmpty(modifyBeer.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(modifyBeer.editValues.imgUrl)">
+                    <button *ngIf="!isNilOrEmpty(modifyBeer.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" (click)="openImagePreviewDialog(modifyBeer.editValues.imgUrl)">
                         <mat-icon>open_in_new</mat-icon>
                     </button>
                     <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog(this.modifyBeer.editValues, 'imgUrl')">
@@ -303,8 +302,7 @@
                             [(ngModel)]="modifyBeer.editValues.emptyImgUrl"
                             matInput />
                         <mat-label>Empty Keg Image URL</mat-label>
-                        <ng-template #popupContentMod><div><img class="beer-image-preview" src="{{ modifyBeer.editValues.emptyImgUrl }}"/></div></ng-template>
-                        <button *ngIf="!isNilOrEmpty(modifyBeer.editValues.emptyImgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(modifyBeer.editValues.emptyImgUrl)">
+                        <button *ngIf="!isNilOrEmpty(modifyBeer.editValues.emptyImgUrl)" matSuffix mat-icon-button aria-label="Preview image" (click)="openImagePreviewDialog(modifyBeer.editValues.emptyImgUrl)">
                             <mat-icon>open_in_new</mat-icon>
                         </button>
                         <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog(this.modifyBeer.editValues, 'emptyImgUrl')">
@@ -346,8 +344,7 @@
                                     required
                                     matInput />
                                 <mat-label>Empty Keg Image URL</mat-label>
-                                <ng-template #popupContentMod><div><img class="beer-image-preview" src="{{ imageTransition.editValues.imgUrl }}"/></div></ng-template>
-                                <button *ngIf="!isNilOrEmpty(imageTransition.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(imageTransition.editValues.imgUrl)">
+                                <button *ngIf="!isNilOrEmpty(imageTransition.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" (click)="openImagePreviewDialog(imageTransition.editValues.imgUrl)">
                                     <mat-icon>open_in_new</mat-icon>
                                 </button>
                                 <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog(imageTransition.editValues, 'imgUrl')">
@@ -373,7 +370,10 @@
             <p><span class="brewfather-details-title">ABV:</span>{{modifyBeer.getExtToolVal("abv")}}</p>
             <p><span class="brewfather-details-title">SRM:</span>{{modifyBeer.getExtToolVal("srm")}}</p>
             <p><span class="brewfather-details-title">IBU:</span>{{modifyBeer.getExtToolVal("ibu")}}</p>
-            <p><span class="brewfather-details-title">Image URL:</span>{{modifyBeer.getExtToolVal("imgUrl")}}</p>
+            <p><span class="brewfather-details-title">Image:</span><span *ngIf="isNilOrEmpty(modifyBeer.getExtToolVal('imgUrl'))" class="hint-value">Not set</span></p>
+            <span *ngIf="!isNilOrEmpty(modifyBeer.getExtToolVal('imgUrl'))">
+                <img src="{{modifyBeer.getExtToolVal('imgUrl')}}" class="beer-image-preview" />
+            </span>
         </div>
     </div>
     
