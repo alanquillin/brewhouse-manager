@@ -48,6 +48,15 @@
 
     .modify-form {
         order: 2;
+
+        .brewfather-details {
+            padding-left: 25px;
+
+            .brewfather-details-title {
+                font-weight: bolder;
+                padding-right: 12px;;
+            }
+        }
     }
 
     .modify-actions {
@@ -76,6 +85,21 @@
             display: flex;
             flex-direction: row;
             margin-top: 6px 0px 0px 0px;
+        }
+    }
+
+    .beverage-batches {
+        order: 4;
+        padding-top: 25px;
+
+        .heading {
+            // display: flex;
+            padding-bottom: 12px;
+
+            // p {
+            //     padding-top: 6px;
+            //     margin-right: 25px;
+            // }
         }
     }
 }
@@ -110,4 +134,9 @@ span.is-tapped {
     div.associated-taps:last-child {
         border-bottom: 0px !important;
     }
+}
+
+.beverage-image-preview {
+    max-width: 200px;
+    height: auto;
 }

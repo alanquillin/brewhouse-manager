@@ -10,9 +10,9 @@ import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/fil
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component'
 import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component'
 
-import { Beverage, ImageTransition, Settings, Location, UserInfo } from '../../models/models';
+import { Beverage, ImageTransition, Settings, Location, UserInfo, Batch, Tap } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
-import { toUnixTimestamp } from '../../utils/datetime';
+import { toUnixTimestamp, convertUnixTimestamp } from '../../utils/datetime';
 
 import * as _ from 'lodash';
 
@@ -27,9 +27,13 @@ export class ManageBeverageComponent implements OnInit {
   beverages: Beverage[] = [];
   filteredBeverages: Beverage[] = [];
   processing = false;
-  adding = false;
-  editing = false;
+  addingBeverage = false;
+  editingBeverage = false;
+  addingBatch = false;
+  editingBatch = false;
   modifyBeverage: Beverage = new Beverage();
+  selectedBatchBeverage: Beverage = new Beverage();
+  modifyBatch: Batch = new Batch();
   isNilOrEmpty: Function = isNilOrEmpty;
   defaultType!: string;
   supportedTypes: string[] = [];
@@ -37,6 +41,7 @@ export class ManageBeverageComponent implements OnInit {
   selectedLocationFilters: string[] = [];
   _ = _;
   imageTransitionsToDelete: string[] = [];
+  beverageBatches: {[batchId: string]: Batch[]} = {};
 
   userInfo!: UserInfo;
 
@@ -56,7 +61,7 @@ export class ManageBeverageComponent implements OnInit {
     }
   }
 
-  modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
+  modifyBeverageFormGroup: UntypedFormGroup = new UntypedFormGroup({
     name: new UntypedFormControl('', [Validators.required]),
     type: new UntypedFormControl('', [Validators.required]),
     description: new UntypedFormControl('', []),
@@ -71,6 +76,12 @@ export class ManageBeverageComponent implements OnInit {
     roasteryLink: new UntypedFormControl('', []),
   });
 
+  modifyBatchFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    batchNumber: new UntypedFormControl('', [Validators.required]),
+    brewDate: new UntypedFormControl(new Date(), []),
+    kegDate: new UntypedFormControl(new Date(), []),
+  });
+
   get displayedColumns() {
     var cols = ['name', 'description'];
 
@@ -78,8 +89,10 @@ export class ManageBeverageComponent implements OnInit {
       cols.push('location');
     }
 
-    return _.concat(cols, ['tapped', "type", "brewery", "roastery", "flavor", "imgUrl", "actions"]);
+    return _.concat(cols, ['batchCount', 'tapped', "type", "brewery", "roastery", "flavor", "imgUrl", "actions"]);
   }
+
+  displayedBatchColumns: string[] = ["batchNumber", "tapped", "brewDate", "kegDate", 'actions']
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
 
@@ -107,6 +120,33 @@ export class ManageBeverageComponent implements OnInit {
                 _.forEach(beverages, (beverage) => {
                   var _beverage = new Beverage(beverage)
                   this.beverages.push(_beverage)
+                  this.beverageBatches[beverage.id] = [];
+                  this.dataService.getBeverageBatches(beverage.id, true).subscribe({
+                    next: (batches: Batch[]) =>{
+                      _.forEach(batches, (_batch) => {
+                        var batch = new Batch(_batch)
+                        this.beverageBatches[beverage.id].push(batch);
+                      });
+                      this.filter();
+                    }, 
+                    error: (err: DataError) => {
+                      this.displayError(err.message);
+                      if(!_.isNil(error)){
+                        error();
+                      }
+                      if(!_.isNil(always)){
+                        always();
+                      }
+                    },
+                    complete: () => {
+                      if(!_.isNil(next)){
+                        next();
+                      }
+                      if(!_.isNil(always)){
+                        always();
+                      }
+                    }
+                  });
                 })
                 this.filter();
               }, 
@@ -175,22 +215,22 @@ export class ManageBeverageComponent implements OnInit {
     });
   }
 
-  add(): void {
-    this.modifyFormGroup.reset();
+  addBeverage(): void {
+    this.modifyBeverageFormGroup.reset();
     var data: any = {type: this.defaultType, meta: {}}
     if(this.locations.length === 1) {
       data["locationId"] = this.locations[0].id;
     }
     this.modifyBeverage = new Beverage(data);
     this.modifyBeverage.editValues = data;
-    this.adding = true;
+    this.addingBeverage = true;
   }
 
   dateToNumber(v: any) : number | undefined {
     return isNilOrEmpty(v) ? undefined : _.isDate(v) ? toUnixTimestamp(v) : _.toNumber(v);
   }
 
-  create(): void {
+  createBeverage(): void {
     this.processing = true;
     var data: any = {
       name: this.modifyBeverage.editValues.name,
@@ -218,7 +258,7 @@ export class ManageBeverageComponent implements OnInit {
     
     this.dataService.createBeverage(data).subscribe({
       next: (beverage: Beverage) => {
-        this.refresh(() => {this.processing = false;}, () => {this.adding = false;});
+        this.refresh(() => {this.processing = false;}, () => {this.addingBeverage = false;});
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -227,31 +267,31 @@ export class ManageBeverageComponent implements OnInit {
     })
   }
 
-  cancelAdd(): void {
-    this.adding = false;
+  cancelAddBeverage(): void {
+    this.addingBeverage = false;
   }
 
-  edit(beverage: Beverage): void {
+  editBeverage(beverage: Beverage): void {
     beverage.enableEditing();
     this.modifyBeverage = beverage;
     this.imageTransitionsToDelete = [];
-    this.editing = true;
-    this.modifyFormGroup.reset();
-    this.reRunValidation();
+    this.editingBeverage = true;
+    this.modifyBeverageFormGroup.reset();
+    this.reRunBeverageValidation();
   }
 
-  save(): void {
+  saveBeverage(): void {
     this.processing = true;
     this.deleteImageTransitionRecursive();
   }
 
   deleteImageTransitionRecursive(): void {
     if(_.isEmpty(this.imageTransitionsToDelete)) {
-      this.saveBeverage();
+      this.saveBeverageActual();
     } else {
       let imageTransitionId = this.imageTransitionsToDelete.pop();
       if(!imageTransitionId) {
-        return this.saveBeverage();
+        return this.saveBeverageActual();
       }
 
       this.dataService.deleteImageTransition(imageTransitionId).subscribe({
@@ -266,17 +306,17 @@ export class ManageBeverageComponent implements OnInit {
     }
   }
 
-  saveBeverage(): void {
-    if(isNilOrEmpty(this.changes)) {
+  saveBeverageActual(): void {
+    if(isNilOrEmpty(this.beverageChanges)) {
       this.refresh(()=> {this.processing = false;}, () => {
-        this.editing = false;
+        this.editingBeverage = false;
       });
     } else {
-      this.dataService.updateBeverage(this.modifyBeverage.id, this.changes).subscribe({
+      this.dataService.updateBeverage(this.modifyBeverage.id, this.beverageChanges).subscribe({
         next: (beverage: Beverage) => {
           this.modifyBeverage.disableEditing();
           this.refresh(()=> {this.processing = false;}, () => {
-            this.editing = false;
+            this.editingBeverage = false;
           })
         },
         error: (err: DataError) => {
@@ -287,41 +327,43 @@ export class ManageBeverageComponent implements OnInit {
     }
   }
 
-  cancelEdit(): void {
+  cancelEditBeverage(): void {
     this.modifyBeverage.disableEditing();
     if(!isNilOrEmpty(this.imageTransitionsToDelete)) {
       this.refresh(()=> {this.processing = false;}, () => {
-        this.editing = false;
+        this.editingBeverage = false;
       });
     } else {
-      this.editing = false;
+      this.editingBeverage = false;
     }
   }
 
-  delete(beverage: Beverage): void {
+  deleteBeverage(beverage: Beverage): void {
     if(confirm(`Are you sure you want to delete beverage '${beverage.name}'?`)) {
       this.processing = true;
-      if(!_.isNil(beverage.taps) && beverage.taps.length > 0){
-        if(confirm(`The beverage is associated with one or more taps.  Clear from tap(s)?`)) {
-          var tapIds : string[] = [];
-          _.forEach(beverage.taps, (t)=>{
-            tapIds.push(t.id);
-          });
-
-          this.clearFromNextTap(tapIds, () => {
-              this._delete(beverage);
+      var tapIds = this.beverageBatchesAssocTaps(beverage);
+      if(!isNilOrEmpty(tapIds)){
+        if(confirm(`The beverage has 1 or more batch(es) associated with one or more taps.  Batches must first be cleared from the tap(s) before deleting. Proceed?`)) {
+          this.clearNextTap(tapIds, () => {
+              this._deleteBeverage(beverage);
             }, (err: DataError) => {
               this.displayError(err.message);
               this.processing = false;
             });
         }
       } else {
-        this._delete(beverage);
+        this._deleteBeverage(beverage);
       }
     }
   }
 
-  clearFromNextTap(tapIds: string[], next: Function, error: Function): void {
+  beverageBatchesAssocTaps(beverage: Beverage): string[] {
+    var tapIds : string[] = [];
+
+    return tapIds
+  }
+
+  clearNextTap(tapIds: string[], next: Function, error: Function): void {
     if(isNilOrEmpty(tapIds))
       return next();
 
@@ -329,11 +371,11 @@ export class ManageBeverageComponent implements OnInit {
     if(!tapId)
       return next();
       
-    this._clearFromTap(tapId, () => { this.clearFromNextTap(tapIds, next, error) }, error);
+    this.clearTap(tapId, () => { this.clearNextTap(tapIds, next, error) }, error);
   }
 
-  _clearFromTap(tapId: string, next: Function, error: Function): void {
-    this.dataService.clearBeverageFromTap(tapId).subscribe({
+  clearTap(tapId: string, next: Function, error: Function): void {
+    this.dataService.clearTap(tapId).subscribe({
       next: (resp: any) => {
         next();
       },
@@ -343,7 +385,7 @@ export class ManageBeverageComponent implements OnInit {
     });
   }
 
-  _delete(beverage: Beverage) {
+  _deleteBeverage(beverage: Beverage) {
     this.dataService.deleteBeverage(beverage.id).subscribe({
       next: (resp: any) => {
         this.processing = false;
@@ -357,11 +399,11 @@ export class ManageBeverageComponent implements OnInit {
     })
   }
 
-  get hasChanges(): boolean {
-    return !_.isEmpty(this.changes) || !isNilOrEmpty(this.imageTransitionsToDelete);
+  get hasBeverageChanges(): boolean {
+    return !_.isEmpty(this.beverageChanges) || !isNilOrEmpty(this.imageTransitionsToDelete);
   }
 
-  get changes(): any {
+  get beverageChanges(): any {
     var changes = _.cloneDeep(this.modifyBeverage.changes);
     
     if (_.has(changes, "imageTransitions") && this.modifyBeverage.imageTransitions) {
@@ -407,10 +449,10 @@ export class ManageBeverageComponent implements OnInit {
   }
 
   get modifyForm(): { [key: string]: AbstractControl } {
-    return this.modifyFormGroup.controls;
+    return this.modifyBeverageFormGroup.controls;
   }
 
-  reRunValidation(): void {
+  reRunBeverageValidation(): void {
     _.forEach(this.modifyForm, (ctrl) => {
       ctrl.updateValueAndValidity();
     });
@@ -454,8 +496,27 @@ export class ManageBeverageComponent implements OnInit {
     });
   }
 
-  isTapped(beverage: Beverage): boolean{
-    return !isNilOrEmpty(beverage.taps);
+  isBeverageTapped(beer: Beverage): boolean {
+    var isTapped = false;
+    _.forEach(this.beverageBatches[beer.id], (batch) => {
+      if(!isNilOrEmpty(batch.taps)) {
+        isTapped = true;
+      }
+    })
+    return isTapped;
+  }
+
+  beverageAssocTaps(beer: Beverage): Tap[] {
+    var tapIds: Tap[] = [];
+
+    _.forEach(this.beverageBatches[beer.id], (batch) => {
+      if(!isNilOrEmpty(batch.taps)) {
+        _.forEach(batch.taps, (tap) => {
+          tapIds.push(tap);
+        })
+      }
+    })
+    return tapIds
   }
 
   addImageTransition(): void {
@@ -538,5 +599,143 @@ export class ManageBeverageComponent implements OnInit {
       return true;
     }
     return false;
+  }
+
+  isBatchTapped(batch: Batch): boolean {
+    return !isNilOrEmpty(batch.taps);
+  }
+
+  get modifyBatchForm(): { [key: string]: AbstractControl } {
+    return this.modifyBatchFormGroup.controls;
+  } 
+
+  reRunBatchValidation(): void {
+    _.forEach(this.modifyBatchForm, (ctrl) => {
+      ctrl.updateValueAndValidity();
+    });
+  }
+
+  get hasBatchChanges(): boolean {
+    return !_.isEmpty(this.batchChanges);
+  }
+
+  get batchChanges(): any {
+    var changes = _.cloneDeep(this.modifyBatch.changes);
+
+    const keys = ['batchNumber', 'kegDate', 'brewDate']
+    _.forEach(keys, (k) => {
+      if(_.has(changes, k)) {
+        if(isNilOrEmpty(changes[k])) {
+          changes[k] = null;
+        }
+      }
+    });
+    return changes;
+  }
+  
+  addBatch(beer: Beverage): void {
+    this.selectedBatchBeverage = beer;
+    this.modifyBeverageFormGroup.reset();
+    var data:any = {};
+    this.modifyBatch = new Batch(data);
+    this.modifyBatch.editValues = data;
+    this.addingBatch = true;
+  }
+
+  createBatch(): void {
+    this.processing = true;
+    
+    var data: any = {
+      beverageId: this.selectedBatchBeverage.id,
+      batchNumber: this.modifyBatch.editValues.batchNumber,
+      brewDate: this.dateToNumber(this.modifyBatch.editValues.brewDateObj),
+      kegDate: this.dateToNumber(this.modifyBatch.editValues.kegDateObj)
+    }
+    
+    this.dataService.createBatch(data).subscribe({
+      next: (batch: Batch) => {
+        this.refresh(() => {this.processing = false;}, () => {this.addingBatch = false;});
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    });
+  }
+
+  cancelAddBatch(): void {
+    this.addingBatch = false;
+  }
+
+  editBatch(batch: Batch, beverage: Beverage): void {
+    this.selectedBatchBeverage = beverage;
+    batch.enableEditing();
+    this.modifyBatch = batch;
+    this.editingBatch = true;
+    this.modifyBatchFormGroup.reset();
+    this.reRunBatchValidation();
+  }
+
+  saveBatch(): void {  
+    this.processing = true;
+    if(isNilOrEmpty(this.batchChanges)) {
+      this.refresh(()=> {this.processing = false;}, () => {
+        this.editingBatch = false;
+      });
+    } else {
+      this.dataService.updateBatch(this.modifyBatch.id, this.batchChanges).subscribe({
+        next: (batch: Batch) => {
+          this.refresh(()=> {this.processing = false;}, () => {
+            this.editingBatch = false;
+          })
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+        }
+      });
+    }
+  }
+
+  cancelEditBatch(): void {
+    this.modifyBatch.disableEditing();
+    this.editingBatch = false;
+  }
+
+  archiveBatch(batch: Batch): void {
+    if(confirm(`Are you sure you want to archive the batch keg'd on ${batch.getKegDate() }?`)) {
+      this.processing = true;
+      if(!_.isNil(batch.taps) && batch.taps.length > 0){
+        var tapIds : string[] = []
+        _.forEach(batch.taps, (tap) => {
+          tapIds.push(tap.id)
+        });
+        if(confirm(`The batch is associated with one or more taps.  It will need to be cleared from tap(s) before archiving.  Proceed?`)) {
+          this.clearNextTap(tapIds, () => {
+              this._archiveBatch(batch);
+            }, (err: DataError) => {
+              this.displayError(err.message);
+              this.processing = false;
+            });
+        }
+      } else {
+        this._archiveBatch(batch);
+      }
+    }
+  }
+
+  _archiveBatch(batch: Batch): void {
+    this.processing = true;
+    this.dataService.updateBatch(batch.id, {archivedOn: convertUnixTimestamp(Date.now())}).subscribe({
+      next: (resp: any) => {
+        this.processing = false;
+        this.loading = true;
+        this.refresh(()=>{this.loading = false});
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      }
+    });
   }
 }

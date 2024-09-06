@@ -12,6 +12,7 @@ import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-p
 
 import { Beer, beerTransformFns, ImageTransition, Location, UserInfo, Batch, Tap } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
+import { convertUnixTimestamp } from '../../utils/datetime';
 
 import * as _ from 'lodash';
 
@@ -180,8 +181,8 @@ export class ManageBeerComponent implements OnInit {
                     always();
                   }
                 }
-              })
-            })
+              });
+            });
           }, 
           error: (err: DataError) => {
             this.displayError(err.message);
@@ -774,7 +775,7 @@ export class ManageBeerComponent implements OnInit {
       }
     }
 
-    const keys = ['abv', 'ibu', 'srm', 'kegDate', 'brewDate']
+    const keys = ['batchNumber', 'abv', 'ibu', 'srm', 'kegDate', 'brewDate']
     _.forEach(keys, (k) => {
       if(_.has(changes, k)) {
         if(isNilOrEmpty(changes[k])) {
@@ -796,7 +797,7 @@ export class ManageBeerComponent implements OnInit {
 
   createBatch(): void {
     var data: any = {beerId: this.selectedBatchBeer.id}
-    const keys = ['externalBrewingTool', 'abv', 'ibu', 'srm', 'externalBrewingToolMeta', 'kegDate', 'brewDate']
+    const keys = ['externalBrewingTool', 'abv', 'ibu', 'srm', 'externalBrewingToolMeta', 'kegDate', 'brewDate', 'batchNumber']
     const checkKeys = {}
     
     _.forEach(keys, (k) => {
@@ -901,7 +902,7 @@ export class ManageBeerComponent implements OnInit {
 
   _archiveBatch(batch: Batch): void {
     this.processing = true;
-    this.dataService.updateBatch(batch.id, {archivedOn: Date.now()}).subscribe({
+    this.dataService.updateBatch(batch.id, {archivedOn: convertUnixTimestamp(Date.now())}).subscribe({
       next: (resp: any) => {
         this.processing = false;
         this.loading = true;

@@ -400,6 +400,11 @@ export class DataService {
     return this.http.get<Batch[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
+  getBeverageBatches(beerId: string, includeTapDetails:boolean = false): Observable<Batch[]> {
+    const url = `${this.apiBaseUrl}/beverages/${beerId}/batches${includeTapDetails ? "?include_tap_details" : ""}`;
+    return this.http.get<Batch[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
   createBatch(data: any): Observable<Batch> {
     const url = `${this.apiBaseUrl}/batches`;
     return this.http.post<Batch>(url, data).pipe(catchError((err) => {return this.getError(err)}));

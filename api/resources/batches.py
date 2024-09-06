@@ -103,7 +103,7 @@ class BatchesResourceMixin(ResourceMixinBase):
                     else:
                         G_LOGGER.warning("There and error or no details from %s for %s", tool_type, {k: v for k, v in meta.items() if k != "details"})
 
-        for k in ["brew_date", "keg_date"]:
+        for k in ["brew_date", "keg_date", "archived_on"]:
             d = data.get(k)
             if d and isinstance(d, date):
                 data[k] = datetime.timestamp(datetime.fromordinal(d.toordinal()))
@@ -114,7 +114,7 @@ class BatchesResourceMixin(ResourceMixinBase):
     def get_request_data(remove_key=[]):
         data = ResourceMixinBase.get_request_data(remove_key=remove_key)
 
-        for k in ["brew_date", "keg_date"]:
+        for k in ["brew_date", "keg_date", "archived_on"]:
             if k in data and data.get(k):
                 data[k] = datetime.fromtimestamp(data.get(k))
 
@@ -129,6 +129,10 @@ class Batches(BaseResource, BatchesResourceMixin):
                 kwargs["beer_id"] = beer_id
             if beverage_id:
                 kwargs["beverage_id"] = beverage_id
+
+            include_archived = request.args.get("include_archived", "false").lower() in ["true", "yes", "", "1"]
+            if not include_archived:
+                kwargs["archived_on"] = None
             
             batches = BatchesDB.query(db_session, **kwargs)
             return [self.transform_response(b, db_session=db_session) for b in batches]

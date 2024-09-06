@@ -314,7 +314,7 @@ export class Batch extends ExtToolBase {
     if(isNilOrEmpty(d) || !_.isNumber(d)) {
       return undefined
     }
-    return formatDate(fromJsTimestamp(d));
+    return formatDate(d < 9999999999 ? fromUnixTimestamp(d) : fromJsTimestamp(d));
   }
 }
 
