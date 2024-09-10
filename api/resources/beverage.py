@@ -12,6 +12,7 @@ from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.time import parse_iso8601_utc, utcnow_aware
 from resources import BaseResource, NotFoundError, ResourceMixinBase, ImageTransitionMixin, ImageTransitionResourceMixin, NotAuthorizedError
+from resources.batches import BatchesResourceMixin
 from resources.locations import LocationsResourceMixin
 
 G_LOGGER = logging.getLogger(__name__)
@@ -20,31 +21,14 @@ G_CONFIG = Config()
 
 class BeverageResourceMixin(ResourceMixinBase):
     @staticmethod
-    def transform_tap_response(tap):
-        data = tap.to_dict()
-
-        if tap.location:
-            data["location"] = LocationsResourceMixin.transform_response(tap.location)
-        
-        return ResourceMixinBase.transform_response(data)
-
-    @staticmethod
-    def transform_response(beverage, db_session=None, image_transitions=None):
+    def transform_response(beverage, db_session=None, include_batches=True, include_location=True, image_transitions=None):
         data = beverage.to_dict()
 
-        if beverage.location:
+        if include_location and beverage.location:
             data["location"] = LocationsResourceMixin.transform_response(beverage.location)
 
-        include_tap_details = request.args.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
-        if include_tap_details and db_session:
-            taps = TapsDB.get_by_beverage(db_session, beverage.id)
-            if taps:
-                data["taps"] = [BeverageResourceMixin.transform_tap_response(tap) for tap in taps]
-
-        for k in ["brew_date", "keg_date"]:
-            d = data.get(k)
-            if k in data and isinstance(d, date):
-                data[k] = datetime.timestamp(datetime.fromordinal(d.toordinal()))
+        if include_batches and beverage.batches:
+            data["batches"] = [BatchesResourceMixin.transform_response(b, db_session=db_session) for b in beverage.batches]
 
         return ImageTransitionResourceMixin.transform_response(data, image_transitions, db_session, beverage_id=beverage.id)
 
@@ -52,9 +36,9 @@ class BeverageResourceMixin(ResourceMixinBase):
     def get_request_data(remove_key=[]):
         data = ResourceMixinBase.get_request_data(remove_key=remove_key)
 
-        for k in ["brew_date", "keg_date"]:
-            if k in data and data.get(k):
-                data[k] = datetime.fromtimestamp(data.get(k))
+        # for k in ["brew_date", "keg_date"]:
+        #     if k in data and data.get(k):
+        #         data[k] = datetime.fromtimestamp(data.get(k))
 
         return data
 

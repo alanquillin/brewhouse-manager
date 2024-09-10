@@ -18,7 +18,11 @@ export function fromJsTimestamp(ts: number): Date {
 }
 
 export function toUnixTimestamp(d: Date): number {
-  return toJsTimestamp(d) / 1000;
+  return convertUnixTimestamp( toJsTimestamp(d));
+}
+
+export function convertUnixTimestamp(d: number): number {
+  return Math.trunc(d / 1000);
 }
 
 export function toJsTimestamp(d: Date): number {

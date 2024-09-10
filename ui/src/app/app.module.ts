@@ -6,7 +6,6 @@ import { AppComponent } from './app.component';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
 
 
 import { HttpClient } from '@angular/common/http';
@@ -93,7 +92,6 @@ import { ErrorsComponent } from './errors/errors.component';
     AppRoutingModule,
     BrowserAnimationsModule,
     BrowserModule,
-    FlexLayoutModule,
     FormsModule,
     //FooterComponent,
     GaugeModule.forRoot(),

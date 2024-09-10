@@ -4,8 +4,6 @@ import os
 import urllib.parse
 from functools import wraps
 
-import dns.exception
-import dns.resolver
 import sqlalchemy
 from flask import redirect, request, send_from_directory, session
 from flask_restful import Resource
@@ -23,18 +21,6 @@ LOGGER = logging.getLogger(__name__)
 STATIC_URL_PATH = "static"
 
 config = Config()
-
-
-def _fetch_dns_records(domain, record_type="A", resolver=None):
-    if not resolver:
-        resolver = dns.resolver
-
-    response_field = "address"
-    if record_type == "SOA":
-        response_field = "mname"
-
-    return [getattr(resp, response_field) for resp in resolver.resolve(domain, record_type).rrset]
-
 
 def convert_exceptions(func):
     @wraps(func)

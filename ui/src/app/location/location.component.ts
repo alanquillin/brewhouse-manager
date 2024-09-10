@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings } from './../models/models';
+import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings, Batch } from './../models/models';
 import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
@@ -164,6 +164,10 @@ export class LocationComponent implements OnInit {
       tap.beer = new Beer();
       tap.beverage = new Beverage();
 
+      if(!isNilOrEmpty(tap.batch)){
+        tap.batch = new Batch(tap.batch)
+      }
+
       if(tap.tapType === "beer"){
         this.dataService.getDashboardBeer(tap.beerId).subscribe((beer: Beer) => {
           const _beer = new Beer(beer)
@@ -206,18 +210,19 @@ export class LocationComponent implements OnInit {
   }
 
   isTapEmpty(tap: TapDetails): boolean {
-    if(isNilOrEmpty(tap.beerId) && isNilOrEmpty(tap.beverageId)){
+    if(isNilOrEmpty(tap.beerId) && isNilOrEmpty(tap.beverageId) && isNilOrEmpty(tap.batchId)){
       return true;
     }
     
     return false;
   }
 
-  getSrm(beer: Beer): string {
-    if(_.isNil(beer)){
-      return "1";
+  getSrm(tap: Tap): string {
+    var srm = 1
+    if(!_.isNil(tap) && !_.isNil(tap.beer)){
+      srm = tap.beer.getSrm(tap.batch);
     }
-    const srm = beer.getSrm();
+    
     return srm > 40 ? "40plus" : _.toString(_.round(srm))
   }
 

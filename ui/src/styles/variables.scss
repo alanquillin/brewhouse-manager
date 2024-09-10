@@ -11,6 +11,14 @@ $primary: mat-color($app-primary);
 $accent: mat-color($app-accent);
 $disabled: mat-color($app-disabled);
 
+$my-app-theme: mat-light-theme((
+  color: (
+    primary: $primary,
+    accent: $accent,
+    disabled: $disabled  
+  )
+));
+
 $srm1: #FFE699;
 $srm2: #FFD878;
 $srm3: #FFCA5A;

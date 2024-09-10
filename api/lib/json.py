@@ -6,7 +6,7 @@ from datetime import datetime
 from json import dump
 from json import dumps as _dumps
 from json import load, loads
-
+from uuid import UUID
 import simplejson
 
 from lib import UsefulEnum
@@ -20,6 +20,9 @@ class CloudCommonJsonEncoder(simplejson.JSONEncoder):
             return str(o)
         if hasattr(o, "_json_repr_"):
             return o._json_repr_()  # pylint: disable=protected-access
+        if isinstance(o, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return o.hex
         return super().default(o)
 
 

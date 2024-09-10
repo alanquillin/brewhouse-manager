@@ -33,6 +33,7 @@ from lib import json, logging
 from lib.config import Config
 from resources.assets import UploadImage
 from resources.auth import AuthUser, GoogleCallback, GoogleLogin, Login, Logout
+from resources.batches import Batch, Batches
 from resources.beers import Beer, Beers
 from resources.beverage import Beverage, Beverages
 from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
@@ -123,6 +124,8 @@ api.add_resource(Beers, "/api/v1/beers", "/api/v1/locations/<location>/beers")
 api.add_resource(Beer, "/api/v1/beers/<beer_id>", "/api/v1/locations/<location>/beers/<beer_id>")
 api.add_resource(Beverages, "/api/v1/beverages", "/api/v1/locations/<location>/beverages")
 api.add_resource(Beverage, "/api/v1/beverages/<beverage_id>", "/api/v1/locations/<location>/beverages/<beer_id>")
+api.add_resource(Batches, "/api/v1/batches", "/api/v1/beers/<beer_id>/batches", "/api/v1/locations/<location>/beers/<beer_id>/batches", "/api/v1/beverages/<beverage_id>/batches", "/api/v1/locations/<location>/beverages/<beverage_id>/batches")
+api.add_resource(Batch, "/api/v1/batches/<batch_id>", "/api/v1/beers/<beer_id>/batches/<batch_id>", "/api/v1/locations/<location>/beers/<beer_id>/batches/<batch_id>", "/api/v1/beverages/<beverage_id>/batches/<batch_id>", "/api/v1/locations/<location>/beverages/<beverage_id>/batches/<batch_id>")
 api.add_resource(Locations, "/api/v1/locations")
 api.add_resource(Location, "/api/v1/locations/<location>")
 api.add_resource(Taps, "/api/v1/taps", "/api/v1/locations/<location>/taps")
@@ -224,7 +227,7 @@ def load_user_from_request(request):
         # next, try to login using Basic Auth
         api_key = request.headers.get('Authorization')
         if api_key:
-            api_key = api_key.replace('Basic ', '', 1).strip()
+            api_key = api_key.replace('Bearer ', '', 1).strip()
             try:
                 api_key = base64.b64decode(api_key).decode('ascii')
             except TypeError as e:

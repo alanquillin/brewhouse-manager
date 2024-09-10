@@ -3,7 +3,7 @@ import { DataService, DataError } from '../../_services/data.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {MatTableDataSource} from '@angular/material/table';
-import { FormControl, AbstractControl, Validators, FormGroup } from '@angular/forms';
+import { UntypedFormControl, AbstractControl, Validators, UntypedFormGroup } from '@angular/forms';
 
 import { Location } from '../../models/models';
 
@@ -27,13 +27,13 @@ export class ManageLocationsComponent implements OnInit {
 
   nameValidationPattern = '^[a-z0-9_-]*$';
 
-  addFormGroup: FormGroup = new FormGroup({
-    name: new FormControl('', [Validators.required, Validators.pattern(this.nameValidationPattern)]),
-    description: new FormControl('', [Validators.required]),
+  addFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    name: new UntypedFormControl('', [Validators.required, Validators.pattern(this.nameValidationPattern)]),
+    description: new UntypedFormControl('', [Validators.required]),
   });
 
-  nameFormControl = new FormControl('', [Validators.required, Validators.pattern(this.nameValidationPattern)]);
-  descriptionFormControl = new FormControl('', [Validators.required]);
+  nameFormControl = new UntypedFormControl('', [Validators.required, Validators.pattern(this.nameValidationPattern)]);
+  descriptionFormControl = new UntypedFormControl('', [Validators.required]);
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
 

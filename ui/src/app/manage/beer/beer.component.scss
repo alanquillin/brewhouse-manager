@@ -19,8 +19,8 @@
     .beers-list {
 
         table {
-            .mat-header-cell,
-            .mat-cell {
+            .mat-mdc-header-cell,
+            .mat-mdc-cell {
                 padding: 2px 8px;
 
                 .mat-icon {
@@ -49,6 +49,8 @@
 
     .modify-form {
         order: 2;
+        display: flex;
+        flex-direction: row;
 
         .section {
             display: flex;
@@ -60,7 +62,7 @@
             padding: 6px;
 
             button.add-transition {
-                width: 200px;
+                width: 250px;
                 margin-bottom: 12px;
             }
 
@@ -68,6 +70,15 @@
                 display: flex;
                 flex-direction: row;
                 margin-top: 6px 0px 0px 0px;
+            }
+        }
+
+        .brewfather-details {
+            padding-left: 25px;
+
+            .brewfather-details-title {
+                font-weight: bolder;
+                padding-right: 12px;;
             }
         }
     }
@@ -80,6 +91,20 @@
         }    
     }
 
+    .beer-batches {
+        order: 4;
+        padding-top: 25px;
+
+        .heading {
+            // display: flex;
+            padding-bottom: 12px;
+
+            // p {
+            //     padding-top: 6px;
+            //     margin-right: 25px;
+            // }
+        }
+    }
 }
 
 fieldset {
@@ -107,7 +132,8 @@ fieldset,
     height: auto;
 }
 
-.imported-value {
+.imported-value,
+.hint-value {
     color: gray;
     font-style: italic;
 }

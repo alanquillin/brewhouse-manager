@@ -2,15 +2,13 @@
 _TABLE_NAME = "beers"
 _PKEY = "id"
 
-from sqlalchemy import Column, Date, Float, ForeignKey, Boolean, String, func
+from sqlalchemy import Column, Float, ForeignKey, Boolean, String, func
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.schema import Index
 
 from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail, locations
 from db.types.nested import NestedMutableDict
-from lib import UsefulEnum
-from lib.exceptions import InvalidExternalBrewingTool
 
 
 @generate_audit_trail
@@ -31,12 +29,12 @@ class Beers(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     img_url = Column(String, nullable=True)
     empty_img_url = Column(String, nullable=True)
     untappd_id = Column(String, nullable=True)
-    brew_date = Column(Date, nullable=True)
-    keg_date = Column(Date, nullable=True)
     image_transitions_enabled = Column(Boolean, nullable=False)
     location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"), nullable=False)
 
     location = relationship(locations.Locations, backref=backref("Beers", cascade="all,delete"))
+
+    batches = relationship("Batches", back_populates="beer")
 
     __table_args__ = (Index("beer_name_lower_ix", func.lower(name), unique=True),)
 

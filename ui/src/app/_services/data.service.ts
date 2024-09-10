@@ -6,7 +6,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Location, Tap, Beer, Beverage, Sensor, UserInfo, Settings, Dashboard } from '../models/models';
+import { Location, Tap, Beer, Beverage, Sensor, UserInfo, Settings, Dashboard, Batch } from '../models/models';
 import { WINDOW } from '../window.provider';
 import { isNilOrEmpty } from '../utils/helpers';
 
@@ -142,15 +142,19 @@ export class DataService {
   }
 
   clearBeerFromTap(tapId: string): Observable<any> {
-    return this.updateTap(tapId, {"beerId": null});
+    return this.clearTap(tapId);
   }
 
   clearBeverageFromTap(tapId: string): Observable<any> {
-    return this.updateTap(tapId, {"beverageId": null});
+    return this.clearTap(tapId);
   }
 
-  getBeers(includeTapDetails:boolean = false): Observable<Beer[]> {
-    const url = `${this.apiBaseUrl}/beers${includeTapDetails ? "?include_tap_details" : ""}`;
+  clearTap(tapId: string): Observable<any> {
+    return this.updateTap(tapId, {"batchId": null});
+  }
+
+  getBeers(): Observable<Beer[]> {
+    const url = `${this.apiBaseUrl}/beers`;
     return this.http.get<Beer[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
@@ -159,8 +163,8 @@ export class DataService {
     return this.http.post<Beer>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getBeer(beerId: string, includeTapDetails:boolean = false): Observable<Beer> {
-    const url = `${this.apiBaseUrl}/beers/${beerId}${includeTapDetails ? "?include_tap_details" : ""}`;
+  getBeer(beerId: string): Observable<Beer> {
+    const url = `${this.apiBaseUrl}/beers/${beerId}`;
     return this.http.get<Beer>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
@@ -384,5 +388,40 @@ export class DataService {
   isAvailable() : Observable<any> {
     const url = `${this.baseUrl}/health`;
     return this.http.get<any>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  getBatches(): Observable<Batch[]> {
+    const url = `${this.apiBaseUrl}/batches`;
+    return this.http.get<Batch[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  getBeerBatches(beerId: string, includeTapDetails:boolean = false): Observable<Batch[]> {
+    const url = `${this.apiBaseUrl}/beers/${beerId}/batches${includeTapDetails ? "?include_tap_details" : ""}`;
+    return this.http.get<Batch[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  getBeverageBatches(beerId: string, includeTapDetails:boolean = false): Observable<Batch[]> {
+    const url = `${this.apiBaseUrl}/beverages/${beerId}/batches${includeTapDetails ? "?include_tap_details" : ""}`;
+    return this.http.get<Batch[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  createBatch(data: any): Observable<Batch> {
+    const url = `${this.apiBaseUrl}/batches`;
+    return this.http.post<Batch>(url, data).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  getBatch(batchId: string): Observable<Batch> {
+    const url = `${this.apiBaseUrl}/batches/${batchId}`;
+    return this.http.get<Batch>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  deleteBatch(batchId: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/batches/${batchId}`;
+    return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  updateBatch(batchId: string, data: any): Observable<Batch> {
+    const url = `${this.apiBaseUrl}/batches/${batchId}`;
+    return this.http.patch<Batch>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 }

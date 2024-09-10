@@ -9,6 +9,10 @@ ifeq ($(shell uname -s),Darwin)
 	POETRY_VARS += LDFLAGS="-L$(HOMEBREW_OPENSSL_DIR)/lib"
 endif
 
+ifeq ($(shell uname -p),arm)
+	POETRY_VARS += arch -arm64
+endif
+
 BLACK := $(POETRY) run black
 ISORT := $(POETRY) run isort
 PYLINT := $(POETRY) run pylint
@@ -75,7 +79,7 @@ build: depends docker-build
 
 docker-build:
 ifeq ($(VERSION),)
-	$(error VERSION was not provided)
+	$(error Cannot build docker image(s), VERSION argument was not provided.  EX: make build -e VERSION=<version>)
 endif
 	$(DOCKER) buildx build --platform=$(PLATFORMS) $(DOCKER_BUILD_ARGS) --build-arg build_for=prod -t $(IMAGE_REPOSITORY)/$(REPOSITORY_IMAGE):$(VERSION) .
 
@@ -97,7 +101,9 @@ publish:
 
 # Targets for running the app
 
-run-dev: build-dev build-db-seed
+run-dev: build-dev build-db-seed run-dev-no-build
+
+run-dev-no-build:
 	docker-compose --project-directory deploy/docker-local up
 
 run-web-local:

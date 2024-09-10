@@ -8,8 +8,9 @@ import sys
 from time import sleep
 
 from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.sql import text
 
-from db import Base, beers, beverages, locations, sensors, session_scope, taps, users, user_locations
+from db import Base, beers, beverages, locations, sensors, session_scope, taps, users, user_locations, on_tap, batches
 from lib.config import Config
 
 location1_id = "fb139af3-2905-4006-9196-62f54bb262ab"
@@ -27,10 +28,10 @@ LOCATIONS = [
     }
 ]
 
-beer_l1b1_id = "8e18732d-61bf-4d4d-b133-a96ad63b63e6"
-beer_l1b2_id = "4237761e-95b8-4e6d-bbc3-864e6c80df6e"
-beer_l1b3_id = "7627c611-32ac-473b-953f-9fb42efe97e2"
-beer_l1b4_id = "bb751fe8-4a14-49a6-95e4-382ff0eaf76c"
+beer_l1b1_id = "8e18732d-61bf-4d4d-b133-a96ad63b63e6" # irish stout
+beer_l1b2_id = "4237761e-95b8-4e6d-bbc3-864e6c80df6e" # 4th and lager
+beer_l1b3_id = "7627c611-32ac-473b-953f-9fb42efe97e2" # galactic santa
+beer_l1b4_id = "bb751fe8-4a14-49a6-95e4-382ff0eaf76c" # citrus haze
 beer_l2b1_id = "2988aded-f66d-4e48-8c84-26c5076a2fc2"
 beer_l2b2_id = "94525492-6395-4295-91d4-3022258c8d2b"
 BEERS = [
@@ -39,7 +40,7 @@ BEERS = [
         "description": "An Irish Stout on Nitro",
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
-            "batch_id": "OxLBTCdfmPN5Z5DbrNidISXo67NMN3"
+            "recipe_id": "myK3jrO7URP7Kl8F3eIFxiZHg6kScV" # irish stout
         },
         "location_id": location1_id,
     },
@@ -57,7 +58,7 @@ BEERS = [
         "id": beer_l1b3_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
-            "batch_id": "k9MRi0BeqW3sFdltMhqy4CnHtSwDOG"
+            "recipe_id": "mz58MKrOFrScEPmkM7lhY9a8lKaosp" # galactic santa
         },
         "style": "Christmas Ale",
         "location_id": location1_id,
@@ -66,7 +67,7 @@ BEERS = [
         "id": beer_l1b4_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
-            "batch_id": "S0spuNZL8PcQM2f2ioCgAoR8A0tv2q"
+            "recipe_id": "y3FTmQ3kJOTRCyE4I1LvN4RFbypByV" # citrus haze
         },
         "location_id": location2_id,
     }
@@ -136,8 +137,6 @@ BEVERAGES = [
         "brewery": "My Brewing Co.",
         "type": "cold-brew",
         "flavor": "Medium Roast",
-        "brew_date": datetime(2022, 1, 1),
-        "keg_date": datetime(2022, 1, 4),
         "location_id": location1_id,
         
     },
@@ -148,8 +147,6 @@ BEVERAGES = [
         "brewery": "My Soda Co.",
         "type": "soda",
         "flavor": "Cherry",
-        "brew_date": datetime(2022, 2, 19),
-        "keg_date": datetime(2022, 2, 21),
         "location_id": location2_id,
         
     },
@@ -160,56 +157,138 @@ BEVERAGES = [
         "brewery": "My Kombucha Co.",
         "type": "kombucha",
         "flavor": "Orange",
-        "brew_date": datetime(2022, 3, 2),
-        "keg_date": datetime(2022, 3, 8),
         "location_id": location2_id,
         
     }
 ]
 
+batch_id1 = "a28fe129-edd1-49ef-904b-fadcfbc28fe5"
+batch_id2 = "472f77a3-ee37-4fad-a3ba-f91fb92710de"
+batch_id3 = "1d66886c-e5f4-4cd7-9931-bf3b1e0ee83e"
+batch_id4 = "bf2ecf10-96da-4abc-820f-94fac1c03d9f"
+batch_id5 = "4d2ec0d6-e5a2-463e-bd0c-e2b18e5bc5ad"
+
+BATCHES = [
+    {
+        "id": batch_id1,
+        "beer_id": beer_l1b1_id,
+        "external_brewing_tool": "brewfather",
+        "external_brewing_tool_meta": {
+            "batch_id": "OxLBTCdfmPN5Z5DbrNidISXo67NMN3" # irish stout (batch 23)
+        },
+    },
+    {
+        "id": batch_id2,
+        "beer_id": beer_l1b2_id,
+        "brew_date": datetime(2024, 1, 1),
+        "keg_date": datetime(2024, 1, 21),
+        "abv": 5.4,
+        "ibu": 14,
+    },
+    {
+        "id": batch_id3,
+        "beer_id": beer_l1b3_id,
+        "external_brewing_tool": "brewfather",
+        "external_brewing_tool_meta": {
+            "batch_id": "k9MRi0BeqW3sFdltMhqy4CnHtSwDOG" # galactic santa (batch 25)
+        },
+    },
+    {
+        "id": batch_id4,
+        "beverage_id": beverage1_id,
+        "brew_date": datetime(2022, 1, 1),
+        "keg_date": datetime(2022, 1, 4),
+    },
+    {
+        "id": batch_id5,
+        "beer_id": beer_l1b4_id,
+        "external_brewing_tool": "brewfather",
+        "external_brewing_tool_meta": {
+            "batch_id": "S0spuNZL8PcQM2f2ioCgAoR8A0tv2q" # citrus haze (batch 26)
+        },
+    },
+]
+
+on_tap_id1 = "a28fe129-edd1-49ef-904b-fadcfbc28fe5"
+on_tap_id2 = "472f77a3-ee37-4fad-a3ba-f91fb92710de"
+on_tap_id3 = "1d66886c-e5f4-4cd7-9931-bf3b1e0ee83e"
+on_tap_id4 = "bf2ecf10-96da-4abc-820f-94fac1c03d9f"
+on_tap_id5 = "4d2ec0d6-e5a2-463e-bd0c-e2b18e5bc5ad"
+
+ON_TAP = [
+    {
+        "id": on_tap_id1,
+        "batch_id": batch_id1
+    },
+    {
+        "id": on_tap_id2,
+        "batch_id": batch_id2
+    },
+    {
+        "id": on_tap_id3,
+        "batch_id": batch_id3
+    },
+    {
+        "id": on_tap_id4,
+        "batch_id": batch_id4
+    },
+    {
+        "id": on_tap_id5,
+        "batch_id": batch_id5
+    },
+]
+
+
+tap_l1t1_id = "13353ea9-bf7f-41d3-bd82-97262bf6a97a"
+tap_l1t2_id = "c342d381-d913-46a1-83d0-6e6cda4475c6"
+tap_l1t3_id = "e24fd19e-cfed-45e8-91c5-544ec5db4ad5"
+tap_l1t4_id = "572dcdba-4d37-4061-9c5c-20225de45513"
+tap_l2t1_id = "f92adea8-27f1-4d45-80f0-066a47ce496e"
+tap_l2t2_id = "e0b83ea2-217b-440b-bad5-24548dc8bef1"
+
 TAPS = [
     {
-        "id": "13353ea9-bf7f-41d3-bd82-97262bf6a97a",
+        "id": tap_l1t1_id,
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location1_id,
-        "beer_id": beer_l1b1_id,
+        "on_tap_id": on_tap_id1,
         "sensor_id": sensor_l1s1_id
     },
     {
-        "id": "c342d381-d913-46a1-83d0-6e6cda4475c6",
+        "id": tap_l1t2_id,
         "tap_number": 2,
         "description": "Tap 2",
         "location_id": location1_id,
-        "beer_id": beer_l1b2_id,
+        "on_tap_id": on_tap_id2,
         "sensor_id": sensor_l1s2_id
     },
     {
-        "id": "e24fd19e-cfed-45e8-91c5-544ec5db4ad5",
+        "id": tap_l1t3_id,
         "tap_number": 3,
         "description": "Tap 3",
         "location_id": location1_id,
-        "beer_id": beer_l1b3_id,
+        "on_tap_id": on_tap_id3,
         "sensor_id": sensor_l1s3_id
     },
     {
-        "id": "572dcdba-4d37-4061-9c5c-20225de45513",
+        "id": tap_l1t4_id,
         "tap_number": 4,
         "description": "Tap 4",
         "location_id": location1_id,
         "sensor_id": sensor_l1s4_id,
-        "beverage_id": beverage1_id,
+        "on_tap_id": on_tap_id4,
     },
     {
-        "id": "f92adea8-27f1-4d45-80f0-066a47ce496e",
+        "id": tap_l2t1_id,
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location2_id,
-        "beer_id": beer_l1b4_id,
+        "on_tap_id": on_tap_id5,
         "sensor_id": sensor_l2s1_id
     },
     {
-        "id": "e0b83ea2-217b-440b-bad5-24548dc8bef1",
+        "id": tap_l2t2_id,
         "tap_number": 2,
         "description": "Tap 2",
         "location_id": location2_id
@@ -312,7 +391,7 @@ if __name__ == "__main__":
     with session_scope(config) as db_session:
         while True:
             try:
-                db_session.execute("select 1")
+                db_session.execute(text("select 1"))
                 logger.debug("Database ready!")
                 break
             except OperationalError:
@@ -325,6 +404,8 @@ if __name__ == "__main__":
         seed_db(db_session, beers.Beers, BEERS)
         seed_db(db_session, beverages.Beverages, BEVERAGES)
         seed_db(db_session, sensors.Sensors, SENSORS)
+        seed_db(db_session, batches.Batches, BATCHES)
+        seed_db(db_session, on_tap.OnTap, ON_TAP)
         seed_db(db_session, taps.Taps, TAPS)
         initial_user_data = get_initial_user(db_session)
         if initial_user_data:

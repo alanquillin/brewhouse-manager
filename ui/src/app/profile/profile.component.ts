@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Component, OnInit } from '@angular/core';
 import { DataService, DataError } from '../_services/data.service';
 import { Router } from '@angular/router';
-import { AbstractControl, FormGroup, Validators, FormControl } from '@angular/forms';
+import { AbstractControl, UntypedFormGroup, Validators, UntypedFormControl } from '@angular/forms';
 
 import { UserInfo } from '../models/models';
 import { Validation } from '../utils/form-validators';
@@ -30,16 +30,16 @@ export class ProfileComponent implements OnInit {
   newPassword: string= "";
   confirmNewPassword: string = "";
 
-  editFormGroup: FormGroup = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
-    firstName: new FormControl('', [Validators.required]),
-    lastName: new FormControl('', [Validators.required]),
-    profilePic: new FormControl('', [])
+  editFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    email: new UntypedFormControl('', [Validators.required, Validators.email]),
+    firstName: new UntypedFormControl('', [Validators.required]),
+    lastName: new UntypedFormControl('', [Validators.required]),
+    profilePic: new UntypedFormControl('', [])
   });
 
-  changePasswordFormGroup: FormGroup = new FormGroup({
-    password: new FormControl('', [Validators.required, Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&]).{8,}')]),
-    confirmPassword: new FormControl('', [Validators.required])
+  changePasswordFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    password: new UntypedFormControl('', [Validators.required, Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&]).{8,}')]),
+    confirmPassword: new UntypedFormControl('', [Validators.required])
   }, { validators: [Validation.match('password', 'confirmPassword')] });
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) {}
