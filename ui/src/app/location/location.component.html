@@ -12,7 +12,7 @@
         </mat-card-header>
         <mat-card-content>
             <div *ngIf="tap.isEmpty">
-                <div class="tap-display">
+                <div class="tap-display tap-display-empty">
                     <div class="tap-image">
                         <img src="assets/img/empty_tap.png" />
                     </div>
@@ -32,11 +32,11 @@
                             [value]="getRemainingBeerValue(tap)"
                             [animated]="true"
                             [animationDuration]="1"
-                            class="srm-{{getSrm(tap.beer)}}-gauge tap-gauge tap-gauge-beer">
+                            class="srm-{{getSrm(tap)}}-gauge tap-gauge tap-gauge-beer">
                         </mwl-gauge>
                     </div>
                     <div class="tap-image" *ngIf="_.isNil(tap.sensor)">
-                        <img src="assets/img/generic_beer.png" class="srm-{{getSrm(tap.beer)}}" />
+                        <img src="assets/img/generic_beer.png" class="srm-{{getSrm(tap)}}" />
                     </div>
                     <div class=tap-details>
                         <p class="title">{{ tap.getDisplayName(tap.beer.getName(tap.batch)) }}</p>

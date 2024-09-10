@@ -155,6 +155,22 @@ export class Tap extends EditableBase {
     
     return name;
   }
+
+  override from(from: any) {
+    if(_.isNil(from.batchId)){
+      _.unset(this, 'batchId');
+      this.batch = undefined;
+    }
+    if(_.isNil(from.beerId)){
+      _.unset(this, 'beerId');
+      this.beer = undefined
+    }
+    if(_.isNil(from.beverageId)){
+      _.unset(this, 'beverageId');
+      this.beverage = undefined;
+    }
+    super.from(from);
+  }
 }
 
 export class ImageTransitionalBase extends EditableBase {

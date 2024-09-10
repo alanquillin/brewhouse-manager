@@ -210,18 +210,19 @@ export class LocationComponent implements OnInit {
   }
 
   isTapEmpty(tap: TapDetails): boolean {
-    if(isNilOrEmpty(tap.beerId) && isNilOrEmpty(tap.beverageId)){
+    if(isNilOrEmpty(tap.beerId) && isNilOrEmpty(tap.beverageId) && isNilOrEmpty(tap.batchId)){
       return true;
     }
     
     return false;
   }
 
-  getSrm(beer: Beer): string {
-    if(_.isNil(beer)){
-      return "1";
+  getSrm(tap: Tap): string {
+    var srm = 1
+    if(!_.isNil(tap) && !_.isNil(tap.beer)){
+      srm = tap.beer.getSrm(tap.batch);
     }
-    const srm = beer.getSrm();
+    
     return srm > 40 ? "40plus" : _.toString(_.round(srm))
   }
 
