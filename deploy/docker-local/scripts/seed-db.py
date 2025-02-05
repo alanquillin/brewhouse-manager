@@ -346,7 +346,7 @@ def get_initial_user(db_session):
 
     logger.info("No users exist, creating initial user: %s", data)
     if set_init_user_pass:
-        data["password"] = app_config.get("auth.initial_user.password")
+        data["password"] = config.get("auth.initial_user.password")
 
     user = users.Users.query(db_session, email=init_user_email)
     if user:
