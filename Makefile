@@ -104,7 +104,7 @@ publish:
 run-dev: build-dev build-db-seed run-dev-no-build
 
 run-dev-no-build:
-	docker-compose --project-directory deploy/docker-local up
+	docker compose --project-directory deploy/docker-local up
 
 run-web-local:
 	pushd ./ui && ng serve --ssl --ssl-key ../deploy/docker-local/certs/localhost.decrypted.key --ssl-cert ../deploy/docker-local/certs/localhost.crt && popd
@@ -138,7 +138,7 @@ create-migration:
 # Clean up targets
 
 clean:
-	docker-compose --project-directory deploy/docker-local down --volumes
+	docker compose --project-directory deploy/docker-local down --volumes
 
 clean-image:
 	docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
