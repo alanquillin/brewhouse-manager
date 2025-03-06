@@ -19,12 +19,14 @@ export class ImageSelectorDialogComponent implements OnInit {
   currentImage: string
   imageType: string;
   images: string[] = []
+  processing: boolean = false;
 
   isNilOrEmpty: Function = isNilOrEmpty;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<ImageSelectorDialogComponent>, private dataService: DataService, private _snackBar: MatSnackBar) {
     this.currentImage = data.currentImage;
     this.imageType = data.imageType;
+    this.processing = false;
   }
 
   displayError(errMsg: string) {
@@ -32,12 +34,15 @@ export class ImageSelectorDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.processing = true;
     this.dataService.listImages(this.imageType).subscribe({
       next: (images: string[]) => {
         this.images = images;
+        this.processing = false;
       },
       error: (err: DataError) => {
         this.displayError(err.message);
+        this.processing = false;
       }
     })
   }

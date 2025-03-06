@@ -1,6 +1,7 @@
 <h1 mat-dialog-title>Dialog with elements</h1>
 <div mat-dialog-content>
-    <mat-grid-list cols="4" rowHeight="2.5:3.5">
+    <mat-icon *ngIf="processing"><mat-spinner diameter="20"></mat-spinner></mat-icon>
+    <mat-grid-list *ngIf="!processing" cols="4" rowHeight="2.5:3.5">
         <mat-grid-tile *ngFor="let image of images">
             <div class="image-list-item {{selectedImage === image ? 'image-list-item-selected' : ''}}" (click)="onClick(image)" (dblclick)="onDoubleClick(image)"><img src="{{image}}" /></div>
         </mat-grid-tile>
