@@ -58,6 +58,7 @@
     }
   },
   "uploads": {
+    "storage_type": "local_fs",
     "base_dir": "/brewhouse-manager/api/static/assets/uploads",
     "images": {
       "allowed_file_extensions": ["jpg","jpeg","png.","gif","svg"]
