@@ -1,22 +1,44 @@
-@import '@angular/material/theming';
+@use '@angular/material' as mat;
+
+@include mat.core();
 
 // Copy the palettes from your selected theme (usually theme.scss).
-$app-disabled: mat-palette($mat-grey);
-$app-primary: mat-palette($mat-deep-purple);
-$app-accent: mat-palette($mat-pink);
+// $app-disabled: mat.define-palette($mat-grey);
+// $app-primary: mat-palette($mat-deep-purple);
+// $app-accent: mat-palette($mat-pink);
+
+//$app-disabled: mat.define-palette($mat-grey);
+//$app-primary: mat.define-palette(mat.$indigo-palette);
+//$app-accent: mat.define-palette(mat.$pink-palette);
 
 
 // Create your Sass color vars (will be available in all the project)
-$primary: mat-color($app-primary);
-$accent: mat-color($app-accent);
-$disabled: mat-color($app-disabled);
+//$primary: mat.definmat-color($app-primary);
+//$accent: mat-color($app-accent);
+//$disabled: mat-color($app-disabled);
 
-$my-app-theme: mat-light-theme((
-  color: (
-    primary: $primary,
-    accent: $accent,
-    disabled: $disabled  
-  )
+// $my-app-theme: mat-light-theme((
+//   color: mat.$azure-palette//(
+//     //primary: $primary,
+//    //accent: $accent,
+//     //disabled: $disabled
+//   //)
+// ));
+
+$primary: mat.define-palette(mat.$indigo-palette, 500);
+$accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+
+// The "warn" palette is optional and defaults to red if not specified.
+$warn: mat.define-palette(mat.$red-palette);
+
+$my-theme: mat.define-light-theme((
+ color: (
+   primary: $primary,
+   accent: $accent,
+   warn: $warn,
+ ),
+ typography: mat.define-typography-config(),
+ density: 0,
 ));
 
 $srm1: #FFE699;
