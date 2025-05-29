@@ -75,7 +75,7 @@ update-depends:
 # Targets for building containers
 
 # prod
-build: depends docker-build
+build: docker-build
 
 docker-build:
 ifeq ($(VERSION),)
@@ -85,7 +85,7 @@ endif
 
 # dev
 
-build-dev: depends
+build-dev:
 	$(DOCKER) build $(DOCKER_BUILD_ARGS) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV) .
 
 build-db-seed:
