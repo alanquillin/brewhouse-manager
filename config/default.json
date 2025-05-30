@@ -13,7 +13,8 @@
     "taps.refresh.variable": "int",
     "uploads.images.allowed_file_extensions": "list",
     "particle.device_services.enabled": "bool",
-    "dashboard.refresh_sec": "int"
+    "dashboard.refresh_sec": "int",
+    "secure_cookies": "bool"
   },
   "api": {
     "host": "localhost",
