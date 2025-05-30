@@ -528,3 +528,15 @@ export class Dashboard {
   taps!: Tap[];
   locations!: Location[];
 }
+
+export class SensorData {
+  percentRemaining!: number;
+  totalVolumeRemaining!: number;
+  displayVolumeUnit!: string;
+  firmwareVersion!: string
+}
+
+export class SensorDiscoveryData {
+  sensorId!: string;
+  sensorName!: string;
+}

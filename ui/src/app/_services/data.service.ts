@@ -6,7 +6,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Location, Tap, Beer, Beverage, Sensor, UserInfo, Settings, Dashboard, Batch } from '../models/models';
+import { Location, Tap, Beer, Beverage, Sensor, UserInfo, Settings, Dashboard, Batch, SensorData, SensorDiscoveryData } from '../models/models';
 import { WINDOW } from '../window.provider';
 import { isNilOrEmpty } from '../utils/helpers';
 
@@ -209,7 +209,7 @@ export class DataService {
     return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getSensorType(): Observable<string[]> {
+  getSensorTypes(): Observable<string[]> {
     const url = `${this.apiBaseUrl}/sensors/types`;
     return this.http.get<string[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
@@ -231,24 +231,13 @@ export class DataService {
     return this.getSensorData(sensorId, "beer_remaining_unit");
   }
 
-  getBeerStyle(sensorId: string): Observable<string> {
-    return this.getSensorData(sensorId, "style");
-  }
-
-  getBeerOG(sensorId: string): Observable<number> {
-    return this.getSensorData(sensorId, "og");
-  }
-
-  getBeerFG(sensorId: string): Observable<number> {
-    return this.getSensorData(sensorId, "fg");
-  }
-
-  getBeerABV(sensorId: string): Observable<number> {
-    return this.getSensorData(sensorId, "sbv");
-  }
-
-  getBeerFirmwareVersion(sensorId: string): Observable<string> {
+  getSensorFirmwareVersion(sensorId: string): Observable<string> {
     return this.getSensorData(sensorId, "firmware_version");
+  }
+
+  discoverSensors(sensorType: string): Observable<SensorDiscoveryData[]> {
+    const url = `${this.apiBaseUrl}/sensors/discover/${sensorType}`;
+    return this.http.get<SensorDiscoveryData[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getCurrentUser(): Observable<UserInfo> {

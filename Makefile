@@ -151,5 +151,8 @@ clean-images: clean-image clean-seed-image
 clean-local-uploads:
 	rm -r ./deploy/docker-local/uploads/*
 
-clean-all: clean clean-images clean-local-uploads
+clean-db:
+	rm -rf ./deploy/data
+
+clean-all: clean clean-images clean-local-uploads clean-db
 

@@ -5,7 +5,7 @@ from db.sensors import _PKEY as sensors_pk
 from db.sensors import Sensors as SensorsDB
 from lib.sensors import InvalidDataType, get_sensor_lib
 from lib.sensors import get_types as get_sensor_types
-from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase, NotAuthorizedError   
+from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase, NotAuthorizedError, InvalidSensorType
 from resources.locations import LocationsResourceMixin
 
 
@@ -100,7 +100,6 @@ class Sensor(BaseResource, SensorResourceMixin):
 
             return True
 
-
 class SensorData(BaseResource, SensorResourceMixin):
     def get(self, sensor_id, data_type, location=None):
         with session_scope(self.config) as db_session:
@@ -127,3 +126,16 @@ class SensorTypes(BaseResource, SensorResourceMixin):
     @login_required
     def get(self):
         return [str(t) for t in get_sensor_types()]
+    
+class SensorDiscovery(BaseResource, ResourceMixinBase):
+    @login_required
+    def get(self, sensor_type):
+        if sensor_type not in get_sensor_types():
+            raise InvalidSensorType(sensor_type)
+        
+        sensor_lib = get_sensor_lib(sensor_type)
+
+        if not sensor_lib.supports_discovery():
+            raise ClientError(user_msg=f"{sensor_type} sensors do not support discover")
+
+        return self.transform_response(sensor_lib.discover())

@@ -5,7 +5,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { UntypedFormControl, AbstractControl, Validators, UntypedFormGroup } from '@angular/forms';
 
-import { Sensor, Location, UserInfo } from '../../models/models';
+import { Sensor, Location, UserInfo, SensorDiscoveryData, SensorData } from '../../models/models';
+
+import { isNilOrEmpty } from '../../utils/helpers'
 
 import * as _ from 'lodash';
 
@@ -27,6 +29,8 @@ export class ManageSensorsComponent implements OnInit {
   modifySensor: Sensor = new Sensor();
   _ = _;
   selectedLocationFilters: string[] = [];
+  sensorDiscoveryData: SensorDiscoveryData[] = [];
+  sensoryDiscoveryProcessing = false;
 
   userInfo!: UserInfo;
 
@@ -34,7 +38,8 @@ export class ManageSensorsComponent implements OnInit {
     name: new UntypedFormControl('', [Validators.required]),
     sensorType: new UntypedFormControl('', [Validators.required]),
     locationId: new UntypedFormControl('', [Validators.required]),
-    metaAuthToken: new UntypedFormControl('', [Validators.required])
+    metaAuthToken: new UntypedFormControl('', []),
+    kvmDevice: new UntypedFormControl('', [])
   });
 
   get displayedColumns(): string[] {
@@ -89,7 +94,7 @@ export class ManageSensorsComponent implements OnInit {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = _.sortBy(locations, [(l:Location) => {return l.description}]);
-        this.dataService.getSensorType().subscribe({
+        this.dataService.getSensorTypes().subscribe({
           next: (sensorTypes: string[]) => {
             this.sensorTypes = _.orderBy(sensorTypes, ["name"]);
             this.refresh(always, next, error);
@@ -158,11 +163,19 @@ export class ManageSensorsComponent implements OnInit {
 
   create(): void {
     this.processing = true;
+    var meta : any = {}
+    console.log(this.modifySensor);
+    if(this.modifySensor.editValues.sensorType == "plaato-keg") {
+      meta.authToken = this.modifySensor.editValues.meta.authToken;
+    } else if (this.modifySensor.editValues.sensorType == "keg-volume-monitor-weight" || this.modifySensor.editValues.sensorType == "keg-volume-monitor-flow") {
+      meta.deviceId = this.modifySensor.editValues.meta.deviceId;
+    }
+
     var data: any = {
       name: this.modifySensor.editValues.name,
       sensorType: this.modifySensor.editValues.sensorType,
       locationId: this.modifySensor.editValues.locationId,
-      meta: {authToken: this.modifySensor.editValues.meta.authToken}
+      meta: meta
     }
     this.dataService.createSensor(data).subscribe({
       next: (sensor: Sensor) => {
@@ -188,6 +201,7 @@ export class ManageSensorsComponent implements OnInit {
 
   save(): void {
     this.processing = true;
+    console.log(this.modifySensor);
     this.dataService.updateSensor(this.modifySensor.id, this.modifySensor.changes).subscribe({
       next: (sensor: Sensor) => {
         this.modifySensor.disableEditing();
@@ -266,11 +280,29 @@ export class ManageSensorsComponent implements OnInit {
         if(!_.has(this.modifySensor.editValues.meta, "authToken")){
           _.set(this.modifySensor.editValues, 'meta.authToken', '');
         }
-        break
+        break;
+      case "keg-volume-monitor-flow":
+      case "keg-volume-monitor-weight":
+        if(!_.has(this.modifySensor.editValues.meta, "deviceId")){
+          _.set(this.modifySensor.editValues, 'meta.deviceId', '');
+        }
+        this.sensoryDiscoveryProcessing = true;
+        this.dataService.discoverSensors(this.modifySensor.editValues.sensorType).subscribe({
+          next: (data: SensorDiscoveryData[]) => {
+            this.sensorDiscoveryData = data;
+            this.sensoryDiscoveryProcessing = false;
+          },
+          error: (err: DataError) => {
+            this.displayError(err.message);
+            this.sensoryDiscoveryProcessing = false;
+          }
+        })
+        break;
     }
   }
 
   get modifyForm(): { [key: string]: AbstractControl } {
     return this.modifyFormGroup.controls;
-  }  
+  }
+
 }

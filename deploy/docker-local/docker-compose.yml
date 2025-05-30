@@ -47,7 +47,7 @@ services:
     networks:
       - brewhouse-manager-net
     volumes:
-      - ./my-config.json:/brewhouse-manager/config/config.json
+      - ./data:/var/lib/postgresql/data
     env_file:
       - ./docker-local.env
       - ".env"

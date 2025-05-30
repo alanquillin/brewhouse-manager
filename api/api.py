@@ -18,6 +18,31 @@ import sys
 import uuid
 from datetime import timedelta
 
+from lib.config import Config
+from lib import logging
+CONFIG = Config()
+CONFIG.setup(config_files=["default.json"])
+
+logging.init(fmt=logging.DEFAULT_LOG_FMT)
+
+from db import session_scope
+from db.users import Users as UsersDB
+from lib import json
+from resources.assets import UploadImage
+from resources.auth import AuthUser, GoogleCallback, GoogleLogin, Login, Logout
+from resources.batches import Batch, Batches
+from resources.beers import Beer, Beers
+from resources.beverage import Beverage, Beverages
+from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
+from resources.image_transitions import ImageTransition
+from resources.locations import Location, Locations
+from resources.pages import GenericPageHandler, RestrictedGenericPageHandler, AdminRestrictedGenericPageHandler
+from resources.sensors import Sensor, SensorData, Sensors, SensorTypes, SensorDiscovery
+from resources.settings import Settings
+from resources.taps import Tap, Taps
+from resources.users import CurrentUser, User, Users, UserAPIKey, UserLocations
+from resources.dashboard import Dashboard, DashboardBeer, DashboardBeverage, DashboardLocations, DashboardTap, DashboardSensor
+
 from flask import Flask, make_response, redirect, send_from_directory
 from flask.logging import create_logger
 from flask_cors import CORS
@@ -26,32 +51,6 @@ from flask_restful import Api
 from gevent.pywsgi import LoggingLogAdapter, WSGIServer  # pylint:disable=ungrouped-imports
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.wrappers.base_response import BaseResponse
-
-from db import session_scope
-from db.users import Users as UsersDB
-from lib import json, logging
-from lib.config import Config
-from resources.assets import UploadImage
-from resources.auth import AuthUser, GoogleCallback, GoogleLogin, Login, Logout
-from resources.batches import Batch, Batches
-from resources.beers import Beer, Beers
-from resources.beverage import Beverage, Beverages
-from resources.external_brew_tools import ExternalBrewTool, ExternalBrewToolTypes, SearchExternalBrewTool
-from resources.fermentation_ctrl import (
-    FermentationController,
-    FermentationControllerDeviceActions,
-    FermentationControllerDeviceData,
-    FermentationControllers,
-    FermentationControllerStats,
-)
-from resources.image_transitions import ImageTransition
-from resources.locations import Location, Locations
-from resources.pages import GenericPageHandler, RestrictedGenericPageHandler, AdminRestrictedGenericPageHandler
-from resources.sensors import Sensor, SensorData, Sensors, SensorTypes
-from resources.settings import Settings
-from resources.taps import Tap, Taps
-from resources.users import CurrentUser, User, Users, UserAPIKey, UserLocations
-from resources.dashboard import Dashboard, DashboardBeer, DashboardBeverage, DashboardLocations, DashboardTap, DashboardSensor
 
 
 class IgnoringLogAdapter(LoggingLogAdapter):
@@ -69,8 +68,6 @@ class IgnoringLogAdapter(LoggingLogAdapter):
 
 
 STATIC_URL_PATH = "static"
-
-CONFIG = Config()
 
 # Disable Location header autocorrect which prepends the HOST to the Location
 BaseResponse.autocorrect_location_header = False
@@ -93,7 +90,6 @@ official_json.dumps = json.dumps
 
 
 app_config = CONFIG
-app_config.setup(config_files=["default.json"])
 
 LOGGER = logging.getLogger(__name__)
 
@@ -134,6 +130,7 @@ api.add_resource(Sensors, "/api/v1/sensors", "/api/v1/locations/<location>/senso
 api.add_resource(Sensor, "/api/v1/sensors/<sensor_id>", "/api/v1/locations/<location>/sensors/<sensor_id>")
 api.add_resource(SensorData, "/api/v1/sensors/<sensor_id>/<data_type>", "/api/v1/locations/<location>/sensors/<sensor_id>/<data_type>")
 api.add_resource(SensorTypes, "/api/v1/sensors/types")
+api.add_resource(SensorDiscovery, "/api/v1/sensors/discover/<sensor_type>")
 api.add_resource(ExternalBrewToolTypes, "/api/v1/external_brew_tools/types")
 api.add_resource(ExternalBrewTool, "/api/v1/external_brew_tools/<tool_name>")
 api.add_resource(SearchExternalBrewTool, "/api/v1/external_brew_tools/<tool_name>/search")
@@ -145,24 +142,6 @@ api.add_resource(UserAPIKey, "/api/v1/users/<user_id>/api_key/generate", endpoin
 api.add_resource(CurrentUser, "/api/v1/users/current")
 api.add_resource(Settings, "/api/v1/settings")
 api.add_resource(UploadImage, "/api/v1/uploads/images/<image_type>")
-api.add_resource(FermentationControllers, "/api/v1/fermentation/controllers", endpoint="fermentation_controllers")
-api.add_resource(FermentationControllers, "/api/v1/fermentation/controllers/find", endpoint="find_fermentation_controllers", methods=["GET"])
-api.add_resource(FermentationController, "/api/v1/fermentation/controllers/<fermentation_controller_id>")
-api.add_resource(FermentationControllerStats, "/api/v1/fermentation/controllers/<fermentation_controller_id>/stats")
-api.add_resource(
-    FermentationControllerDeviceActions,
-    "/api/v1/fermentation/controllers/<fermentation_controller_id>/actions",
-    endpoint="fermentation_controllers_action_rpc",
-    methods=["POST"],
-)
-api.add_resource(
-    FermentationControllerDeviceActions,
-    "/api/v1/fermentation/controllers/<fermentation_controller_id>/<action>",
-    endpoint="fermentation_controllers_valueless_action",
-    methods=["POST"],
-)
-api.add_resource(FermentationControllerDeviceActions, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<action>/<value>", methods=["POST"])
-api.add_resource(FermentationControllerDeviceData, "/api/v1/fermentation/controllers/<fermentation_controller_id>/<key>", methods=["GET"])
 api.add_resource(ImageTransition, "/api/v1/image_transitions/<image_transition_id>", methods=["DELETE"])
 api.add_resource(Dashboard, "/api/v1/dashboard/locations/<location_id>")
 api.add_resource(DashboardLocations, "/api/v1/dashboard/locations")
@@ -197,9 +176,9 @@ app.secret_key = CONFIG.get("app.secret_key", str(uuid.uuid4()))
 app.config.update(
     {
         "app_config": app_config,
-        "SESSION_COOKIE_SECURE": app_config.get("secure_cookies", True),
-        "SESSION_COOKIE_HTTPONLY": True,
-        "SESSION_COOKIE_SAMESITE": "Lax",
+        "SESSION_COOKIE_SECURE": app_config.get("api.cookies.secure", True),
+        "SESSION_COOKIE_HTTPONLY": app_config.get("api.cookies.http_only", True),
+        "SESSION_COOKIE_SAMESITE": app_config.get("api.cookies.samesite", "lax"),
     }
 )
 port = app_config.get("api.port")

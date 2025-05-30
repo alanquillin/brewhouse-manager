@@ -21,6 +21,9 @@ class PlaatoKeg(SensorBase):
         "firmware_version": "v93",
     }
 
+    def supports_discovery(self):
+        return False
+    
     def get(self, data_type, sensor_id=None, sensor=None, meta=None):
         if not sensor_id and not sensor and not meta:
             raise Exception("WTH!!")
@@ -36,6 +39,23 @@ class PlaatoKeg(SensorBase):
             raise InvalidDataType(data_type)
 
         return self._get(pin, meta)
+
+    def get_all(self, sensor_id=None, sensor=None, meta=None):
+        if not sensor_id and not sensor and not meta:
+            raise Exception("WTH!!")
+
+        if not meta:
+            if not sensor:
+                with session_scope as session:
+                    sensor = SensorsDB.get_by_pkey(session, sensor_id)
+            meta = sensor.meta
+
+        return {
+            "percentRemaining": self._get(self._data_type_to_pin["percent_beer_remaining"], meta),
+            "totalVolumeRemaining": self._get(self._data_type_to_pin["total_beer_remaining"], meta),
+            "displayVolumeUnit": self._get(self._data_type_to_pin["beer_remaining_unit"], meta),
+            "firmwareVersion": self._get(self._data_type_to_pin["firmware_version"], meta)
+        }
 
     def _get(self, pin, meta, params=None):
         auth_token = meta.get("auth_token")

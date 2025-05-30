@@ -85,13 +85,13 @@
 
                 <mat-form-field appearance="fill">
                     <mat-label>Type</mat-label>
-                    <mat-select formControlName="sensorType" name="sensorType" [(ngModel)]="modifySensor.editValues.sensorType" (selectionChange)="addMissingMeta()">
+                    <mat-select formControlName="sensorType" name="sensorType" [(ngModel)]="modifySensor.editValues.sensorType" (selectionChange)="addMissingMeta()" [disabled]="sensoryDiscoveryProcessing">
                         <mat-option *ngFor="let t of sensorTypes" [value]="t">
                         {{t}}
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
-
+                <!-- Plaato Keg metadata -->
                 <mat-form-field appearance="fill" class="modify-field" *ngIf="modifySensor.editValues.sensorType === 'plaato-keg'">
                     <input id="modify_meta_plaato_keg_auth_token_input"
                         class="dp-textfield--input"
@@ -101,6 +101,20 @@
                         required />
                     <mat-label>Plaato Keg Auth Token</mat-label>
                 </mat-form-field>
+                <!-- Plaato Keg metadata -->
+                <!-- Keg Volume Monitor Metadata -->
+                 <div *ngIf="sensoryDiscoveryProcessing">
+                    <mat-spinner></mat-spinner>
+                </div>
+                <mat-form-field appearance="fill" *ngIf="modifySensor.editValues.sensorType === 'keg-volume-monitor-weight' || modifySensor.editValues.sensorType === 'keg-volume-monitor-flow'">
+                    <mat-label>Device</mat-label>
+                    <mat-select formControlName="kvmDevice" name="kvmDevice" [(ngModel)]="modifySensor.editValues.meta.deviceId" [disabled]="sensoryDiscoveryProcessing">
+                        <mat-option *ngFor="let s of sensorDiscoveryData" [value]="s.sensorId">
+                        {{s.sensorName}} ({{s.sensorId}})
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <!-- Keg Volume Monitor Metadata -->
             </fieldset>
         </form>
     </div>
