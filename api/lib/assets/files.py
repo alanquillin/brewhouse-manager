@@ -13,11 +13,12 @@ class FileAssetManager(AssetManagerBase):
 
     def get(self, image_type, filename):
         return f"/assets/uploads/img/{image_type}/{filename}"
+    
 
     def list(self, image_type):
         parent_path = self.get_parent_dir(image_type)
         all_files = [f for f in os.listdir(parent_path) if os.path.isfile(os.path.join(parent_path, f))]
-        return [self.get_client_image_path(image_type, f) for f in all_files if not f.startswith(".")]
+        return [self.get(image_type, f) for f in all_files if not f.startswith(".")]
 
     def save(self, image_type, file):
         old_filename = file.filename
@@ -32,4 +33,4 @@ class FileAssetManager(AssetManagerBase):
         path = os.path.join(parent_dir, filename)
         file.save(path)
 
-        return old_filename, filename, self.get_client_image_path(image_type, filename)
+        return old_filename, filename, self.get(image_type, filename)
