@@ -12,7 +12,8 @@ import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-p
 
 import { Beer, beerTransformFns, ImageTransition, Location, UserInfo, Batch, Tap } from '../../models/models';
 import { isNilOrEmpty } from '../../utils/helpers';
-import { convertUnixTimestamp } from '../../utils/datetime';
+import { convertUnixTimestamp, toUnixTimestamp } from '../../utils/datetime';
+
 
 import * as _ from 'lodash';
 
@@ -797,7 +798,8 @@ export class ManageBeerComponent implements OnInit {
 
   createBatch(): void {
     var data: any = {beerId: this.selectedBatchBeer.id}
-    const keys = ['externalBrewingTool', 'abv', 'ibu', 'srm', 'externalBrewingToolMeta', 'kegDate', 'brewDate', 'batchNumber']
+    const keys = ['externalBrewingTool', 'abv', 'ibu', 'srm', 'externalBrewingToolMeta', 'batchNumber']
+    const dateKeys = ['brewDateObj', 'kegDateObj'];
     const checkKeys = {}
     
     _.forEach(keys, (k) => {
@@ -812,7 +814,23 @@ export class ManageBeerComponent implements OnInit {
         val = transformFn(val);
       }
       data[k] = val;
-    })
+    });
+
+    _.forEach(dateKeys, (k) => {
+      let _k = k.replace("Obj", "");
+
+      var val: any = _.get(this.modifyBatch.editValues, k);
+      if(isNilOrEmpty(val)){
+        return;
+      }
+
+      val = toUnixTimestamp(val);
+      const transformFn: any = _.get(this.transformFns, _k);
+      if(!_.isNil(transformFn) && typeof transformFn === 'function'){
+        val = transformFn(val);
+      }
+      data[_k] = val
+    });
 
     if(_.has(data, "externalBrewingTool")){
       const tool = data["externalBrewingTool"];
