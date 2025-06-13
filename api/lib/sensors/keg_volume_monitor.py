@@ -56,13 +56,17 @@ class KegVolumeMonitor(SensorBase):
         devices = self._get("devices")
 
         return [{"sensor_id": dev["id"], "sensor_name": dev["name"]} for dev in devices]
+    
+    def _get_auth_header_val(self):
+        api_key = self.config.get("sensors.keg_volume_monitors.api_key")
+        api_key = f"svc|{api_key}"
+        return f"Bearer {base64.b64encode(api_key.encode('ascii')).decode('ascii')}"
 
     def _get(self, path, params=None):
         base_url = self.config.get("sensors.keg_volume_monitors.base_url") 
-        api_key = self.config.get("sensors.keg_volume_monitors.api_key")
-        headers = {}
-        if api_key:
-            headers["Authorization"] = f"Bearer {base64.encode(api_key)}"
+        headers = {
+            "Authorization": self._get_auth_header_val()
+        }
         
         url = f"{base_url}/api/v1/{path}"
         self.logger.debug("GET Request: %s, params: %s", url, params)
