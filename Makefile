@@ -152,7 +152,7 @@ clean-local-uploads:
 	rm -r ./deploy/docker-local/uploads/*
 
 clean-db:
-	rm -rf ./deploy/data
+	rm -rf ./deploy/docker-local/data
 
 clean-all: clean clean-images clean-local-uploads clean-db
 
