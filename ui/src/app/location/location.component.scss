@@ -4,24 +4,10 @@ div.tap-list {
     padding-bottom: 4px;
 }
 
-.tap-card {
-    min-height: 120px;
-}
-
-.tap-display {
-    display: flex;
-    flex-direction: row;
-}
-
-.tap-display-empty{
-    padding-bottom: 12px;
-}
-
 div.tap-volume {
     order: 1;
     display: inline-block;
     vertical-align: top;
-    height: 106px;
     width: 106px;
     min-width: 106px !important;
 }
@@ -33,6 +19,108 @@ div.tap-image {
     min-width: 106px !important;
 }
 
+.tap-count-1,
+.tap-count-2 {
+    .tap-card {
+        min-height: 240px;
+    }
+
+    div.tap-volume {
+        height: 212px;
+        width: 200px
+    }
+
+    div.tap-logo,
+    div.tap-image {
+        img {
+            width: auto;
+            max-height: 200px;
+        }
+    }
+
+    .tap-gauge {
+        height: 200px;
+        width: 200px;
+    }
+
+    div.tap-details p {
+        line-height: 1.6em;
+        font-size: 140%;
+    }
+
+    div.tap-details p.title {
+        font-size: 180%;
+    }
+}
+
+.tap-count-3 {
+    .tap-card {
+        min-height: 180px;
+    }
+    div.tap-volume {
+        height: 159px;
+        width: 150px
+    }
+    div.tap-logo,
+    div.tap-image {
+        img {
+            width: auto;
+            max-height: 150px;
+        }
+    }
+    .tap-gauge {
+        height: 150px;
+        width: 150px;
+    }
+
+    div.tap-details p {
+        line-height: 1.4em;
+        font-size: 120%;
+    }
+
+    div.tap-details p.title {
+        font-size: 160%;
+    }
+}
+
+.tap-count-4plus {
+    .tap-card {
+        min-height: 120px;
+    }
+    div.tap-volume {
+        height: 106px;
+        width: 100px
+    }
+    div.tap-logo,
+    div.tap-image {
+        img {
+            width: auto;
+            max-height: 100px;
+        }
+    }
+    .tap-gauge {
+        height: 100px;
+        width: 100px;
+    }
+
+    div.tap-details p {
+        line-height: 1.2em;
+    }
+
+    div.tap-details p.title {
+        font-size: 120%;
+    }
+}
+
+.tap-display {
+    display: flex;
+    flex-direction: row;
+}
+
+.tap-display-empty{
+    padding-bottom: 12px;
+}
+
 div.tap-details {
     order: 2;
     display: inline-block;
@@ -41,12 +129,10 @@ div.tap-details {
 }
 
 div.tap-details p {
-    line-height: 1.2em;
     margin: 6px 0px;
 }
 
 div.tap-details p.title {
-    font-size: 120%;
     font-weight: bold;
 }
 
@@ -64,7 +150,6 @@ div.tap-logo,
 div.tap-image {
     img {
         width: auto;
-        max-height: 100px;
     }
 }
 

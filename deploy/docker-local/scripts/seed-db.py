@@ -15,25 +15,32 @@ from lib.config import Config
 
 location1_id = "fb139af3-2905-4006-9196-62f54bb262ab"
 location2_id = "e472c003-01b2-4281-8a64-0c03a7c98e7d"
+location3_id = "129f3798-c935-431e-ba55-be1a5147aecb"
 LOCATIONS = [
     {
         "id": location1_id,
-        "name": "my-sample-tap-room",
-        "description": "My Sample Taproom"
+        "name": "sample-4-tap-taproom",
+        "description": "My Sample Taproom (4 taps)"
     },
     {
         "id": location2_id,
-        "name": "my-sample-tap-room-2",
-        "description": "My Other Sample Taproom"
+        "name": "sample-2-tap-taproom",
+        "description": "My Sample Taproom (2 taps)"
+    },
+    {
+        "id": location3_id,
+        "name": "sample-3-tap-taproom",
+        "description": "My Sample Taproom (3 taps)"
     }
 ]
 
 beer_l1b1_id = "8e18732d-61bf-4d4d-b133-a96ad63b63e6" # irish stout
 beer_l1b2_id = "4237761e-95b8-4e6d-bbc3-864e6c80df6e" # 4th and lager
 beer_l1b3_id = "7627c611-32ac-473b-953f-9fb42efe97e2" # galactic santa
-beer_l1b4_id = "bb751fe8-4a14-49a6-95e4-382ff0eaf76c" # citrus haze
-beer_l2b1_id = "2988aded-f66d-4e48-8c84-26c5076a2fc2"
-beer_l2b2_id = "94525492-6395-4295-91d4-3022258c8d2b"
+beer_l2b1_id = "bb751fe8-4a14-49a6-95e4-382ff0eaf76c" # citrus haze
+beer_l3b1_id = "05cff3e6-9615-45ad-93fd-e52aaa8b37d8"
+beer_l3b2_id = "2c449576-71f3-4adc-8ca7-318e122e94e6"
+beer_l3b3_id = "2990bbe7-27c1-4827-8d43-c7e56ccfd884"
 BEERS = [
     {
         "id": beer_l1b1_id,
@@ -64,12 +71,36 @@ BEERS = [
         "location_id": location1_id,
     },
     {
-        "id": beer_l1b4_id,
+        "id": beer_l2b1_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "recipe_id": "y3FTmQ3kJOTRCyE4I1LvN4RFbypByV" # citrus haze
         },
         "location_id": location2_id,
+    },
+    {
+        "id": beer_l3b1_id,
+        "external_brewing_tool": "brewfather",
+        "external_brewing_tool_meta": {
+            "recipe_id": "55FNplpfSBLjRjp88Dr1ftEq6IygVo" # summer wheat
+        },
+        "location_id": location3_id,
+    },
+    {
+        "id": beer_l3b2_id,
+        "external_brewing_tool": "brewfather",
+        "external_brewing_tool_meta": {
+            "recipe_id": "RNoqpCn9uNQoiKHG5Qn0NdNaPrNxmV" # standard haze
+        },
+        "location_id": location3_id,
+    },
+    {
+        "id": beer_l3b3_id,
+        "external_brewing_tool": "brewfather",
+        "external_brewing_tool_meta": {
+            "recipe_id": "ejlRoFOrX4J8QxNBtOC16PsmsedQh7" # 3 bromigos
+        },
+        "location_id": location3_id,
     }
 ]
 
@@ -78,6 +109,9 @@ sensor_l1s2_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec42"
 sensor_l1s3_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec43"
 sensor_l1s4_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec44"
 sensor_l2s1_id = "cacfe989-cc88-4687-9a55-c8748de9f570"
+sensor_l3s1_id = "7324db56-3ed3-4f9b-bb88-d90d278eeaa8"
+sensor_l3s2_id = "601acc25-3d77-41a2-a4ff-07611fe9d917"
+sensor_l3s3_id = "32e7520f-90e7-4a0a-890a-56833b6b38dd"
 SENSORS=[
     {
         "id": sensor_l1s1_id,
@@ -123,6 +157,33 @@ SENSORS=[
         "meta": {
             "auth_token": "unknown"
         }
+    },
+    {
+        "id": sensor_l3s1_id,
+        "name": "KVM - Black",
+        "location_id": location3_id,
+        "sensor_type": "keg-volume-monitor-weight",
+        "meta": {
+            "device_id": "13353ea9-bf7f-41d3-bd82-97262bf6a97a"
+        }
+    },
+    {
+        "id": sensor_l3s2_id,
+        "name": "KVM - Orange",
+        "location_id": location3_id,
+        "sensor_type": "keg-volume-monitor-weight",
+        "meta": {
+            "device_id": "022041b5-89af-45ee-87ef-135f68c25f3f"
+        }
+    },
+    {
+        "id": sensor_l3s3_id,
+        "name": "KVM - Dark Blue",
+        "location_id": location3_id,
+        "sensor_type": "keg-volume-monitor-weight",
+        "meta": {
+            "device_id": "2eba1564-e552-4df6-9056-584d2894d544"
+        }
     }
 ]
 
@@ -167,6 +228,9 @@ batch_id2 = "472f77a3-ee37-4fad-a3ba-f91fb92710de"
 batch_id3 = "1d66886c-e5f4-4cd7-9931-bf3b1e0ee83e"
 batch_id4 = "bf2ecf10-96da-4abc-820f-94fac1c03d9f"
 batch_id5 = "4d2ec0d6-e5a2-463e-bd0c-e2b18e5bc5ad"
+batch_id6 = "b195514c-4a02-41c0-b79e-3d9861e8899d"
+batch_id7 = "710fa96d-61cc-4243-b7dc-8884287227ea"
+batch_id8 = "607eeae2-7fd2-4dfb-ab98-fa796fd121c8"
 
 BATCHES = [
     {
@@ -201,12 +265,36 @@ BATCHES = [
     },
     {
         "id": batch_id5,
-        "beer_id": beer_l1b4_id,
+        "beer_id": beer_l2b1_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "batch_id": "S0spuNZL8PcQM2f2ioCgAoR8A0tv2q" # citrus haze (batch 26)
         },
     },
+    {
+        "id": batch_id6,
+        "beer_id": beer_l3b1_id,
+        "external_brewing_tool": "brewfather",
+        "external_brewing_tool_meta": {
+            "batch_id": "ILBYEUTy3mMK2xuRFb4hCTf4lkr4XW" # summer wheat (batch 157)
+        },
+    },
+    {
+        "id": batch_id7,
+        "beer_id": beer_l3b2_id,
+        "external_brewing_tool": "brewfather",
+        "external_brewing_tool_meta": {
+            "batch_id": "bepEP5Lm6GMsJzf9jEQeJNWJ7TrENv" # standard haze (batch 150)
+        },
+    },
+    {
+        "id": batch_id8,
+        "beer_id": beer_l3b3_id,
+        "external_brewing_tool": "brewfather",
+        "external_brewing_tool_meta": {
+            "batch_id": "sMO9MU8OD1wqJRKL2DPqGkm7VtyWsv" # 3 bromegos (batch 141)
+        },
+    }
 ]
 
 on_tap_id1 = "a28fe129-edd1-49ef-904b-fadcfbc28fe5"
@@ -214,6 +302,9 @@ on_tap_id2 = "472f77a3-ee37-4fad-a3ba-f91fb92710de"
 on_tap_id3 = "1d66886c-e5f4-4cd7-9931-bf3b1e0ee83e"
 on_tap_id4 = "bf2ecf10-96da-4abc-820f-94fac1c03d9f"
 on_tap_id5 = "4d2ec0d6-e5a2-463e-bd0c-e2b18e5bc5ad"
+on_tap_id6 = "69aedb37-0b3c-4073-82cb-e3bb1b0ba370"
+on_tap_id7 = "a1137dec-e628-4802-a4ea-d0f1ac1504fe"
+on_tap_id8 = "9b1d199a-fee4-4196-8d58-72a53b52a257"
 
 ON_TAP = [
     {
@@ -236,6 +327,18 @@ ON_TAP = [
         "id": on_tap_id5,
         "batch_id": batch_id5
     },
+    {
+        "id": on_tap_id6,
+        "batch_id": batch_id6
+    },
+    {
+        "id": on_tap_id7,
+        "batch_id": batch_id7
+    },
+    {
+        "id": on_tap_id8,
+        "batch_id": batch_id8
+    }
 ]
 
 
@@ -245,6 +348,9 @@ tap_l1t3_id = "e24fd19e-cfed-45e8-91c5-544ec5db4ad5"
 tap_l1t4_id = "572dcdba-4d37-4061-9c5c-20225de45513"
 tap_l2t1_id = "f92adea8-27f1-4d45-80f0-066a47ce496e"
 tap_l2t2_id = "e0b83ea2-217b-440b-bad5-24548dc8bef1"
+tap_l3t1_id = "c05202a3-87f7-4c54-a07e-7e2d06b2929d"
+tap_l3t2_id = "71b1f508-54e1-4b02-bb8e-d441f52efdb3"
+tap_l3t3_id = "29c24432-b0aa-4699-a2b1-7f3dd5094161"
 
 TAPS = [
     {
@@ -292,6 +398,30 @@ TAPS = [
         "tap_number": 2,
         "description": "Tap 2",
         "location_id": location2_id
+    },
+    {
+        "id": tap_l3t1_id,
+        "tap_number": 1,
+        "description": "Tap 1",
+        "location_id": location3_id,
+        "on_tap_id": on_tap_id6,
+        "sensor_id": sensor_l3s1_id
+    },
+    {
+        "id": tap_l3t2_id,
+        "tap_number": 2,
+        "description": "Tap 2",
+        "location_id": location3_id,
+        "on_tap_id": on_tap_id7,
+        "sensor_id": sensor_l3s2_id
+    },
+    {
+        "id": tap_l3t3_id,
+        "tap_number": 3,
+        "description": "Tap 3",
+        "location_id": location3_id,
+        "on_tap_id": on_tap_id8,
+        "sensor_id": sensor_l3s3_id
     }
 ]
 

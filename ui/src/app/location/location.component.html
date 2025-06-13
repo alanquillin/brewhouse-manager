@@ -5,7 +5,7 @@
     <button mat-icon-button (click)="goto('home')" *ngIf="!isFullscreen && showHomeBtn"><mat-icon>home</mat-icon></button>
     <button mat-icon-button (click)="toggleFullscreen()"><mat-icon>fullscreen{{ isFullscreen ? "_exit" : "" }}</mat-icon></button>
 </div>
-<div class="tap-list" *ngFor="let tap of taps">
+<div class="tap-list" *ngFor="let tap of taps" class="tap-count-{{ taps.length < 4 ? taps.length : '4plus' }}">
     <mat-card class=tap-card>
         <mat-card-header>
             <mat-card-subtitle>Tap {{tap.tapNumber}}: {{ tap.description }}</mat-card-subtitle>
