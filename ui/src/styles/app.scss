@@ -39,14 +39,15 @@ label {
     text-transform: uppercase;
     display: inline-block;
     font-weight: 400;
-    font-size: 120%;
+    font-size: 160%;
+    padding-top: 6px;
 }
 
 .content {
     padding: 1em 1em 3em;
 }
 
-.heading {
+.heading p {
     font-size: 140%;
     display: block;
 }
