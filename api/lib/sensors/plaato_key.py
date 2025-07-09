@@ -63,6 +63,8 @@ class PlaatoKeg(SensorBase):
         self.logger.debug("GET Request: %s, params: %s", url, params)
         resp = requests.get(url, params=params)
         self.logger.debug("GET response code: %s", resp.status_code)
+        if resp.status_code != 200:
+            return {}
         j = resp.json()
         self.logger.debug("GET response JSON: %s", j)
         return j
