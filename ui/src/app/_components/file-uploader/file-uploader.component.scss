@@ -1,4 +1,9 @@
-@import "../../../styles/variables.scss";
+@use '@angular/material' as mat;
+@use "../../../styles/variables";
+
+.file-uploader-container {
+  padding: 20px;
+}
 
 .dropzone {
     width: 450px;
@@ -36,7 +41,7 @@
     }
 
     label.enabled {
-      //background-color: $primary;
+      background-color: mat.get-color-from-palette(variables.$primary, default);
       color: white;
     }
 

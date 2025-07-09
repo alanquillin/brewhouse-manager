@@ -41,6 +41,8 @@ $my-theme: mat.define-light-theme((
  density: 0,
 ));
 
+@include mat.all-component-themes($my-theme);
+
 $srm1: #FFE699;
 $srm2: #FFD878;
 $srm3: #FFCA5A;
