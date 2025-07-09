@@ -298,7 +298,16 @@ export class ManageBeerComponent implements OnInit {
     this.processing = true;
     this.dataService.createBeer(data).subscribe({
       next: (beer: Beer) => {
-        this.refresh(() => {this.processing = false;}, () => {this.adding = false;});
+        this.refresh(() => {this.processing = false;}, () => {
+          var _beer = new Beer(beer);
+          this.beers.forEach((_b) => {
+            if (_b.id == _beer.id) {
+              _beer = _b;
+            }
+          });
+          this.adding = false;
+          this.editBeer(_beer);
+        });
       },
       error: (err: DataError) => {
         this.displayError(err.message);
