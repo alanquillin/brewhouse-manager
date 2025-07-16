@@ -4,7 +4,7 @@
         <mat-spinner></mat-spinner>
     </div>
     <div class="beverage-view-filters" *ngIf="!loading">
-        <div *ngIf="locations.length > 1">
+        <div class="location-selector" *ngIf="locations.length > 1">
             <mat-form-field appearance="fill">
                 <mat-label>Filter By Location</mat-label>
                 <mat-select [(value)]="selectedLocationFilters" (selectionChange)="filter()" multiple>

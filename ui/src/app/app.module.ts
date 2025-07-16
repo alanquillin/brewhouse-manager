@@ -42,7 +42,7 @@ import { QRCodeModule } from 'angularx-qrcode';
 
 import { FileUploadDialogComponent } from './_dialogs/file-upload-dialog/file-upload-dialog.component';
 import { FileUploaderComponent } from './_components/file-uploader/file-uploader.component';
-//import { FooterComponent } from './_components/footer/footer.component';
+import { FooterComponent } from './_components/footer/footer.component';
 import { ImageSelectorDialogComponent } from './_dialogs/image-selector-dialog/image-selector-dialog.component';
 import { LocationComponent } from './location/location.component';
 import { LocationImageDialog } from './_dialogs/image-preview-dialog/image-preview-dialog.component'
@@ -72,6 +72,7 @@ import { ErrorsComponent } from './errors/errors.component';
     FileUploadDialogComponent,
     FileUploaderComponent,
     HeaderComponent,
+    FooterComponent,
     ImageSelectorDialogComponent,
     LocationComponent,
     LocationImageDialog,
@@ -93,7 +94,6 @@ import { ErrorsComponent } from './errors/errors.component';
     BrowserAnimationsModule,
     BrowserModule,
     FormsModule,
-    //FooterComponent,
     GaugeModule.forRoot(),
     HttpClientModule,
     MatButtonModule,
