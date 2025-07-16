@@ -1,7 +1,7 @@
 # Brewhouse Manager
 
 The Brewhouse Manager is an open source application designed for the home/micro brewer to help track what they have
-brewed and what they have on tap.  In order to make tracking you beer better, the Brewhouse Manager optionally
+brewed and what they have on tap.  In order to make tracking your beer better, the Brewhouse Manager optionally
 integrates with 3rd party brew systems and sensors to pull in your batch details and track the beer levels in your kegs.
 
 <img src="./docs/img/preview.png" style="max-width: 1200px; height: auto" />
@@ -15,9 +15,10 @@ import details.  These details will refresh automatically until the batch is mar
 
 ### Senors
 
-- [Plaato Keg](https://plaato.io/products/plaato-keg):  The Plaato Keg sensors allow you to track the current amount of
-beer left in the keg.  These sensors can be associated with a specific tap to continuously track the levels
-automatically even after you change kegs.  
+- [Plaato Keg](https://plaato.io/products/plaato-keg):  **These sensors have been discontinued bu the manufacturer** however,
+like us, I know there are many die hard fans out there taking theirs to the grave, so as long as their APIs and services still
+work, we will continue to support them!
+- [DIY Keg Volume Monitors](https://github.com/alanquillin/keg-volume-monitors)
 
 ## Quick Installation
 
