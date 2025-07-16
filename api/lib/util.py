@@ -103,4 +103,5 @@ def is_valid_uuid(uuid_to_test, version=4):
     except ValueError:
         return False
 
-    return str(uuid_obj) == uuid_to_test
+    uuid_str = str(uuid_obj)
+    return uuid_str == uuid_to_test or uuid_str.replace("-", "") == uuid_to_test
