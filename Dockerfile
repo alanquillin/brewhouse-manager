@@ -18,8 +18,6 @@ RUN apt-get update \
 
 RUN pip install -U pip 
 RUN pip install setuptools wheel
-ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
-RUN pip install "cryptography<3.5"
 RUN pip install "poetry>=1.2.2"
 
 RUN poetry config virtualenvs.in-project true

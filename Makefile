@@ -26,7 +26,7 @@ DOCKER_IMAGE_TAG_DEV ?= dev
 DOCKER := $(shell which docker)
 IMAGE_REPOSITORY := alanquillin
 REPOSITORY_IMAGE ?= $(DOCKER_IMAGE)
-PLATFORMS ?= linux/amd64,linux/arm64,linux/arm
+PLATFORMS ?= linux/amd64,linux/arm64
 
 ifeq ($(POETRY),)
 $(error Poetry is not installed and is required)
