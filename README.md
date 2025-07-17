@@ -15,7 +15,7 @@ import details.  These details will refresh automatically until the batch is mar
 
 ### Senors
 
-- [Plaato Keg](https://plaato.io/products/plaato-keg):  **These sensors have been discontinued bu the manufacturer** however,
+- [Plaato Keg](https://plaato.io/products/plaato-keg):  **These sensors have been discontinued by the manufacturer** however,
 like us, I know there are many die hard fans out there taking theirs to the grave, so as long as their APIs and services still
 work, we will continue to support them!
 - [DIY Keg Volume Monitors](https://github.com/alanquillin/keg-volume-monitors)
