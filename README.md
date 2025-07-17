@@ -13,7 +13,7 @@ integrates with 3rd party brew systems and sensors to pull in your batch details
 - [brewfather](https://brewfather.app/): The brewfather integration allows you to associate a batch with a beer to auto 
 import details.  These details will refresh automatically until the batch is marked as completed.
 
-### Senors
+### Sensors
 
 - [Plaato Keg](https://plaato.io/products/plaato-keg):  **These sensors have been discontinued by the manufacturer** however,
 like us, I know there are many die hard fans out there taking theirs to the grave, so as long as their APIs and services still
