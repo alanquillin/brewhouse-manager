@@ -117,7 +117,7 @@
 </div>
 <div class="beverages-modify" *ngIf="(editingBeverage || addingBeverage) && !(editingBatch || addingBatch)">
     <div class="heading">
-        <button mat-icon-button color="primary" aria-label="Back" title="Back to beer list" (click)="cancelEditBeverage()" *ngIf="editBeverage">
+        <button mat-icon-button color="primary" aria-label="Back to beverage list" title="Back to beverage list" (click)="cancelEditBeverage()" *ngIf="editBeverage">
             <mat-icon>arrow_back</mat-icon>
         </button>
         <p> {{ addingBeverage ? "Add" : "Edit" }} Beverage</p>
