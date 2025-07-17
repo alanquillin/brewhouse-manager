@@ -163,7 +163,6 @@ export class ManageBeerComponent implements OnInit {
                     var batch = new Batch(_batch)
                     this.beerBatches[beer.id].push(batch);
                   });
-                  this.filter();
                 }, 
                 error: (err: DataError) => {
                   this.displayError(err.message);
@@ -184,6 +183,7 @@ export class ManageBeerComponent implements OnInit {
                 }
               });
             });
+            this.filter();
           }, 
           error: (err: DataError) => {
             this.displayError(err.message);
@@ -298,16 +298,13 @@ export class ManageBeerComponent implements OnInit {
     this.processing = true;
     this.dataService.createBeer(data).subscribe({
       next: (beer: Beer) => {
-        this.refresh(() => {this.processing = false;}, () => {
-          var _beer = new Beer(beer);
-          this.beers.forEach((_b) => {
-            if (_b.id == _beer.id) {
-              _beer = _b;
-            }
-          });
-          this.adding = false;
-          this.editBeer(_beer);
-        });
+        var _beer = new Beer(beer);
+        this.beers.push(_beer);
+        this.beerBatches[_beer.id] = [];
+        this.filter();
+        this.adding = false;
+        this.editBeer(_beer, false);
+        this.processing = false;
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -320,13 +317,15 @@ export class ManageBeerComponent implements OnInit {
     this.adding = false;
   }
 
-  editBeer(beer: Beer): void {
+  editBeer(beer: Beer, refresh: boolean = true): void {
     beer.enableEditing();
     this.modifyBeer = beer;
     this.imageTransitionsToDelete = [];
     this.editing = true;
-    this.modifyBeerFormGroup.reset();
-    this.reRunBeerValidation();
+    if (refresh) {
+      this.modifyBeerFormGroup.reset();
+      this.reRunBeerValidation();
+    }
   }
 
   saveBeer(): void {  

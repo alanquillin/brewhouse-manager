@@ -4,7 +4,7 @@
         <mat-spinner></mat-spinner>
     </div>
     <div class="beverage-view-filters" *ngIf="!loading">
-        <div *ngIf="locations.length > 1">
+        <div class="location-selector" *ngIf="locations.length > 1">
             <mat-form-field appearance="fill">
                 <mat-label>Filter By Location</mat-label>
                 <mat-select [(value)]="selectedLocationFilters" (selectionChange)="filter()" multiple>
@@ -116,7 +116,12 @@
     </div>
 </div>
 <div class="beverages-modify" *ngIf="(editingBeverage || addingBeverage) && !(editingBatch || addingBatch)">
-    <div class="heading"><p> {{ addingBeverage ? "Add" : "Edit" }} Beverage</p></div>
+    <div class="heading">
+        <button mat-icon-button color="primary" aria-label="Back to beverage list" title="Back to beverage list" (click)="cancelEditBeverage()" *ngIf="editBeverage">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <p> {{ addingBeverage ? "Add" : "Edit" }} Beverage</p>
+    </div>
     <div class="modify-form">
         <form [formGroup]="modifyBeverageFormGroup">
             <fieldset>
@@ -365,11 +370,11 @@
                     <th mat-header-cell *matHeaderCellDef> </th>
                     <td mat-cell *matCellDef="let element"> 
                         <div class="actions">
-                            <button mat-icon-button color="primary" aria-label="Edit batch" (click)="editBatch(element, modifyBeverage)">
+                            <button mat-icon-button color="primary" aria-label="Edit batch" title="Edit" (click)="editBatch(element, modifyBeverage)">
                                 <mat-icon>edit</mat-icon>
                             </button>
-                            <button mat-icon-button color="warn" aria-label="Archive batch" (click)="archiveBatch(element)">
-                                <mat-icon>delete</mat-icon>
+                            <button mat-icon-button color="warn" aria-label="Archive batch" title="Archive" (click)="archiveBatch(element)">
+                                <mat-icon>archive</mat-icon>
                             </button>
                         </div> 
                     </td>

@@ -66,11 +66,11 @@
     </form>
 </div>
 
-<div class="results" *ngIf="resultsG > 0 && calType === 'byWeight'">
+<div class="results" *ngIf="resultsL > 0 && calType === 'byWeight'">
     <span class="results-desc">Results:</span><span class="results-value">{{_.round(resultsG, 2)}} gallons ({{_.round(resultsL, 2)}} Liters)</span>
 </div>
 
-<div class="results" *ngIf="resultsLbs > 0 && calType === 'byVolume'">
+<div class="results" *ngIf="resultsKgs > 0 && calType === 'byVolume'">
     <span class="results-desc">Results:</span><span class="results-value">{{_.round(resultsLbs, 2)}} lbs ({{_.round(resultsKgs, 2)}} kgs)</span>
 </div>
 

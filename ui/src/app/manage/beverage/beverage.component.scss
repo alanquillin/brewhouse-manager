@@ -21,11 +21,6 @@
             .mat-mdc-header-cell,
             .mat-mdc-cell {
                 padding: 2px 8px;
-
-                .mat-icon {
-                    margin-left: 8px !important;
-                    vertical-align: middle !important;
-                }
             }
         
             .actions {
@@ -44,6 +39,12 @@
 
     .heading {
         order: 1;
+        display: flex;
+        flex-direction: row;
+
+        p {
+            padding-top: 12px;
+        }
     }
 
     .modify-form {
