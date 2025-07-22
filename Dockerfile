@@ -10,7 +10,7 @@ RUN yarn install --non-interactive
 
 # Python base
 # ############################################################
-FROM python:3.12-slim-bullseye AS python-base
+FROM python:3.11-slim-bullseye AS python-base
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc build-essential libpq-dev libffi-dev libssl-dev \
