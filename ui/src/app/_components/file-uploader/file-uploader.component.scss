@@ -41,12 +41,12 @@
     }
 
     label.enabled {
-      background-color: mat.get-color-from-palette(variables.$primary, default);
+      background-color: mat.m2-get-color-from-palette(variables.$primary, default);
       color: white;
     }
 
     label.disabled {
-      background-color: mat.get-color-from-palette(variables.$disabled, default);
+      background-color: mat.m2-get-color-from-palette(variables.$disabled, default);
       color: black;
     }
 

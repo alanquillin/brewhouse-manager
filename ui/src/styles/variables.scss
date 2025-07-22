@@ -2,18 +2,18 @@
 
 @include mat.core();
 
-$primary: mat.define-palette(mat.$indigo-palette);
-$accent: mat.define-palette(mat.$orange-palette);
-$warn: mat.define-palette(mat.$red-palette);
-$disabled: mat.define-palette(mat.$gray-palette);
+$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$accent: mat.m2-define-palette(mat.$m2-orange-palette);
+$warn: mat.m2-define-palette(mat.$m2-red-palette);
+$disabled: mat.m2-define-palette(mat.$m2-gray-palette);
 
-$my-theme: mat.define-light-theme((
+$my-theme: mat.m2-define-light-theme((
  color: (
    primary: $primary,
    accent: $accent,
    warn: $warn,
  ),
- typography: mat.define-typography-config(),
+ typography: mat.m2-define-typography-config(),
  density: 0,
 ));
 
