@@ -15,9 +15,10 @@ export class ExtendedFile extends File {
 }
 
 @Component({
-  selector: 'app-file-uploader',
-  templateUrl: './file-uploader.component.html',
-  styleUrls: ['./file-uploader.component.scss']
+    selector: 'app-file-uploader',
+    templateUrl: './file-uploader.component.html',
+    styleUrls: ['./file-uploader.component.scss'],
+    standalone: false
 })
 export class FileUploaderComponent implements AfterViewInit{
   @Input() imageType: string = "";

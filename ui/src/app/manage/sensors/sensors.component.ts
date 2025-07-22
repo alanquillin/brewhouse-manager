@@ -12,9 +12,10 @@ import { isNilOrEmpty } from '../../utils/helpers'
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-sensors',
-  templateUrl: './sensors.component.html',
-  styleUrls: ['./sensors.component.scss']
+    selector: 'app-sensors',
+    templateUrl: './sensors.component.html',
+    styleUrls: ['./sensors.component.scss'],
+    standalone: false
 })
 export class ManageSensorsComponent implements OnInit {
 

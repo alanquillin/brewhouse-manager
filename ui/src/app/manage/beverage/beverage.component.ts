@@ -17,9 +17,10 @@ import { toUnixTimestamp, convertUnixTimestamp } from '../../utils/datetime';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-beverages',
-  templateUrl: './beverage.component.html',
-  styleUrls: ['./beverage.component.scss']
+    selector: 'app-beverages',
+    templateUrl: './beverage.component.html',
+    styleUrls: ['./beverage.component.scss'],
+    standalone: false
 })
 export class ManageBeverageComponent implements OnInit {
 

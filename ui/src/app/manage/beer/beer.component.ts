@@ -18,9 +18,10 @@ import { convertUnixTimestamp, toUnixTimestamp } from '../../utils/datetime';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-beer',
-  templateUrl: './beer.component.html',
-  styleUrls: ['./beer.component.scss']
+    selector: 'app-beer',
+    templateUrl: './beer.component.html',
+    styleUrls: ['./beer.component.scss'],
+    standalone: false
 })
 export class ManageBeerComponent implements OnInit {
   loading = false;

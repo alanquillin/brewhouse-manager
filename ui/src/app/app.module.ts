@@ -9,7 +9,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { HttpClientModule } from '@angular/common/http';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -38,7 +37,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { GaugeModule } from 'angular-gauge';
 import { NgbPopoverModule, NgbAlertModule } from '@ng-bootstrap/ng-bootstrap'
-import { QRCodeModule } from 'angularx-qrcode';
+import { QRCodeComponent } from 'angularx-qrcode';
 
 import { FileUploadDialogComponent } from './_dialogs/file-upload-dialog/file-upload-dialog.component';
 import { FileUploaderComponent } from './_components/file-uploader/file-uploader.component';
@@ -88,7 +87,8 @@ import { ErrorsComponent } from './errors/errors.component';
         ProfileComponent,
         VolumeCalculatorComponent,
     ],
-    bootstrap: [AppComponent], imports: [AppRoutingModule,
+    bootstrap: [AppComponent], 
+    imports: [AppRoutingModule,
         BrowserAnimationsModule,
         BrowserModule,
         FormsModule,
@@ -119,6 +119,9 @@ import { ErrorsComponent } from './errors/errors.component';
         MatTooltipModule,
         NgbAlertModule,
         NgbPopoverModule,
-        QRCodeModule,
-        ReactiveFormsModule], providers: [HttpClient, WINDOW_PROVIDERS, provideHttpClient(withInterceptorsFromDi())] })
+        QRCodeComponent,
+        ReactiveFormsModule
+        ], 
+        providers: [HttpClient, WINDOW_PROVIDERS, provideHttpClient(withInterceptorsFromDi())] 
+})
 export class AppModule { }

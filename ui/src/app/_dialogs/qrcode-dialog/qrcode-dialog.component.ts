@@ -6,9 +6,10 @@ import { isNilOrEmpty } from 'src/app/utils/helpers';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'qrcode-dialog',
-  templateUrl: 'qrcode-dialog.component.html',
-  styleUrls: ['qrcode-dialog.component.scss']
+    selector: 'qrcode-dialog',
+    templateUrl: 'qrcode-dialog.component.html',
+    styleUrls: ['qrcode-dialog.component.scss'],
+    standalone: false
 })
 
 export class LocationQRCodeDialog {

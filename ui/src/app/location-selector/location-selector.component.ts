@@ -8,9 +8,10 @@ import { Location } from './../models/models';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'location-selector',
-  templateUrl: './location-selector.component.html',
-  styleUrls: ['./location-selector.component.scss']
+    selector: 'location-selector',
+    templateUrl: './location-selector.component.html',
+    styleUrls: ['./location-selector.component.scss'],
+    standalone: false
 })
 export class LocationSelectorComponent implements OnInit {
   title = 'Location Selector';

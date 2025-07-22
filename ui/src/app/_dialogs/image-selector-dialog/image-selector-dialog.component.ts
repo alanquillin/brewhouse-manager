@@ -9,9 +9,10 @@ import { isNilOrEmpty } from '../../utils/helpers';
 
 
 @Component({
-  selector: 'app-image-selector-dialog',
-  templateUrl: './image-selector-dialog.component.html',
-  styleUrls: ['./image-selector-dialog.component.scss']
+    selector: 'app-image-selector-dialog',
+    templateUrl: './image-selector-dialog.component.html',
+    styleUrls: ['./image-selector-dialog.component.scss'],
+    standalone: false
 })
 export class ImageSelectorDialogComponent implements OnInit {
 
