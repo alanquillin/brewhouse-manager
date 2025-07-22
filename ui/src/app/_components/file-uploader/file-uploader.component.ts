@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpEventType } from "@angular/common/http";
 
 import * as _ from 'lodash';
-import * as $ from 'jquery';
+import $ from 'jquery';
 
 export class ExtendedFile extends File {
   progress: number = 0;

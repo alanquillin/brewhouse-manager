@@ -54,7 +54,7 @@ RUN addgroup app --gid 10000 && \
             --uid 10000 app
             
 
-COPY --from=node-build /ui/dist/brewhouse-manager /brewhouse-manager/api/static/
+COPY --from=node-build /ui/dist/brewhouse-manager/browser /brewhouse-manager/api/static/
 
 COPY config /brewhouse-manager/config
 COPY api /brewhouse-manager/api
