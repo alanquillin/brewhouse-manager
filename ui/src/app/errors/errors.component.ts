@@ -12,9 +12,10 @@ import { isNilOrEmpty } from '../utils/helpers';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-errors',
-  templateUrl: './errors.component.html',
-  styleUrls: ['./errors.component.scss']
+    selector: 'app-errors',
+    templateUrl: './errors.component.html',
+    styleUrls: ['./errors.component.scss'],
+    standalone: false
 })
 export class ErrorsComponent implements OnInit, AfterViewInit {
 

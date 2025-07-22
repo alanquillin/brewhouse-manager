@@ -8,8 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
-import { HttpClient } from '@angular/common/http';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -38,7 +37,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { GaugeModule } from 'angular-gauge';
 import { NgbPopoverModule, NgbAlertModule } from '@ng-bootstrap/ng-bootstrap'
-import { QRCodeModule } from 'angularx-qrcode';
+import { QRCodeComponent } from 'angularx-qrcode';
 
 import { FileUploadDialogComponent } from './_dialogs/file-upload-dialog/file-upload-dialog.component';
 import { FileUploaderComponent } from './_components/file-uploader/file-uploader.component';
@@ -64,68 +63,65 @@ import { WINDOW_PROVIDERS } from './window.provider';
 import { DndDirective } from './_directives/dnd.directive';
 import { ErrorsComponent } from './errors/errors.component';
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    DndDirective,
-    ErrorsComponent,
-    FileUploadDialogComponent,
-    FileUploaderComponent,
-    HeaderComponent,
-    FooterComponent,
-    ImageSelectorDialogComponent,
-    LocationComponent,
-    LocationImageDialog,
-    LocationQRCodeDialog,
-    LocationSelectorComponent,
-    LoginComponent,
-    ManageBeerComponent,
-    ManageBeverageComponent,
-    ManageComponent,
-    ManageLocationsComponent,
-    ManageSensorsComponent,
-    ManageTapsComponent,
-    ManageUsersComponent,
-    ProfileComponent,
-    VolumeCalculatorComponent,
-  ],
-  imports: [
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    BrowserModule,
-    FormsModule,
-    GaugeModule.forRoot(),
-    HttpClientModule,
-    MatButtonModule,
-    MatButtonToggleModule,
-    MatCardModule,
-    MatCheckboxModule,
-    MatChipsModule,
-    MatDatepickerModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatGridListModule,
-    MatIconModule,
-    MatInputModule,
-    MatListModule,
-    MatMenuModule,
-    MatNativeDateModule,
-    MatProgressBarModule,
-    MatProgressSpinnerModule,
-    MatSelectModule,
-    MatSidenavModule,
-    MatSlideToggleModule,
-    MatSnackBarModule,
-    MatSortModule,
-    MatTableModule,
-    MatToolbarModule,
-    MatTooltipModule,
-    NgbAlertModule,
-    NgbPopoverModule,
-    QRCodeModule,
-    ReactiveFormsModule,
-  ],
-  providers: [HttpClient, WINDOW_PROVIDERS],
-  bootstrap: [AppComponent]
+@NgModule({ declarations: [
+        AppComponent,
+        DndDirective,
+        ErrorsComponent,
+        FileUploadDialogComponent,
+        FileUploaderComponent,
+        HeaderComponent,
+        FooterComponent,
+        ImageSelectorDialogComponent,
+        LocationComponent,
+        LocationImageDialog,
+        LocationQRCodeDialog,
+        LocationSelectorComponent,
+        LoginComponent,
+        ManageBeerComponent,
+        ManageBeverageComponent,
+        ManageComponent,
+        ManageLocationsComponent,
+        ManageSensorsComponent,
+        ManageTapsComponent,
+        ManageUsersComponent,
+        ProfileComponent,
+        VolumeCalculatorComponent,
+    ],
+    bootstrap: [AppComponent], 
+    imports: [AppRoutingModule,
+        BrowserAnimationsModule,
+        BrowserModule,
+        FormsModule,
+        GaugeModule.forRoot(),
+        MatButtonModule,
+        MatButtonToggleModule,
+        MatCardModule,
+        MatCheckboxModule,
+        MatChipsModule,
+        MatDatepickerModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatGridListModule,
+        MatIconModule,
+        MatInputModule,
+        MatListModule,
+        MatMenuModule,
+        MatNativeDateModule,
+        MatProgressBarModule,
+        MatProgressSpinnerModule,
+        MatSelectModule,
+        MatSidenavModule,
+        MatSlideToggleModule,
+        MatSnackBarModule,
+        MatSortModule,
+        MatTableModule,
+        MatToolbarModule,
+        MatTooltipModule,
+        NgbAlertModule,
+        NgbPopoverModule,
+        QRCodeComponent,
+        ReactiveFormsModule
+        ], 
+        providers: [HttpClient, WINDOW_PROVIDERS, provideHttpClient(withInterceptorsFromDi())] 
 })
 export class AppModule { }

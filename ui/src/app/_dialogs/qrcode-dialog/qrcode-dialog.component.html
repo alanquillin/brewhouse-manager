@@ -1,8 +1,10 @@
 <div class="qrcode-container" (click)="onClick()">
-    <div class="qrcode-title" *ngIf="!isNilOrEmpty(title)">
-        {{ title }}
+  @if (!isNilOrEmpty(title)) {
+    <div class="qrcode-title">
+      {{ title }}
     </div>
-    <div class="qrcode-content">
-        <qrcode [qrdata]="url" [width]="width"></qrcode>
-    </div>
+  }
+  <div class="qrcode-content">
+    <qrcode [qrdata]="url" [width]="width"></qrcode>
+  </div>
 </div>

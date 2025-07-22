@@ -1,11 +1,17 @@
 <h1 mat-dialog-title>Select Image</h1>
 <div mat-dialog-content>
-    <mat-icon *ngIf="processing"><mat-spinner diameter="20"></mat-spinner></mat-icon>
-    <mat-grid-list *ngIf="!processing" cols="4" rowHeight="2.5:3.5">
-        <mat-grid-tile *ngFor="let image of images">
-            <div class="image-list-item {{selectedImage === image ? 'image-list-item-selected' : ''}}" (click)="onClick(image)" (dblclick)="onDoubleClick(image)"><img src="{{image}}" /></div>
+  @if (processing) {
+    <mat-icon><mat-spinner diameter="20"></mat-spinner></mat-icon>
+  }
+  @if (!processing) {
+    <mat-grid-list cols="4" rowHeight="2.5:3.5">
+      @for (image of images; track image) {
+        <mat-grid-tile>
+          <div class="image-list-item {{selectedImage === image ? 'image-list-item-selected' : ''}}" (click)="onClick(image)" (dblclick)="onDoubleClick(image)"><img src="{{image}}" /></div>
         </mat-grid-tile>
-      </mat-grid-list>
+      }
+    </mat-grid-list>
+  }
 </div>
 <div mat-dialog-actions>
   <button mat-raised-button color="primary" (click)="select()" [disabled]="isNilOrEmpty(selectedImage)">

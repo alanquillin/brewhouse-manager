@@ -7,18 +7,24 @@
     <label class="{{uploading ? 'disabled': 'enabled'}}" for="fileDropRef">Browse for file</label>
   </div>
   <div class="files-list">
-    <div class="single-file" *ngFor="let file of _.values(files)">
-      <img src="assets/img/dnd/ic-file.svg" width="45px" alt="file">
-      <div class="info">
-        <h4 class="name{{file.hasError ? ' error' : ''}}">
-          {{ file?.name }}
-        </h4>
-        <p class="size">
-          {{ formatBytes(file?.size) }}
-        </p>
-        <mat-progress-bar mode="determinate" [value]="file?.progress" *ngIf="!file.hasError"></mat-progress-bar>
-        <div class="error-message" *ngIf="file.hasError">Error: {{ file.errorMessage }}</div>
+    @for (file of _.values(files); track file) {
+      <div class="single-file">
+        <img src="assets/img/dnd/ic-file.svg" width="45px" alt="file">
+        <div class="info">
+          <h4 class="name{{file.hasError ? ' error' : ''}}">
+            {{ file?.name }}
+          </h4>
+          <p class="size">
+            {{ formatBytes(file?.size) }}
+          </p>
+          @if (!file.hasError) {
+            <mat-progress-bar mode="determinate" [value]="file?.progress"></mat-progress-bar>
+          }
+          @if (file.hasError) {
+            <div class="error-message">Error: {{ file.errorMessage }}</div>
+          }
+        </div>
       </div>
-    </div>
+    }
   </div>
 </div>

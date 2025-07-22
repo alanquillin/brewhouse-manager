@@ -1,6 +1,6 @@
 # NodeJS base
 # ############################################################
-FROM node:20.19-bullseye AS node-base
+FROM node:24.4-bullseye AS node-base
 
 RUN yarn config set network-timeout 1200000 -g
 RUN yarn global add @angular/cli
@@ -54,7 +54,7 @@ RUN addgroup app --gid 10000 && \
             --uid 10000 app
             
 
-COPY --from=node-build /ui/dist/brewhouse-manager /brewhouse-manager/api/static/
+COPY --from=node-build /ui/dist/brewhouse-manager/browser /brewhouse-manager/api/static/
 
 COPY config /brewhouse-manager/config
 COPY api /brewhouse-manager/api

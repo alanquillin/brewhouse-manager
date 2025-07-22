@@ -11,9 +11,10 @@ import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
 
 @Component({
-  selector: 'app-taps',
-  templateUrl: './taps.component.html',
-  styleUrls: ['./taps.component.scss']
+    selector: 'app-taps',
+    templateUrl: './taps.component.html',
+    styleUrls: ['./taps.component.scss'],
+    standalone: false
 })
 export class ManageTapsComponent implements OnInit {
 

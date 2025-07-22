@@ -12,9 +12,10 @@ import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
 
 @Component({
-  selector: 'app-users',
-  templateUrl: './users.component.html',
-  styleUrls: ['./users.component.scss']
+    selector: 'app-users',
+    templateUrl: './users.component.html',
+    styleUrls: ['./users.component.scss'],
+    standalone: false
 })
 export class ManageUsersComponent implements OnInit {
   

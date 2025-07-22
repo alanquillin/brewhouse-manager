@@ -10,9 +10,10 @@ import { Location } from '../../models/models';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-locations',
-  templateUrl: './locations.component.html',
-  styleUrls: ['./locations.component.scss']
+    selector: 'app-locations',
+    templateUrl: './locations.component.html',
+    styleUrls: ['./locations.component.scss'],
+    standalone: false
 })
 export class ManageLocationsComponent implements OnInit {
   

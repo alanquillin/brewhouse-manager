@@ -1,113 +1,124 @@
-<div class="view-profile" *ngIf="userInfo && !editing && !changePassword">
+@if (userInfo && !editing && !changePassword) {
+  <div class="view-profile">
     <div class="title"><p>{{ name }}</p></div>
-    <div class="profile-pic" *ngIf="userInfo.profilePic">
+    @if (userInfo.profilePic) {
+      <div class="profile-pic">
         <img src="{{ userInfo.profilePic }}" />
-    </div>
+      </div>
+    }
     <div class="profile-details">
-        <p>Email: {{ userInfo.email }}</p>
+      <p>Email: {{ userInfo.email }}</p>
     </div>
-    <div class="api-key" *ngIf="!isNilOrEmpty(userInfo.apiKey)">
-        API Key: {{ userInfo.apiKey }} 
+    @if (!isNilOrEmpty(userInfo.apiKey)) {
+      <div class="api-key">
+        API Key: {{ userInfo.apiKey }}
         <button color="primary" matSuffix mat-icon-button aria-label="Regenerate API Key" (click)="generateAPIKey()" [disabled]="processing"><mat-icon>refresh</mat-icon></button>
         <button color="warn" matSuffix mat-icon-button aria-label="Delete API Key" (click)="deleteAPIKey()" [disabled]="processing"><mat-icon>delete</mat-icon></button>
-    </div>
+      </div>
+    }
     <div class="profile-actions">
-        <button mat-raised-button color="primary" (click)="startEditing()" [disabled]="processing"><mat-icon>edit</mat-icon> Edit</button>
-        <button mat-raised-button (click)="startChangePassword()" [disabled]="processing">{{ userInfo.passwordEnabled ? "Change" : "Set" }} Password</button>
-        <button mat-raised-button (click)="generateAPIKey()" *ngIf="isNilOrEmpty(userInfo.apiKey)" [disabled]="processing">Generate API Key</button>
+      <button mat-raised-button color="primary" (click)="startEditing()" [disabled]="processing"><mat-icon>edit</mat-icon> Edit</button>
+      <button mat-raised-button (click)="startChangePassword()" [disabled]="processing">{{ userInfo.passwordEnabled ? "Change" : "Set" }} Password</button>
+      @if (isNilOrEmpty(userInfo.apiKey)) {
+        <button mat-raised-button (click)="generateAPIKey()" [disabled]="processing">Generate API Key</button>
+      }
     </div>
-</div>
+  </div>
+}
 
-<div class="edit-profile" *ngIf="userInfo && editing">
+@if (userInfo && editing) {
+  <div class="edit-profile">
     <div class="heading"><p>Edit Profile</p></div>
     <div class="edit-form">
-        <form [formGroup]="editFormGroup">
-            <fieldset>
-                <mat-form-field appearance="fill" class="edit-field">
-                    <input id="edit_email_input"
-                        class="dp-textfield--input"
-                        formControlName="email"
-                        [(ngModel)]="userInfo.editValues.email"
-                        matInput
-                        required />
-                    <mat-label>Email</mat-label>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="edit-field">
-                    <input id="edit_first_name_input"
-                        class="dp-textfield--input"
-                        formControlName="firstName"
-                        [(ngModel)]="userInfo.editValues.firstName"
-                        matInput
-                        required />
-                    <mat-label>First Name</mat-label>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="edit-field">
-                    <input id="edit_last_name_input"
-                        class="dp-textfield--input"
-                        formControlName="lastName"
-                        [(ngModel)]="userInfo.editValues.lastName"
-                        matInput
-                        required />
-                    <mat-label>Last Name</mat-label>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="edit-field">
-                    <input id="edit_profile_pic_input"
-                        class="dp-textfield--input"
-                        formControlName="profilePic"
-                        [(ngModel)]="userInfo.editValues.profilePic"
-                        matInput />
-                    <mat-label>Profile Picture URL</mat-label>
-                </mat-form-field>
-            </fieldset>
-        </form>
+      <form [formGroup]="editFormGroup">
+        <fieldset>
+          <mat-form-field appearance="fill" class="edit-field">
+            <input id="edit_email_input"
+              class="dp-textfield--input"
+              formControlName="email"
+              [(ngModel)]="userInfo.editValues.email"
+              matInput
+              required />
+            <mat-label>Email</mat-label>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="edit-field">
+            <input id="edit_first_name_input"
+              class="dp-textfield--input"
+              formControlName="firstName"
+              [(ngModel)]="userInfo.editValues.firstName"
+              matInput
+              required />
+            <mat-label>First Name</mat-label>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="edit-field">
+            <input id="edit_last_name_input"
+              class="dp-textfield--input"
+              formControlName="lastName"
+              [(ngModel)]="userInfo.editValues.lastName"
+              matInput
+              required />
+            <mat-label>Last Name</mat-label>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="edit-field">
+            <input id="edit_profile_pic_input"
+              class="dp-textfield--input"
+              formControlName="profilePic"
+              [(ngModel)]="userInfo.editValues.profilePic"
+              matInput />
+            <mat-label>Profile Picture URL</mat-label>
+          </mat-form-field>
+        </fieldset>
+      </form>
     </div>
-    
     <div class="profile-actions">
-        <button mat-raised-button color="primary" (click)="save()" [disabled]="!userInfo.hasChanges || !editFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
-        <button mat-raised-button color="warn" (click)="cancelEditing()"><mat-icon>cancel</mat-icon> Cancel</button>
-        <button mat-raised-button (click)="disablePassword()" *ngIf="userInfo.passwordEnabled">Disable Password</button>
+      <button mat-raised-button color="primary" (click)="save()" [disabled]="!userInfo.hasChanges || !editFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
+      <button mat-raised-button color="warn" (click)="cancelEditing()"><mat-icon>cancel</mat-icon> Cancel</button>
+      @if (userInfo.passwordEnabled) {
+        <button mat-raised-button (click)="disablePassword()">Disable Password</button>
+      }
     </div>
-</div>
+  </div>
+}
 
-<div class="change-password" *ngIf="userInfo && changePassword">
+@if (userInfo && changePassword) {
+  <div class="change-password">
     <div class="heading"><p>Change Password</p></div>
     <div class="change-password-form">
-        <form [formGroup]="changePasswordFormGroup">
-            <fieldset>
-                <mat-form-field appearance="fill" class="change-password-field">
-                    <input type="password"
-                        id="change_password_password_input"
-                        class="dp-textfield--input"
-                        formControlName="password"
-                        [(ngModel)]="newPassword"
-                        matInput
-                        required />
-                    <mat-label>Password</mat-label>
-                    <mat-error *ngIf="changePasswordForm['password'].errors && changePasswordForm['password'].errors['pattern']">
-                        Password must be at least 8 characters and contain at least 1 lowercase letter, uppercase letter, number and a special character
-                    </mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="change-password-field">
-                    <input type="password"
-                        id="change_password_confirm_password_input"
-                        class="dp-textfield--input"
-                        formControlName="confirmPassword"
-                        [(ngModel)]="confirmNewPassword"
-                        matInput
-                        required />
-                    <mat-label>Confirm Password</mat-label>
-                </mat-form-field>
-            </fieldset>
-        </form>
+      <form [formGroup]="changePasswordFormGroup">
+        <fieldset>
+          <mat-form-field appearance="fill" class="change-password-field">
+            <input type="password"
+              id="change_password_password_input"
+              class="dp-textfield--input"
+              formControlName="password"
+              [(ngModel)]="newPassword"
+              matInput
+              required />
+            <mat-label>Password</mat-label>
+            @if (changePasswordForm['password'].errors && changePasswordForm['password'].errors['pattern']) {
+              <mat-error>
+                Password must be at least 8 characters and contain at least 1 lowercase letter, uppercase letter, number and a special character
+              </mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="change-password-field">
+            <input type="password"
+              id="change_password_confirm_password_input"
+              class="dp-textfield--input"
+              formControlName="confirmPassword"
+              [(ngModel)]="confirmNewPassword"
+              matInput
+              required />
+            <mat-label>Confirm Password</mat-label>
+          </mat-form-field>
+        </fieldset>
+      </form>
     </div>
     <div class="profile-actions">
-        <button mat-raised-button color="primary" (click)="savePassword()" [disabled]="!changePasswordFormGroup.valid || processing">
-            <mat-icon>save</mat-icon> Save
-        </button>
-        <button mat-raised-button color="warn" (click)="cancelChangePassword()" [disabled]="processing"><mat-icon>cancel</mat-icon> Cancel</button>
+      <button mat-raised-button color="primary" (click)="savePassword()" [disabled]="!changePasswordFormGroup.valid || processing">
+        <mat-icon>save</mat-icon> Save
+      </button>
+      <button mat-raised-button color="warn" (click)="cancelChangePassword()" [disabled]="processing"><mat-icon>cancel</mat-icon> Cancel</button>
     </div>
-</div>
+  </div>
+}

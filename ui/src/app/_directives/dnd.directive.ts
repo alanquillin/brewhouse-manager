@@ -8,7 +8,8 @@ import {
 } from '@angular/core';
 
 @Directive({
-  selector: '[app-dnd]'
+    selector: '[app-dnd]',
+    standalone: false
 })
 export class DndDirective {
   @Input() disabled: boolean = false

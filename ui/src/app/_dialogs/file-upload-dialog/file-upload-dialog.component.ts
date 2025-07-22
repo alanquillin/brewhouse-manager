@@ -7,9 +7,10 @@ import { ExtendedFile } from '../../_components/file-uploader/file-uploader.comp
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-file-upload-dialog',
-  templateUrl: './file-upload-dialog.component.html',
-  styleUrls: ['./file-upload-dialog.component.scss']
+    selector: 'app-file-upload-dialog',
+    templateUrl: './file-upload-dialog.component.html',
+    styleUrls: ['./file-upload-dialog.component.scss'],
+    standalone: false
 })
 export class FileUploadDialogComponent {
   imageType: string

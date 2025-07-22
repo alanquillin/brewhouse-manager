@@ -6,9 +6,10 @@ import { isNilOrEmpty } from '../../utils/helpers';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-volume-calculator',
-  templateUrl: './volume-calculator.component.html',
-  styleUrls: ['./volume-calculator.component.scss']
+    selector: 'app-volume-calculator',
+    templateUrl: './volume-calculator.component.html',
+    styleUrls: ['./volume-calculator.component.scss'],
+    standalone: false
 })
 export class VolumeCalculatorComponent implements OnInit {
 
