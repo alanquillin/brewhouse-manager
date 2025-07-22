@@ -1,6 +1,6 @@
 # NodeJS base
 # ############################################################
-FROM node:20.19-bullseye AS node-base
+FROM node:22.17-bullseye AS node-base
 
 RUN yarn config set network-timeout 1200000 -g
 RUN yarn global add @angular/cli
@@ -10,7 +10,7 @@ RUN yarn install --non-interactive
 
 # Python base
 # ############################################################
-FROM python:3.11-slim-bullseye AS python-base
+FROM python:3.12-slim-bullseye AS python-base
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc build-essential libpq-dev libffi-dev libssl-dev \
