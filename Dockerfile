@@ -1,6 +1,6 @@
 # NodeJS base
 # ############################################################
-FROM node:22.17-bullseye AS node-base
+FROM node:24.4-bullseye AS node-base
 
 RUN yarn config set network-timeout 1200000 -g
 RUN yarn global add @angular/cli
