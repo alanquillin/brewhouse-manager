@@ -537,6 +537,9 @@ export class SensorData {
 }
 
 export class SensorDiscoveryData {
-  sensorId!: string;
-  sensorName!: string;
+  id!: string;
+  name!: string;
+  model!: string;
+  portNum!: number;
+  token!: string;
 }

@@ -32,6 +32,7 @@ export class ManageSensorsComponent implements OnInit {
   selectedLocationFilters: string[] = [];
   sensorDiscoveryData: SensorDiscoveryData[] = [];
   sensoryDiscoveryProcessing = false;
+  selectedDiscoveredSensorId: any;
 
   userInfo!: UserInfo;
 
@@ -158,7 +159,6 @@ export class ManageSensorsComponent implements OnInit {
 
     this.modifySensor = new Sensor(data);
     this.modifySensor.editValues = data;
-    this.addMissingMeta();
     this.adding = true;
   }
 
@@ -169,7 +169,11 @@ export class ManageSensorsComponent implements OnInit {
     if(this.modifySensor.editValues.sensorType == "plaato-keg") {
       meta.authToken = this.modifySensor.editValues.meta.authToken;
     } else if (this.modifySensor.editValues.sensorType == "keg-volume-monitor-weight" || this.modifySensor.editValues.sensorType == "keg-volume-monitor-flow") {
-      meta.deviceId = this.modifySensor.editValues.meta.deviceId;
+      meta.deviceId = this.selectedDiscoveredSensorId;
+    } else if (this.modifySensor.editValues.sensorType == "kegtron-pro") {
+      meta.deviceId = this.modifySensor.editValues.meta.deviceId
+      meta.portNum = _.toInteger(this.modifySensor.editValues.portNum);
+      meta.accessToken = this.modifySensor.editValues.accessToken;
     }
 
     var data: any = {
@@ -198,6 +202,19 @@ export class ManageSensorsComponent implements OnInit {
     this.modifySensor = sensor;
     this.editing = true;
     this.modifyFormGroup.reset();
+    if (this.modifySensor.editValues.sensorType !== "plaato-keg") {
+      this.discoverSensors(() => {
+        if(!isNilOrEmpty(this.modifySensor.editValues.meta)) {
+          if (this.modifySensor.editValues.sensorType == "keg-volume-monitor-weight" || this.modifySensor.editValues.sensorType == "keg-volume-monitor-flow") {
+            this.selectedDiscoveredSensorId = _.get(this.modifySensor.editValues.meta, 'deviceId');
+          } else if (this.modifySensor.editValues.sensorType == "kegtron-pro") {
+            let deviceId = _.get(this.modifySensor.editValues.meta, 'deviceId');
+            let portNum = _.get(this.modifySensor.editValues.meta, 'portNum');
+            this.selectedDiscoveredSensorId = deviceId + "|" + portNum;
+          }
+        }
+      });
+    }
   }
 
   save(): void {
@@ -275,31 +292,45 @@ export class ManageSensorsComponent implements OnInit {
     this.filteredSensors = filteredData;
   }
 
-  addMissingMeta() {
-    switch(this.modifySensor.editValues.sensorType) {
-      case "plaato-keg":
-        if(!_.has(this.modifySensor.editValues.meta, "authToken")){
-          _.set(this.modifySensor.editValues, 'meta.authToken', '');
-        }
-        break;
-      case "keg-volume-monitor-flow":
-      case "keg-volume-monitor-weight":
-        if(!_.has(this.modifySensor.editValues.meta, "deviceId")){
-          _.set(this.modifySensor.editValues, 'meta.deviceId', '');
-        }
-        this.sensoryDiscoveryProcessing = true;
-        this.dataService.discoverSensors(this.modifySensor.editValues.sensorType).subscribe({
-          next: (data: SensorDiscoveryData[]) => {
-            this.sensorDiscoveryData = data;
-            this.sensoryDiscoveryProcessing = false;
-          },
-          error: (err: DataError) => {
-            this.displayError(err.message);
-            this.sensoryDiscoveryProcessing = false;
-          }
-        })
-        break;
+  sensorTypeChanged() {
+    if (this.modifySensor.editValues.sensorType !== "plaato-keg") {
+      this.discoverSensors();
     }
+  }
+
+  discoverSensors(next?: Function) {
+    this.sensorDiscoveryData = [];
+    this.sensoryDiscoveryProcessing = true;
+    this.dataService.discoverSensors(this.modifySensor.editValues.sensorType).subscribe({
+      next: (data: SensorDiscoveryData[]) => {
+        this.sensorDiscoveryData = data;
+        if(!_.isNil(next)){
+          next();
+        }
+        this.sensoryDiscoveryProcessing = false;
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.sensoryDiscoveryProcessing = false;
+      }
+    });
+  }
+
+  selectedDiscoveredSenorChange() {
+    console.log("device changed");
+    if (this.modifySensor.editValues.sensorType == "keg-volume-monitor-weight" || this.modifySensor.editValues.sensorType == "keg-volume-monitor-flow") {
+      this.modifySensor.editValues.meta.deviceId = this.selectedDiscoveredSensorId;
+    } else if (this.modifySensor.editValues.sensorType == "kegtron-pro") {
+      let parts = _.split(this.selectedDiscoveredSensorId, "|");
+      this.modifySensor.editValues.meta.deviceId = parts[0];
+      this.modifySensor.editValues.meta.portNum = _.toInteger(parts[1]);
+      _.forEach(this.sensorDiscoveryData, (dev) => {
+        if(dev.id === this.modifySensor.editValues.meta.deviceId && dev.portNum === this.modifySensor.editValues.meta.portNum) {
+          this.modifySensor.editValues.meta.accessToken = dev.token;
+        }
+      });
+    }
+    console.log(this.modifySensor);
   }
 
   get modifyForm(): { [key: string]: AbstractControl } {

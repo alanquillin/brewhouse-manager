@@ -55,7 +55,7 @@ class KegVolumeMonitor(SensorBase):
     def discover(self):
         devices = self._get("devices")
 
-        return [{"sensor_id": dev["id"], "sensor_name": dev["name"]} for dev in devices]
+        return [{"id": dev["id"], "name": dev["name"]} for dev in devices]
     
     def _get_auth_header_val(self):
         api_key = self.config.get("sensors.keg_volume_monitors.api_key")

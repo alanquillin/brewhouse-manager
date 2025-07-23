@@ -33,8 +33,14 @@ def _init_sensors():
             SENSORS["plaato-keg"] = PlaatoKeg()
         else: 
             LOGGER.info("Disabling plaato-keg sensors")
-            print("Disabling plaato-keg sensors")
 
+        if CONFIG.get("sensors.kegtron.pro.enabled", False):
+            LOGGER.info("Enabling kegtron pro sensors ")
+            from lib.sensors.kegtron import KegtronPro
+            SENSORS["kegtron-pro"] = KegtronPro()
+        else:
+            LOGGER.info("Disabling kegtron pro sensors")
+            
         if CONFIG.get("sensors.keg_volume_monitors.enabled", False):
             from lib.sensors.keg_volume_monitor import KegVolumeMonitor
             LOGGER.info("Enabling keg_volume_monitors sensors types")

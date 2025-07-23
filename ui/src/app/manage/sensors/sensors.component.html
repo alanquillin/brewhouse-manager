@@ -93,7 +93,7 @@
           </mat-form-field>
           <mat-form-field appearance="fill">
             <mat-label>Type</mat-label>
-            <mat-select formControlName="sensorType" name="sensorType" [(ngModel)]="modifySensor.editValues.sensorType" (selectionChange)="addMissingMeta()" [disabled]="sensoryDiscoveryProcessing">
+            <mat-select formControlName="sensorType" name="sensorType" [(ngModel)]="modifySensor.editValues.sensorType" (selectionChange)="sensorTypeChanged()" [disabled]="sensoryDiscoveryProcessing">
               @for (t of sensorTypes; track t) {
                 <mat-option [value]="t">
                   {{t}}
@@ -101,6 +101,11 @@
               }
             </mat-select>
           </mat-form-field>
+          @if (sensoryDiscoveryProcessing) {
+            <div>
+              <mat-spinner></mat-spinner>
+            </div>
+          }
           <!-- Plaato Keg metadata -->
           @if (modifySensor.editValues.sensorType === 'plaato-keg') {
             <mat-form-field appearance="fill" class="modify-field">
@@ -115,19 +120,21 @@
           }
           <!-- Plaato Keg metadata -->
           <!-- Keg Volume Monitor Metadata -->
-          @if (sensoryDiscoveryProcessing) {
-            <div>
-              <mat-spinner></mat-spinner>
-            </div>
-          }
-          @if (modifySensor.editValues.sensorType === 'keg-volume-monitor-weight' || modifySensor.editValues.sensorType === 'keg-volume-monitor-flow') {
+          @if (!sensoryDiscoveryProcessing && (modifySensor.editValues.sensorType === 'keg-volume-monitor-weight' || modifySensor.editValues.sensorType === 'keg-volume-monitor-flow' || modifySensor.editValues.sensorType === 'kegtron-pro')) {
             <mat-form-field appearance="fill">
               <mat-label>Device</mat-label>
-              <mat-select formControlName="kvmDevice" name="kvmDevice" [(ngModel)]="modifySensor.editValues.meta.deviceId" [disabled]="sensoryDiscoveryProcessing">
+              <mat-select formControlName="kvmDevice" name="kvmDevice" [(ngModel)]="selectedDiscoveredSensorId" [disabled]="sensoryDiscoveryProcessing" (selectionChange)="selectedDiscoveredSenorChange()">
                 @for (s of sensorDiscoveryData; track s) {
-                  <mat-option [value]="s.sensorId">
-                    {{s.sensorName}} ({{s.sensorId}})
+                  @if (modifySensor.editValues.sensorType === 'kegtron-pro') {
+                  <mat-option value="{{s.id}}|{{s.portNum}}">
+                    {{s.name}} - {{s.id}} ({{s.model}}) : Port {{s.portNum + 1}}
                   </mat-option>
+                  }
+                  @else {
+                  <mat-option [value]="s.id">
+                    {{s.name}} ({{s.id}})
+                  </mat-option>
+                  }
                 }
               </mat-select>
             </mat-form-field>
