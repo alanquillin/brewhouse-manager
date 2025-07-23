@@ -23,5 +23,5 @@ def from_ml(val, unit):
     elif unit == "oz (imperial)":
         val = val * 0.0351951
     else:
-        raise Exception(f"invalid volume unit for conversion: {unit}'")
+        raise Exception(f"invalid volume unit for conversion: '{unit}'")
     return val

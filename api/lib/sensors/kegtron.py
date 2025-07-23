@@ -216,7 +216,7 @@ class KegtronPro(SensorBase):
 
         d_data = {}
         for k,v in data.items():
-            if k in self. supported_device_keys:
+            if k in self.supported_device_keys:
                 d_data[k] = v
             else:
                 self.warn(f"ignoring unsupported kegtron pro device data with key `{k}`")
@@ -238,7 +238,7 @@ class KegtronPro(SensorBase):
         
         p_data = {}
         for k,v in data.items():
-            if k in self. supported_port_keys:
+            if k in self.supported_port_keys:
                 p_data[k] = v
             else:
                 self.warn(f"ignoring unsupported kegtron pro device data with key `{k}`")

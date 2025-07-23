@@ -316,8 +316,7 @@ export class ManageSensorsComponent implements OnInit {
     });
   }
 
-  selectedDiscoveredSenorChange() {
-    console.log("device changed");
+  selectedDiscoveredSensorChange() {
     if (this.modifySensor.editValues.sensorType == "keg-volume-monitor-weight" || this.modifySensor.editValues.sensorType == "keg-volume-monitor-flow") {
       this.modifySensor.editValues.meta.deviceId = this.selectedDiscoveredSensorId;
     } else if (this.modifySensor.editValues.sensorType == "kegtron-pro") {
@@ -330,7 +329,6 @@ export class ManageSensorsComponent implements OnInit {
         }
       });
     }
-    console.log(this.modifySensor);
   }
 
   get modifyForm(): { [key: string]: AbstractControl } {
