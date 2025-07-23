@@ -19,7 +19,8 @@
     "sensors.plaato_keg.enabled": "bool",
     "sensors.keg_volume_monitors.enabled": "bool",
     "sensors.keg_volume_monitors.weight.enabled": "bool",
-    "sensors.keg_volume_monitors.flow.enabled": "bool"
+    "sensors.keg_volume_monitors.flow.enabled": "bool",
+    "sensors.kegtron.pro.enabled": "bool"
   },
   "api": {
     "host": "localhost",
@@ -76,6 +77,7 @@
     }
   },
   "sensors": {
+    "preferred_vol_unit": "gal",
     "plaato_keg": {
       "enabled": false
     },
@@ -85,6 +87,11 @@
         "enabled": false
       },
       "flow": {
+        "enabled": false
+      }
+    },
+    "kegtron": {
+      "pro": {
         "enabled": false
       }
     }

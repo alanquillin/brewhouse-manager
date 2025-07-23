@@ -50,7 +50,6 @@ class Sensors(BaseResource, SensorResourceMixin):
                 raise NotAuthorizedError()
 
             sensor = SensorsDB.create(db_session, **data)
-
             return self.transform_response(sensor)
 
 
