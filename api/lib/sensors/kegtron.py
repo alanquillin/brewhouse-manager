@@ -38,7 +38,7 @@ class KegtronPro(SensorBase):
      
     def get(self, data_type, sensor_id=None, sensor=None, meta=None):
         if not sensor_id and not sensor and not meta:
-            raise Exception("WTH!!")
+            raise Exception("sensor_id, sensor, or meta must be provided")
 
         if not meta:
             if not sensor:
