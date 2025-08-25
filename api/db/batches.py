@@ -17,6 +17,7 @@ class Batches(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     __tablename__ = _TABLE_NAME
 
     id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
+    name = Column(String, nullable=True)
     batch_number = Column(String, nullable=True)
     beer_id = Column(UUID, ForeignKey(f"{beers._TABLE_NAME}.{beers._PKEY}"), nullable=True)
     beverage_id = Column(UUID, ForeignKey(f"{beverages._TABLE_NAME}.{beers._PKEY}"), nullable=True)
@@ -25,6 +26,7 @@ class Batches(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     abv = Column(Float, nullable=True)
     ibu = Column(Float, nullable=True)
     srm = Column(Float, nullable=True)
+    img_url = Column(String, nullable=True)
     brew_date = Column(Date, nullable=True)
     keg_date = Column(Date, nullable=True)
     archived_on = Column(Date, nullable=True)

@@ -262,6 +262,10 @@ export class ExtToolBase extends ImageTransitionalBase {
     return v;
   }
 
+  getName(batch?: Batch|undefined) {
+    return this.getVal("name", batch);
+  }
+
   getAbv(batch?: Batch|undefined) {
     return this.getVal("abv", batch);
   }
@@ -289,9 +293,10 @@ export class Batch extends ExtToolBase {
   archivedOn!: number;
   taps!: Tap[] | undefined;
   batchNumber!: string;
+  name!: string;
 
   constructor(from?: any) {
-    super(["name", "beerId", "beverageId", "abv", "ibu", "srm", "kegDate", "brewDate", "archivedOn", "batchNumber"], from, beerTransformFns);
+    super(["name", "beerId", "beverageId", "abv", "ibu", "srm", "kegDate", "brewDate", "archivedOn", "batchNumber", "imgUrl"], from, beerTransformFns);
     if(isNilOrEmpty(this.externalBrewingToolMeta)) {
       this.externalBrewingToolMeta = {}
     }
@@ -352,10 +357,6 @@ export class Beer extends ExtToolBase {
     if(isNilOrEmpty(this.externalBrewingToolMeta)) {
       this.externalBrewingToolMeta = {}
     }
-  }
-
-  getName(batch?: Batch|undefined) {
-    return this.getVal("name", batch);
   }
 
   getDescription(batch?: Batch|undefined) {

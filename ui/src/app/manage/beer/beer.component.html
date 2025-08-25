@@ -147,6 +147,7 @@
         </table>
     </div>
 </div>
+
 <div class="beers-modify" *ngIf="(editing || adding) && !(editingBatch || addingBatch)">
     <div class="heading">
         <button mat-icon-button color="primary" aria-label="Back" title="Back to beer list" (click)="cancelEditBeer()" *ngIf="editing">
@@ -409,6 +410,11 @@
                     <td mat-cell *matCellDef="let element"> {{element.id}} </td>
                 </ng-container>
 
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef> Name </th>
+                    <td mat-cell *matCellDef="let element"><span class="{{ isNilOrEmpty(element.name) ? 'imported-value' : '' }}">{{element.getName()}}</span></td>
+                </ng-container>
+
                 <ng-container matColumnDef="tapped">
                     <th mat-header-cell *matHeaderCellDef> Tapped? </th>
                     <td mat-cell *matCellDef="let element">
@@ -475,6 +481,18 @@
                     <td mat-cell *matCellDef="let element"><span class="{{ isNilOrEmpty(element.kegDate) ? 'imported-value' : '' }}">{{element.getKegDate()}}</span></td>
                 </ng-container>
 
+                <ng-container matColumnDef="imgUrl">
+                    <th mat-header-cell *matHeaderCellDef> Image URL </th>
+                    <td mat-cell *matCellDef="let element">
+                        <span *ngIf="!_.isEmpty(element.getImgUrl())">
+                            <ng-template #popupContent><div><img class="beer-image-preview" src="{{ element.getImgUrl() }}"/></div></ng-template>
+                            <button mat-icon-button color="primary" [ngbPopover]="popupContent" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="left" (click)="openImagePreviewDialog(element.getImgUrl())">
+                                <mat-icon>open_in_new</mat-icon>
+                            </button>
+                        </span>
+                    </td>
+                </ng-container>
+
                 <ng-container matColumnDef="actions">
                     <th mat-header-cell *matHeaderCellDef> </th>
                     <td mat-cell *matCellDef="let element"> 
@@ -524,6 +542,19 @@
                 </mat-form-field>
                 
                 <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_batch_name"
+                        [disabled]="processing"
+                        class="dp-textfield--input"
+                        formControlName="name"
+                        [(ngModel)]="modifyBatch.editValues.name"
+                        matInput />
+                    <mat-label>Name</mat-label>
+                    <mat-error *ngIf="modifyBatchForm['name'].errors && modifyBatchForm['name'].errors['requiredIfNoToolSelected']">
+                        Name is required if not external brew tool is selected
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
                     <input id="modify_batch_number_input"
                         [disabled]="processing"
                         class="dp-textfield--input"
@@ -537,7 +568,7 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_abv_input"
+                    <input id="modify_batch_abv_input"
                         [disabled]="processing"
                         class="dp-textfield--input"
                         formControlName="abv"
@@ -550,7 +581,7 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_srm_input"
+                    <input id="modify_batch_srm_input"
                         [disabled]="processing"
                         class="dp-textfield--input"
                         formControlName="srm"
@@ -563,7 +594,7 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_ibu_input"
+                    <input id="modify_batch_ibu_input"
                         [disabled]="processing"
                         class="dp-textfield--input"
                         formControlName="ibu"
@@ -587,6 +618,25 @@
                     <input matInput [matDatepicker]="kegDatePicker" formControlName="kegDate" [(ngModel)]="modifyBatch.editValues.kegDateObj" [disabled]="processing">
                     <mat-datepicker-toggle matSuffix [for]="kegDatePicker"></mat-datepicker-toggle>
                     <mat-datepicker #kegDatePicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="modify-field">
+                    <input id="modify_batch_image_url"
+                        [disabled]="processing"
+                        class="dp-textfield--input"
+                        formControlName="imgUrl"
+                        [(ngModel)]="modifyBatch.editValues.imgUrl"
+                        matInput />
+                    <mat-label>Image URL</mat-label>
+                    <button *ngIf="!isNilOrEmpty(modifyBatch.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" (click)="openImagePreviewDialog(modifyBatch.editValues.imgUrl)">
+                        <mat-icon>open_in_new</mat-icon>
+                    </button>
+                    <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog(this.modifyBatch.editValues, 'imgUrl')">
+                        <mat-icon>photo_library</mat-icon>
+                    </button>
+                    <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog(this.modifyBatch.editValues, 'imgUrl')">
+                        <mat-icon>upload</mat-icon>
+                    </button>
                 </mat-form-field>
             </fieldset>
         </form>

@@ -58,7 +58,7 @@ export class ManageBeerComponent implements OnInit {
     return _.concat(cols, ['batchCount', 'tapped', 'externalBrewingTool', 'style', 'abv', 'ibu', 'srm', "untappdId", 'imgUrl', 'actions']);
   }
 
-  displayedBatchColumns: string[] = ["batchNumber", "tapped", 'externalBrewingTool', 'abv', 'ibu', 'srm', "brewDate", "kegDate", 'actions']
+  displayedBatchColumns: string[] = ["batchNumber", "name", "tapped", 'externalBrewingTool', 'abv', 'ibu', 'srm', "brewDate", "kegDate", 'imgUrl', 'actions']
 
   decimalRegex = /^-?\d*[.]?\d{0,2}$/;
   decimalValidator = Validators.pattern(this.decimalRegex); 
@@ -130,10 +130,12 @@ export class ManageBeerComponent implements OnInit {
     abv: new UntypedFormControl('', [this.decimalValidator]),
     srm: new UntypedFormControl('', [this.decimalValidator]),
     ibu: new UntypedFormControl('', [this.decimalValidator]),
+    name: new UntypedFormControl('', []),
     externalBrewingTool: new UntypedFormControl(-1),
     brewfatherBatchId: new UntypedFormControl('', [this.requiredForBrewingTool(this, "brewfather")]),
     brewDate: new UntypedFormControl(new Date(), []),
     kegDate: new UntypedFormControl(new Date(), []),
+    imgUrl: new UntypedFormControl('', []),
   });
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
@@ -807,7 +809,7 @@ export class ManageBeerComponent implements OnInit {
 
   createBatch(): void {
     var data: any = {beerId: this.selectedBatchBeer.id}
-    const keys = ['externalBrewingTool', 'abv', 'ibu', 'srm', 'externalBrewingToolMeta', 'batchNumber']
+    const keys = ['externalBrewingTool', 'abv', 'ibu', 'srm', 'externalBrewingToolMeta', 'batchNumber', 'name', 'imgUrl']
     const dateKeys = ['brewDateObj', 'kegDateObj'];
     const checkKeys = {}
     
