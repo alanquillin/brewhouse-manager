@@ -49,8 +49,8 @@ ifeq ("$(wildcard deploy/docker-local/my-config.json)","")
     $(shell echo '{}' >> deploy/docker-local/my-config.json)
 endif
 
-ifeq ("$(wildcard deploy/docker-local/uploads)","")
-    $(shell mkdir deploy/docker-local/uploads && chmod 777 deploy/docker-local/uploads)
+ifeq ("$(wildcard deploy/docker-local/uploads/img)","")
+    $(shell mkdir -p deploy/docker-local/uploads/img/beer &&  mkdir -p deploy/docker-local/uploads/img/beverage &&  mkdir -p deploy/docker-local/uploads/img/user && chmod -R 777 deploy/docker-local/uploads)
 endif
 
 
