@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings, Batch } from './../models/models';
+import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings, Batch, UserInfo } from './../models/models';
 import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
@@ -51,7 +51,6 @@ export class LocationComponent implements OnInit {
   location_identifier: any;
   locations: Location[] = [];
   location!: Location;
-  showHomeBtn: boolean = true;
   taps: TapDetails[] = [];
   isNilOrEmpty: Function = isNilOrEmpty;
   tapRefreshSettings: TapRefreshSettings = new TapRefreshSettings();
@@ -60,6 +59,7 @@ export class LocationComponent implements OnInit {
   enableFullscreen: boolean = false;
   serviceAvailable: boolean = true;
   lastServiceAvailDT: Date = new Date(Date.now());
+  userInfo!: UserInfo;
 
   _ = _; //allow the html template to access lodash
 
@@ -96,6 +96,22 @@ export class LocationComponent implements OnInit {
     this.isLoading = true;
     this.taps = [];
 
+    this.dataService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo) => {
+        this.userInfo = userInfo;
+        this._refresh(next, always);
+      },
+      error: (err: DataError) => {
+        if(err.statusCode === 401) {
+          this._refresh(next, always);
+        } else {
+          this.displayError(err.message);
+        }
+      }
+    });
+  }
+
+  _refresh(next?: Function, always?: Function) {
     this.dataService.getSettings().subscribe({
       next: (data: Settings) => {
         this.tapRefreshSettings = new TapRefreshSettings(data.taps.refresh);
@@ -112,6 +128,9 @@ export class LocationComponent implements OnInit {
               let _tap = this.setTapDetails(new TapDetails(tap));
               this.taps.push(_tap);
               this.scheduleTapRefresh(_tap);
+            }
+            if(!_.isNil(next)) {
+              next();
             }
             this.isLoading = false;
           }, error: (err: DataError) => {
@@ -331,5 +350,19 @@ export class LocationComponent implements OnInit {
       path = "";
     }
     window.location.href = `/${path}`;
+  }
+
+  get showHomeBtn() : boolean {
+    if (this.locations.length > 1) {
+      return true;
+    }
+    return false;
+  }
+
+  get loggedIn() : Boolean {
+    if (this.isNilOrEmpty(this.userInfo)) {
+      return false;
+    }
+    return true;
   }
 }

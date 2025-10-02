@@ -59,7 +59,7 @@ export class DataService {
     this.apiBaseUrl = this.baseUrl + '/api/v1';
   }
 
-  getError(error: any){
+  getError(error: any, ignoreUnauthorized: boolean = false){
     let errObj = new DataError(error.error.message);
     if (!(error.error instanceof ErrorEvent)) {
       // handle server-side errors
@@ -67,7 +67,7 @@ export class DataService {
       errObj.statusCode = _.toInteger(error.status);
       errObj.statusText = error.statusText;
 
-      if(errObj.statusCode === 401) {
+      if(errObj.statusCode === 401 && !ignoreUnauthorized) {
         this.unauthorized.emit(errObj);
       }
 
@@ -240,9 +240,9 @@ export class DataService {
     return this.http.get<SensorDiscoveryData[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getCurrentUser(): Observable<UserInfo> {
+  getCurrentUser(ignoreUnauthorized: boolean = false): Observable<UserInfo> {
     const url = `${this.apiBaseUrl}/users/current`;
-    return this.http.get<UserInfo>(url).pipe(catchError((err) => {return this.getError(err)}));
+    return this.http.get<UserInfo>(url).pipe(catchError((err) => {return this.getError(err, ignoreUnauthorized)}));
   }
 
   getUsers(): Observable<UserInfo[]> {

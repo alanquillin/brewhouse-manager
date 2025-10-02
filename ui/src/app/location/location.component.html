@@ -16,6 +16,14 @@
           <button mat-icon-button (click)="goto('home')"><mat-icon>home</mat-icon></button>
         }
         <button mat-icon-button (click)="toggleFullscreen()"><mat-icon>fullscreen{{ isFullscreen ? "_exit" : "" }}</mat-icon></button>
+        @if (!isFullscreen) {
+          @if (loggedIn) {
+            <button mat-icon-button (click)="goto('manage')"><mat-icon>settings</mat-icon></button>
+            <button mat-icon-button (click)="goto('logout')"><mat-icon>logout</mat-icon></button>
+          } @else {
+            <button mat-icon-button (click)="goto('login')"><mat-icon>login</mat-icon></button>
+          }
+        }
       </div>
     }
     @for (tap of taps; track tap) {
