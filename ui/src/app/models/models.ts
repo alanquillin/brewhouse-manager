@@ -213,7 +213,11 @@ export class ImageTransitionalBase extends EditableBase {
     }
   }
 
-  getImgUrl() {
+  getImgUrl(batch?: Batch|undefined) {
+    if (batch !== undefined && !isNilOrEmpty(batch.imgUrl)){ 
+      return batch.imgUrl
+    }
+    
     return this.imgUrl;
   }
 }

@@ -285,7 +285,7 @@ export class LocationComponent implements OnInit {
       return "";
     }
 
-    let imageUrl = b.getImgUrl();
+    let imageUrl = b.getImgUrl(tap.batch);
     if(!tap.sensor) {
       return imageUrl;
     }
