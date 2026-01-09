@@ -7,9 +7,8 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, beers, beverages, column_as_enum, generate_audit_trail
+from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, beers, beverages, generate_audit_trail, batch_locations, locations
 from db.types.nested import NestedMutableDict
-
 
 @generate_audit_trail
 class Batches(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
@@ -30,7 +29,8 @@ class Batches(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     brew_date = Column(Date, nullable=True)
     keg_date = Column(Date, nullable=True)
     archived_on = Column(Date, nullable=True)
-
+    
+    locations = relationship(locations.Locations, secondary=batch_locations.BatchLocations.__table__)
     beer = relationship(beers.Beers, backref=backref("Batches", cascade="all,delete"))
     beverage = relationship(beverages.Beverages, backref=backref("Batches", cascade="all,delete"))
 

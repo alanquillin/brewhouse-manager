@@ -29,9 +29,6 @@ class Beverages(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     empty_img_url = Column(String, nullable=True)
     meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
     image_transitions_enabled = Column(Boolean, nullable=False)
-    location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"), nullable=False)
-
-    location = relationship(locations.Locations, backref=backref("Beverages", cascade="all,delete"))
 
     batches = relationship("Batches", back_populates="beverage")
 
