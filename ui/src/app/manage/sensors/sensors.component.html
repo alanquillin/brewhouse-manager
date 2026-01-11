@@ -140,6 +140,50 @@
             </mat-form-field>
           }
           <!-- Keg Volume Monitor Metadata -->
+          <!-- Open Plaato Keg Metadata -->
+          @if (!sensoryDiscoveryProcessing && modifySensor.editValues.sensorType === 'open-plaato-keg') {
+            <mat-form-field appearance="fill">
+              <mat-label>Device</mat-label>
+              <mat-select formControlName="opkDevice" name="opkDevice" [(ngModel)]="selectedDiscoveredSensorId" [disabled]="sensoryDiscoveryProcessing" (selectionChange)="selectedDiscoveredSensorChange()">
+                @for (s of sensorDiscoveryData; track s) {
+                  <mat-option [value]="s.id">
+                    {{s.name}} ({{s.id}})
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="fill" class="modify-field">
+              <input id="modify_meta_open_plaato_keg_empty_keg_weight_input"
+                class="dp-textfield--input"
+                formControlName = "metaEmptyKegWeight"
+                [(ngModel)]="modifySensor.editValues.meta.emptyKegWeight"
+                matInput
+                type="number"
+                required />
+              <mat-label>Empty Keg Weight</mat-label>
+              <mat-select name="emptyKegWeightUnit" id="modify_meta_open_plaato_keg_empty_keg_weight_unit_input" [(ngModel)]="modifySensor.editValues.meta.emptyKegWeightUnit" formControlName="metaEmptyKegWeightUnit" class="form-control">
+                  @for(unit of allowedMassUnits; track unit) {
+                  <mat-option [value]="unit">{{ unit }}</mat-option>
+                  }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="fill" class="modify-field">
+              <input id="modify_meta_open_plaato_keg_empty_keg_weight_input"
+                class="dp-textfield--input"
+                formControlName = "metaMaxKegVolume"
+                [(ngModel)]="modifySensor.editValues.meta.maxKegVolume"
+                matInput
+                type="number"
+                required />
+              <mat-label>Max Keg Volume</mat-label>
+              <mat-select name="emptyKegWeightUnit" id="modify_meta_open_plaato_keg_empty_keg_weight_unit_input" [(ngModel)]="modifySensor.editValues.meta.maxKegVolumeUnit" formControlName="metaMaxKegVolumeUnit" class="form-control">
+                  @for(unit of allowedLiquidUnits; track unit) {
+                  <mat-option [value]="unit">{{ unit }}</mat-option>
+                  }
+              </mat-select>
+            </mat-form-field>
+          }
+          <!-- Open Plaato Keg Metadata -->
         </fieldset>
       </form>
     </div>

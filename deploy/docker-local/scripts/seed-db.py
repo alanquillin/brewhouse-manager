@@ -108,54 +108,60 @@ sensor_l1s1_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec41"
 sensor_l1s2_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec42"
 sensor_l1s3_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec43"
 sensor_l1s4_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec44"
-sensor_l2s1_id = "cacfe989-cc88-4687-9a55-c8748de9f570"
 sensor_l3s1_id = "7324db56-3ed3-4f9b-bb88-d90d278eeaa8"
 sensor_l3s2_id = "601acc25-3d77-41a2-a4ff-07611fe9d917"
 sensor_l3s3_id = "32e7520f-90e7-4a0a-890a-56833b6b38dd"
 SENSORS=[
     {
         "id": sensor_l1s1_id,
-        "name": "Plaato Keg 1",
+        "name": "OPK - Home 01",
         "location_id": location1_id,
-        "sensor_type": "plaato-keg",
+        "sensor_type": "open-plaato-keg",
         "meta": {
-            "auth_token": os.environ.get("PLAATO_KEG_1_TOKEN", "unknown")
+            "device_id": "00000000000000000000000000000q01",
+            "empty_keg_weight": 4400,
+            "empty_keg_weight_unit": "g",
+            "max_keg_volume": 5,
+            "max_keg_volume_unit": "gal"
         }
     },
     {
         "id": sensor_l1s2_id,
-        "name": "Plaato Keg 2",
+        "name": "OPK - Home 02",
         "location_id": location1_id,
-        "sensor_type": "plaato-keg",
+        "sensor_type": "open-plaato-keg",
         "meta": {
-            "auth_token": os.environ.get("PLAATO_KEG_2_TOKEN", "unknown")
+            "device_id": "00000000000000000000000000000q02",
+            "empty_keg_weight": 4400,
+            "empty_keg_weight_unit": "g",
+            "max_keg_volume": 5,
+            "max_keg_volume_unit": "gal"
         }
     },
     {
         "id": sensor_l1s3_id,
-        "name": "Plaato Keg 3",
+        "name": "OPK - Home 03",
         "location_id": location1_id,
-        "sensor_type": "plaato-keg",
+        "sensor_type": "open-plaato-keg",
         "meta": {
-            "auth_token": os.environ.get("PLAATO_KEG_3_TOKEN", "unknown")
+            "device_id": "00000000000000000000000000000q03",
+            "empty_keg_weight": 4400,
+            "empty_keg_weight_unit": "g",
+            "max_keg_volume": 5,
+            "max_keg_volume_unit": "gal"
         }
     },
     {
         "id": sensor_l1s4_id,
-        "name": "Plaato Keg 4",
+        "name": "OPK - Home 04",
         "location_id": location1_id,
-        "sensor_type": "plaato-keg",
+        "sensor_type": "open-plaato-keg",
         "meta": {
-            "auth_token": os.environ.get("PLAATO_KEG_4_TOKEN", "unknown")
-        }
-    },
-    {
-        "id": sensor_l2s1_id,
-        "name": "Plaato Keg A",
-        "location_id": location2_id,
-        "sensor_type": "plaato-keg",
-        "meta": {
-            "auth_token": "unknown"
+            "device_id": "00000000000000000000000000000q04",
+            "empty_keg_weight": 4400,
+            "empty_keg_weight_unit": "g",
+            "max_keg_volume": 5,
+            "max_keg_volume_unit": "gal"
         }
     },
     {
@@ -391,7 +397,6 @@ TAPS = [
         "description": "Tap 1",
         "location_id": location2_id,
         "on_tap_id": on_tap_id5,
-        "sensor_id": sensor_l2s1_id
     },
     {
         "id": tap_l2t2_id,
