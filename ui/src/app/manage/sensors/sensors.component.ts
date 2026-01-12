@@ -41,8 +41,16 @@ export class ManageSensorsComponent implements OnInit {
     sensorType: new UntypedFormControl('', [Validators.required]),
     locationId: new UntypedFormControl('', [Validators.required]),
     metaAuthToken: new UntypedFormControl('', []),
-    kvmDevice: new UntypedFormControl('', [])
+    kvmDevice: new UntypedFormControl('', []),
+    opkDevice: new UntypedFormControl('', []),
+    metaEmptyKegWeight: new UntypedFormControl('', []),
+    metaEmptyKegWeightUnit: new UntypedFormControl('', []),
+    metaMaxKegVolume: new UntypedFormControl('', []),
+    metaMaxKegVolumeUnit: new UntypedFormControl('', [])
   });
+
+  allowedMassUnits = ["g", "kg", "oz", "lb"];
+  allowedLiquidUnits = ["ml", "l", "gal"];
 
   get displayedColumns(): string[] {
     var cols = ['name', 'type'];
@@ -149,7 +157,7 @@ export class ManageSensorsComponent implements OnInit {
 
   add(): void {
     this.modifyFormGroup.reset();
-    var data: any = {}
+    var data: any = {"meta": {}};
     if(this.locations.length === 1){
       data["locationId"] = this.locations[0].id;
     }
@@ -160,6 +168,7 @@ export class ManageSensorsComponent implements OnInit {
     this.modifySensor = new Sensor(data);
     this.modifySensor.editValues = data;
     this.adding = true;
+    console.log(this.modifySensor.editValues);
   }
 
   create(): void {
@@ -174,6 +183,12 @@ export class ManageSensorsComponent implements OnInit {
       meta.deviceId = this.modifySensor.editValues.meta.deviceId
       meta.portNum = _.toInteger(this.modifySensor.editValues.portNum);
       meta.accessToken = this.modifySensor.editValues.accessToken;
+    } else if (this.modifySensor.editValues.sensorType == "open-plaato-keg") {
+      meta.emptyKegWeight = _.toNumber(this.modifySensor.editValues.meta.emptyKegWeight);
+      meta.emptyKegWeightUnit = this.modifySensor.editValues.meta.emptyKegWeightUnit;
+      meta.deviceId = this.modifySensor.editValues.meta.deviceId
+      meta.maxKegVolume = this.modifySensor.editValues.meta.maxKegVolume;
+      meta.maxKegVolumeUnit = this.modifySensor.editValues.meta.maxKegVolumeUnit;
     }
 
     var data: any = {
@@ -205,13 +220,15 @@ export class ManageSensorsComponent implements OnInit {
     if (this.modifySensor.editValues.sensorType !== "plaato-keg") {
       this.discoverSensors(() => {
         if(!isNilOrEmpty(this.modifySensor.editValues.meta)) {
-          if (this.modifySensor.editValues.sensorType == "keg-volume-monitor-weight" || this.modifySensor.editValues.sensorType == "keg-volume-monitor-flow") {
+          if (this.modifySensor.editValues.sensorType == "keg-volume-monitor-weight" || this.modifySensor.editValues.sensorType == "keg-volume-monitor-flow" ) {
             this.selectedDiscoveredSensorId = _.get(this.modifySensor.editValues.meta, 'deviceId');
           } else if (this.modifySensor.editValues.sensorType == "kegtron-pro") {
             let deviceId = _.get(this.modifySensor.editValues.meta, 'deviceId');
             let portNum = _.get(this.modifySensor.editValues.meta, 'portNum');
             this.selectedDiscoveredSensorId = deviceId + "|" + portNum;
-          }
+          } else if (this.modifySensor.editValues.sensorType == "open-plaato-keg" ) {
+            this.selectedDiscoveredSensorId = _.get(this.modifySensor.editValues.meta, 'deviceId');
+          } 
         }
       });
     }
@@ -328,6 +345,8 @@ export class ManageSensorsComponent implements OnInit {
           this.modifySensor.editValues.meta.accessToken = dev.token;
         }
       });
+    } else if (this.modifySensor.editValues.sensorType == "open-plaato-keg") {
+      this.modifySensor.editValues.meta.deviceId = this.selectedDiscoveredSensorId;
     }
   }
 

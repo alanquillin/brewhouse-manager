@@ -10,14 +10,15 @@ integrates with 3rd party brew systems and sensors to pull in your batch details
 
 ### Brew tracking applications
 
-- [brewfather](https://brewfather.app/): The brewfather integration allows you to associate a batch with a beer to auto 
+- [brewfather](https://brewfather.app/): The brewfather integration allows you to associate a batch with a beer to auto
 import details.  These details will refresh automatically until the batch is marked as completed.
 
 ### Sensors
 
-- [Plaato Keg](https://plaato.io/products/plaato-keg):  **These sensors have been discontinued by the manufacturer** however,
-like us, I know there are many die hard fans out there taking theirs to the grave, so as long as their APIs and services still
-work, we will continue to support them!
+- [Plaato Keg (via open-plaato-keg)](https://github.com/sklopivo/open-plaato-keg):  **These sensors have been discontinued and no longer supported by the manufacturer**
+however, like us, I know there are many die hard fans out there taking theirs to the grave.  Since their services have
+been discontinued a few open source options have become available to support them.  Currently we have added support for
+open-plaato-keg.
 - [Kegtron Pro](https://kegtron.com/pro/)
 - [DIY Keg Volume Monitors](https://github.com/alanquillin/keg-volume-monitors)
 
