@@ -16,11 +16,11 @@ G_CONFIG = Config()
 
 class BeverageResourceMixin(ResourceMixinBase):
     @staticmethod
-    def transform_response(beverage, db_session=None, include_batches=True, image_transitions=None):
+    def transform_response(beverage, db_session=None, include_batches=True, image_transitions=None, include_location=True):
         data = beverage.to_dict()
 
         if include_batches and beverage.batches:
-            data["batches"] = [BatchesResourceMixin.transform_response(b, db_session=db_session) for b in beverage.batches]
+            data["batches"] = [BatchesResourceMixin.transform_response(b, db_session=db_session, include_location=include_location) for b in beverage.batches]
 
         return ImageTransitionResourceMixin.transform_response(data, image_transitions, db_session, beverage_id=beverage.id)
 

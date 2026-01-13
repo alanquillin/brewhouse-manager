@@ -44,15 +44,16 @@ class BatchesResourceMixin(ResourceMixinBase):
         return ResourceMixinBase.transform_response(data)
     
     @staticmethod
-    def transform_response(batch, skip_meta_refresh=False, db_session=None):
+    def transform_response(batch, skip_meta_refresh=False, db_session=None, include_location=False, **kwargs):
         data = batch.to_dict()
 
         include_tap_details = request.args.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
         
-        locations = []
-        if batch.locations:
-            locations = [LocationsResourceMixin.transform_response(l) for l in batch.locations]
-        data["locations"] = locations
+        if include_location:
+            locations = []
+            if batch.locations:
+                locations = [LocationsResourceMixin.transform_response(l) for l in batch.locations]
+            data["locations"] = locations
 
         if include_tap_details and db_session:
             taps = TapsDB.get_by_batch(db_session, batch.id)
@@ -126,7 +127,7 @@ class BatchesResourceMixin(ResourceMixinBase):
     
     @staticmethod
     def can_user_see_batch(user, batch=None, location_ids=None):
-        if user.is_admin:
+        if user.admin:
             return True
         if batch:
             location_ids = [l.id for l in batch.locations]

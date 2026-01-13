@@ -27,14 +27,14 @@ class BeerResourceMixin(ResourceMixinBase):
         BeersDB.update(db_session, beer_id, **data)
 
     @staticmethod
-    def transform_response(beer, db_session=None, skip_meta_refresh=False, include_batches=True, image_transitions=None, **kwargs):
+    def transform_response(beer, db_session=None, skip_meta_refresh=False, include_batches=True, image_transitions=None, include_location=True, **kwargs):
         if not beer:
             return beer
 
         data = beer.to_dict()
         
         if include_batches and beer.batches:
-            data["batches"] = [BatchesResourceMixin.transform_response(b, skip_meta_refresh=skip_meta_refresh, db_session=db_session) for b in beer.batches]
+            data["batches"] = [BatchesResourceMixin.transform_response(b, skip_meta_refresh=skip_meta_refresh, db_session=db_session, include_location=include_location) for b in beer.batches]
 
         if not skip_meta_refresh:
             force_refresh = request.args.get("force_refresh", "false").lower() in ["true", "yes", "", "1"]
