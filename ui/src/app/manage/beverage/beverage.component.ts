@@ -32,6 +32,7 @@ export class ManageBeverageComponent implements OnInit {
   editingBeverage = false;
   addingBatch = false;
   editingBatch = false;
+  showArchivedBatches: boolean = false;
   modifyBeverage: Beverage = new Beverage();
   selectedBatchBeverage: Beverage = new Beverage();
   modifyBatch: Batch = new Batch();
@@ -66,7 +67,6 @@ export class ManageBeverageComponent implements OnInit {
     name: new UntypedFormControl('', [Validators.required]),
     type: new UntypedFormControl('', [Validators.required]),
     description: new UntypedFormControl('', []),
-    locationId: new UntypedFormControl('', [Validators.required]),
     brewery: new UntypedFormControl('', []),
     breweryLink: new UntypedFormControl('', []),
     flavor: new UntypedFormControl('', []),
@@ -79,21 +79,24 @@ export class ManageBeverageComponent implements OnInit {
 
   modifyBatchFormGroup: UntypedFormGroup = new UntypedFormGroup({
     batchNumber: new UntypedFormControl('', [Validators.required]),
-    brewDate: new UntypedFormControl(new Date(), []),
-    kegDate: new UntypedFormControl(new Date(), []),
+    locationIds: new UntypedFormControl('', [Validators.required]),
+    brewDate: new UntypedFormControl(new Date(), [Validators.required]),
+    kegDate: new UntypedFormControl(new Date(), [Validators.required]),
   });
 
-  get displayedColumns() {
-    var cols = ['name', 'description'];
-
-    if(!isNilOrEmpty(this.locations) && this.locations.length > 1) {
-      cols.push('location');
-    }
-
-    return _.concat(cols, ['batchCount', 'tapped', "type", "brewery", "roastery", "flavor", "imgUrl", "actions"]);
+  get displayedColumns(): string[] {
+    return ['name', 'description', 'batchCount', 'tapped', "type", "brewery", "roastery", "flavor", "imgUrl", "actions"];
   }
 
-  displayedBatchColumns: string[] = ["batchNumber", "tapped", "brewDate", "kegDate", 'actions']
+  get displayedBatchColumns(): string[] {
+    var cols = ["batchNumber", "tapped"];
+
+    if(!isNilOrEmpty(this.locations) && this.locations.length > 1) {
+      cols.push('locations');
+    }
+
+    return _.concat(cols, ["brewDate", "kegDate", 'actions']);
+  }
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
 
@@ -122,7 +125,7 @@ export class ManageBeverageComponent implements OnInit {
                   var _beverage = new Beverage(beverage)
                   this.beverages.push(_beverage)
                   this.beverageBatches[beverage.id] = [];
-                  this.dataService.getBeverageBatches(beverage.id, true).subscribe({
+                  this.dataService.getBeverageBatches(beverage.id, true, this.showArchivedBatches).subscribe({
                     next: (batches: Batch[]) =>{
                       _.forEach(batches, (_batch) => {
                         var batch = new Batch(_batch)
@@ -236,7 +239,6 @@ export class ManageBeverageComponent implements OnInit {
     var data: any = {
       name: this.modifyBeverage.editValues.name,
       description: this.modifyBeverage.editValues.description,
-      locationId: this.modifyBeverage.editValues.locationId,
       type: this.modifyBeverage.editValues.type,
       brewery: this.modifyBeverage.editValues.brewery,
       breweryLink: this.modifyBeverage.editValues.breweryLink,
@@ -434,11 +436,6 @@ export class ManageBeverageComponent implements OnInit {
     }
 
     var filteredData: Beverage[] = this.beverages;
-
-    if(!_.isEmpty(this.selectedLocationFilters)){
-      filteredData = <Beverage[]>_.filter(this.beverages, (b) => { return this.selectedLocationFilters.includes(b.locationId) });
-    }
-
     
     filteredData = _.sortBy(filteredData, [(d: Beverage) => {
         return _.get(d, sortBy);
@@ -649,6 +646,7 @@ export class ManageBeverageComponent implements OnInit {
     var data: any = {
       beverageId: this.selectedBatchBeverage.id,
       batchNumber: this.modifyBatch.editValues.batchNumber,
+      locationIds: this.modifyBatch.editValues.locationIds,
       brewDate: this.dateToNumber(this.modifyBatch.editValues.brewDateObj),
       kegDate: this.dateToNumber(this.modifyBatch.editValues.kegDateObj)
     }
@@ -738,5 +736,26 @@ export class ManageBeverageComponent implements OnInit {
         this.processing = false;
       }
     });
+  }
+
+  toggleArchivedBatches(): void {
+    this.showArchivedBatches = !this.showArchivedBatches;
+    if (this.editingBeverage && this.modifyBeverage && this.modifyBeverage.id) {
+      this.dataService.getBeverageBatches(this.modifyBeverage.id, true, this.showArchivedBatches).subscribe({
+        next: (batches: Batch[]) => {
+          this.beverageBatches[this.modifyBeverage.id] = [];
+          _.forEach(batches, (_batch) => {
+            this.beverageBatches[this.modifyBeverage.id].push(new Batch(_batch));
+          });
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+        }
+      });
+    }
+  }
+
+  isArchivedBatch(batch: Batch): boolean {
+    return !isNilOrEmpty(batch.archivedOn);
   }
 }

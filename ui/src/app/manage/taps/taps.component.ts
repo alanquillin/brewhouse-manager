@@ -403,30 +403,6 @@ export class ManageTapsComponent implements OnInit {
     return sensors;
   }
 
-  getBeersForLocation(locationId: string | undefined) : Beer[] {
-    if(_.isNil(locationId)) {
-      return [];
-    }
-
-    var beers = _.filter(this.beers, (s) => { return s.locationId === locationId});
-    if(_.isNil(beers)){
-      return [];
-    }
-    return beers;
-  }
-
-  getBeveragesForLocation(locationId: string | undefined) : Beverage[] {
-    if(_.isNil(locationId)) {
-      return [];
-    }
-
-    var beverages = _.filter(this.beverages, (s) => { return s.locationId === locationId});
-    if(_.isNil(beverages)){
-      return [];
-    }
-    return beverages;
-  }
-
   get modifyForm(): { [key: string]: AbstractControl } {
     return this.modifyFormGroup.controls;
   }
@@ -456,7 +432,7 @@ export class ManageTapsComponent implements OnInit {
     var b: Batch[] = [];
     _.forEach(this.batches, (batch) => {
       if(!isNilOrEmpty(batch.beerId) && !isNilOrEmpty(batch.beer)) {
-        if(batch.beer?.locationId === locationId){
+        if(batch?.locationIds.includes(locationId)){
           b.push(batch);
         }
       }
@@ -469,7 +445,7 @@ export class ManageTapsComponent implements OnInit {
     var b: Batch[] = [];
     _.forEach(this.batches, (batch) => {
       if(!isNilOrEmpty(batch.beverageId) && !isNilOrEmpty(batch.beverage)) {
-        if(batch.beverage?.locationId === locationId) {
+        if(batch?.locationIds.includes(locationId)) {
           b.push(batch);
         }
       }

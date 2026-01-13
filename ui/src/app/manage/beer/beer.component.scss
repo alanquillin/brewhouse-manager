@@ -97,13 +97,23 @@
         padding-top: 25px;
 
         .heading {
-            // display: flex;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
             padding-bottom: 12px;
 
-            // p {
-            //     padding-top: 6px;
-            //     margin-right: 25px;
-            // }
+            p {
+                margin: 0;
+            }
+        }
+
+        .archived-batch {
+            opacity: 0.6;
+
+            td {
+                color: rgba(0, 0, 0, 0.54);
+            }
         }
     }
 }
