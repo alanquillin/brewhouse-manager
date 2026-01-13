@@ -25,6 +25,7 @@ import * as _ from 'lodash';
 export class ManageBeverageComponent implements OnInit {
 
   loading = false;
+  loadingBatches = false;
   beverages: Beverage[] = [];
   filteredBeverages: Beverage[] = [];
   processing = false;
@@ -739,6 +740,7 @@ export class ManageBeverageComponent implements OnInit {
   }
 
   toggleArchivedBatches(): void {
+    this.loadingBatches = true
     this.showArchivedBatches = !this.showArchivedBatches;
     if (this.editingBeverage && this.modifyBeverage && this.modifyBeverage.id) {
       this.dataService.getBeverageBatches(this.modifyBeverage.id, true, this.showArchivedBatches).subscribe({
@@ -747,9 +749,11 @@ export class ManageBeverageComponent implements OnInit {
           _.forEach(batches, (_batch) => {
             this.beverageBatches[this.modifyBeverage.id].push(new Batch(_batch));
           });
+          this.loadingBatches = false;
         },
         error: (err: DataError) => {
           this.displayError(err.message);
+          this.loadingBatches = false;
         }
       });
     }

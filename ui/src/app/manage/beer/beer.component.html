@@ -391,11 +391,15 @@
             <mat-slide-toggle
               [(ngModel)]="showArchivedBatches"
               (change)="toggleArchivedBatches()"
-              color="primary">
+              color="primary"
+              [disabled]="loadingBatches">
               Show Archived
             </mat-slide-toggle>
         </div>
-        <div class="batch-list" *ngIf="beerBatches[this.modifyBeer.id].length > 0">
+        <div class="taps-list-loading" *ngIf="loadingBatches">
+            <mat-spinner></mat-spinner>
+        </div>
+        <div class="batch-list" *ngIf="beerBatches[this.modifyBeer.id].length > 0 && !loadingBatches">
             <table mat-table [dataSource]="beerBatches[this.modifyBeer.id]" class="mat-elevation-z8">
                 <ng-container matColumnDef="id">
                     <th mat-header-cell *matHeaderCellDef> Id </th>
@@ -515,6 +519,7 @@
                     *matRowDef="let row; columns: displayedBatchColumns;"
                     [ngClass]="{'archived-batch': isArchivedBatch(row)}"></tr>
             </table>
+            <br/>
         </div>
     </div>
 </div>
@@ -666,7 +671,7 @@
     </div>
     
     <div class="modify-actions" *ngIf="addingBatch">
-        <button mat-raised-button color="primary" (click)="createBatch()" [disabled]="!isBatchFOrmValid || processing">
+        <button mat-raised-button color="primary" (click)="createBatch()" [disabled]="!modifyBatchFormGroup.valid || processing">
             <mat-icon *ngIf="processing"><mat-spinner diameter="20"></mat-spinner></mat-icon>
             <mat-icon *ngIf="!processing">save</mat-icon> Create
         </button>

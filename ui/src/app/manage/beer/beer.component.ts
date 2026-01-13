@@ -25,6 +25,7 @@ import * as _ from 'lodash';
 })
 export class ManageBeerComponent implements OnInit {
   loading = false;
+  loadingBatches = false;
   beers: Beer[] = [];
   filteredBeers: Beer[] = [];
   beerBatches: {[batchId: string]: Batch[]} = {};
@@ -944,7 +945,7 @@ export class ManageBeerComponent implements OnInit {
   }
 
   toggleArchivedBatches(): void {
-    this.showArchivedBatches = !this.showArchivedBatches;
+    this.loadingBatches = true
     if (this.editing && this.modifyBeer && this.modifyBeer.id) {
       this.dataService.getBeerBatches(this.modifyBeer.id, true, this.showArchivedBatches).subscribe({
         next: (batches: Batch[]) => {
@@ -952,9 +953,12 @@ export class ManageBeerComponent implements OnInit {
           _.forEach(batches, (_batch) => {
             this.beerBatches[this.modifyBeer.id].push(new Batch(_batch));
           });
+          console.log(this.beerBatches[this.modifyBeer.id]);
+          this.loadingBatches = false;
         },
         error: (err: DataError) => {
           this.displayError(err.message);
+          this.loadingBatches = false;
         }
       });
     }
@@ -962,13 +966,5 @@ export class ManageBeerComponent implements OnInit {
 
   isArchivedBatch(batch: Batch): boolean {
     return !isNilOrEmpty(batch.archivedOn);
-  }
-
-  get isBatchFOrmValid(): boolean {
-    console.log(this.modifyBatchFormGroup.valid);
-    if (!this.modifyBatchFormGroup.valid){
-      console.log(this.modifyBatchFormGroup.errors)
-    }
-    return this.modifyBatchFormGroup.valid;
   }
 }
