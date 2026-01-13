@@ -726,22 +726,42 @@ export class ManageBeverageComponent implements OnInit {
 
   _archiveBatch(batch: Batch): void {
     this.processing = true;
+    this.loadingBatches = true;
     this.dataService.updateBatch(batch.id, {archivedOn: convertUnixTimestamp(Date.now())}).subscribe({
       next: (resp: any) => {
         this.processing = false;
         this.loading = true;
-        this.refresh(()=>{this.loading = false});
+        this.refresh(()=>{this.loading = false; this.loadingBatches = false;});
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
+        this.loadingBatches = true;
       }
     });
   }
 
+  unarchiveBatch(batch: Batch): void {
+    if(confirm(`Are you sure you want to unarchive the batch keg'd on ${batch.getKegDate() }?`)) {
+      this.processing = true;
+      this.loadingBatches = true;
+      this.dataService.updateBatch(batch.id, {archivedOn: null}).subscribe({
+        next: (resp: any) => {
+          this.processing = false;
+          this.loading = true;
+          this.refresh(()=>{this.loading = false; this.loadingBatches = false;});
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+          this.loadingBatches = false;
+        }
+      });
+    }
+  }
+
   toggleArchivedBatches(): void {
     this.loadingBatches = true
-    this.showArchivedBatches = !this.showArchivedBatches;
     if (this.editingBeverage && this.modifyBeverage && this.modifyBeverage.id) {
       this.dataService.getBeverageBatches(this.modifyBeverage.id, true, this.showArchivedBatches).subscribe({
         next: (batches: Batch[]) => {

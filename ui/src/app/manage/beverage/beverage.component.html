@@ -375,14 +375,20 @@
 
                 <ng-container matColumnDef="actions">
                     <th mat-header-cell *matHeaderCellDef> </th>
-                    <td mat-cell *matCellDef="let element"> 
+                    <td mat-cell *matCellDef="let element" class="actions"> 
                         <div class="actions">
+                            @if (isArchivedBatch(element)) {
+                            <button mat-icon-button color="primary" aria-label="Unrchive batch" title="Unarchive" (click)="unarchiveBatch(element)">
+                                <mat-icon>unarchive</mat-icon>
+                            </button>
+                            } @else {
                             <button mat-icon-button color="primary" aria-label="Edit batch" title="Edit" (click)="editBatch(element, modifyBeverage)">
                                 <mat-icon>edit</mat-icon>
                             </button>
                             <button mat-icon-button color="warn" aria-label="Archive batch" title="Archive" (click)="archiveBatch(element)">
                                 <mat-icon>archive</mat-icon>
                             </button>
+                            }
                         </div> 
                     </td>
                 </ng-container>
@@ -392,6 +398,7 @@
                     *matRowDef="let row; columns: displayedBatchColumns;"
                     [ngClass]="{'archived-batch': isArchivedBatch(row)}"></tr>
             </table>
+            <br/>
         </div>
     </div>
 </div>

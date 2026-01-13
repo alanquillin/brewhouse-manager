@@ -60,14 +60,6 @@
         }
     }
 
-    .modify-actions {
-        order: 3;
-        
-        button {
-            margin: 2px 6px
-        }    
-    }
-
     .section {
         display: flex;
         flex-direction: column;
@@ -106,13 +98,25 @@
         }
 
         .archived-batch {
-            opacity: 0.6;
-
             td {
+                opacity: 0.6;
                 color: rgba(0, 0, 0, 0.54);
+                text-decoration: line-through;
+            }
+            
+            td.actions {
+                opacity: 1 !important;
             }
         }
     }
+}
+
+.modify-actions {
+    order: 3;
+    
+    button {
+        margin: 2px 6px
+    }    
 }
 
 fieldset {
