@@ -703,25 +703,35 @@ export class ManageBeverageComponent implements OnInit {
   }
 
   archiveBatch(batch: Batch): void {
-    if(confirm(`Are you sure you want to archive the batch keg'd on ${batch.getKegDate() }?`)) {
-      this.processing = true;
-      if(!_.isNil(batch.taps) && batch.taps.length > 0){
-        var tapIds : string[] = []
-        _.forEach(batch.taps, (tap) => {
-          tapIds.push(tap.id)
-        });
-        if(confirm(`The batch is associated with one or more taps.  It will need to be cleared from tap(s) before archiving.  Proceed?`)) {
-          this.clearNextTap(tapIds, () => {
-              this._archiveBatch(batch);
-            }, (err: DataError) => {
-              this.displayError(err.message);
-              this.processing = false;
+    this.processing = true;
+    this.dataService.getBatch(batch.id, true).subscribe({
+      next: (_batch: Batch) => {
+        batch = new Batch(_batch);
+        if(confirm(`Are you sure you want to archive the batch keg'd on ${batch.getKegDate() }?`)) {
+          this.processing = true;
+          if(!_.isNil(batch.taps) && batch.taps.length > 0){
+            var tapIds : string[] = []
+            _.forEach(batch.taps, (tap) => {
+              tapIds.push(tap.id)
             });
+            if(confirm(`The batch is associated with one or more taps.  It will need to be cleared from tap(s) before archiving.  Proceed?`)) {
+              this.clearNextTap(tapIds, () => {
+                  this._archiveBatch(batch);
+                }, (err: DataError) => {
+                  this.displayError(err.message);
+                  this.processing = false;
+                });
+            }
+          } else {
+            this._archiveBatch(batch);
+          }
         }
-      } else {
-        this._archiveBatch(batch);
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
       }
-    }
+    });
   }
 
   _archiveBatch(batch: Batch): void {

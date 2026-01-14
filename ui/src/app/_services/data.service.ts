@@ -407,8 +407,11 @@ export class DataService {
     return this.http.post<Batch>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getBatch(batchId: string): Observable<Batch> {
-    const url = `${this.apiBaseUrl}/batches/${batchId}`;
+  getBatch(batchId: string, includeTapDetails:boolean = false): Observable<Batch> {
+    let params = [];
+    if (includeTapDetails) params.push('include_tap_details=true');
+    const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+    const url = `${this.apiBaseUrl}/batches/${batchId}${queryString}`;
     return this.http.get<Batch>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
