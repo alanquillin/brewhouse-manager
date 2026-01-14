@@ -746,7 +746,7 @@ export class ManageBeverageComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-        this.loadingBatches = true;
+        this.loadingBatches = false;
       }
     });
   }
