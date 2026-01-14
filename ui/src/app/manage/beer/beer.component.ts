@@ -983,7 +983,6 @@ export class ManageBeerComponent implements OnInit {
           _.forEach(batches, (_batch) => {
             this.beerBatches[this.modifyBeer.id].push(new Batch(_batch));
           });
-          console.log(this.beerBatches[this.modifyBeer.id]);
           this.loadingBatches = false;
         },
         error: (err: DataError) => {
