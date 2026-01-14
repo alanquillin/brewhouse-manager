@@ -4,16 +4,6 @@
         <mat-spinner></mat-spinner>
     </div>
     <div class="beverage-view-filters" *ngIf="!loading">
-        <div class="location-selector" *ngIf="locations.length > 1">
-            <mat-form-field appearance="fill">
-                <mat-label>Filter By Location</mat-label>
-                <mat-select [(value)]="selectedLocationFilters" (selectionChange)="filter()" multiple>
-                    <mat-option *ngFor="let location of locations" [value]="location.id">
-                        {{ location.description }}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-        </div>
         <div class="beverage-view-actions">
             <button mat-raised-button color="primary" (click)="addBeverage()"><mat-icon>add</mat-icon> Add Beverage</button>
         </div>
