@@ -385,14 +385,14 @@ TAPS = [
         "tap_number": 4,
         "description": "Tap 4",
         "location_id": location1_id,
-        "on_tap_id": on_tap_id4,
+        "on_tap_id": on_tap_id4
     },
     {
         "id": tap_l2t1_id,
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location2_id,
-        "on_tap_id": on_tap_id5,
+        "on_tap_id": on_tap_id5
     },
     {
         "id": tap_l2t2_id,

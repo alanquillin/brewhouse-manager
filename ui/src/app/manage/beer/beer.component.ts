@@ -69,6 +69,21 @@ export class ManageBeerComponent implements OnInit {
 
   requiredIfNoBrewTool(comp: ManageBeerComponent): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null  => {
+      var brewTool = _.get(comp.modifyBeer.editValues, "externalBrewingTool")
+      if(!_.isEmpty(brewTool) && brewTool !== "-1"){
+        return null;
+      }
+      
+      if(isNilOrEmpty(control.value)) {
+        return { requiredIfNoToolSelected: true };
+      }
+
+      return null;
+    }
+  }
+
+  requiredForBatchIfNoBrewTool(comp: ManageBeerComponent): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null  => {
       var brewTool = _.get(comp.modifyBatch.editValues, "externalBrewingTool")
       if(!_.isEmpty(brewTool) && brewTool !== "-1"){
         return null;
@@ -83,6 +98,21 @@ export class ManageBeerComponent implements OnInit {
   }
   
   requiredForBrewingTool(comp: ManageBeerComponent, tool: string): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      var brewTool = _.get(comp.modifyBeer.editValues, "externalBrewingTool")
+      if(_.isEmpty(brewTool) || brewTool === "-1"){
+        return null;
+      }
+      
+      if(brewTool === tool && (_.isNil(control.value) || _.isEmpty(control.value))){
+        return { requiredForBrewTool: true };
+      }
+
+      return null;
+    }
+  }
+
+  requiredForBatchForBrewingTool(comp: ManageBeerComponent, tool: string): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       var brewTool = _.get(comp.modifyBatch.editValues, "externalBrewingTool")
       if(_.isEmpty(brewTool) || brewTool === "-1"){
@@ -129,16 +159,16 @@ export class ManageBeerComponent implements OnInit {
   });
 
   modifyBatchFormGroup: UntypedFormGroup = new UntypedFormGroup({
-    batchNumber: new UntypedFormControl('', [this.decimalValidator, this.requiredIfNoBrewTool(this)]),
+    batchNumber: new UntypedFormControl('', [this.decimalValidator, this.requiredForBatchIfNoBrewTool(this)]),
     locationIds: new UntypedFormControl('', [Validators.required]),
     abv: new UntypedFormControl('', [this.decimalValidator]),
     srm: new UntypedFormControl('', [this.decimalValidator]),
     ibu: new UntypedFormControl('', [this.decimalValidator]),
     name: new UntypedFormControl('', []),
     externalBrewingTool: new UntypedFormControl(-1),
-    brewfatherBatchId: new UntypedFormControl('', [this.requiredForBrewingTool(this, "brewfather")]),
-    brewDate: new UntypedFormControl(new Date(), [this.requiredIfNoBrewTool(this)]),
-    kegDate: new UntypedFormControl(new Date(), [this.requiredIfNoBrewTool(this)]),
+    brewfatherBatchId: new UntypedFormControl('', [this.requiredForBatchForBrewingTool(this, "brewfather")]),
+    brewDate: new UntypedFormControl(new Date(), [this.requiredForBatchIfNoBrewTool(this)]),
+    kegDate: new UntypedFormControl(new Date(), [this.requiredForBatchIfNoBrewTool(this)]),
     imgUrl: new UntypedFormControl('', []),
   });
 
