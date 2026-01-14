@@ -173,7 +173,7 @@ class Batches(BaseResource, BatchesResourceMixin):
             data = self.get_request_data()
             location_ids = data.pop("location_ids", None)
             if location_ids:
-                if not current_user.admin and self.can_user_see_batch(current_user, location_ids=location_ids):
+                if not current_user.admin and not self.can_user_see_batch(current_user, location_ids=location_ids):
                     raise NotAuthorizedError()
 
             beer_id = data.get("beer_id")
