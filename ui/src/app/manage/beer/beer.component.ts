@@ -159,7 +159,7 @@ export class ManageBeerComponent implements OnInit {
   });
 
   modifyBatchFormGroup: UntypedFormGroup = new UntypedFormGroup({
-    batchNumber: new UntypedFormControl('', [this.decimalValidator, this.requiredForBatchIfNoBrewTool(this)]),
+    batchNumber: new UntypedFormControl('', [this.requiredForBatchIfNoBrewTool(this)]),
     locationIds: new UntypedFormControl('', [Validators.required]),
     abv: new UntypedFormControl('', [this.decimalValidator]),
     srm: new UntypedFormControl('', [this.decimalValidator]),
