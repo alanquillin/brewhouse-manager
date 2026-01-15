@@ -203,7 +203,7 @@ export class ProfileComponent implements OnInit {
     navigator.clipboard.writeText(data).then(() => {
       return;
     }).catch(err => {
-      this.displayError("Error trying to copy data to Clipboard")
+      this.displayError("Error trying to copy data to clipboard")
     })
   }
 
