@@ -18,7 +18,7 @@ import details.  These details will refresh automatically until the batch is mar
 - [Plaato Keg (via open-plaato-keg)](https://github.com/sklopivo/open-plaato-keg):  **These sensors have been discontinued and no longer supported by the manufacturer**
 however, like us, I know there are many die hard fans out there taking theirs to the grave.  Since their services have
 been discontinued a few open source options have become available to support them.  Currently we have added support for
-open-plaato-keg.
+open-plaato-keg.  **open-plaato-keg version 0.0.11 is required**.
 - [Kegtron Pro](https://kegtron.com/pro/)
 - [DIY Keg Volume Monitors](https://github.com/alanquillin/keg-volume-monitors)
 
