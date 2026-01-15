@@ -298,9 +298,11 @@ export class Batch extends ExtToolBase {
   taps!: Tap[] | undefined;
   batchNumber!: string;
   name!: string;
+  locationIds!: string[];
+  locations: Location[] | undefined;
 
   constructor(from?: any) {
-    super(["name", "beerId", "beverageId", "abv", "ibu", "srm", "kegDate", "brewDate", "archivedOn", "batchNumber", "imgUrl"], from, beerTransformFns);
+    super(["name", "beerId", "beverageId", "locationIds", "abv", "ibu", "srm", "kegDate", "brewDate", "archivedOn", "batchNumber", "imgUrl"], from, beerTransformFns);
     if(isNilOrEmpty(this.externalBrewingToolMeta)) {
       this.externalBrewingToolMeta = {}
     }
@@ -353,11 +355,9 @@ export class Beer extends ExtToolBase {
   ibu!: number;
   srm!: number;
   untappdId!: string;
-  locationId!: string;
-  location: Location | undefined;
 
   constructor(from?: any) {
-    super(["name", "description", "locationId", "style", "abv", "imgUrl", "ibu", "srm", "untappdId"], from, beerTransformFns);
+    super(["name", "description", "style", "abv", "imgUrl", "ibu", "srm", "untappdId"], from, beerTransformFns);
     if(isNilOrEmpty(this.externalBrewingToolMeta)) {
       this.externalBrewingToolMeta = {}
     }
@@ -486,11 +486,9 @@ export class Beverage extends ImageTransitionalBase {
   flavor!: string;
   meta!: any;
   taps: Tap[] | undefined;
-  locationId!: string;
-  location: Location | undefined;
 
   constructor(from?: any) {
-    super(["name", "description", "locationId", "brewery", "breweryLink", "type", "flavor", "imgUrl", "meta"], from);
+    super(["name", "description", "brewery", "breweryLink", "type", "flavor", "imgUrl", "meta"], from);
     if(isNilOrEmpty(this.meta)){
       this.meta = {};
     }

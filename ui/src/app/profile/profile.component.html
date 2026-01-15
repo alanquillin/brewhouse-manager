@@ -12,6 +12,17 @@
     @if (!isNilOrEmpty(userInfo.apiKey)) {
       <div class="api-key">
         API Key: {{ userInfo.apiKey }}
+        <button matIconButton [matMenuTriggerFor]="menu" aria-label="Copy to Clipboard">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="copyAPIKeyRaw()">
+            <span>Copy to Clipboard</span>
+          </button>
+          <button mat-menu-item (click)="copyAPIKeyEncoded()">
+            <span>Copy to Clipboard (Encoded)</span>
+          </button>
+        </mat-menu>
         <button color="primary" matSuffix mat-icon-button aria-label="Regenerate API Key" (click)="generateAPIKey()" [disabled]="processing"><mat-icon>refresh</mat-icon></button>
         <button color="warn" matSuffix mat-icon-button aria-label="Delete API Key" (click)="deleteAPIKey()" [disabled]="processing"><mat-icon>delete</mat-icon></button>
       </div>

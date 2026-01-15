@@ -116,9 +116,9 @@ def redirect_not_logged_in():
 
 
 # API resources for UI:
-api.add_resource(Beers, "/api/v1/beers", "/api/v1/locations/<location>/beers")
-api.add_resource(Beer, "/api/v1/beers/<beer_id>", "/api/v1/locations/<location>/beers/<beer_id>")
-api.add_resource(Beverages, "/api/v1/beverages", "/api/v1/locations/<location>/beverages")
+api.add_resource(Beers, "/api/v1/beers")
+api.add_resource(Beer, "/api/v1/beers/<beer_id>")
+api.add_resource(Beverages, "/api/v1/beverages")
 api.add_resource(Beverage, "/api/v1/beverages/<beverage_id>", "/api/v1/locations/<location>/beverages/<beer_id>")
 api.add_resource(Batches, "/api/v1/batches", "/api/v1/beers/<beer_id>/batches", "/api/v1/locations/<location>/beers/<beer_id>/batches", "/api/v1/beverages/<beverage_id>/batches", "/api/v1/locations/<location>/beverages/<beverage_id>/batches")
 api.add_resource(Batch, "/api/v1/batches/<batch_id>", "/api/v1/beers/<beer_id>/batches/<batch_id>", "/api/v1/locations/<location>/beers/<beer_id>/batches/<batch_id>", "/api/v1/beverages/<beverage_id>/batches/<batch_id>", "/api/v1/locations/<location>/beverages/<beverage_id>/batches/<batch_id>")
@@ -208,6 +208,7 @@ def load_user_from_request(request):
         if api_key:
             api_key = api_key.replace('Bearer ', '', 1).strip()
             try:
+                LOGGER.debug("API Key (encoded): %s", api_key)
                 api_key = base64.b64decode(api_key).decode('ascii')
             except TypeError as e:
                 pass

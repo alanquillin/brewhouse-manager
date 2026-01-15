@@ -56,7 +56,7 @@ export DB_NAME
 export CTR_NAME=brewhose-manager-migrations
 
 start_container() {
-    docker run -p "${DB_PORT}:5432" -e POSTGRES_PASSWORD="${DB_PASSWORD}" --name "${CTR_NAME}" -d postgres:12-alpine
+    docker run -p "${DB_PORT}:5432" -e POSTGRES_PASSWORD="${DB_PASSWORD}" --name "${CTR_NAME}" -d postgres:17-alpine
     sleep 5
 }
 

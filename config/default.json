@@ -65,6 +65,11 @@
         }
     }
   },
+  "logging": {
+    "levels": {
+      "sqlalchemy.engine": "WARNING"
+    }
+  },
   "taps": {
     "refresh": {
       "base_sec": 300,

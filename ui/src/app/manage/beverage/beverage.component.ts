@@ -25,6 +25,7 @@ import * as _ from 'lodash';
 export class ManageBeverageComponent implements OnInit {
 
   loading = false;
+  loadingBatches = false;
   beverages: Beverage[] = [];
   filteredBeverages: Beverage[] = [];
   processing = false;
@@ -32,6 +33,7 @@ export class ManageBeverageComponent implements OnInit {
   editingBeverage = false;
   addingBatch = false;
   editingBatch = false;
+  showArchivedBatches: boolean = false;
   modifyBeverage: Beverage = new Beverage();
   selectedBatchBeverage: Beverage = new Beverage();
   modifyBatch: Batch = new Batch();
@@ -66,7 +68,6 @@ export class ManageBeverageComponent implements OnInit {
     name: new UntypedFormControl('', [Validators.required]),
     type: new UntypedFormControl('', [Validators.required]),
     description: new UntypedFormControl('', []),
-    locationId: new UntypedFormControl('', [Validators.required]),
     brewery: new UntypedFormControl('', []),
     breweryLink: new UntypedFormControl('', []),
     flavor: new UntypedFormControl('', []),
@@ -79,21 +80,24 @@ export class ManageBeverageComponent implements OnInit {
 
   modifyBatchFormGroup: UntypedFormGroup = new UntypedFormGroup({
     batchNumber: new UntypedFormControl('', [Validators.required]),
-    brewDate: new UntypedFormControl(new Date(), []),
-    kegDate: new UntypedFormControl(new Date(), []),
+    locationIds: new UntypedFormControl('', [Validators.required]),
+    brewDate: new UntypedFormControl(new Date(), [Validators.required]),
+    kegDate: new UntypedFormControl(new Date(), [Validators.required]),
   });
 
-  get displayedColumns() {
-    var cols = ['name', 'description'];
-
-    if(!isNilOrEmpty(this.locations) && this.locations.length > 1) {
-      cols.push('location');
-    }
-
-    return _.concat(cols, ['batchCount', 'tapped', "type", "brewery", "roastery", "flavor", "imgUrl", "actions"]);
+  get displayedColumns(): string[] {
+    return ['name', 'description', 'batchCount', 'tapped', "type", "brewery", "roastery", "flavor", "imgUrl", "actions"];
   }
 
-  displayedBatchColumns: string[] = ["batchNumber", "tapped", "brewDate", "kegDate", 'actions']
+  get displayedBatchColumns(): string[] {
+    var cols = ["batchNumber", "tapped"];
+
+    if(!isNilOrEmpty(this.locations) && this.locations.length > 1) {
+      cols.push('locations');
+    }
+
+    return _.concat(cols, ["brewDate", "kegDate", 'actions']);
+  }
 
   constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
 
@@ -122,7 +126,7 @@ export class ManageBeverageComponent implements OnInit {
                   var _beverage = new Beverage(beverage)
                   this.beverages.push(_beverage)
                   this.beverageBatches[beverage.id] = [];
-                  this.dataService.getBeverageBatches(beverage.id, true).subscribe({
+                  this.dataService.getBeverageBatches(beverage.id, true, this.showArchivedBatches).subscribe({
                     next: (batches: Batch[]) =>{
                       _.forEach(batches, (_batch) => {
                         var batch = new Batch(_batch)
@@ -236,7 +240,6 @@ export class ManageBeverageComponent implements OnInit {
     var data: any = {
       name: this.modifyBeverage.editValues.name,
       description: this.modifyBeverage.editValues.description,
-      locationId: this.modifyBeverage.editValues.locationId,
       type: this.modifyBeverage.editValues.type,
       brewery: this.modifyBeverage.editValues.brewery,
       breweryLink: this.modifyBeverage.editValues.breweryLink,
@@ -434,11 +437,6 @@ export class ManageBeverageComponent implements OnInit {
     }
 
     var filteredData: Beverage[] = this.beverages;
-
-    if(!_.isEmpty(this.selectedLocationFilters)){
-      filteredData = <Beverage[]>_.filter(this.beverages, (b) => { return this.selectedLocationFilters.includes(b.locationId) });
-    }
-
     
     filteredData = _.sortBy(filteredData, [(d: Beverage) => {
         return _.get(d, sortBy);
@@ -649,6 +647,7 @@ export class ManageBeverageComponent implements OnInit {
     var data: any = {
       beverageId: this.selectedBatchBeverage.id,
       batchNumber: this.modifyBatch.editValues.batchNumber,
+      locationIds: this.modifyBatch.editValues.locationIds,
       brewDate: this.dateToNumber(this.modifyBatch.editValues.brewDateObj),
       kegDate: this.dateToNumber(this.modifyBatch.editValues.kegDateObj)
     }
@@ -704,39 +703,93 @@ export class ManageBeverageComponent implements OnInit {
   }
 
   archiveBatch(batch: Batch): void {
-    if(confirm(`Are you sure you want to archive the batch keg'd on ${batch.getKegDate() }?`)) {
-      this.processing = true;
-      if(!_.isNil(batch.taps) && batch.taps.length > 0){
-        var tapIds : string[] = []
-        _.forEach(batch.taps, (tap) => {
-          tapIds.push(tap.id)
-        });
-        if(confirm(`The batch is associated with one or more taps.  It will need to be cleared from tap(s) before archiving.  Proceed?`)) {
-          this.clearNextTap(tapIds, () => {
-              this._archiveBatch(batch);
-            }, (err: DataError) => {
-              this.displayError(err.message);
-              this.processing = false;
-            });
-        }
-      } else {
-        this._archiveBatch(batch);
-      }
-    }
-  }
-
-  _archiveBatch(batch: Batch): void {
     this.processing = true;
-    this.dataService.updateBatch(batch.id, {archivedOn: convertUnixTimestamp(Date.now())}).subscribe({
-      next: (resp: any) => {
-        this.processing = false;
-        this.loading = true;
-        this.refresh(()=>{this.loading = false});
+    this.dataService.getBatch(batch.id, true).subscribe({
+      next: (_batch: Batch) => {
+        batch = new Batch(_batch);
+        if(confirm(`Are you sure you want to archive the batch keg'd on ${batch.getKegDate() }?`)) {
+          this.processing = true;
+          if(!_.isNil(batch.taps) && batch.taps.length > 0){
+            var tapIds : string[] = []
+            _.forEach(batch.taps, (tap) => {
+              tapIds.push(tap.id)
+            });
+            if(confirm(`The batch is associated with one or more taps.  It will need to be cleared from tap(s) before archiving.  Proceed?`)) {
+              this.clearNextTap(tapIds, () => {
+                  this._archiveBatch(batch);
+                }, (err: DataError) => {
+                  this.displayError(err.message);
+                  this.processing = false;
+                });
+            }
+          } else {
+            this._archiveBatch(batch);
+          }
+        }
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
       }
     });
+  }
+
+  _archiveBatch(batch: Batch): void {
+    this.processing = true;
+    this.loadingBatches = true;
+    this.dataService.updateBatch(batch.id, {archivedOn: convertUnixTimestamp(Date.now())}).subscribe({
+      next: (resp: any) => {
+        this.processing = false;
+        this.loading = true;
+        this.refresh(()=>{this.loading = false; this.loadingBatches = false;});
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+        this.loadingBatches = false;
+      }
+    });
+  }
+
+  unarchiveBatch(batch: Batch): void {
+    if(confirm(`Are you sure you want to unarchive the batch keg'd on ${batch.getKegDate() }?`)) {
+      this.processing = true;
+      this.loadingBatches = true;
+      this.dataService.updateBatch(batch.id, {archivedOn: null}).subscribe({
+        next: (resp: any) => {
+          this.processing = false;
+          this.loading = true;
+          this.refresh(()=>{this.loading = false; this.loadingBatches = false;});
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+          this.loadingBatches = false;
+        }
+      });
+    }
+  }
+
+  toggleArchivedBatches(): void {
+    this.loadingBatches = true
+    if (this.editingBeverage && this.modifyBeverage && this.modifyBeverage.id) {
+      this.dataService.getBeverageBatches(this.modifyBeverage.id, true, this.showArchivedBatches).subscribe({
+        next: (batches: Batch[]) => {
+          this.beverageBatches[this.modifyBeverage.id] = [];
+          _.forEach(batches, (_batch) => {
+            this.beverageBatches[this.modifyBeverage.id].push(new Batch(_batch));
+          });
+          this.loadingBatches = false;
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.loadingBatches = false;
+        }
+      });
+    }
+  }
+
+  isArchivedBatch(batch: Batch): boolean {
+    return !isNilOrEmpty(batch.archivedOn);
   }
 }

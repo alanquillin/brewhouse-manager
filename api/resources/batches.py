@@ -8,13 +8,12 @@ from flask_login import login_required, current_user
 from db import session_scope
 from db.batches import _PKEY as batches_pk
 from db.batches import Batches as BatchesDB
+from db.batch_locations import BatchLocations as BatchLocationsDB
 from db.taps import Taps as TapsDB
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.time import parse_iso8601_utc, utcnow_aware
 from resources import BaseResource, ClientError, NotFoundError, ResourceMixinBase, NotAuthorizedError
-# from resources.beers import BeerResourceMixin
-# from resources.beverage import BeverageResourceMixin
 from resources.locations import LocationsResourceMixin
 
 G_LOGGER = logging.getLogger(__name__)
@@ -45,10 +44,20 @@ class BatchesResourceMixin(ResourceMixinBase):
         return ResourceMixinBase.transform_response(data)
     
     @staticmethod
-    def transform_response(batch, skip_meta_refresh=False, db_session=None):
+    def transform_response(batch, skip_meta_refresh=False, db_session=None, include_location=True, **kwargs):
         data = batch.to_dict()
 
         include_tap_details = request.args.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
+        
+        
+        locations = []
+        location_ids = []
+        if batch.locations:
+            location_ids = [l.id for l in batch.locations]
+            if include_location:
+                locations = [LocationsResourceMixin.transform_response(l) for l in batch.locations]
+        data["locationIds"] = location_ids
+        data["locations"] = locations
 
         if include_tap_details and db_session:
             taps = TapsDB.get_by_batch(db_session, batch.id)
@@ -119,6 +128,22 @@ class BatchesResourceMixin(ResourceMixinBase):
                 data[k] = datetime.fromtimestamp(data.get(k))
 
         return data
+    
+    @staticmethod
+    def can_user_see_batch(user, batch=None, location_ids=None):
+        if user.admin:
+            return True
+        if batch:
+            location_ids = [l.id for l in batch.locations]
+
+        if not location_ids:
+            return False
+        
+        for id in location_ids:
+            if id in user.locations:
+                return True
+            
+        return False
 
 class Batches(BaseResource, BatchesResourceMixin):
     @login_required
@@ -134,21 +159,22 @@ class Batches(BaseResource, BatchesResourceMixin):
             if not include_archived:
                 kwargs["archived_on"] = None
             
+            batches_filtered = []
             batches = BatchesDB.query(db_session, **kwargs)
-            return [self.transform_response(b, db_session=db_session) for b in batches]
+            if batches:
+                for b in batches:
+                    if self.can_user_see_batch(current_user, batch=b):
+                        batches_filtered.append(b)
+            return [self.transform_response(b, db_session=db_session) for b in batches_filtered]
 
     @login_required
-    def post(self, location=None):
+    def post(self):
         with session_scope(self.config) as db_session:
             data = self.get_request_data()
-            if location:
-                location_id = self.get_location_id(location, db_session)
-                if not current_user.admin and not location_id in current_user.locations:
+            location_ids = data.pop("location_ids", None)
+            if location_ids:
+                if not current_user.admin and not self.can_user_see_batch(current_user, location_ids=location_ids):
                     raise NotAuthorizedError()
-                data["location_id"] = location_id
-
-            if not current_user.admin and not data.get("location_id") in current_user.locations:
-                raise NotAuthorizedError()
 
             beer_id = data.get("beer_id")
             if beer_id == "":
@@ -160,8 +186,10 @@ class Batches(BaseResource, BatchesResourceMixin):
             if beer_id and beverage_id:
                 raise BeerOrBeverageOnlyError()
             
-
             batch = BatchesDB.create(db_session, **data)
+            for loc_id in location_ids:
+                BatchLocationsDB.create(db_session, batch_id=batch.id, location_id=loc_id)
+            batch = BatchesDB.get_by_pkey(db_session, batch.id)
 
             return self.transform_response(batch, db_session=db_session)
 
@@ -195,9 +223,13 @@ class Batch(BaseResource, BatchesResourceMixin):
     @login_required
     def patch(self, batch_id, beer_id=None, beverage_id=None):
         with session_scope(self.config) as db_session:
-            batch = self._get_batch(db_session, batch_id, beer_id=beer_id, beverage_id=beverage_id)
-            
             data = self.get_request_data()
+            location_ids = data.pop("location_ids", None)
+            if location_ids:
+                if not current_user.admin and self.can_user_see_batch(current_user, location_ids=location_ids):
+                    raise NotAuthorizedError()
+            
+            batch = self._get_batch(db_session, batch_id, beer_id=beer_id, beverage_id=beverage_id)
 
             for k,v in data.items():
                 if v == "":
@@ -206,6 +238,11 @@ class Batch(BaseResource, BatchesResourceMixin):
             external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
             if external_brewing_tool_meta and batch.external_brewing_tool_meta:
                 data["external_brewing_tool_meta"] = {**batch.external_brewing_tool_meta} | external_brewing_tool_meta
+
+            if location_ids:
+                BatchLocationsDB.delete_by(db_session, batch_id=batch_id)
+                for loc_id in location_ids:
+                    BatchLocationsDB.create(db_session, batch_id=batch.id, location_id=loc_id)
 
             batch = BatchesDB.update(db_session, batch.id, **data)
 

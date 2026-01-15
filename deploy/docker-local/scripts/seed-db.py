@@ -364,39 +364,35 @@ TAPS = [
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location1_id,
-        "on_tap_id": on_tap_id1,
-        "sensor_id": sensor_l1s1_id
+        "on_tap_id": on_tap_id1
     },
     {
         "id": tap_l1t2_id,
         "tap_number": 2,
         "description": "Tap 2",
         "location_id": location1_id,
-        "on_tap_id": on_tap_id2,
-        "sensor_id": sensor_l1s2_id
+        "on_tap_id": on_tap_id2
     },
     {
         "id": tap_l1t3_id,
         "tap_number": 3,
         "description": "Tap 3",
         "location_id": location1_id,
-        "on_tap_id": on_tap_id3,
-        "sensor_id": sensor_l1s3_id
+        "on_tap_id": on_tap_id3
     },
     {
         "id": tap_l1t4_id,
         "tap_number": 4,
         "description": "Tap 4",
         "location_id": location1_id,
-        "sensor_id": sensor_l1s4_id,
-        "on_tap_id": on_tap_id4,
+        "on_tap_id": on_tap_id4
     },
     {
         "id": tap_l2t1_id,
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location2_id,
-        "on_tap_id": on_tap_id5,
+        "on_tap_id": on_tap_id5
     },
     {
         "id": tap_l2t2_id,
@@ -409,24 +405,21 @@ TAPS = [
         "tap_number": 1,
         "description": "Tap 1",
         "location_id": location3_id,
-        "on_tap_id": on_tap_id6,
-        "sensor_id": sensor_l3s1_id
+        "on_tap_id": on_tap_id6
     },
     {
         "id": tap_l3t2_id,
         "tap_number": 2,
         "description": "Tap 2",
         "location_id": location3_id,
-        "on_tap_id": on_tap_id7,
-        "sensor_id": sensor_l3s2_id
+        "on_tap_id": on_tap_id7
     },
     {
         "id": tap_l3t3_id,
         "tap_number": 3,
         "description": "Tap 3",
         "location_id": location3_id,
-        "on_tap_id": on_tap_id8,
-        "sensor_id": sensor_l3s3_id
+        "on_tap_id": on_tap_id8
     }
 ]
 

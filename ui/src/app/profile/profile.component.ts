@@ -196,6 +196,25 @@ export class ProfileComponent implements OnInit {
     }
   }
 
+  copyToClipboard(data: string) : void {
+    if(isNilOrEmpty(data)) {
+      return;
+    }
+    navigator.clipboard.writeText(data).then(() => {
+      return;
+    }).catch(err => {
+      this.displayError("Error trying to copy data to clipboard")
+    })
+  }
+
+  copyAPIKeyRaw(): void {
+    this.copyToClipboard(this.userInfo.apiKey);
+  }
+
+  copyAPIKeyEncoded(): void {
+    this.copyToClipboard(btoa(this.userInfo.apiKey));
+  }
+
   get name(): string {
     if(_.isNil(this.userInfo)){
       return "UNKNOWN";

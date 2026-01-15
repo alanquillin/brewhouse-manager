@@ -84,28 +84,42 @@
         }
     }
 
-    .modify-actions {
-        order: 3;
-        
-        button {
-            margin: 2px 6px
-        }    
-    }
-
     .beer-batches {
         order: 4;
         padding-top: 25px;
 
         .heading {
-            // display: flex;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
             padding-bottom: 12px;
 
-            // p {
-            //     padding-top: 6px;
-            //     margin-right: 25px;
-            // }
+            p {
+                margin: 0;
+            }
+        }
+
+        .archived-batch {
+            td {
+                opacity: 0.6;
+                color: rgba(0, 0, 0, 0.54);
+                text-decoration: line-through;
+            }
+
+            td.actions {
+                opacity: 1 !important;
+            }
         }
     }
+}
+
+.modify-actions {
+    order: 3;
+    
+    button {
+        margin: 2px 6px
+    }    
 }
 
 fieldset {

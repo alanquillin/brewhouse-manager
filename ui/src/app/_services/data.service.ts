@@ -384,13 +384,21 @@ export class DataService {
     return this.http.get<Batch[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getBeerBatches(beerId: string, includeTapDetails:boolean = false): Observable<Batch[]> {
-    const url = `${this.apiBaseUrl}/beers/${beerId}/batches${includeTapDetails ? "?include_tap_details" : ""}`;
+  getBeerBatches(beerId: string, includeTapDetails:boolean = false, includeArchived: boolean = false): Observable<Batch[]> {
+    let params = [];
+    if (includeTapDetails) params.push('include_tap_details=true');
+    if (includeArchived) params.push('include_archived=true');
+    const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+    const url = `${this.apiBaseUrl}/beers/${beerId}/batches${queryString}`;
     return this.http.get<Batch[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getBeverageBatches(beerId: string, includeTapDetails:boolean = false): Observable<Batch[]> {
-    const url = `${this.apiBaseUrl}/beverages/${beerId}/batches${includeTapDetails ? "?include_tap_details" : ""}`;
+  getBeverageBatches(beverageId: string, includeTapDetails:boolean = false, includeArchived: boolean = false): Observable<Batch[]> {
+    let params = [];
+    if (includeTapDetails) params.push('include_tap_details=true');
+    if (includeArchived) params.push('include_archived=true');
+    const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+    const url = `${this.apiBaseUrl}/beverages/${beverageId}/batches${queryString}`;
     return this.http.get<Batch[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
@@ -399,8 +407,11 @@ export class DataService {
     return this.http.post<Batch>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getBatch(batchId: string): Observable<Batch> {
-    const url = `${this.apiBaseUrl}/batches/${batchId}`;
+  getBatch(batchId: string, includeTapDetails:boolean = false): Observable<Batch> {
+    let params = [];
+    if (includeTapDetails) params.push('include_tap_details=true');
+    const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+    const url = `${this.apiBaseUrl}/batches/${batchId}${queryString}`;
     return this.http.get<Batch>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
