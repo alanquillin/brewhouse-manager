@@ -31,6 +31,17 @@ class FileAssetManager(AssetManagerBase):
             self.logger.debug("Successfully created dir '%s'!", parent_dir)
 
         path = os.path.join(parent_dir, filename)
-        file.save(path)
+
+        # Handle both werkzeug FileStorage (Flask) and FastAPI UploadFile
+        if hasattr(file, 'save'):
+            # Flask werkzeug FileStorage
+            file.save(path)
+        else:
+            # FastAPI UploadFile - write contents to disk
+            with open(path, 'wb') as f:
+                contents = file.file.read()
+                f.write(contents)
+            # Reset file pointer for potential reuse
+            file.file.seek(0)
 
         return old_filename, filename, self.get(image_type, filename)

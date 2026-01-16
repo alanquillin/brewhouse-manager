@@ -8,12 +8,12 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail, locations
+from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail, locations
 from db.types.nested import NestedMutableDict
 
 
 @generate_audit_trail
-class Sensors(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class Sensors(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     __tablename__ = _TABLE_NAME
 
@@ -26,7 +26,3 @@ class Sensors(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     location = relationship(locations.Locations, backref=backref("Sensors", cascade="all,delete"))
 
     __table_args__ = (Index("ix_sensor_location_id", location_id, unique=False),)
-
-    @classmethod
-    def get_by_location(cls, session, location_id, **kwargs):
-        return session.query(cls).filter_by(location_id=location_id, **kwargs)

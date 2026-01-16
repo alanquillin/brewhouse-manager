@@ -1,27 +1,30 @@
 import logging
 import re
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 from functools import wraps
 from urllib.parse import quote
 
 from psycopg2.errors import InvalidTextRepresentation, NotNullViolation, UniqueViolation  # pylint: disable=no-name-in-module
 from psycopg2.extensions import QuotedString, register_adapter
-from sqlalchemy import DDL, Column, DateTime, String, create_engine, event, func, text
+from sqlalchemy import DDL, Column, DateTime, String, create_engine, event, func, text, select, delete
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.orm.session import Session
 
 from lib import exceptions as local_exc
 from lib import json
 
-Base = declarative_base()
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
 
-__all__ = ["Base", "audit", "beers", "beverages", "locations", "sensors", "taps", "users", "fermentation_ctrl", "fermentation_ctrl_stats", "image_transitions", "user_locations", "on_tap", "batches", "batch_overrides", "batch_locations"]
+__all__ = ["Base", "audit", "beers", "beverages", "locations", "sensors", "taps", "users", "image_transitions", "user_locations", "on_tap", "batches", "batch_overrides", "batch_locations"]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -92,6 +95,50 @@ def session_scope(config, **kwargs):
         raise
     finally:
         session.close()
+
+
+async def create_async_session(config, **kwargs):
+    """Create async database session for FastAPI"""
+    engine_kwargs = {
+        # "connect_args": {
+        #     "application_name": config.get("app_id", f"UNKNOWN=>({__name__})"),
+        # },
+        "json_serializer": json.dumps,
+    }
+
+    password = config.get("db.password")
+
+    if not password:
+        # Note: RDS IAM auth needs to be handled differently for asyncpg
+        # For now, require password for async connections
+        raise ValueError("Password required for async database connections")
+
+    app_name = config.get("app_id", f"UNKNOWN=>({__name__})")
+    # Use postgresql+asyncpg:// driver for async connections
+    engine = create_async_engine(
+        (
+            "postgresql+asyncpg://"
+            f"{quote(config.get('db.username'))}:{quote(password)}@{quote(config.get('db.host'))}:"
+            f"{config.get('db.port')}/{quote(config.get('db.name'))}"
+        ),
+        **engine_kwargs,
+    )
+
+    return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)()
+
+
+@asynccontextmanager
+async def async_session_scope(config, **kwargs):
+    """Async context manager for database sessions"""
+    session = await create_async_session(config, **kwargs)
+    try:
+        yield session
+        await session.commit()
+    except:
+        await session.rollback()
+        raise
+    finally:
+        await session.close()
 
 
 @contextmanager
@@ -428,6 +475,136 @@ class QueryMethodsMixin:
                 session.commit()
             except:
                 session.rollback()
+                raise
+
+
+class AsyncQueryMethodsMixin:
+    """Async versions of QueryMethodsMixin for FastAPI"""
+
+    @classmethod
+    async def query(cls, session, q=None, slice_start=None, slice_end=None, ids=None, locations=None, q_fn=None, **kwargs):
+        if q is None:
+            q = select(cls).filter_by(**kwargs)
+
+        if slice_start is not None and slice_end is not None:
+            q = q.slice(slice_start, slice_end)
+
+        if locations:
+            LOGGER.debug("filtering query by locations: %s", locations)
+            q = q.where(cls.location_id.in_(locations))
+
+        if ids:
+            LOGGER.debug("filtering query by ids: %s", ids)
+            q = q.where(cls.id.in_(ids))
+        
+        if q_fn:
+            q = q_fn(q)
+
+        try:
+            result = await session.execute(q)
+            return result.unique().scalars().all()
+        except DataError as err:
+            if not isinstance(err.orig, InvalidTextRepresentation):
+                raise
+            if "invalid input value for enum" not in str(err.orig):
+                raise
+
+            # Handle enum validation errors (same logic as sync version)
+            msg, desc, pointer, _ = str(err.orig).split("\n")
+            enum_name = msg.split("for enum ")[1].split(":")[0].strip('"')
+            exc = getattr(cls, _ENUM_EXC_MAP, {}).get(enum_name, local_exc.InvalidEnum)
+            err_ix = pointer.index("^")
+            _, column_name = desc[:err_ix].split()[-2].split(".")
+            raise exc(err.params.get(column_name, "could not find offending value")) from err
+
+    @classmethod
+    async def get_by_pkey(cls, session, pkey):
+        result = await session.get(cls, pkey)
+        return result
+
+    @classmethod
+    async def create(cls, session, autocommit=True, **kwargs):
+        for key in kwargs:
+            if not hasattr(cls, key):
+                raise local_exc.InvalidParameter(key)
+
+        row = cls(**kwargs)
+        session.add(row)
+
+        if autocommit:
+            try:
+                with convert_exception(IntegrityError, psycopg2=NotNullViolation, new=local_exc.RequiredParameterNotFound), convert_exception(
+                    IntegrityError, psycopg2=UniqueViolation, new=local_exc.ItemAlreadyExists, str_match="_pkey"
+                ):
+                    await session.commit()
+                    await session.refresh(row)
+            except:
+                await session.rollback()
+                raise
+
+        return row
+
+    @classmethod
+    async def update_query(cls, session, filters=None, **updates):
+        if filters is None:
+            filters = {}
+
+        q = select(cls).filter_by(**filters)
+        result = await session.execute(q)
+        rows = result.scalars().all()
+
+        for row in rows:
+            for key, value in updates.items():
+                setattr(row, key, value)
+
+    @classmethod
+    async def update(cls, session, pkey, merge_nested=False, autocommit=True, **kwargs):
+        merge_fields = getattr(cls, _MERGEABLE_FIELDS_LIST, [])
+        row = await cls.get_by_pkey(session, pkey)
+
+        for key, value in kwargs.items():
+            if not hasattr(cls, key):
+                raise local_exc.InvalidParameter(key)
+
+            if merge_nested and key in merge_fields:
+                current = getattr(row, key, {})
+                value = _merge_into(current, value)
+
+            setattr(row, key, value)
+
+        session.add(row)
+        if autocommit:
+            try:
+                await session.commit()
+                await session.refresh(row)
+            except:
+                await session.rollback()
+                raise
+
+        return row
+
+    @classmethod
+    async def delete(cls, session, pkey, autocommit=True):
+        row = await cls.get_by_pkey(session, pkey)
+        await session.delete(row)
+
+        if autocommit:
+            try:
+                await session.commit()
+            except:
+                await session.rollback()
+                raise
+
+    @classmethod
+    async def delete_by(cls, session, autocommit=True, **kwargs):
+        q = delete(cls).filter_by(**kwargs)
+        await session.execute(q)
+
+        if autocommit:
+            try:
+                await session.commit()
+            except:
+                await session.rollback()
                 raise
 
 

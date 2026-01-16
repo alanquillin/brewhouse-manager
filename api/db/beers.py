@@ -3,16 +3,16 @@ _TABLE_NAME = "beers"
 _PKEY = "id"
 
 from sqlalchemy import Column, Float, ForeignKey, Boolean, String, func
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import joinedload, relationship
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail, locations
+from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail, locations
 from db.types.nested import NestedMutableDict
 
 
 @generate_audit_trail
-class Beers(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class Beers(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     __tablename__ = _TABLE_NAME
 
@@ -36,7 +36,7 @@ class Beers(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     __table_args__ = (Index("beer_name_lower_ix", func.lower(name), unique=True),)
 
     @classmethod
-    def create(cls, session, **kwargs):
+    async def create(cls, session, **kwargs):
         if not kwargs.get("image_transitions_enabled"):
             kwargs["image_transitions_enabled"] = False
         return super().create(session, **kwargs)

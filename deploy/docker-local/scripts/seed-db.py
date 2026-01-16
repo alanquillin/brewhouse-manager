@@ -516,35 +516,35 @@ if __name__ == "__main__":
     logger.debug("db password: %s", config.get("db.password"))
 
 
-    with session_scope(config) as db_session:
-        while True:
-            try:
-                db_session.execute(text("select 1"))
-                logger.debug("Database ready!")
-                break
-            except OperationalError:
-                logger.debug("Waiting for database readiness")
-                sleep(3)
+    # with session_scope(config) as db_session:
+    #     while True:
+    #         try:
+    #             db_session.execute(text("select 1"))
+    #             logger.debug("Database ready!")
+    #             break
+    #         except OperationalError:
+    #             logger.debug("Waiting for database readiness")
+    #             sleep(3)
 
-        logger.debug("Creating database schema and seeding with data")
+    #     logger.debug("Creating database schema and seeding with data")
 
-        seed_db(db_session, locations.Locations, LOCATIONS)
-        seed_db(db_session, beers.Beers, BEERS)
-        seed_db(db_session, beverages.Beverages, BEVERAGES)
-        seed_db(db_session, sensors.Sensors, SENSORS)
-        seed_db(db_session, batches.Batches, BATCHES)
-        seed_db(db_session, on_tap.OnTap, ON_TAP)
-        seed_db(db_session, taps.Taps, TAPS)
-        initial_user_data = get_initial_user(db_session)
-        if initial_user_data:
-            USERS.append(initial_user_data)
-        seed_db(db_session, users.Users, USERS)
-        if initial_user_data:
-            initial_user = users.Users.query(db_session, email=initial_user_data["email"])
-            if initial_user:
-                for l in LOCATIONS:
-                    ulm = user_locations.UserLocations.query(db_session, user_id=initial_user[0].id, location_id=l["id"])
-                    if not ulm:
-                        USER_LOCATIONS.append({"user_id": initial_user[0].id ,"location_id": l["id"]})
-        seed_db(db_session, user_locations.UserLocations, USER_LOCATIONS)
+    #     seed_db(db_session, locations.Locations, LOCATIONS)
+    #     seed_db(db_session, beers.Beers, BEERS)
+    #     seed_db(db_session, beverages.Beverages, BEVERAGES)
+    #     seed_db(db_session, sensors.Sensors, SENSORS)
+    #     seed_db(db_session, batches.Batches, BATCHES)
+    #     seed_db(db_session, on_tap.OnTap, ON_TAP)
+    #     seed_db(db_session, taps.Taps, TAPS)
+    #     initial_user_data = get_initial_user(db_session)
+    #     if initial_user_data:
+    #         USERS.append(initial_user_data)
+    #     seed_db(db_session, users.Users, USERS)
+    #     if initial_user_data:
+    #         initial_user = users.Users.query(db_session, email=initial_user_data["email"])
+    #         if initial_user:
+    #             for l in LOCATIONS:
+    #                 ulm = user_locations.UserLocations.query(db_session, user_id=initial_user[0].id, location_id=l["id"])
+    #                 if not ulm:
+    #                     USER_LOCATIONS.append({"user_id": initial_user[0].id ,"location_id": l["id"]})
+    #     seed_db(db_session, user_locations.UserLocations, USER_LOCATIONS)
             

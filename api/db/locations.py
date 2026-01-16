@@ -9,11 +9,11 @@ from sqlalchemy import Column, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail
+from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail
 
 
 @generate_audit_trail
-class Locations(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class Locations(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     __tablename__ = _TABLE_NAME
 
     id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
@@ -24,16 +24,16 @@ class Locations(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
 
     @staticmethod
     def _replace_name(data):
-        if "name" in data and data["name"]:
+        if "name" in data and data.get("name"):
             data["name"] = re.sub("[^a-zA-Z0-9-]", "", data["name"].replace(" ", "-")).lower()
         return data
 
     @classmethod
-    def create(cls, session, **kwargs):
+    async def create(cls, session, **kwargs):
         kwargs = cls._replace_name(kwargs)
         return super().create(session, **kwargs)
 
     @classmethod
-    def update(cls, session, pkey, **kwargs):
+    async def update(cls, session, pkey, **kwargs):
         kwargs = cls._replace_name(kwargs)
         return super().update(session, pkey, **kwargs)
