@@ -6,17 +6,26 @@ import os
 import sys
 import uuid
 
+from lib.config import Config
+from lib import logging
+
+# Initialize configuration
+CONFIG = Config()
+CONFIG.setup(config_files=["default.json"])
+
+# Initialize logging
+logging.init(fmt=logging.DEFAULT_LOG_FMT)
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.exc import IntegrityError, DataError
 from schema import SchemaError
 
-from lib.config import Config
-from lib import logging
 #from resources.exceptions import UserMessageError
 
 class UserMessageError(Exception):
@@ -26,12 +35,6 @@ class UserMessageError(Exception):
         self.response_code = response_code
         super().__init__()
 
-# Initialize configuration
-CONFIG = Config()
-CONFIG.setup(config_files=["default.json"])
-
-# Initialize logging
-logging.init(fmt=logging.DEFAULT_LOG_FMT)
 LOGGER = logging.getLogger(__name__)
 
 # Create FastAPI app
@@ -164,6 +167,7 @@ app.include_router(settings.router)
 app.include_router(external_brew_tools.router)
 app.include_router(image_transitions.router)
 
+
 # Register pages router last (has catch-all routes)
 app.include_router(pages.router)
 
@@ -196,6 +200,16 @@ async def serve_spa(full_path: str):
         status_code=404,
         content={"message": "Not found"}
     )
+
+
+@app.api_route("/api/v1/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+async def catch_all(request: Request, full_path: str):
+    # This route will match any path and any HTTP method that hasn't been matched yet
+    return JSONResponse(
+        status_code=404,
+        content={"message": f"Resource not found: '{full_path}'"},
+    )
+
 
 async def initialize_first_user():
     """Create initial user if no users exist"""
