@@ -6,7 +6,7 @@ from requests.auth import HTTPBasicAuth
 
 from db import session_scope
 from db.sensors import Sensors as SensorsDB
-from lib.sensors import SensorBase
+from lib.sensors import SensorBase, InvalidDataType
 
 KEYMAP = {
     "percent_beer_remaining": "percent_of_beer_left",
@@ -19,36 +19,17 @@ class OpenPlaatoKeg(SensorBase):
     def supports_discovery(self):
         return True
     
-    def get(self, key, sensor_id=None, sensor=None, meta=None):
-        if not sensor_id and not sensor and not meta:
-            raise Exception("WTH!!")
+    def get(self, data_key, sensor_id=None, sensor=None, meta=None):
+        data = self._get_data(sensor_id, sensor, meta)
+        map_key = KEYMAP.get(data_key, None)
 
-        if not meta:
-            if not sensor:
-                with session_scope as session:
-                    sensor = SensorsDB.get_by_pkey(session, sensor_id)
-            meta = sensor.meta
-
-        device_id = meta.get("device_id")
-        data = self._get(f"kegs/{device_id}")
-        key = KEYMAP.get(key, None)
-
-        if not key:
-            return None
-        return data.get(key)
+        if not map_key:
+            self.logger.warning(f"Unknown data key: {map_key}")
+            raise InvalidDataType(data_key)
+        return data.get(map_key)
 
     def get_all(self, sensor_id=None, sensor=None, meta=None):
-        if not sensor_id and not sensor and not meta:
-            raise Exception("WTH!!")
-
-        if not meta:
-            if not sensor:
-                with session_scope as session:
-                    sensor = SensorsDB.get_by_pkey(session, sensor_id)
-            meta = sensor.meta
-
-        device_id = meta.get("device_id")
-        data = self._get(f"kegs/{device_id}")
+        data = self._get_data(sensor_id, sensor, meta)
 
         return {
             "percentRemaining": data.get("percent_of_beer_left"),
@@ -60,8 +41,21 @@ class OpenPlaatoKeg(SensorBase):
     def discover(self):
         devices = self._get("kegs")
 
-        return [{"id": dev["id"], "name": dev["name"]} for dev in devices]
+        return [{"id": dev["id"], "name": dev.get("name", "unknown")} for dev in devices]
     
+
+    def _get_data(self, sensor_id=None, sensor=None, meta=None):
+        if not sensor_id and not sensor and not meta:
+            raise Exception("WTH!!")
+
+        if not meta:
+            if not sensor:
+                with session_scope as session:
+                    sensor = SensorsDB.get_by_pkey(session, sensor_id)
+            meta = sensor.meta
+
+        device_id = meta.get("device_id")
+        return self._get(f"kegs/{device_id}")
 
     def _get(self, path, params=None):
         kwargs = {}

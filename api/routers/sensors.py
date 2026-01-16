@@ -4,6 +4,7 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +12,8 @@ from dependencies.auth import AuthUser, get_db_session, require_user
 from db.sensors import Sensors as SensorsDB
 from services.sensors import SensorService
 from lib import util
+from lib.sensors import InvalidDataType, get_sensor_lib
+from lib.sensors import get_types as get_sensor_types
 
 router = APIRouter(prefix="/api/v1/sensors", tags=["sensors"])
 LOGGER = logging.getLogger(__name__)
@@ -46,6 +49,38 @@ async def get_location_id(location_identifier: str, db_session: AsyncSession) ->
         return locations[0].id
 
     return None
+
+
+@router.get("/types", response_model=List[str])
+async def list_sensor_types(
+    current_user: AuthUser = Depends(require_user),
+):
+    """List available sensor types"""
+    return [str(t) for t in get_sensor_types()]
+
+
+@router.get("/discover", response_model=dict)
+async def discover_sensors(
+    current_user: AuthUser = Depends(require_user),
+):
+    raise HTTPException(status_code=404, detail="Resource not found")
+
+
+@router.get("/discover/{sensor_type}", response_model=List[dict])
+async def discover_sensors(
+    sensor_type: str,
+    current_user: AuthUser = Depends(require_user),
+):
+    """Discover sensors of a specific type"""
+    if sensor_type not in get_sensor_types():
+        raise HTTPException(status_code=400, detail=f"Invalid sensor type: {sensor_type}")
+
+    sensor_lib = get_sensor_lib(sensor_type)
+
+    if not sensor_lib.supports_discovery():
+        raise HTTPException(status_code=400, detail=f"{sensor_type} sensors do not support discovery")
+
+    return sensor_lib.discover()
 
 
 @router.get("", response_model=List[dict])
@@ -190,3 +225,64 @@ async def delete_sensor(
 
     await SensorsDB.delete(db_session, sensor.id)
     return True
+
+
+@router.get("/{sensor_id}/data")
+async def get_sensor_data(
+    sensor_id: str,
+    location: Optional[str] = None,
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    """Get sensor data (no authentication required for public access)"""
+    sensor = None
+    if location:
+        location_id = await get_location_id(location, db_session)
+        kwargs = {"location_id": location_id, "id": sensor_id}
+        resp = await SensorsDB.query(db_session, **kwargs)
+        if resp:
+            sensor = resp[0]
+    else:
+        sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
+
+    if not sensor:
+        raise HTTPException(status_code=404, detail="Sensor not found")
+
+    sensor_lib = get_sensor_lib(sensor.sensor_type)
+    try:
+        return sensor_lib.get_all(sensor=sensor)
+    except InvalidDataType as ex:
+        raise HTTPException(status_code=400, detail=str(ex))
+    
+
+@router.get("/{sensor_id}/data/{data_type}")
+async def get_specific_sensor_data(
+    sensor_id: str,
+    data_type: str,
+    location: Optional[str] = None,
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    """Get sensor data (no authentication required for public access)"""
+    sensor = None
+    if location:
+        location_id = await get_location_id(location, db_session)
+        kwargs = {"location_id": location_id, "id": sensor_id}
+        resp = await SensorsDB.query(db_session, **kwargs)
+        if resp:
+            sensor = resp[0]
+    else:
+        sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
+
+    if not sensor:
+        raise HTTPException(status_code=404, detail="Sensor not found")
+
+    sensor_lib = get_sensor_lib(sensor.sensor_type)
+    try:
+        LOGGER.debug(f"Querying sensor of type: {sensor.sensor_type} for data key: {data_type}")
+        try:
+            data =  sensor_lib.get(data_type, sensor=sensor)
+            LOGGER.debug(f"data: {data}")
+            return data
+        except InvalidDataType as ex:
+            raise HTTPException(status_code=400, detail=f"Invalid data type: {data_type}")
+    except InvalidDataType as ex:
+        raise HTTPException(status_code=400, detail=str(ex))

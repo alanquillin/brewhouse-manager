@@ -215,7 +215,7 @@ export class DataService {
   }
 
   getSensorData(sensorId: string, dataType: string): Observable<any> {
-    const url = `${this.apiBaseUrl}/sensors/${sensorId}/${dataType}`;
+    const url = `${this.apiBaseUrl}/sensors/${sensorId}/data/${dataType}`;
     return this.http.get<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
