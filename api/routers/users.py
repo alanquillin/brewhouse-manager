@@ -75,7 +75,7 @@ async def create_user(
     data = user_data.model_dump(exclude_unset=True)
     LOGGER.debug("Creating user with: %s", data)
 
-    user = await UsersDB.create_async(db_session, **data)
+    user = await UsersDB.create(db_session, **data)
     return await UserService.transform_response(user, current_user)
 
 
@@ -119,7 +119,7 @@ async def update_user(
     LOGGER.debug("Updating user %s with data: %s", user_id, data)
 
     if data:
-        user = await UsersDB.update_async(db_session, user_id, **data)
+        user = await UsersDB.update(db_session, user_id, **data)
 
     return await UserService.transform_response(user, current_user)
 

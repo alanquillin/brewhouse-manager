@@ -39,4 +39,4 @@ class Beers(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     async def create(cls, session, **kwargs):
         if not kwargs.get("image_transitions_enabled"):
             kwargs["image_transitions_enabled"] = False
-        return super().create(session, **kwargs)
+        return await super().create(session, **kwargs)

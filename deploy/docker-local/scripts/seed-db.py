@@ -10,7 +10,7 @@ from time import sleep
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.sql import text
 
-from db import Base, beers, beverages, locations, sensors, session_scope, taps, users, user_locations, on_tap, batches
+from db import Base, beers, beverages, locations, sensors, async_session_scope, taps, users, user_locations, on_tap, batches
 from lib.config import Config
 
 location1_id = "fb139af3-2905-4006-9196-62f54bb262ab"
@@ -48,8 +48,7 @@ BEERS = [
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "recipe_id": "myK3jrO7URP7Kl8F3eIFxiZHg6kScV" # irish stout
-        },
-        "location_id": location1_id,
+        }
     },
     {
         "id": beer_l1b2_id,
@@ -58,8 +57,7 @@ BEERS = [
         "style": "Lager",
         "abv": 5.2,
         "ibu": 17,
-        "srm": 4.1,
-        "location_id": location1_id,
+        "srm": 4.1
     },
     {
         "id": beer_l1b3_id,
@@ -67,40 +65,35 @@ BEERS = [
         "external_brewing_tool_meta": {
             "recipe_id": "mz58MKrOFrScEPmkM7lhY9a8lKaosp" # galactic santa
         },
-        "style": "Christmas Ale",
-        "location_id": location1_id,
+        "style": "Christmas Ale"
     },
     {
         "id": beer_l2b1_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "recipe_id": "y3FTmQ3kJOTRCyE4I1LvN4RFbypByV" # citrus haze
-        },
-        "location_id": location2_id,
+        }
     },
     {
         "id": beer_l3b1_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "recipe_id": "55FNplpfSBLjRjp88Dr1ftEq6IygVo" # summer wheat
-        },
-        "location_id": location3_id,
+        }
     },
     {
         "id": beer_l3b2_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "recipe_id": "RNoqpCn9uNQoiKHG5Qn0NdNaPrNxmV" # standard haze
-        },
-        "location_id": location3_id,
+        }
     },
     {
         "id": beer_l3b3_id,
         "external_brewing_tool": "brewfather",
         "external_brewing_tool_meta": {
             "recipe_id": "ejlRoFOrX4J8QxNBtOC16PsmsedQh7" # 3 bromigos
-        },
-        "location_id": location3_id,
+        }
     }
 ]
 
@@ -203,8 +196,7 @@ BEVERAGES = [
         "description": "This is a test cold brew",
         "brewery": "My Brewing Co.",
         "type": "cold-brew",
-        "flavor": "Medium Roast",
-        "location_id": location1_id,
+        "flavor": "Medium Roast"
         
     },
     {
@@ -213,8 +205,7 @@ BEVERAGES = [
         "description": "This is a test soda",
         "brewery": "My Soda Co.",
         "type": "soda",
-        "flavor": "Cherry",
-        "location_id": location2_id,
+        "flavor": "Cherry"
         
     },
     {
@@ -223,8 +214,7 @@ BEVERAGES = [
         "description": "This is a test kombucha",
         "brewery": "My Kombucha Co.",
         "type": "kombucha",
-        "flavor": "Orange",
-        "location_id": location2_id,
+        "flavor": "Orange"
         
     }
 ]
@@ -300,6 +290,49 @@ BATCHES = [
         "external_brewing_tool_meta": {
             "batch_id": "sMO9MU8OD1wqJRKL2DPqGkm7VtyWsv" # 3 bromegos (batch 141)
         },
+    }
+]
+
+BATCH_LOCATIONS = [
+    {
+        "batch_id": batch_id1,
+        "location1_id": location1_id
+    },
+    {
+        "batch_id": batch_id2,
+        "location1_id": location1_id
+    },
+    {
+        "batch_id": batch_id3,
+        "location1_id": location1_id
+    },
+    {
+        "batch_id": batch_id4,
+        "location1_id": location1_id
+    },
+    {
+        "batch_id": batch_id5,
+        "location1_id": location2_id
+    },
+    {
+        "batch_id": batch_id6,
+        "location1_id": location3_id
+    },
+    {
+        "batch_id": batch_id7,
+        "location1_id": location3_id
+    },
+    {
+        "batch_id": batch_id8,
+        "location1_id": location3_id
+    },
+    {
+        "batch_id": batch_id1,
+        "location1_id": location3_id
+    },
+    {
+        "batch_id": batch_id6,
+        "location1_id": location2_id
     }
 ]
 
@@ -442,20 +475,26 @@ USER_LOCATIONS = [{
     "location_id": location1_id
 }]
 
-def seed_db(db_session, db, items, pk="id"):
+async def seed_db(db, items, pk="id"):
     for item in items:
         logger.info(item)
-        try:
-            if not db.get_by_pkey(db_session, item.get(pk)):
-                logger.info("Seeding %s: %s", db.__name__, item)
-                db.create(db_session, **item)
-            else:
-                logger.info("Item %s already exists in %s.", item[pk], db.__name__)
-        except IntegrityError as ex:
-                logger.debug("Item already exists or a constraint was violated: %s", ex)
+        async with async_session_scope(config) as db_session:
+            try:
+                if not await db.get_by_pkey(db_session, item.get(pk)):
+                    logger.info("Seeding %s: %s", db.__name__, item)
+                    new_item = await db.create(db_session, **item)
+                    if not new_item:
+                        raise Exception("new item not create!")
+                    logger.info("Item created")
+                    logger.debug(new_item.to_dict())
+                else:
+                    logger.info("Item %s already exists in %s.", item[pk], db.__name__)
+            except IntegrityError as ex:
+                    logger.debug("Item already exists or a constraint was violated: %s", ex)
+                    raise
 
 
-def get_initial_user(db_session):
+async def get_initial_user():
     init_user_email = config.get("auth.initial_user.email")
     set_init_user_pass = config.get("auth.initial_user.set_password")
     init_user_fname = config.get("auth.initial_user.first_name")
@@ -475,14 +514,51 @@ def get_initial_user(db_session):
     logger.info("No users exist, creating initial user: %s", data)
     if set_init_user_pass:
         data["password"] = config.get("auth.initial_user.password")
-
-    user = users.Users.query(db_session, email=init_user_email)
-    if user:
-        data["id"] = user[0].id
+    async with async_session_scope(config) as db_session:
+        user = await users.Users.query(db_session, email=init_user_email)
+        if user:
+            data["id"] = user[0].id
 
     return data
 
+async def run():
+    while True:
+        try:
+            async with async_session_scope(config) as db_session:
+                db_session.execute(text("select 1"))
+                logger.debug("Database ready!")
+                break
+        except OperationalError:
+            logger.debug("Waiting for database readiness")
+            sleep(3)
+
+    logger.debug("Creating database schema and seeding with data")
+
+    await seed_db(locations.Locations, LOCATIONS)
+    await seed_db(beers.Beers, BEERS)
+    await seed_db(beverages.Beverages, BEVERAGES)
+    await seed_db(sensors.Sensors, SENSORS)
+    await seed_db(batches.Batches, BATCHES)
+    await seed_db(on_tap.OnTap, ON_TAP)
+    await seed_db(taps.Taps, TAPS)
+    initial_user_data = await get_initial_user()
+    if initial_user_data:
+        USERS.append(initial_user_data)
+    await seed_db(users.Users, USERS)
+    if initial_user_data:
+        async with async_session_scope(config) as db_session:
+            initial_user = await users.Users.query(db_session, email=initial_user_data["email"])
+            if initial_user:
+                for l in LOCATIONS:
+                    ulm = await user_locations.UserLocations.query(db_session, user_id=initial_user[0].id, location_id=l["id"])
+                    if not ulm:
+                        USER_LOCATIONS.append({"user_id": initial_user[0].id ,"location_id": l["id"]})
+    await seed_db(user_locations.UserLocations, USER_LOCATIONS)
+
+
 if __name__ == "__main__":
+    import asyncio
+
     parser = argparse.ArgumentParser()
 
     # parse logging level arg:
@@ -515,36 +591,5 @@ if __name__ == "__main__":
     logger.debug("db name: %s", config.get("db.name"))
     logger.debug("db password: %s", config.get("db.password"))
 
-
-    # with session_scope(config) as db_session:
-    #     while True:
-    #         try:
-    #             db_session.execute(text("select 1"))
-    #             logger.debug("Database ready!")
-    #             break
-    #         except OperationalError:
-    #             logger.debug("Waiting for database readiness")
-    #             sleep(3)
-
-    #     logger.debug("Creating database schema and seeding with data")
-
-    #     seed_db(db_session, locations.Locations, LOCATIONS)
-    #     seed_db(db_session, beers.Beers, BEERS)
-    #     seed_db(db_session, beverages.Beverages, BEVERAGES)
-    #     seed_db(db_session, sensors.Sensors, SENSORS)
-    #     seed_db(db_session, batches.Batches, BATCHES)
-    #     seed_db(db_session, on_tap.OnTap, ON_TAP)
-    #     seed_db(db_session, taps.Taps, TAPS)
-    #     initial_user_data = get_initial_user(db_session)
-    #     if initial_user_data:
-    #         USERS.append(initial_user_data)
-    #     seed_db(db_session, users.Users, USERS)
-    #     if initial_user_data:
-    #         initial_user = users.Users.query(db_session, email=initial_user_data["email"])
-    #         if initial_user:
-    #             for l in LOCATIONS:
-    #                 ulm = user_locations.UserLocations.query(db_session, user_id=initial_user[0].id, location_id=l["id"])
-    #                 if not ulm:
-    #                     USER_LOCATIONS.append({"user_id": initial_user[0].id ,"location_id": l["id"]})
-    #     seed_db(db_session, user_locations.UserLocations, USER_LOCATIONS)
             
+    asyncio.run(run())

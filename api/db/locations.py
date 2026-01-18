@@ -31,9 +31,9 @@ class Locations(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     @classmethod
     async def create(cls, session, **kwargs):
         kwargs = cls._replace_name(kwargs)
-        return super().create(session, **kwargs)
+        return await super().create(session, **kwargs)
 
     @classmethod
     async def update(cls, session, pkey, **kwargs):
         kwargs = cls._replace_name(kwargs)
-        return super().update(session, pkey, **kwargs)
+        return await super().update(session, pkey, **kwargs)
