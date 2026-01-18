@@ -104,7 +104,7 @@ class BeerService:
                 if refresh_data:
                     LOGGER.info("Refreshing data from %s for %s. Reason: %s", tool_type, beer.id, refresh_reason)
                     tool = get_external_brewing_tool(tool_type)
-                    ex_details = tool.get_recipe_details(beer=beer)
+                    ex_details = await tool.get_recipe_details(beer=beer)
                     if ex_details:
                         ex_details["_last_refreshed_on"] = now.isoformat()
                         LOGGER.debug("Extended recipe details: %s, updating database", ex_details)

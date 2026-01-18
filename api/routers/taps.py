@@ -15,7 +15,7 @@ from db.batches import Batches as BatchesDB
 from services.taps import TapService
 from lib import util
 
-router = APIRouter(prefix="/api/v1/taps", tags=["taps"])
+router = APIRouter()
 LOGGER = logging.getLogger(__name__)
 
 

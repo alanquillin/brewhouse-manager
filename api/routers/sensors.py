@@ -15,7 +15,7 @@ from lib import util
 from lib.sensors import InvalidDataType, get_sensor_lib
 from lib.sensors import get_types as get_sensor_types
 
-router = APIRouter(prefix="/api/v1/sensors", tags=["sensors"])
+router = APIRouter()
 LOGGER = logging.getLogger(__name__)
 
 
@@ -80,7 +80,7 @@ async def discover_sensors(
     if not sensor_lib.supports_discovery():
         raise HTTPException(status_code=400, detail=f"{sensor_type} sensors do not support discovery")
 
-    return sensor_lib.discover()
+    return await sensor_lib.discover()
 
 
 @router.get("", response_model=List[dict])
@@ -249,7 +249,7 @@ async def get_sensor_data(
 
     sensor_lib = get_sensor_lib(sensor.sensor_type)
     try:
-        return sensor_lib.get_all(sensor=sensor)
+        return await sensor_lib.get_all(sensor=sensor)
     except InvalidDataType as ex:
         raise HTTPException(status_code=400, detail=str(ex))
     
@@ -277,11 +277,8 @@ async def get_specific_sensor_data(
 
     sensor_lib = get_sensor_lib(sensor.sensor_type)
     try:
-        LOGGER.debug(f"Querying sensor of type: {sensor.sensor_type} for data key: {data_type}")
         try:
-            data =  sensor_lib.get(data_type, sensor=sensor)
-            LOGGER.debug(f"data: {data}")
-            return data
+            return await sensor_lib.get(data_type, sensor=sensor)
         except InvalidDataType as ex:
             raise HTTPException(status_code=400, detail=f"Invalid data type: {data_type}")
     except InvalidDataType as ex:

@@ -103,7 +103,7 @@ class BatchService:
                 if refresh_data:
                     LOGGER.info("Refreshing data from %s for %s. Reason: %s", tool_type, batch.id, refresh_reason)
                     tool = get_external_brewing_tool(tool_type)
-                    ex_details = tool.get_batch_details(batch=batch)
+                    ex_details = await tool.get_batch_details(batch=batch)
                     if ex_details:
                         ex_details["_last_refreshed_on"] = now.isoformat()
                         LOGGER.debug("Extended batch details: %s, updating database", ex_details)
