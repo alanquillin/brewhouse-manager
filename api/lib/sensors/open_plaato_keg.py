@@ -1,10 +1,9 @@
 import base64
 
-import requests
-from requests import auth
-from requests.auth import HTTPBasicAuth
+import httpx
+from httpx import BasicAuth, AsyncClient
 
-from db import session_scope
+from db import async_session_scope
 from db.sensors import Sensors as SensorsDB
 from lib.sensors import SensorBase, InvalidDataType
 
@@ -19,8 +18,8 @@ class OpenPlaatoKeg(SensorBase):
     def supports_discovery(self):
         return True
     
-    def get(self, data_key, sensor_id=None, sensor=None, meta=None):
-        data = self._get_data(sensor_id, sensor, meta)
+    async def get(self, data_key, sensor_id=None, sensor=None, meta=None):
+        data = await self._get_data(sensor_id, sensor, meta)
         map_key = KEYMAP.get(data_key, None)
 
         if not map_key:
@@ -28,8 +27,8 @@ class OpenPlaatoKeg(SensorBase):
             raise InvalidDataType(data_key)
         return data.get(map_key)
 
-    def get_all(self, sensor_id=None, sensor=None, meta=None):
-        data = self._get_data(sensor_id, sensor, meta)
+    async def get_all(self, sensor_id=None, sensor=None, meta=None):
+        data = await self._get_data(sensor_id, sensor, meta)
 
         return {
             "percentRemaining": data.get("percent_of_beer_left"),
@@ -38,26 +37,26 @@ class OpenPlaatoKeg(SensorBase):
             "firmwareVersion": data.get("firmware_version")
         }
     
-    def discover(self):
-        devices = self._get("kegs")
+    async def discover(self):
+        devices = await self._get("kegs")
 
         return [{"id": dev["id"], "name": dev.get("name", "unknown")} for dev in devices]
     
 
-    def _get_data(self, sensor_id=None, sensor=None, meta=None):
+    async def _get_data(self, sensor_id=None, sensor=None, meta=None):
         if not sensor_id and not sensor and not meta:
             raise Exception("WTH!!")
 
         if not meta:
             if not sensor:
-                with session_scope as session:
-                    sensor = SensorsDB.get_by_pkey(session, sensor_id)
+                with async_session_scope as session:
+                    sensor = await SensorsDB.get_by_pkey(session, sensor_id)
             meta = sensor.meta
 
         device_id = meta.get("device_id")
-        return self._get(f"kegs/{device_id}")
+        return await self._get(f"kegs/{device_id}")
 
-    def _get(self, path, params=None):
+    async def _get(self, path, params=None):
         kwargs = {}
         base_url = self.config.get("sensors.open_plaato_keg.base_url") 
         insecure = self.config.get("sensors.open_plaato_keg.insecure")
@@ -68,9 +67,10 @@ class OpenPlaatoKeg(SensorBase):
         url = f"{base_url}/api/{path}"
         self.logger.debug("GET Request: %s, params: %s", url, params)
         
-        resp = requests.get(url, params=params, **kwargs)
-        self.logger.debug("GET response code: %s", resp.status_code)
-        
-        j = resp.json()
-        self.logger.debug("GET response JSON: %s", j)
-        return j
+        async with AsyncClient() as client:
+            resp = client.get(url, params=params, **kwargs)
+            self.logger.debug("GET response code: %s", resp.status_code)
+            
+            j = resp.json()
+            self.logger.debug("GET response JSON: %s", j)
+            return j
