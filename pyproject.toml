@@ -79,6 +79,8 @@ itsdangerous = "^2.2.0"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.32"}
 uvicorn = {extras = ["standard"], version = "^0.32.0"}
 httpx = "^0.28.1"
+google-api-python-client = "^2.188.0"
+google-auth-oauthlib = "^1.2.4"
 
 
 [tool.poetry.dev-dependencies]
