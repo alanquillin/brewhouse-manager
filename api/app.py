@@ -21,7 +21,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.exc import IntegrityError, DataError
 from schema import SchemaError
@@ -170,7 +169,6 @@ app.include_router(settings.router)
 app.include_router(external_brew_tools.router)
 app.include_router(image_transitions.router)
 
-
 # Register pages router last (has catch-all routes)
 app.include_router(pages.router)
 
@@ -202,15 +200,6 @@ async def serve_spa(full_path: str):
     return JSONResponse(
         status_code=404,
         content={"message": "Not found"}
-    )
-
-
-@app.api_route("/api/v1/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
-async def catch_all(request: Request, full_path: str):
-    # This route will match any path and any HTTP method that hasn't been matched yet
-    return JSONResponse(
-        status_code=404,
-        content={"message": f"Resource not found: '{full_path}'"},
     )
 
 
