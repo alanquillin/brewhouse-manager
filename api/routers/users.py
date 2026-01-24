@@ -13,35 +13,10 @@ from db.users import Users as UsersDB
 from db.user_locations import UserLocations as UserLocationsDB
 from services.users import UserService
 from services.locations import LocationService
+from schemas.users import UserCreate, UserUpdate, UserLocationsUpdate
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 LOGGER = logging.getLogger(__name__)
-
-
-class UserCreate(BaseModel):
-    """Schema for creating a user"""
-
-    email: str
-    first_name: str | None = None
-    last_name: str | None = None
-    admin: bool = False
-    password: str | None = None
-
-
-class UserUpdate(BaseModel):
-    """Schema for updating a user"""
-
-    email: str | None = None
-    first_name: str | None = None
-    last_name: str | None = None
-    admin: bool | None = None
-    password: str | None = None
-
-
-class UserLocationsUpdate(BaseModel):
-    """Schema for updating user locations"""
-
-    location_ids: List[str]
 
 
 @router.get("/current", response_model=dict)

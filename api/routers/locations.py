@@ -4,30 +4,16 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import AuthUser, get_db_session, require_user, require_admin
 from db.locations import Locations as LocationsDB
 from services.locations import LocationService
+from schemas.locations import LocationCreate, LocationUpdate
 from lib import util
 
 router = APIRouter(prefix="/api/v1/locations", tags=["locations"])
 LOGGER = logging.getLogger(__name__)
-
-
-class LocationCreate(BaseModel):
-    """Schema for creating a location"""
-
-    name: str
-    description: Optional[str] = None
-
-
-class LocationUpdate(BaseModel):
-    """Schema for updating a location"""
-
-    name: Optional[str] = None
-    description: Optional[str] = None
 
 
 async def get_location_id(location_identifier: str, db_session: AsyncSession) -> str:
