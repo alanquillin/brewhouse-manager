@@ -5,36 +5,18 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import AuthUser, get_db_session, require_user
 from db.sensors import Sensors as SensorsDB
-from services.sensors import SensorService
 from lib import util
 from lib.sensors import InvalidDataType, get_sensor_lib
 from lib.sensors import get_types as get_sensor_types
+from services.sensors import SensorService
+from schemas.sensors import SensorCreate, SensorUpdate
 
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
-
-
-class SensorCreate(BaseModel):
-    """Schema for creating a sensor"""
-
-    name: str
-    sensor_type: str
-    location_id: Optional[str] = None
-    config: Optional[dict] = None
-
-
-class SensorUpdate(BaseModel):
-    """Schema for updating a sensor"""
-
-    name: Optional[str] = None
-    sensor_type: Optional[str] = None
-    location_id: Optional[str] = None
-    config: Optional[dict] = None
 
 
 async def get_location_id(location_identifier: str, db_session: AsyncSession) -> str:
