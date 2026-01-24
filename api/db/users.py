@@ -41,14 +41,14 @@ class Users(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     @classmethod
     async def get_by_email(cls, session, email, **kwargs):
-        res = await cls.query(session, email=email, **kwargs)
+        res = await super().query(session, email=email, **kwargs)
         if not res:
             return None
         return res[0]
 
     @classmethod
     async def get_by_api_key(cls, session, api_key, **kwargs):
-        res = await cls.query(session, api_key=api_key, **kwargs)
+        res = await super().query(session, api_key=api_key, **kwargs)
         if not res:
             return None
         return res[0]
