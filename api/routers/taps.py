@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import AuthUser, get_db_session, require_user
@@ -13,30 +12,11 @@ from db.taps import Taps as TapsDB
 from db.on_tap import OnTap as OnTapDB
 from db.batches import Batches as BatchesDB
 from services.taps import TapService
+from schemas.taps import TapCreate, TapUpdate
 from lib import util
 
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
-
-
-class TapCreate(BaseModel):
-    """Schema for creating a tap"""
-
-    name: str
-    tap_number: Optional[int] = None
-    location_id: Optional[str] = None
-    sensor_id: Optional[str] = None
-    batch_id: Optional[str] = None
-
-
-class TapUpdate(BaseModel):
-    """Schema for updating a tap"""
-
-    name: Optional[str] = None
-    tap_number: Optional[int] = None
-    location_id: Optional[str] = None
-    sensor_id: Optional[str] = None
-    batch_id: Optional[str] = None
 
 
 async def get_location_id(location_identifier: str, db_session: AsyncSession) -> str:
@@ -106,7 +86,7 @@ async def create_tap(
             raise HTTPException(status_code=404, detail="Batch not found")
 
         on_tap = await OnTapDB.create(
-            db_session, batch_id=batch_id, beer_id=batch.beer_id, beverage_id=batch.beverage_id, tapped_on=datetime.utcnow()
+            db_session, batch_id=batch_id, tapped_on=datetime.utcnow()
         )
         data["on_tap_id"] = on_tap.id
 
@@ -207,8 +187,6 @@ async def update_tap(
                 on_tap = await OnTapDB.create(
                     db_session,
                     batch_id=new_batch_id,
-                    beer_id=batch.beer_id,
-                    beverage_id=batch.beverage_id,
                     tapped_on=datetime.utcnow(),
                 )
                 data["on_tap_id"] = on_tap.id
