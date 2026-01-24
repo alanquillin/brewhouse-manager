@@ -17,6 +17,7 @@ LOGGER = logging.getLogger(__name__)
 
 @router.get("", response_model=List[dict])
 async def list_beverages(
+    current_user: AuthUser = Depends(require_user),
     db_session: AsyncSession = Depends(get_db_session),
 ):
     """List all beverages (public endpoint)"""
@@ -52,6 +53,7 @@ async def create_beverage(
 @router.get("/{beverage_id}", response_model=dict)
 async def get_beverage(
     beverage_id: str,
+    current_user: AuthUser = Depends(require_user),
     db_session: AsyncSession = Depends(get_db_session),
 ):
     """Get a specific beverage (public endpoint)"""
