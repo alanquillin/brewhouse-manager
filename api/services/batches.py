@@ -3,11 +3,13 @@
 import logging
 from datetime import datetime, timedelta, date
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.taps import Taps as TapsDB
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
+from lib.external_brew_tools.exceptions import ResourceNotFoundError
 from lib.time import parse_iso8601_utc, utcnow_aware
 from services.base import transform_dict_to_camel_case
 
@@ -50,7 +52,7 @@ class BatchService:
 
         # Include tap details if requested
         if include_tap_details:
-            taps = await TapsDB.query(db_session, batch_id=batch.id)
+            taps = await TapsDB.get_by_batch(db_session, batch_id=batch.id)
             if taps:
                 from services.taps import TapService
 
@@ -105,12 +107,11 @@ class BatchService:
                     tool = get_external_brewing_tool(tool_type)
                     ex_details = await tool.get_batch_details(batch=batch)
                     if ex_details:
-                        ex_details["_last_refreshed_on"] = now.isoformat()
-                        LOGGER.debug("Extended batch details: %s, updating database", ex_details)
+                        u_meta = BatchService.store_metadata(meta, ex_details, now=now)
+                        LOGGER.debug(f"Updated brew tool metadata: {u_meta}, updating database")
                         from db.batches import Batches as BatchesDB
-
-                        await BatchesDB.update(db_session, batch.id, external_brewing_tool_meta={**meta, "details": ex_details})
-                        data["external_brewing_tool_meta"] = {**meta, "details": ex_details}
+                        await BatchesDB.update(db_session, batch.id, external_brewing_tool_meta=u_meta)
+                        data["external_brewing_tool_meta"] = u_meta
                     else:
                         LOGGER.warning(
                             "There was an error or no details from %s for %s",
@@ -144,3 +145,34 @@ class BatchService:
                 return True
 
         return False
+    
+    @staticmethod
+    async def verify_and_update_external_brew_tool_batch(request_data):
+        LOGGER.debug("Checking if the beer is associated with an external brew tool and verifying data")
+        tool_type = request_data.get("external_brewing_tool")
+        if tool_type:
+            meta = request_data.get("external_brewing_tool_meta", {})
+            LOGGER.debug(f"Beer is associated with {tool_type} batch.  Metadata: {meta}.  Verifying...")
+            batch_id = meta.get("batch_id")
+            if not batch_id:
+                raise HTTPException(status_code=400, detail=f"batch id is required when external brewing tool is set, but was not provided")
+            LOGGER.debug(f"Checking {tool_type} for batch with id: {batch_id}.")
+            tool = get_external_brewing_tool(tool_type)
+            try:
+                data = await tool.get_batch_details(meta=meta)
+                if not data:
+                    LOGGER.error(f"{tool_type} did not return data for batch id: {batch_id}.")
+                    raise HTTPException(status_code=400, detail=f"{tool_type} return no data for batch with id '{batch_id}'")
+                data["_last_refreshed_on"] = utcnow_aware().isoformat()
+                request_data["external_brewing_tool_meta"] = BatchService.store_metadata(meta, data)
+            except ResourceNotFoundError:
+                LOGGER.error(f"{tool_type} returned a 404 for batch id: {batch_id}.")
+                raise HTTPException(status_code=400, detail=f"{tool_type} batch with id '{batch_id}' not found")
+        return request_data
+    
+    @staticmethod
+    def store_metadata(metadata, ex_details, now=None):
+        if not now:
+            now = utcnow_aware()
+        ex_details["_last_refreshed_on"] = now.isoformat()
+        return {**metadata, "details": ex_details}

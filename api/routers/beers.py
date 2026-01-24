@@ -40,6 +40,8 @@ async def create_beer(
     # Extract data, excluding id and image_transitions
     data = beer_data.model_dump(exclude_unset=True, exclude={"id", "image_transitions"})
 
+    data = await BeerService.verify_and_update_external_brew_tool_recipe(data)
+
     LOGGER.debug("Creating beer with: %s", data)
     beer = await BeersDB.create(db_session, **data)
 
@@ -50,7 +52,7 @@ async def create_beer(
             db_session, beer_data.image_transitions, beer_id=beer.id
         )
 
-    return await BeerService.transform_response(beer, db_session=db_session, image_transitions=image_transitions)
+    return await BeerService.transform_response(beer, db_session=db_session, image_transitions=image_transitions, skip_meta_refresh=True)
 
 
 @router.get("/{beer_id}", response_model=dict)
@@ -86,13 +88,21 @@ async def update_beer(
     # Extract data, excluding id and image_transitions
     data = beer_data.model_dump(exclude_unset=True, exclude={"id", "image_transitions"})
 
+    skip_meta_refresh=False
     # Merge external_brewing_tool_meta if both exist
     external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
-    if external_brewing_tool_meta and beer.external_brewing_tool_meta:
-        data["external_brewing_tool_meta"] = {**beer.external_brewing_tool_meta, **external_brewing_tool_meta}
-
+    if external_brewing_tool_meta:
+        if beer.external_brewing_tool_meta:
+            data["external_brewing_tool_meta"] = {**beer.external_brewing_tool_meta, **external_brewing_tool_meta}
+            old_ext_recipe_id = beer.external_brewing_tool_meta.get("recipe_id")
+            new_ext_recipe_id = external_brewing_tool_meta.get("recipe_id")
+            if new_ext_recipe_id != old_ext_recipe_id:
+                LOGGER.info(f"external brew tool recipe id for beer ({beer_id}) has changed.  Verifying new id.")
+                LOGGER.debug(f"beer ({beer_id}) external brew tool recipe id change details: old = {old_ext_recipe_id}, new = {new_ext_recipe_id}")
+                data = await BeerService.verify_and_update_external_brew_tool_recipe(data)
+                skip_meta_refresh = True
+    
     LOGGER.debug("Updating beer %s with data: %s", beer_id, data)
-
     # Update beer if there's data
     if data:
         await BeersDB.update(db_session, beer_id, **data)
@@ -107,7 +117,7 @@ async def update_beer(
     # Fetch updated beer
     beer = await BeersDB.get_by_pkey(db_session, beer_id)
 
-    return await BeerService.transform_response(beer, db_session=db_session, image_transitions=image_transitions)
+    return await BeerService.transform_response(beer, db_session=db_session, image_transitions=image_transitions, skip_meta_refresh=skip_meta_refresh)
 
 
 @router.delete("/{beer_id}")

@@ -19,15 +19,22 @@ class BeverageBase(CamelCaseModel):
 
     name: Optional[str] = None
     description: Optional[str] = None
-    producer: Optional[str] = None
-    style: Optional[str] = None
-    abv: Optional[float] = None
-    ibu: Optional[float] = None
-    srm: Optional[float] = None
+    type: Optional[str] = None
+    brewery: Optional[str] = None
+    brewery_link: Optional[str] = None
+    flavor: Optional[str] = None
     img_url: Optional[str] = None
     empty_img_url: Optional[str] = None
-    untappd_id: Optional[str] = None
     image_transitions_enabled: Optional[bool] = None
+    meta: Optional[dict] = None
+
+    def model_dump(self, *args, **kwargs):
+        data = super().model_dump(*args, **kwargs)
+        meta = data.get("meta")
+        if meta:
+            meta = self.transform_meta(meta)
+            data["meta"] = meta
+        return data
 
 
 class BeverageCreate(BeverageBase):

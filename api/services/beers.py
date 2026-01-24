@@ -3,12 +3,14 @@
 import logging
 from datetime import timedelta
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.beers import Beers as BeersDB
 from db.image_transitions import ImageTransitions as ImageTransitionsDB
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
+from lib.external_brew_tools.exceptions import ResourceNotFoundError
 from lib.time import parse_iso8601_utc, utcnow_aware
 from services.base import transform_dict_to_camel_case
 
@@ -104,14 +106,17 @@ class BeerService:
                 if refresh_data:
                     LOGGER.info("Refreshing data from %s for %s. Reason: %s", tool_type, beer.id, refresh_reason)
                     tool = get_external_brewing_tool(tool_type)
-                    ex_details = await tool.get_recipe_details(beer=beer)
+                    try:
+                        ex_details = await tool.get_recipe_details(beer=beer)
+                    except ResourceNotFoundError:
+                        ex_details["error"] = f"{tool_type} recipe could not be found"
                     if ex_details:
-                        ex_details["_last_refreshed_on"] = now.isoformat()
-                        LOGGER.debug("Extended recipe details: %s, updating database", ex_details)
+                        u_meta = BeerService.store_metadata(meta, ex_details, now=now)
+                        LOGGER.debug(f"Updated brew tool metadata: {u_meta}, updating database")
                         await BeersDB.update(
-                            db_session, beer.id, external_brewing_tool_meta={**meta, "details": ex_details}
+                            db_session, beer.id, external_brewing_tool_meta=u_meta
                         )
-                        data["external_brewing_tool_meta"] = {**meta, "details": ex_details}
+                        data["external_brewing_tool_meta"] = u_meta
                     else:
                         LOGGER.warning(
                             "There was an error or no details from %s for %s",
@@ -148,3 +153,34 @@ class BeerService:
                 ret_data.append(await ImageTransitionsDB.create(db_session, **transition_dict))
 
         return ret_data
+    
+    @staticmethod
+    async def verify_and_update_external_brew_tool_recipe(request_data):
+        LOGGER.debug("Checking if the beer is associated with an external brew tool and verifying data")
+        tool_type = request_data.get("external_brewing_tool")
+        if tool_type:
+            meta = request_data.get("external_brewing_tool_meta", {})
+            LOGGER.debug(f"Beer is associated with {tool_type} recipe.  Metadata: {meta}.  Verifying...")
+            recipe_id = meta.get("recipe_id")
+            if not recipe_id:
+                raise HTTPException(status_code=400, detail=f"recipe id is required when external brewing tool is set, but was not provided")
+            LOGGER.debug(f"Checking {tool_type} for recipe with id: {recipe_id}.")
+            tool = get_external_brewing_tool(tool_type)
+            try:
+                data = await tool.get_recipe_details(meta=meta)
+                if not data:
+                    LOGGER.error(f"{tool_type} did not return data for recipe id: {recipe_id}.")
+                    raise HTTPException(status_code=400, detail=f"{tool_type} return no data for recipe with id '{recipe_id}'")
+                request_data["external_brewing_tool_meta"] = BeerService.store_metadata(meta, data)
+            except ResourceNotFoundError:
+                LOGGER.error(f"{tool_type} returned a 404 for recipe id: {recipe_id}.")
+                raise HTTPException(status_code=400, detail=f"{tool_type} recipe with id '{recipe_id}' not found")
+        return request_data
+    
+    @staticmethod
+    def store_metadata(metadata, ex_details, now=None):
+        if not now:
+            now = utcnow_aware()
+        ex_details["_last_refreshed_on"] = now.isoformat()
+        return {**metadata, "details": ex_details}
+    

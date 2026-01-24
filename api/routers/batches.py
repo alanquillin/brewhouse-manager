@@ -5,12 +5,11 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from dependencies.auth import AuthUser, get_db_session, require_user
 from db.batches import Batches as BatchesDB
 from db.batch_locations import BatchLocations as BatchLocationsDB
+from schemas.batches import BatchCreate, BatchUpdate
 from services.batches import BatchService
 
 router = APIRouter()
@@ -23,37 +22,6 @@ class BeerOrBeverageOnlyError(HTTPException):
             status_code=400,
             detail="You can only associate a beer or a beverage to the selected batch, not both",
         )
-
-
-class BatchCreate(BaseModel):
-    """Schema for creating a batch"""
-
-    beer_id: Optional[str] = None
-    beverage_id: Optional[str] = None
-    name: Optional[str] = None
-    brew_date: Optional[float] = None  # Unix timestamp
-    keg_date: Optional[float] = None  # Unix timestamp
-    volume_gallons: Optional[float] = None
-    archived_on: Optional[float] = None  # Unix timestamp
-    external_brewing_tool: Optional[str] = None
-    external_brewing_tool_meta: Optional[dict] = None
-    location_ids: Optional[List[str]] = None
-
-
-class BatchUpdate(BaseModel):
-    """Schema for updating a batch"""
-
-    beer_id: Optional[str] = None
-    beverage_id: Optional[str] = None
-    name: Optional[str] = None
-    brew_date: Optional[float] = None
-    keg_date: Optional[float] = None
-    volume_gallons: Optional[float] = None
-    archived_on: Optional[float] = None
-    external_brewing_tool: Optional[str] = None
-    external_brewing_tool_meta: Optional[dict] = None
-    location_ids: Optional[List[str]] = None
-
 
 @router.get("", response_model=List[dict])
 async def list_batches(
@@ -107,6 +75,8 @@ async def create_batch(
     """Create a new batch"""
     data = batch_data.model_dump(exclude_unset=True)
 
+    data = await BatchService.verify_and_update_external_brew_tool_batch(data)
+
     # Extract location_ids for separate processing
     location_ids = data.pop("location_ids", None)
     if location_ids:
@@ -141,7 +111,7 @@ async def create_batch(
         # Refresh batch to get locations
         batch = await BatchesDB.get_by_pkey(db_session, batch.id)
 
-    return await BatchService.transform_response(batch, db_session=db_session)
+    return await BatchService.transform_response(batch, db_session=db_session, skip_meta_refresh=True)
 
 
 @router.get("/{batch_id}", response_model=dict)
@@ -230,6 +200,20 @@ async def update_batch(
     if external_brewing_tool_meta and batch.external_brewing_tool_meta:
         data["external_brewing_tool_meta"] = {**batch.external_brewing_tool_meta, **external_brewing_tool_meta}
 
+    skip_meta_refresh=False
+    # Merge external_brewing_tool_meta if both exist
+    external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
+    if external_brewing_tool_meta:
+        if batch.external_brewing_tool_meta:
+            data["external_brewing_tool_meta"] = {**batch.external_brewing_tool_meta, **external_brewing_tool_meta}
+            old_ext_recipe_id = batch.external_brewing_tool_meta.get("recipe_id")
+            new_ext_recipe_id = external_brewing_tool_meta.get("recipe_id")
+            if new_ext_recipe_id != old_ext_recipe_id:
+                LOGGER.info(f"external brew tool batch id for batch ({batch_id}) has changed.  Verifying new id.")
+                LOGGER.debug(f"batch ({batch_id}) external brew tool batch id change details: old = {old_ext_recipe_id}, new = {new_ext_recipe_id}")
+                data = await BatchService.verify_and_update_external_brew_tool_recipe(data)
+                skip_meta_refresh = True
+
     # Update batch-location associations if provided
     if location_ids:
         await BatchLocationsDB.delete_by(db_session, batch_id=batch_id)
@@ -244,7 +228,7 @@ async def update_batch(
     # Refresh batch to get updated data
     batch = await BatchesDB.get_by_pkey(db_session, batch_id)
 
-    return await BatchService.transform_response(batch, db_session=db_session)
+    return await BatchService.transform_response(batch, db_session=db_session, skip_meta_refresh=skip_meta_refresh)
 
 
 @router.delete("/{batch_id}")

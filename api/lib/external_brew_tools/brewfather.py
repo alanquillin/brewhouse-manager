@@ -1,12 +1,13 @@
 import base64
 
 import httpx
-from httpx import BasicAuth, AsyncClient
+from httpx import BasicAuth, AsyncClient, TimeoutException
 
 from db import session_scope
 from db.batches import Batches as BatchesDB
 from db.beers import Beers as BeersDB
 from lib.external_brew_tools import ExternalBrewToolBase
+from lib.external_brew_tools.exceptions import ResourceNotFoundError
 
 class Brewfather(ExternalBrewToolBase):
     async def get_batch_details(self, batch_id=None, batch=None, meta=None):
@@ -94,7 +95,8 @@ class Brewfather(ExternalBrewToolBase):
         return await self._get_batches(meta=meta)
 
     async def _get_batches(self, meta=None):
-        return await self._get(f"v2/batches", meta)
+        data, _ = await self._get(f"v2/batches", meta)
+        return data
 
     async def _get_batch(self, batch_id=None, meta=None, params=None):
         if not batch_id and not meta:
@@ -102,10 +104,15 @@ class Brewfather(ExternalBrewToolBase):
 
         if not batch_id:
             batch_id = meta.get("batch_id")
-        return await self._get(f"v2/batches/{batch_id}", meta, params=params)
+        data, status_code = await self._get(f"v2/batches/{batch_id}", meta, params=params)
+        if status_code == 404:
+            raise ResourceNotFoundError(batch_id)
+        
+        return data
     
     async def _get_recipes(self, meta=None):
-        return await self._get(f"v2/recipes", meta)
+        data, _ = await self._get(f"v2/recipes", meta)
+        return data
 
     async def _get_recipe(self, recipe_id=None, meta=None, params=None):
         if not recipe_id and not meta:
@@ -113,17 +120,31 @@ class Brewfather(ExternalBrewToolBase):
 
         if not recipe_id:
             recipe_id = meta.get("recipe_id")
-        return await self._get(f"v2/recipes/{recipe_id}", meta, params=params)
-
+        data, status_code = await self._get(f"v2/recipes/{recipe_id}", meta, params=params)
+        if status_code == 404:
+            raise ResourceNotFoundError(recipe_id)
+        
+        return data
+    
     async def _get(self, path, meta, params=None):
         url = f"https://api.brewfather.app/{path}"
         self.logger.debug("GET Request: %s, params: %s", url, params)
         async with AsyncClient() as client:
-            resp = await client.get(url, auth=self._get_auth(meta), params=params)
-            self.logger.debug("GET response code: %s", resp.status_code)
-            j = resp.json()
-            self.logger.debug("GET response JSON: %s", j)
-            return j
+            try:
+                kwargs = {}
+                timeout = self.config.get("external_brew_tools.brewfather.timeout_sec")
+                if timeout:
+                    kwargs["timeout"] = timeout
+                resp = await client.get(url, auth=self._get_auth(meta), params=params, **kwargs)
+                self.logger.debug("GET response code: %s", resp.status_code)
+                if resp.status_code == 200:
+                    j = resp.json()
+                    self.logger.debug("GET response JSON: %s", j)
+                    return j, resp.status_code
+                return None, resp.status_code
+            except TimeoutException:
+                self.logger.error(f"brewfather timeout calling {path}")
+                raise
 
     def _get_auth(self, meta=None):
         if meta is None:
