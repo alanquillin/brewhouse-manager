@@ -12,14 +12,16 @@ class TapService:
     """Service for tap-related operations"""
 
     @staticmethod
-    async def transform_tap_response(tap, db_session: AsyncSession):
+    async def transform_tap_response(tap, db_session: AsyncSession, include_location=True):
         """Transform tap for inclusion in batch response"""
         data = tap.to_dict()
 
-        if tap.location:
-            from services.locations import LocationService
+        if include_location:
+            await tap.awaitable_attrs.location
+            if tap.location:
+                from services.locations import LocationService
 
-            data["location"] = await LocationService.transform_response(tap.location, db_session=db_session)
+                data["location"] = await LocationService.transform_response(tap.location, db_session=db_session)
 
         return transform_dict_to_camel_case(data)
 

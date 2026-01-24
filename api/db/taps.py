@@ -35,8 +35,12 @@ class Taps(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     @classmethod
     async def get_by_location(cls, session, location_id, **kwargs):
-        return await session.query(cls).filter_by(location_id=location_id, **kwargs)
+        def _q_fn(q):
+            return q.filter_by(location_id=location_id, **kwargs)
+        return await super().query(session, q_fn=_q_fn)
 
     @classmethod
     async def get_by_batch(cls, session, batch_id, **kwargs):
-        return await session.query(cls).join(on_tap.OnTap).filter_by(batch_id=batch_id, **kwargs)
+        def _q_fn(q):
+            return q.join(on_tap.OnTap).filter_by(batch_id=batch_id, **kwargs)
+        return await super().query(session, q_fn=_q_fn)
