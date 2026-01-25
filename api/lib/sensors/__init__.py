@@ -6,6 +6,7 @@ LOGGER = logging.getLogger(__name__)
 
 SENSORS = {}
 
+
 class InvalidDataType(Error):
     def __init__(self, data_type, message=None):
         if not message:
@@ -30,19 +31,25 @@ def _init_sensors():
         if CONFIG.get("sensors.plaato_keg.enabled", False):
             LOGGER.info("Enabling plaato-keg sensors ")
             from lib.sensors.plaato_key import PlaatoKeg
+
             SENSORS["plaato-keg"] = PlaatoKeg()
-        else: 
+        else:
             LOGGER.info("Disabling plaato-keg sensors")
 
         if CONFIG.get("sensors.kegtron.pro.enabled", False):
             LOGGER.info("Enabling kegtron pro sensors ")
-            from lib.sensors.kegtron import KegtronPro
-            SENSORS["kegtron-pro"] = KegtronPro()
+            from lib.sensors.kegtron import (
+                KegtronPro,
+                SENSOR_TYPE as kegtron_sensor_type,
+            )
+
+            SENSORS[kegtron_sensor_type] = KegtronPro()
         else:
             LOGGER.info("Disabling kegtron pro sensors")
-            
+
         if CONFIG.get("sensors.keg_volume_monitors.enabled", False):
             from lib.sensors.keg_volume_monitor import KegVolumeMonitor
+
             LOGGER.info("Enabling keg_volume_monitors sensors types")
 
             if CONFIG.get("sensors.keg_volume_monitors.weight.enabled", False):
@@ -50,17 +57,18 @@ def _init_sensors():
                 SENSORS["keg-volume-monitor-weight"] = KegVolumeMonitor()
             else:
                 LOGGER.info("Disabling keg_volume_monitors weight sensors")
-            
-            if(CONFIG.get("sensors.keg_volume_monitors.flow.enabled", False)):
+
+            if CONFIG.get("sensors.keg_volume_monitors.flow.enabled", False):
                 LOGGER.info("Enabling keg_volume_monitors flow sensors")
                 SENSORS["keg-volume-monitor-flow"] = KegVolumeMonitor()
             else:
                 LOGGER.info("Disabling keg_volume_monitors flow sensors")
         else:
             LOGGER.info("Disabling keg_volume_monitors sensors types")
-        
+
         if CONFIG.get("sensors.open_plaato_keg.enabled", False):
             from lib.sensors.open_plaato_keg import OpenPlaatoKeg
+
             LOGGER.info("Enabling open_plaato_keg sensor type")
             SENSORS["open-plaato-keg"] = OpenPlaatoKeg()
         else:

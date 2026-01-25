@@ -12,6 +12,7 @@ from db.sensors import Sensors as SensorsDB
 from lib import util
 from lib.sensors import InvalidDataType, get_sensor_lib
 from lib.sensors import get_types as get_sensor_types
+from services.base import transform_dict_to_camel_case
 from services.sensors import SensorService
 from schemas.sensors import SensorCreate, SensorUpdate
 
@@ -55,14 +56,19 @@ async def discover_sensors(
 ):
     """Discover sensors of a specific type"""
     if sensor_type not in get_sensor_types():
-        raise HTTPException(status_code=400, detail=f"Invalid sensor type: {sensor_type}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid sensor type: {sensor_type}"
+        )
 
     sensor_lib = get_sensor_lib(sensor_type)
 
     if not sensor_lib.supports_discovery():
-        raise HTTPException(status_code=400, detail=f"{sensor_type} sensors do not support discovery")
+        raise HTTPException(
+            status_code=400, detail=f"{sensor_type} sensors do not support discovery"
+        )
 
-    return await sensor_lib.discover()
+    data = await sensor_lib.discover()
+    return transform_dict_to_camel_case(data)
 
 
 @router.get("", response_model=List[dict])
@@ -77,13 +83,18 @@ async def list_sensors(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(status_code=403, detail="Not authorized to access this location")
+            raise HTTPException(
+                status_code=403, detail="Not authorized to access this location"
+            )
         kwargs["locations"] = [location_id]
     elif not current_user.admin:
         kwargs["locations"] = current_user.locations
 
     sensors = await SensorsDB.query(db_session, **kwargs)
-    return [await SensorService.transform_response(s, db_session=db_session) for s in sensors]
+    return [
+        await SensorService.transform_response(s, db_session=db_session)
+        for s in sensors
+    ]
 
 
 @router.post("", response_model=dict)
@@ -100,12 +111,17 @@ async def create_sensor(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(status_code=403, detail="Not authorized to create sensor in this location")
+            raise HTTPException(
+                status_code=403,
+                detail="Not authorized to create sensor in this location",
+            )
         data["location_id"] = location_id
 
     # Check authorization for location in body
     if not current_user.admin and data.get("location_id") not in current_user.locations:
-        raise HTTPException(status_code=403, detail="Not authorized to create sensor in this location")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to create sensor in this location"
+        )
 
     LOGGER.debug("Creating sensor with: %s", data)
     sensor = await SensorsDB.create(db_session, **data)
@@ -126,7 +142,9 @@ async def get_sensor(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(status_code=403, detail="Not authorized to access this location")
+            raise HTTPException(
+                status_code=403, detail="Not authorized to access this location"
+            )
         kwargs["locations"] = [location_id]
 
     sensors = await SensorsDB.query(db_session, **kwargs)
@@ -137,7 +155,9 @@ async def get_sensor(
 
     # Check authorization
     if not current_user.admin and sensor.location_id not in current_user.locations:
-        raise HTTPException(status_code=403, detail="Not authorized to access this sensor")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to access this sensor"
+        )
 
     return await SensorService.transform_response(sensor, db_session=db_session)
 
@@ -156,7 +176,9 @@ async def update_sensor(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(status_code=403, detail="Not authorized to access this location")
+            raise HTTPException(
+                status_code=403, detail="Not authorized to access this location"
+            )
         kwargs["locations"] = [location_id]
 
     sensors = await SensorsDB.query(db_session, **kwargs)
@@ -167,7 +189,9 @@ async def update_sensor(
 
     # Check authorization
     if not current_user.admin and sensor.location_id not in current_user.locations:
-        raise HTTPException(status_code=403, detail="Not authorized to update this sensor")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to update this sensor"
+        )
 
     data = sensor_data.model_dump(exclude_unset=True)
 
@@ -192,7 +216,9 @@ async def delete_sensor(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(status_code=403, detail="Not authorized to access this location")
+            raise HTTPException(
+                status_code=403, detail="Not authorized to access this location"
+            )
         kwargs["locations"] = [location_id]
 
     sensors = await SensorsDB.query(db_session, **kwargs)
@@ -203,7 +229,9 @@ async def delete_sensor(
 
     # Check authorization
     if not current_user.admin and sensor.location_id not in current_user.locations:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this sensor")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to delete this sensor"
+        )
 
     await SensorsDB.delete(db_session, sensor.id)
     return True
@@ -234,7 +262,7 @@ async def get_sensor_data(
         return await sensor_lib.get_all(sensor=sensor)
     except InvalidDataType as ex:
         raise HTTPException(status_code=400, detail=str(ex))
-    
+
 
 @router.get("/{sensor_id}/data/{data_type}")
 async def get_specific_sensor_data(
@@ -262,6 +290,8 @@ async def get_specific_sensor_data(
         try:
             return await sensor_lib.get(data_type, sensor=sensor)
         except InvalidDataType as ex:
-            raise HTTPException(status_code=400, detail=f"Invalid data type: {data_type}")
+            raise HTTPException(
+                status_code=400, detail=f"Invalid data type: {data_type}"
+            )
     except InvalidDataType as ex:
         raise HTTPException(status_code=400, detail=str(ex))
