@@ -186,13 +186,11 @@ export class ManageSensorsComponent implements OnInit {
     this.modifySensor = new Sensor(data);
     this.modifySensor.editValues = data;
     this.adding = true;
-    console.log(this.modifySensor.editValues);
   }
 
   create(): void {
     this.processing = true;
     var meta: any = {};
-    console.log(this.modifySensor);
     if (this.modifySensor.editValues.sensorType == "plaato-keg") {
       meta.authToken = this.modifySensor.editValues.meta.authToken;
     } else if (
@@ -215,9 +213,6 @@ export class ManageSensorsComponent implements OnInit {
       meta.maxKegVolumeUnit =
         this.modifySensor.editValues.meta.maxKegVolumeUnit;
     }
-    console.log("saving sensor");
-    console.log("senor obj: ");
-    console.log(this.modifySensor);
 
     var data: any = {
       name: this.modifySensor.editValues.name,
@@ -225,8 +220,6 @@ export class ManageSensorsComponent implements OnInit {
       locationId: this.modifySensor.editValues.locationId,
       meta: meta,
     };
-    console.log("post data: ");
-    console.log(data);
     this.dataService.createSensor(data).subscribe({
       next: (sensor: Sensor) => {
         this.refresh(
@@ -285,7 +278,6 @@ export class ManageSensorsComponent implements OnInit {
 
   save(): void {
     this.processing = true;
-    console.log(this.modifySensor);
     this.dataService
       .updateSensor(this.modifySensor.id, this.modifySensor.changes)
       .subscribe({
@@ -412,11 +404,8 @@ export class ManageSensorsComponent implements OnInit {
         this.selectedDiscoveredSensorId;
     } else if (this.modifySensor.editValues.sensorType == "kegtron-pro") {
       let parts = _.split(this.selectedDiscoveredSensorId, "|");
-      console.log("selected kegtron pro");
       this.modifySensor.editValues.meta.deviceId = parts[0];
       this.modifySensor.editValues.meta.portNum = _.toInteger(parts[1]);
-      console.log("device id: " + this.modifySensor.editValues.meta.deviceId);
-      console.log("port num: " + this.modifySensor.editValues.meta.portNum);
       _.forEach(this.sensorDiscoveryData, (dev) => {
         if (
           dev.id === this.modifySensor.editValues.meta.deviceId &&
@@ -425,7 +414,6 @@ export class ManageSensorsComponent implements OnInit {
           this.modifySensor.editValues.meta.accessToken = dev.token;
         }
       });
-      console.log(this.modifySensor);
     } else if (this.modifySensor.editValues.sensorType == "open-plaato-keg") {
       this.modifySensor.editValues.meta.deviceId =
         this.selectedDiscoveredSensorId;

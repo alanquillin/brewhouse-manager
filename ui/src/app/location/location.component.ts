@@ -96,31 +96,24 @@ export class LocationComponent implements OnInit {
     this.isLoading = true;
     this.taps = [];
     
-    console.log("attempting to pull current user");
     this.dataService.getCurrentUser().subscribe({
       next: (userInfo: UserInfo) => {
-        console.log("refreshing dashboard");
         this.userInfo = userInfo;
         this._refresh(next, always);
       },
       error: (err: DataError) => {
-        console.log("error caught");
         if(err.statusCode === 401) {
-          console.log("unauth, ignoring and proceeding");
           this._refresh(next, always);
         } else {
-          console.log("error status code: " + err.statusCode + ", message: " + err.message);
           this.displayError(err.message);
         }
       },
       complete: () => {
-        console.log("complete");
       }
     });
   }
 
   _refresh(next?: Function, always?: Function) {
-    console.log("retrieving settings");
     this.dataService.getSettings().subscribe({
       next: (data: Settings) => {
         this.tapRefreshSettings = new TapRefreshSettings(data.taps.refresh);

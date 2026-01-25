@@ -90,7 +90,6 @@ export class ManageTapsComponent implements OnInit {
             _tap.batch = this.findBatch(_tap.batchId);
           }
 
-          console.log(_tap);
           this.taps.push(_tap)
         });
         this.filter();

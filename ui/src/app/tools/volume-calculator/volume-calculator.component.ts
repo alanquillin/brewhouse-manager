@@ -127,10 +127,6 @@ export class VolumeCalculatorComponent implements OnInit {
     emptyContainerWeightKg: number,
     gravitySG: number,
   ): void {
-    console.log("calculating volume from weight");
-    console.log("total weight: " + totalWeightKg + " Kg");
-    console.log("empty keg weight weight: " + emptyContainerWeightKg + " Kg");
-    console.log("gravity: " + gravitySG);
     const weightOfCO2Kg = 0; //TODO
     const liquidWeight = totalWeightKg - weightOfCO2Kg - emptyContainerWeightKg;
     const specificWeight = liquidWeight / gravitySG;
