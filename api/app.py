@@ -40,8 +40,8 @@ LOGGER = logging.getLogger(__name__)
 # Create FastAPI app
 app = FastAPI(
     title="Brewhouse Manager",
-    version="0.6.1",
-    docs_url="/api/docs",
+    version="0.7.0",
+    docs_url="/api/docs" if CONFIG.get("ENV") == "development" else None,
     redoc_url="/api/redoc" if CONFIG.get("ENV") == "development" else None,
 )
 
