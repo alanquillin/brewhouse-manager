@@ -186,7 +186,7 @@ async def update_tap(
         if new_batch_id != current_batch_id:
             # Remove old on_tap entry if exists
             if tap.on_tap_id:
-                await OnTapDB.delete(db_session, tap.on_tap_id)
+                await OnTapDB.update(db_session, tap.on_tap_id, untapped_on=datetime.utcnow())
                 data["on_tap_id"] = None
 
             # Create new on_tap entry if batch_id provided
