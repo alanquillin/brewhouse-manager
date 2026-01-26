@@ -24,7 +24,7 @@ class OpenPlaatoKeg(SensorBase):
         map_key = KEYMAP.get(data_key, None)
 
         if not map_key:
-            self.logger.warning(f"Unknown data key: {map_key}")
+            self.logger.warning(f"Unknown data key: {data_key}")
             raise InvalidDataType(data_key)
         return data.get(map_key)
 

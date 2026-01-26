@@ -492,7 +492,7 @@ async def seed_db(db, items, pk="id", q_keys=None):
                     logger.info("Seeding %s: %s", db.__name__, item)
                     new_item = await db.create(db_session, **item)
                     if not new_item:
-                        raise Exception("new item not create!")
+                        raise Exception("new item not created!")
                     logger.info("Item created")
                     logger.debug(new_item.to_dict())
                 else:

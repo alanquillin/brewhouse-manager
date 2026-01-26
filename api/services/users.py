@@ -10,7 +10,7 @@ class UserService():
         FILTERED_KEYS = ["password_hash", "google_oidc_id"]
 
         user_c = current_user
-        if not user_c.admin and user_c.id == user.id:
+        if not user_c.admin and user_c.id != user.id:
             FILTERED_KEYS.append("api_key")
 
         data["password_enabled"] = False
