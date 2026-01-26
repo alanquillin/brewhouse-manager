@@ -129,12 +129,12 @@ class KegtronPro(SensorBase):
             f"Retriving devive data for access token {access_token}. GET Request: {url}, params: {params}"
         )
         async with AsyncClient() as client:
-            self.logger.error("Kegtron API returned a 401")
             resp = await client.get(url, params=params)
             self.logger.debug("GET response code: %s", resp.status_code)
             j = resp.json()
             self.logger.debug("GET response JSON: %s", j)
             if resp.status_code == 401:
+                self.logger.error("Kegtron API returned a 401")
                 raise SensorDependencyError(
                     SENSOR_TYPE,
                     message=f"Kegtron API returned a 401 unauthorized when retrieving device details.",
@@ -218,6 +218,7 @@ class KegtronPro(SensorBase):
             j = resp.json()
             self.logger.debug("GET response JSON: %s", j)
             if resp.status_code == 401:
+                self.logger.error("Kegtron API returned a 401 when retrieving customer details to get the device access tokens")
                 raise SensorDependencyError(SENSOR_TYPE)
 
             device_keys = j.get("pubkeys", {})

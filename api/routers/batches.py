@@ -206,12 +206,12 @@ async def update_batch(
     if external_brewing_tool_meta:
         if batch.external_brewing_tool_meta:
             data["external_brewing_tool_meta"] = {**batch.external_brewing_tool_meta, **external_brewing_tool_meta}
-            old_ext_recipe_id = batch.external_brewing_tool_meta.get("recipe_id")
-            new_ext_recipe_id = external_brewing_tool_meta.get("recipe_id")
-            if new_ext_recipe_id != old_ext_recipe_id:
+            old_ext_batch_id = batch.external_brewing_tool_meta.get("batch_id")
+            new_ext_batch_id = external_brewing_tool_meta.get("batch_id")
+            if new_ext_batch_id != old_ext_batch_id:
                 LOGGER.info(f"external brew tool batch id for batch ({batch_id}) has changed.  Verifying new id.")
-                LOGGER.debug(f"batch ({batch_id}) external brew tool batch id change details: old = {old_ext_recipe_id}, new = {new_ext_recipe_id}")
-                data = await BatchService.verify_and_update_external_brew_tool_recipe(data)
+                LOGGER.debug(f"batch ({batch_id}) external brew tool batch id change details: old = {old_ext_batch_id}, new = {new_ext_batch_id}")
+                data = await BatchService.verify_and_update_external_brew_tool_batch(data)
                 skip_meta_refresh = True
 
     # Update batch-location associations if provided

@@ -26,7 +26,7 @@ class KegVolumeMonitor(SensorBase):
 
         if not meta:
             if not sensor:
-                with session_scope as session:
+                with async_session_scope(self.config) as session:
                     sensor = await SensorsDB.get_by_pkey(session, sensor_id)
             meta = sensor.meta
 
@@ -40,7 +40,7 @@ class KegVolumeMonitor(SensorBase):
 
         if not meta:
             if not sensor:
-                with async_session_scope as session:
+                with async_session_scope(self.config) as session:
                     sensor = await SensorsDB.get_by_pkey(session, sensor_id)
             meta = sensor.meta
 

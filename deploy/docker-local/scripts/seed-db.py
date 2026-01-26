@@ -533,7 +533,7 @@ async def run():
     while True:
         try:
             async with async_session_scope(config) as db_session:
-                db_session.execute(text("select 1"))
+                await db_session.execute(text("select 1"))
                 logger.debug("Database ready!")
                 break
         except OperationalError:
