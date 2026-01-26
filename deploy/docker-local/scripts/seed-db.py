@@ -10,7 +10,7 @@ from time import sleep
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.sql import text
 
-from db import Base, beers, beverages, locations, sensors, async_session_scope, taps, users, user_locations, on_tap, batches
+from db import Base, beers, beverages, locations, sensors, async_session_scope, taps, users, user_locations, on_tap, batches, batch_locations
 from lib.config import Config
 
 location1_id = "fb139af3-2905-4006-9196-62f54bb262ab"
@@ -296,43 +296,43 @@ BATCHES = [
 BATCH_LOCATIONS = [
     {
         "batch_id": batch_id1,
-        "location1_id": location1_id
+        "location_id": location1_id
     },
     {
         "batch_id": batch_id2,
-        "location1_id": location1_id
+        "location_id": location1_id
     },
     {
         "batch_id": batch_id3,
-        "location1_id": location1_id
+        "location_id": location1_id
     },
     {
         "batch_id": batch_id4,
-        "location1_id": location1_id
+        "location_id": location1_id
     },
     {
         "batch_id": batch_id5,
-        "location1_id": location2_id
+        "location_id": location2_id
     },
     {
         "batch_id": batch_id6,
-        "location1_id": location3_id
+        "location_id": location3_id
     },
     {
         "batch_id": batch_id7,
-        "location1_id": location3_id
+        "location_id": location3_id
     },
     {
         "batch_id": batch_id8,
-        "location1_id": location3_id
+        "location_id": location3_id
     },
     {
         "batch_id": batch_id1,
-        "location1_id": location3_id
+        "location_id": location3_id
     },
     {
         "batch_id": batch_id6,
-        "location1_id": location2_id
+        "location_id": location2_id
     }
 ]
 
@@ -475,12 +475,20 @@ USER_LOCATIONS = [{
     "location_id": location1_id
 }]
 
-async def seed_db(db, items, pk="id"):
+async def seed_db(db, items, pk="id", q_keys=None):
     for item in items:
         logger.info(item)
         async with async_session_scope(config) as db_session:
             try:
-                if not await db.get_by_pkey(db_session, item.get(pk)):
+                res = None
+                if q_keys:
+                    kwargs = {}
+                    for k in q_keys:
+                        kwargs[k] = item[k]
+                    res = await db.query(db_session, **kwargs)
+                else:
+                    res = await db.get_by_pkey(db_session, item.get(pk))
+                if not res:
                     logger.info("Seeding %s: %s", db.__name__, item)
                     new_item = await db.create(db_session, **item)
                     if not new_item:
@@ -488,7 +496,7 @@ async def seed_db(db, items, pk="id"):
                     logger.info("Item created")
                     logger.debug(new_item.to_dict())
                 else:
-                    logger.info("Item %s already exists in %s.", item[pk], db.__name__)
+                    logger.info("Item %s already exists in %s.", item.get(pk, "UNKNOWN PK"), db.__name__)
             except IntegrityError as ex:
                     logger.debug("Item already exists or a constraint was violated: %s", ex)
                     raise
@@ -539,6 +547,7 @@ async def run():
     await seed_db(beverages.Beverages, BEVERAGES)
     await seed_db(sensors.Sensors, SENSORS)
     await seed_db(batches.Batches, BATCHES)
+    await seed_db(batch_locations.BatchLocations, BATCH_LOCATIONS, q_keys=["batch_id", "location_id"])
     await seed_db(on_tap.OnTap, ON_TAP)
     await seed_db(taps.Taps, TAPS)
     initial_user_data = await get_initial_user()
