@@ -42,7 +42,7 @@ export class ManageLocationsComponent implements OnInit {
     this._snackBar.open("Error: " + errMsg, "Close");
   }
 
-  refresh(always?:Function, next?: Function, error?: Function) {
+  _refresh(always?:Function, next?: Function, error?: Function) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = [];
@@ -75,7 +75,14 @@ export class ManageLocationsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.refresh(() => {
+    this._refresh(() => {
+      this.loading = false;
+    })
+  }
+
+  refresh(): void {
+    this.loading = true;
+    this._refresh(() => {
       this.loading = false;
     })
   }
@@ -94,7 +101,7 @@ export class ManageLocationsComponent implements OnInit {
         complete: () => {
           this.processing = false;
           this.loading = true;
-          this.refresh(() => {this.loading = false;})
+          this._refresh(() => {this.loading = false;})
         }
       });
     }
@@ -129,7 +136,7 @@ export class ManageLocationsComponent implements OnInit {
     this.processing = true;
     this.dataService.createLocation({name: this.addLocation.name, description: this.addLocation.description}).subscribe({
       next: (data: Location) => {
-        this.refresh(() => {this.processing = false;}, () => { this.adding = false;})
+        this._refresh(() => {this.processing = false;}, () => { this.adding = false;})
       },
       error: (err: DataError) => {
         this.processing = false;

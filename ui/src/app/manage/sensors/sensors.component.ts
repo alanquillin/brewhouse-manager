@@ -84,7 +84,7 @@ export class ManageSensorsComponent implements OnInit {
     this._snackBar.open("Error: " + errMsg, "Close");
   }
 
-  refresh(always?: Function, next?: Function, error?: Function) {
+  _refresh(always?: Function, next?: Function, error?: Function) {
     this.dataService.getSensors().subscribe({
       next: (sensors: Sensor[]) => {
         this.sensors = [];
@@ -125,7 +125,7 @@ export class ManageSensorsComponent implements OnInit {
         this.dataService.getSensorTypes().subscribe({
           next: (sensorTypes: string[]) => {
             this.sensorTypes = _.orderBy(sensorTypes, ["name"]);
-            this.refresh(always, next, error);
+            this._refresh(always, next, error);
           },
           error: (err: DataError) => {
             this.displayError(err.message);
@@ -170,6 +170,13 @@ export class ManageSensorsComponent implements OnInit {
           this.displayError(err.message);
         }
       },
+    });
+  }
+
+  refresh(): void {
+    this.loading = true;
+    this.refreshAll(() => {
+      this.loading = false;
     });
   }
 
@@ -222,7 +229,7 @@ export class ManageSensorsComponent implements OnInit {
     };
     this.dataService.createSensor(data).subscribe({
       next: (sensor: Sensor) => {
-        this.refresh(
+        this._refresh(
           () => {
             this.processing = false;
           },
@@ -283,7 +290,7 @@ export class ManageSensorsComponent implements OnInit {
       .subscribe({
         next: (sensor: Sensor) => {
           this.modifySensor.disableEditing();
-          this.refresh(
+          this._refresh(
             () => {
               this.processing = false;
             },
@@ -311,7 +318,7 @@ export class ManageSensorsComponent implements OnInit {
         next: (resp: any) => {
           this.processing = false;
           this.loading = true;
-          this.refresh(() => {
+          this._refresh(() => {
             this.loading = false;
           });
         },

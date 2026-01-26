@@ -180,7 +180,7 @@ export class ManageBeerComponent implements OnInit {
     this._snackBar.open("Error: " + errMsg, "Close");
   }
 
-  refresh(always?:Function, next?: Function, error?: Function) {
+  _refresh(always?:Function, next?: Function, error?: Function) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = [];
@@ -264,7 +264,7 @@ export class ManageBeerComponent implements OnInit {
             this.selectedLocationFilters.push(l.id);
           }
         }
-        this.refresh(()=> {
+        this._refresh(()=> {
           this.loading = false;
         });
       },
@@ -275,6 +275,15 @@ export class ManageBeerComponent implements OnInit {
       }
     });
   }
+
+  refresh(): void {
+    this.loading = true;
+      
+    this._refresh(()=> {
+        this.loading = false;
+    });
+  };
+
 
   addBeer(): void {
     this.modifyBeerFormGroup.reset();
@@ -393,13 +402,13 @@ export class ManageBeerComponent implements OnInit {
 
   saveBeerActual(): void {
     if(isNilOrEmpty(this.beerChanges)) {
-      this.refresh(()=> {this.processing = false;}, () => {
+      this._refresh(()=> {this.processing = false;}, () => {
         this.editing = false;
       });
     } else {
       this.dataService.updateBeer(this.modifyBeer.id, this.beerChanges).subscribe({
         next: (beer: Beer) => {
-          this.refresh(()=> {this.processing = false;}, () => {
+          this._refresh(()=> {this.processing = false;}, () => {
             this.editing = false;
           })
         },
@@ -414,7 +423,7 @@ export class ManageBeerComponent implements OnInit {
   cancelEditBeer(): void {
     this.modifyBeer.disableEditing();
     if(!isNilOrEmpty(this.imageTransitionsToDelete)) {
-      this.refresh(()=> {this.processing = false;}, () => {
+      this._refresh(()=> {this.processing = false;}, () => {
         this.editing = false;
       });
     } else {
@@ -475,7 +484,7 @@ export class ManageBeerComponent implements OnInit {
       next: (resp: any) => {
         this.processing = false;
         this.loading = true;
-        this.refresh(()=>{this.loading = false});
+        this._refresh(()=>{this.loading = false});
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -889,7 +898,7 @@ export class ManageBeerComponent implements OnInit {
     this.processing = true;
     this.dataService.createBatch(data).subscribe({
       next: (batch: Batch) => {
-        this.refresh(() => {this.processing = false;}, () => {this.addingBatch = false;});
+        this._refresh(() => {this.processing = false;}, () => {this.addingBatch = false;});
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -914,13 +923,13 @@ export class ManageBeerComponent implements OnInit {
   saveBatch(): void {  
     this.processing = true;
     if(isNilOrEmpty(this.batchChanges)) {
-      this.refresh(()=> {this.processing = false;}, () => {
+      this._refresh(()=> {this.processing = false;}, () => {
         this.editingBatch = false;
       });
     } else {
       this.dataService.updateBatch(this.modifyBatch.id, this.batchChanges).subscribe({
         next: (batch: Batch) => {
-          this.refresh(()=> {this.processing = false;}, () => {
+          this._refresh(()=> {this.processing = false;}, () => {
             this.editingBatch = false;
           })
         },
@@ -975,7 +984,7 @@ export class ManageBeerComponent implements OnInit {
       next: (resp: any) => {
         this.processing = false;
         this.loading = true;
-        this.refresh(()=>{this.loading = false; this.loadingBatches = false;});
+        this._refresh(()=>{this.loading = false; this.loadingBatches = false;});
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -993,7 +1002,7 @@ export class ManageBeerComponent implements OnInit {
         next: (resp: any) => {
           this.processing = false;
           this.loading = true;
-          this.refresh(()=>{this.loading = false; this.loadingBatches = false;});
+          this._refresh(()=>{this.loading = false; this.loadingBatches = false;});
         },
         error: (err: DataError) => {
           this.displayError(err.message);

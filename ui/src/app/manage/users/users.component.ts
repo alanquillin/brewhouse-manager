@@ -60,7 +60,7 @@ export class ManageUsersComponent implements OnInit {
     this._snackBar.open("Error: " + errMsg, "Close");
   }
 
-  refresh(always?:Function, next?: Function, error?: Function) {
+  _refresh(always?:Function, next?: Function, error?: Function) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = [];
@@ -122,13 +122,20 @@ export class ManageUsersComponent implements OnInit {
     this.dataService.getCurrentUser().subscribe({
       next: (me: UserInfo) => {
         this.me = me;
-        this.refresh(undefined, ()=> {
+        this._refresh(undefined, ()=> {
           this.loading = false;
         })
       },
       error: (err: DataError) => {
         this.displayError(err.message);
       }
+    })
+  }
+
+  refresh(): void {
+    this.loading = true;
+    this._refresh(undefined, ()=> {
+      this.loading = false;
     })
   }
 
@@ -159,7 +166,7 @@ export class ManageUsersComponent implements OnInit {
     this.dataService.createUser(data).subscribe({
       next: (user: UserInfo) => {
         this.saveLocations(new UserInfo(user), () => {
-          this.refresh(() => {this.processing = false;}, () => {this.adding = false;});
+          this._refresh(() => {this.processing = false;}, () => {this.adding = false;});
         });
       },
       error: (err: DataError) => {
@@ -190,7 +197,7 @@ export class ManageUsersComponent implements OnInit {
     if(!this.modifyUser.hasChanges) {
       return this.saveLocations(this.modifyUser, () => {
         this.modifyUser.disableEditing();
-        this.refresh(()=> {this.processing = false;}, () => {
+        this._refresh(()=> {this.processing = false;}, () => {
           this.editing = false;
         })
       });
@@ -201,7 +208,7 @@ export class ManageUsersComponent implements OnInit {
       next: (user: UserInfo) => {
         return this.saveLocations(this.modifyUser, () => {
           this.modifyUser.disableEditing();
-          this.refresh(()=> {this.processing = false;}, () => {
+          this._refresh(()=> {this.processing = false;}, () => {
             this.editing = false;
           });
         });
@@ -249,7 +256,7 @@ export class ManageUsersComponent implements OnInit {
         next: (resp: any) => {
           this.processing = false;
           this.loading = true;
-          this.refresh(()=>{ this.loading = false; });
+          this._refresh(()=>{ this.loading = false; });
         },
         error: (err: DataError) => {
           this.displayError(err.message);

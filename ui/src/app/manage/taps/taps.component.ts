@@ -114,7 +114,7 @@ export class ManageTapsComponent implements OnInit {
     })
   }
 
-  refreshAll(always?:Function, next?: Function, error?: Function) {
+  _refreshAll(always?:Function, next?: Function, error?: Function) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = _.sortBy(locations, [(l:Location) => {return l.description}]);
@@ -218,7 +218,7 @@ export class ManageTapsComponent implements OnInit {
             this.selectedLocationFilters.push(l.id);
           }
         }
-        this.refreshAll(()=> {
+        this._refreshAll(()=> {
           this.loading = false;
         });
       },
@@ -227,6 +227,13 @@ export class ManageTapsComponent implements OnInit {
           this.displayError(err.message);
         }
       }
+    });
+  }
+
+  refreshAll(): void {
+    this.loading = true;
+    this._refreshAll(()=> {
+      this.loading = false;
     });
   }
 

@@ -1,16 +1,17 @@
 @if (!editing && !adding && !changePassword) {
   <div class="users-view">
-    <div class="heading"><p>Edit Users</p></div>
+    <div class="heading">
+      <p>Edit Users</p>
+      @if (!loading) {
+        <div class="heading-actions">
+          <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add User</button>
+          <button matButton="elevated" class="refresh" (click)="refresh()" aria-label="Refresh"><mat-icon>refresh</mat-icon></button>
+        </div>
+      }
+    </div>
     @if (loading) {
       <div class="taps-list-loading">
         <mat-spinner></mat-spinner>
-      </div>
-    }
-    @if (!loading) {
-      <div class="user-view-filters">
-        <div class="user-view-actions">
-          <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add User</button>
-        </div>
       </div>
     }
     @if (!loading) {

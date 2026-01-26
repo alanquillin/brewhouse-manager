@@ -1,12 +1,13 @@
 <div class="beers-view" *ngIf="!editing && !adding && !editingBatch && !addingBatch">
-    <div class="heading"><p>Edit Beers</p></div>
+    <div class="heading">
+        <p>Edit Beers</p>
+        <div class="heading-actions" *ngIf="!loading">
+            <button mat-raised-button color="primary" (click)="addBeer()"><mat-icon>add</mat-icon> Add Beer</button>
+            <button matButton="elevated" class="refresh" (click)="refresh()" aria-label="Refresh"><mat-icon>refresh</mat-icon></button>
+        </div>
+    </div>
     <div class="taps-list-loading" *ngIf="loading">
         <mat-spinner></mat-spinner>
-    </div>
-    <div class="beer-view-filters" *ngIf="!loading">
-        <div class="beer-view-actions">
-            <button mat-raised-button color="primary" (click)="addBeer()"><mat-icon>add</mat-icon> Add Beer</button>
-        </div>
     </div>
     <div class="beers-list" *ngIf="!loading">
         <table mat-table matSort [dataSource]="filteredBeers" class="mat-elevation-z8" (matSortChange)="filter($event)">

@@ -107,7 +107,7 @@ export class ManageBeverageComponent implements OnInit {
     this._snackBar.open("Error: " + errMsg, "Close");
   }
 
-  refresh(always?:Function, next?: Function, error?: Function) {
+  _refresh(always?:Function, next?: Function, error?: Function) {
     this.dataService.getSettings().subscribe({
       next: (data: Settings) => {
         this.defaultType = data.beverages.defaultType;
@@ -208,7 +208,7 @@ export class ManageBeverageComponent implements OnInit {
             this.selectedLocationFilters.push(l.id);
           }
         }
-        this.refresh(()=> {
+        this._refresh(()=> {
           this.loading = false;
         });
       },
@@ -217,6 +217,13 @@ export class ManageBeverageComponent implements OnInit {
           this.displayError(err.message);
         }
       }
+    });
+  }
+
+  refresh(): void {
+    this.loading = true;
+    this._refresh(()=> {
+      this.loading = false;
     });
   }
 
@@ -262,7 +269,7 @@ export class ManageBeverageComponent implements OnInit {
     
     this.dataService.createBeverage(data).subscribe({
       next: (beverage: Beverage) => {
-        this.refresh(() => {this.processing = false;}, () => {this.addingBeverage = false;});
+        this._refresh(() => {this.processing = false;}, () => {this.addingBeverage = false;});
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -312,14 +319,14 @@ export class ManageBeverageComponent implements OnInit {
 
   saveBeverageActual(): void {
     if(isNilOrEmpty(this.beverageChanges)) {
-      this.refresh(()=> {this.processing = false;}, () => {
+      this._refresh(()=> {this.processing = false;}, () => {
         this.editingBeverage = false;
       });
     } else {
       this.dataService.updateBeverage(this.modifyBeverage.id, this.beverageChanges).subscribe({
         next: (beverage: Beverage) => {
           this.modifyBeverage.disableEditing();
-          this.refresh(()=> {this.processing = false;}, () => {
+          this._refresh(()=> {this.processing = false;}, () => {
             this.editingBeverage = false;
           })
         },
@@ -334,7 +341,7 @@ export class ManageBeverageComponent implements OnInit {
   cancelEditBeverage(): void {
     this.modifyBeverage.disableEditing();
     if(!isNilOrEmpty(this.imageTransitionsToDelete)) {
-      this.refresh(()=> {this.processing = false;}, () => {
+      this._refresh(()=> {this.processing = false;}, () => {
         this.editingBeverage = false;
       });
     } else {
@@ -394,7 +401,7 @@ export class ManageBeverageComponent implements OnInit {
       next: (resp: any) => {
         this.processing = false;
         this.loading = true;
-        this.refresh(()=>{ this.loading = false; });
+        this._refresh(()=>{ this.loading = false; });
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -654,7 +661,7 @@ export class ManageBeverageComponent implements OnInit {
     
     this.dataService.createBatch(data).subscribe({
       next: (batch: Batch) => {
-        this.refresh(() => {this.processing = false;}, () => {this.addingBatch = false;});
+        this._refresh(() => {this.processing = false;}, () => {this.addingBatch = false;});
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -679,13 +686,13 @@ export class ManageBeverageComponent implements OnInit {
   saveBatch(): void {  
     this.processing = true;
     if(isNilOrEmpty(this.batchChanges)) {
-      this.refresh(()=> {this.processing = false;}, () => {
+      this._refresh(()=> {this.processing = false;}, () => {
         this.editingBatch = false;
       });
     } else {
       this.dataService.updateBatch(this.modifyBatch.id, this.batchChanges).subscribe({
         next: (batch: Batch) => {
-          this.refresh(()=> {this.processing = false;}, () => {
+          this._refresh(()=> {this.processing = false;}, () => {
             this.editingBatch = false;
           })
         },
@@ -741,7 +748,7 @@ export class ManageBeverageComponent implements OnInit {
       next: (resp: any) => {
         this.processing = false;
         this.loading = true;
-        this.refresh(()=>{this.loading = false; this.loadingBatches = false;});
+        this._refresh(()=>{this.loading = false; this.loadingBatches = false;});
       },
       error: (err: DataError) => {
         this.displayError(err.message);
@@ -759,7 +766,7 @@ export class ManageBeverageComponent implements OnInit {
         next: (resp: any) => {
           this.processing = false;
           this.loading = true;
-          this.refresh(()=>{this.loading = false; this.loadingBatches = false;});
+          this._refresh(()=>{this.loading = false; this.loadingBatches = false;});
         },
         error: (err: DataError) => {
           this.displayError(err.message);

@@ -1,14 +1,9 @@
 @if (!editing && !adding) {
   <div class="taps-view">
-    <div class="heading"><p>Edit Taps</p></div>
-    @if (loading) {
-      <div class="taps-list-loading">
-        <mat-spinner></mat-spinner>
-      </div>
-    }
-    @if (!loading) {
-      <div class="tap-view-filters">
-        @if (locations.length > 1) {
+    <div class="heading">
+      <p>Edit Taps</p>
+      <div class="heading-actions">
+        @if (!loading && locations.length > 1) {
           <div class="location-selector">
             <mat-form-field appearance="fill">
               <mat-label>Filter By Location</mat-label>
@@ -22,9 +17,15 @@
             </mat-form-field>
           </div>
         }
-        <div class="tap-view-actions">
+        @if (!loading) {
           <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add tap</button>
-        </div>
+          <button matButton="elevated" class="refresh" (click)="refreshAll()" aria-label="Refresh"><mat-icon>refresh</mat-icon></button>
+        }
+      </div>
+    </div>
+    @if (loading) {
+      <div class="taps-list-loading">
+        <mat-spinner></mat-spinner>
       </div>
     }
     @if (!loading) {
