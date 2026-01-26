@@ -55,6 +55,15 @@ class S3AssetManager(AssetManagerBase):
         s3 = aws.client('s3')
         #extra_args = {'ACL': 'public-read'}
         extra_args = {}
-        s3.upload_fileobj(file, self.bucket, obj, ExtraArgs=extra_args)
+
+        # Handle both werkzeug FileStorage (Flask) and FastAPI UploadFile
+        if hasattr(file, 'file'):
+            # FastAPI UploadFile - use the .file attribute
+            file_obj = file.file
+        else:
+            # Flask werkzeug FileStorage - use directly
+            file_obj = file
+
+        s3.upload_fileobj(file_obj, self.bucket, obj, ExtraArgs=extra_args)
 
         return old_filename, filename, self._get(obj)

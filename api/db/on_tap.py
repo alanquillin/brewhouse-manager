@@ -7,11 +7,11 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, batches, column_as_enum, generate_audit_trail
+from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, batches, column_as_enum, generate_audit_trail
 
 
 @generate_audit_trail
-class OnTap(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class OnTap(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     __tablename__ = _TABLE_NAME
 

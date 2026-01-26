@@ -5,13 +5,13 @@ _PKEY = "id"
 from argon2 import PasswordHasher
 from sqlalchemy import Column, Boolean, String, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, joinedload
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail, locations, user_locations
+from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, AsyncQueryMethodsMixin, generate_audit_trail, locations, user_locations
 
 @generate_audit_trail
-class Users(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class Users(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     __tablename__ = _TABLE_NAME
 
@@ -32,37 +32,41 @@ class Users(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
         Index("ix_user_google_oidc_id", google_oidc_id, unique=True),
         Index("ix_user_api_key", api_key, unique=True),
     )
+    @classmethod
+    async def query(cls, session, **kwargs):
+        def q_fn(q):
+            return q.options(joinedload(Users.locations))
+        res = await super().query(session, q_fn=q_fn, **kwargs)
+        return res
 
     @classmethod
-    def get_by_email(cls, session, email, **kwargs):
-        res = cls.query(session, email=email, **kwargs)
+    async def get_by_email(cls, session, email, **kwargs):
+        res = await super().query(session, email=email, **kwargs)
         if not res:
             return None
-
         return res[0]
 
     @classmethod
-    def get_by_api_key(cls, session, api_key, **kwargs):
-        res = cls.query(session, api_key=api_key, **kwargs)
+    async def get_by_api_key(cls, session, api_key, **kwargs):
+        res = await super().query(session, api_key=api_key, **kwargs)
         if not res:
             return None
-
         return res[0]
 
     @classmethod
-    def update(cls, session, pkey, password=None, **kwargs):  # pylint: disable=arguments-differ
+    async def update(cls, session, pkey, password=None, **kwargs):
         if password and not kwargs.get("password_hash"):
             ph = PasswordHasher()
             kwargs["password_hash"] = ph.hash(password)
-        return super().update(session, pkey, **kwargs)
+        return await super().update(session, pkey, **kwargs)
 
     @classmethod
-    def create(cls, session, password=None, **kwargs):
+    async def create(cls, session, password=None, **kwargs):
         if password and not kwargs.get("password_hash"):
             ph = PasswordHasher()
             kwargs["password_hash"] = ph.hash(password)
-        return super().create(session, **kwargs)
+        return await super().create(session, **kwargs)
 
     @classmethod
-    def disable_password(cls, session, pkey):
-        return super().update(session, pkey, password_hash=None)
+    async def disable_password(cls, session, pkey):
+        return await super().update(session, pkey, password_hash=None)

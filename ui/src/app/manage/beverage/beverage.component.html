@@ -38,7 +38,7 @@
                 <td mat-cell *matCellDef="let element">
                     <span class="is-tapped" *ngIf="isBeverageTapped(element)">
                         <ng-template #popupNameDetails>
-                            <div class="associated-taps" *ngFor="let tap of element.taps">
+                            <div class="associated-taps" *ngFor="let tap of beverageAssocTaps(element)">
                                 <p>Description: {{ tap.description }}</p>
                                 <p>Tap Number: {{ tap.tapNumber }}</p>
                                 <p>Location: {{ tap.location ? tap.location.description : "UNKNOWN" }}</p>

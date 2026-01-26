@@ -7,14 +7,14 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail, locations
+from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail, locations
 from db.types.nested import NestedMutableDict
 from lib import UsefulEnum
 from lib.exceptions import InvalidExternalBrewingTool
 
 
 @generate_audit_trail
-class Beverages(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class Beverages(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     __tablename__ = _TABLE_NAME
 
@@ -35,7 +35,7 @@ class Beverages(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     __table_args__ = (Index("beverage_name_lower_ix", func.lower(name), unique=True),)
 
     @classmethod
-    def create(cls, session, **kwargs):
+    async def create(cls, session, **kwargs):
         if not kwargs.get("image_transitions_enabled"):
             kwargs["image_transitions_enabled"] = False
-        return super().create(session, **kwargs)
+        return await super().create(session, **kwargs)

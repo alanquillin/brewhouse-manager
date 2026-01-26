@@ -5,4 +5,4 @@ if [ "$RUN_ENV" = "dev" ]; then
 fi
 
 poetry run ./migrate.sh upgrade head
-poetry run python api.py
+poetry run python app.py

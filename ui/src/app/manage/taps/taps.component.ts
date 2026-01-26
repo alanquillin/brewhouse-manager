@@ -90,7 +90,6 @@ export class ManageTapsComponent implements OnInit {
             _tap.batch = this.findBatch(_tap.batchId);
           }
 
-          console.log(_tap);
           this.taps.push(_tap)
         });
         this.filter();
@@ -486,10 +485,16 @@ export class ManageTapsComponent implements OnInit {
     var name : string | undefined = "";
 
     if(!isNilOrEmpty(batch?.beer)) {
-      name = batch?.beer?.getName();
+      name = batch?.getName();
+      if (isNilOrEmpty(name)) {
+        name = batch?.beer?.getName();
+      }
     }
     if(!isNilOrEmpty(batch?.beverage)) {
-      name = batch?.beverage?.name;
+      name = batch?.name;
+      if (isNilOrEmpty(name)) {
+        name = batch?.beverage?.name;
+      }
     }
     
     if(isNilOrEmpty(name)) {

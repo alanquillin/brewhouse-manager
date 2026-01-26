@@ -7,11 +7,11 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, beers, beverages, column_as_enum, generate_audit_trail, locations, sensors, on_tap
+from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, beers, beverages, column_as_enum, generate_audit_trail, locations, sensors, on_tap
 
 
 @generate_audit_trail
-class Taps(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class Taps(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     __tablename__ = _TABLE_NAME
 
@@ -34,9 +34,13 @@ class Taps(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
     )
 
     @classmethod
-    def get_by_location(cls, session, location_id, **kwargs):
-        return session.query(cls).filter_by(location_id=location_id, **kwargs)
+    async def get_by_location(cls, session, location_id, **kwargs):
+        def _q_fn(q):
+            return q.filter_by(location_id=location_id, **kwargs)
+        return await super().query(session, q_fn=_q_fn)
 
     @classmethod
-    def get_by_batch(cls, session, batch_id, **kwargs):
-        return session.query(cls).join(on_tap.OnTap).filter_by(batch_id=batch_id, **kwargs)
+    async def get_by_batch(cls, session, batch_id, **kwargs):
+        def _q_fn(q):
+            return q.join(on_tap.OnTap).filter_by(batch_id=batch_id, **kwargs)
+        return await super().query(session, q_fn=_q_fn)

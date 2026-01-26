@@ -95,7 +95,7 @@ export class LocationComponent implements OnInit {
   refresh(next?: Function, always?: Function) {
     this.isLoading = true;
     this.taps = [];
-
+    
     this.dataService.getCurrentUser().subscribe({
       next: (userInfo: UserInfo) => {
         this.userInfo = userInfo;
@@ -107,6 +107,8 @@ export class LocationComponent implements OnInit {
         } else {
           this.displayError(err.message);
         }
+      },
+      complete: () => {
       }
     });
   }

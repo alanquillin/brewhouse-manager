@@ -7,10 +7,10 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import audit_columns, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail, batches, locations, AuditedMixin
+from db import audit_columns, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail, batches, locations, AuditedMixin
 
 @generate_audit_trail
-class BatchLocations(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class BatchLocations(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     __tablename__ = _TABLE_NAME
     id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
     batch_id = Column(UUID, ForeignKey(f"{batches._TABLE_NAME}.{batches._PKEY}"), nullable=False)
@@ -23,11 +23,3 @@ class BatchLocations(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
         Index("ix_locations_batch_id", batch_id, unique=False), 
         Index("ix_locations_batch_id_location_id", batch_id, location_id, unique=True)
     )
-
-    @classmethod
-    def get_by_batch_id(cls, session, batch_id, **kwargs):
-        res = cls.query(session, batch_id=batch_id, **kwargs)
-        if not res:
-            return None
-
-        return res[0]

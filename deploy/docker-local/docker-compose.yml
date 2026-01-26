@@ -1,10 +1,10 @@
-version: '3'
+version: "3"
 services:
-  nginx: 
-    image : nginx:latest 
-    ports : 
-        - 8000:8000
-        - 8443:8443
+  nginx:
+    image: nginx:latest
+    ports:
+      - 8000:8000
+      - 8443:8443
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
       - ./certs/localhost.crt:/etc/nginx/certs/localhost.crt
@@ -53,10 +53,10 @@ services:
       - ".env"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 30s
-      timeout: 60s
-      retries: 5
-      start_period: 10s
+      interval: 2s
+      timeout: 30s
+      retries: 15
+      start_period: 5s
   db-data-seed:
     image: brewhouse-manager-db-seed:dev
     depends_on:
@@ -71,4 +71,3 @@ services:
       - brewhouse-manager-net
 networks:
   brewhouse-manager-net:
-      

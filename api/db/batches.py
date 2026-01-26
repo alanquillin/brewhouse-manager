@@ -4,14 +4,14 @@ _PKEY = "id"
 
 from sqlalchemy import Column, ForeignKey, Float, String, func, Date, or_
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import backref, relationship, joinedload
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, beers, beverages, generate_audit_trail, batch_locations, locations
+from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, beers, beverages, generate_audit_trail, batch_locations, locations
 from db.types.nested import NestedMutableDict
 
 @generate_audit_trail
-class Batches(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
+class Batches(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     __tablename__ = _TABLE_NAME
 
@@ -40,15 +40,3 @@ class Batches(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
         Index("ix_batches_beer_id", beer_id, unique=False),
         Index("ix_batches_beverage_id", beverage_id, unique=False),
     )
-
-    @classmethod
-    def get_by_beer(cls, session, beer_id, **kwargs):
-        return session.query(cls).filter_by(beer_id=beer_id, **kwargs)
-
-    @classmethod
-    def get_by_beverage(cls, session, beverage_id, **kwargs):
-        return session.query(cls).filter_by(beverage_id=beverage_id, **kwargs)
-
-    @classmethod
-    def get_by_location(cls, session, location_id):
-        return session.query(cls).filter(or_(Batches.beer.has(location_id=location_id), Batches.beverage.has(location_id=location_id)))

@@ -1,22 +1,35 @@
 import base64
 
-import requests
-from requests import auth
-from requests.auth import HTTPBasicAuth
+import httpx
+from httpx import BasicAuth, AsyncClient
 
-from db import session_scope
+from db import async_session_scope
 from db.sensors import Sensors as SensorsDB
 from lib.sensors import SensorBase
 from lib.units import from_ml
+from lib.sensors.exceptions import SensorDependencyError
 
 
 class KegtronBase(SensorBase):
     def __init__(self):
         super().__init__()
 
+
+SENSOR_TYPE = "kegtron-pro"
+
+
 class KegtronPro(SensorBase):
     supported_device_keys = ["beaconEna", "cleanEna"]
-    supported_port_keys = ["abv", "beaconEna", "userName", "userDesc", "ibu", "maker", "style", "volSize"]
+    supported_port_keys = [
+        "abv",
+        "beaconEna",
+        "userName",
+        "userDesc",
+        "ibu",
+        "maker",
+        "style",
+        "volSize",
+    ]
 
     def __init__(self) -> None:
         super().__init__()
@@ -29,63 +42,66 @@ class KegtronPro(SensorBase):
         }
 
         self.default_vol_unit = self.config.get("sensors.preferred_vol_unit")
-        self.kegtron_customer_api_key = self.config.get("sensors.kegtron.pro.auth.customer_api_key")
+        self.kegtron_customer_api_key = self.config.get(
+            "sensors.kegtron.pro.auth.customer_api_key"
+        )
         self.kegtron_username = self.config.get("sensors.kegtron.pro.auth.username")
         self.kegtron_password = self.config.get("sensors.kegtron.pro.auth.password")
 
-    def supports_discovery(self): 
+    def supports_discovery(self):
         return True
-     
-    def get(self, data_type, sensor_id=None, sensor=None, meta=None):
+
+    async def get(self, data_type, sensor_id=None, sensor=None, meta=None):
         if not sensor_id and not sensor and not meta:
             raise Exception("sensor_id, sensor, or meta must be provided")
 
         if not meta:
             if not sensor:
-                with session_scope(self.config) as db_session:
-                    sensor = SensorsDB.get_by_pkey(db_session, sensor_id)
+                with async_session_scope(self.config) as db_session:
+                    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
             meta = sensor.meta
 
         fn = self._data_type_to_key[data_type]
 
         if callable(fn):
-            return fn(meta)
-        
+            return await fn(meta)
+
         return self._get_from_key(fn, meta)
-    
+
     def _get_device_access_token(self, meta):
         return meta.get("access_token")
 
-    
-    def _get_total_remaining(self, meta, params=None):
-        _, start, disp = self._get_served_data(meta, params)
+    async def _get_total_remaining(self, meta, params=None):
+        _, start, disp = await self._get_served_data(meta, params)
 
-        remaining =  start - disp
-        unit = self._get_vol_unit(meta, params=params)
+        remaining = start - disp
+        unit = await self._get_vol_unit(meta, params=params)
         return from_ml(remaining, unit)
 
-    def _get_percent_remaining(self, meta, params=None):   
-        max, start, disp = self._get_served_data(meta, params)
+    async def _get_percent_remaining(self, meta, params=None):
+        max, start, disp = await self._get_served_data(meta, params)
 
-        remaining =  start - disp
+        remaining = start - disp
         return round((remaining / max) * 100, 2)
-    
-    def _get_vol_unit(self, meta, params=None):
+
+    async def _get_vol_unit(self, meta, params=None):
         self.logger.debug(f"meta: {meta}")
         self.logger.debug(f"default_vol_unit: {self.default_vol_unit}")
         return meta.get("unit", self.default_vol_unit).lower()
 
-    def _get_served_data(self, meta, params=None):
+    async def _get_served_data(self, meta, params=None):
         self.logger.debug("retrieving served data.")
-        device = self._get(meta, params)
+        device = await self._get(meta, params)
         port = self._get_port_data(device, meta, params=params)
         self.logger.debug(f"port data: {port}")
-        
+
         max = port.get("volSize", 0)
         start = port.get("volStart", 0)
         disp = port.get("volDisp", 0)
 
-        self.logger.debug(f"serve data: max = {max}, start = {start}, dispensed = {disp}")
+        self.logger.debug(
+            f"serve data: max = {max}, start = {start}, dispensed = {disp}"
+        )
         return max, start, disp
 
     def _get_from_key(self, key, meta, params=None):
@@ -93,32 +109,41 @@ class KegtronPro(SensorBase):
         port = self._get_port_data(device, meta, params=params)
 
         return port.get(key, None)
-    
+
     def _get_port_data(self, device, meta, params=None):
         port_num = meta["port_num"]
         for port in device["ports"]:
             if port["num"] == port_num:
                 return port
-            
+
         return {}
 
-    
-    def _get(self, meta, params=None):
+    async def _get(self, meta, params=None):
         if not params:
             params = {}
 
         access_token = self._get_device_access_token(meta)
-        url = f"https://mdash.net/api/v2/m/device?access_token={access_token}"
-        self.logger.debug("GET Request: %s, params: %s", url, params)
-        resp = requests.get(url, params=params)
-        self.logger.debug("GET response code: %s", resp.status_code)
-        j = resp.json()
-        self.logger.debug("GET response JSON: %s", j)
+        params["access_token"] = access_token
+        url = "https://mdash.net/api/v2/m/device"
+        self.logger.debug(
+            f"Retriving devive data for access token {access_token}. GET Request: {url}, params: {params}"
+        )
+        async with AsyncClient() as client:
+            resp = await client.get(url, params=params)
+            self.logger.debug("GET response code: %s", resp.status_code)
+            j = resp.json()
+            self.logger.debug("GET response JSON: %s", j)
+            if resp.status_code == 401:
+                self.logger.error("Kegtron API returned a 401")
+                raise SensorDependencyError(
+                    SENSOR_TYPE,
+                    message=f"Kegtron API returned a 401 unauthorized when retrieving device details.",
+                )
 
-        return self.parse_resp(j)
-        
-    
+            return self.parse_resp(j)
+
     def parse_resp(self, j):
+        self.logger.debug(f"parsing kegtron pro response: {j}")
         id = j.get("id")
         self.logger.debug(f"id: {id}")
         shdw = j.get("shadow", {})
@@ -133,12 +158,12 @@ class KegtronPro(SensorBase):
         self.logger.debug(f"config: {cfg}")
         cfg_ro = rprtd.get("config_readonly", {})
         self.logger.debug(f"config_readonly: {cfg_ro}")
-        
+
         device = {
             "id": id,
             "ota": ota.get("id"),
             "online": rprtd.get("online", False),
-            "port_count": cfg_ro.get("portCount"),
+            "port_count": cfg_ro.get("portCount", 0),
             "temp": cfg_ro.get("temp"),
             "fw_rev": cfg_ro.get("fwRev"),
             "humidity": cfg_ro.get("humidity"),
@@ -148,7 +173,7 @@ class KegtronPro(SensorBase):
             "clean_active": cfg.get("cleanActive"),
             "site_name": cfg.get("siteName"),
             "beacon_enabled": cfg.get("beaconEna", False),
-            "serial_num": cfg_ro.get("serialNum")
+            "serial_num": cfg_ro.get("serialNum"),
         }
         self.logger.debug(f"device: {device}")
 
@@ -165,94 +190,115 @@ class KegtronPro(SensorBase):
             port.update(port_cfg_ro | port_cfg)
             self.logger.debug(f"port: {port}")
             ports.append(port)
-        
+
         device["ports"] = ports
 
         return device
-    
-    def discover(self, params=None):
+
+    async def discover(self, params=None):
         if not params:
             params = {}
         kwargs = {}
         url = "https://mdash.net/customer"
         if self.kegtron_customer_api_key:
-            self.logger.debug("Discovering kegtron pro devices - using customer api key auth")
-            url = f"{url}?access_token={self.kegtron_customer_api_key}"
+            self.logger.debug(
+                "Discovering kegtron pro devices - using customer api key auth"
+            )
+            params["access_token"] = self.kegtron_customer_api_key
         else:
-            self.logger.debug("Discovering kegtron pro devices - using username/password auth")
-            kwargs["auth"] = HTTPBasicAuth(self.kegtron_username, self.kegtron_password)
-        self.logger.debug("GET Request: %s, params: %s", url, params)
-        resp = requests.get(url, params=params, **kwargs)
-        self.logger.debug("GET response code: %s", resp.status_code)
-        j = resp.json()
-        self.logger.debug("GET response JSON: %s", j)
+            self.logger.debug(
+                "Discovering kegtron pro devices - using username/password auth"
+            )
+            kwargs["auth"] = BasicAuth(self.kegtron_username, self.kegtron_password)
 
-        device_keys = j.get("pubkeys", {})
-        devices = []
-        for key, _ in device_keys.items():
-            device = self._get({"access_token": key}, params)
-            if device:
-                for port in device["ports"]:
-                    _device = {
-                        "id": f"{device['id']}",
-                        "name": f"{device['site_name']}",
-                        "model": device["model_num"],
-                        "port_num": port["num"],
-                        "token": key
-                    }
-                    devices.append(_device)
-        
-        return devices
-    
-    def update_device(self, data, sensor_id=None, sensor=None, meta=None, params=None):
+        async with AsyncClient() as client:
+            self.logger.debug("GET Request: %s, params: %s", url, params)
+            resp = await client.get(url, params=params, **kwargs)
+            self.logger.debug("GET response code: %s", resp.status_code)
+            j = resp.json()
+            self.logger.debug("GET response JSON: %s", j)
+            if resp.status_code == 401:
+                self.logger.error("Kegtron API returned a 401 when retrieving customer details to get the device access tokens")
+                raise SensorDependencyError(SENSOR_TYPE)
+
+            device_keys = j.get("pubkeys", {})
+            devices = []
+            for key, _ in device_keys.items():
+                device = await self._get({"access_token": key}, params)
+                if device:
+                    for port in device["ports"]:
+                        _device = {
+                            "id": f"{device['id']}",
+                            "name": f"{device['site_name']}",
+                            "model": device["model_num"],
+                            "port_num": port["num"],
+                            "token": key,
+                        }
+                        devices.append(_device)
+
+            return devices
+
+    async def update_device(
+        self, data, sensor_id=None, sensor=None, meta=None, params=None
+    ):
         if not sensor_id and not sensor and not meta:
             raise Exception("WTH!!")
 
         if not meta:
             if not sensor:
-                with session_scope(self.config) as db_session:
-                    sensor = SensorsDB.get_by_pkey(db_session, sensor_id)
+                with async_session_scope(self.config) as db_session:
+                    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
             meta = sensor.meta
 
         d_data = {}
-        for k,v in data.items():
+        for k, v in data.items():
             if k in self.supported_device_keys:
                 d_data[k] = v
             else:
-                self.warn(f"ignoring unsupported kegtron pro device data with key `{k}`")
+                self.warn(
+                    f"ignoring unsupported kegtron pro device data with key `{k}`"
+                )
         data = {"shadow": {"state": {"desired": {"config": d_data}}}}
-        return self._update(data, meta, params)
-    
-    def update_port(self, port_num, data, sensor_id=None, sensor=None, meta=None, params=None):
+        return await self._update(data, meta, params)
+
+    async def update_port(
+        self, port_num, data, sensor_id=None, sensor=None, meta=None, params=None
+    ):
         if not sensor_id and not sensor and not meta:
             raise Exception("WTH!!")
 
         if not meta:
             if not sensor:
-                with session_scope(self.config) as db_session:
-                    sensor = SensorsDB.get_by_pkey(db_session, sensor_id)
+                with async_session_scope(self.config) as db_session:
+                    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
             meta = sensor.meta
         port_num = meta.get("port_num")
         if not port_num:
             raise Exception("Port num not found... WTH!?!?!")
-        
+
         p_data = {}
-        for k,v in data.items():
+        for k, v in data.items():
             if k in self.supported_port_keys:
                 p_data[k] = v
             else:
-                self.warn(f"ignoring unsupported kegtron pro device data with key `{k}`")
-        
-        data = {"shadow": {"state": {"desired": {"config": {f"port{port_num}": p_data}}}}}
-        return self._update(data, meta, params)
+                self.warn(
+                    f"ignoring unsupported kegtron pro device data with key `{k}`"
+                )
 
-        
-    def _update(self, data, meta, params=None):
+        data = {
+            "shadow": {"state": {"desired": {"config": {f"port{port_num}": p_data}}}}
+        }
+        return await self._update(data, meta, params)
+
+    async def _update(self, data, meta, params=None):
+        if not params:
+            params = {}
         access_token = self._get_device_access_token(meta)
-        url = f"https://mdash.net/api/v2/m/device?access_token={access_token}"
+        params["access_token"] = access_token
+        url = "https://mdash.net/api/v2/m/device"
         self.logger.debug("GET Request: %s, params: %s", url, params)
-        resp = requests.post(url, json=data, params=params)
-        self.logger.debug("GET response code: %s", resp.status_code)
+        async with AsyncClient() as client:
+            resp = await client.post(url, json=data, params=params)
+            self.logger.debug("GET response code: %s", resp.status_code)
 
-        return resp.status_code == 200
-    
+            return resp.status_code == 200
