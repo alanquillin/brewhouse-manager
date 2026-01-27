@@ -382,6 +382,7 @@ export class Sensor extends EditableBase {
   locationId!: string;
   location: Location | undefined;
   meta!: any;
+  tap!: Tap;
 
   constructor(from?: any) {
     super(["name", "locationId", "sensorType", "meta"], from);

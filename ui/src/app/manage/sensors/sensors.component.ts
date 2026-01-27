@@ -69,7 +69,7 @@ export class ManageSensorsComponent implements OnInit {
       cols.push("location");
     }
 
-    return _.concat(cols, ["actions"]);
+    return _.concat(cols, ["tap", "actions"]);
   }
 
   constructor(
@@ -85,7 +85,7 @@ export class ManageSensorsComponent implements OnInit {
   }
 
   _refresh(always?: Function, next?: Function, error?: Function) {
-    this.dataService.getSensors().subscribe({
+    this.dataService.getSensors(undefined, true).subscribe({
       next: (sensors: Sensor[]) => {
         this.sensors = [];
         _.forEach(sensors, (sensor) => {
@@ -429,5 +429,13 @@ export class ManageSensorsComponent implements OnInit {
 
   get modifyForm(): { [key: string]: AbstractControl } {
     return this.modifyFormGroup.controls;
+  }
+
+  getTapDetails(sensor: Sensor): string {
+    if (isNilOrEmpty(sensor.tap)) {
+      return '';
+    }
+
+    return `Tap #${sensor.tap.tapNumber} (${sensor.tap.description})`
   }
 }

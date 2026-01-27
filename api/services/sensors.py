@@ -12,7 +12,7 @@ class SensorService:
     """Service for sensor-related operations"""
 
     @staticmethod
-    async def transform_response(sensor, db_session: AsyncSession, include_location=True, **kwargs):
+    async def transform_response(sensor, db_session: AsyncSession, include_location=True, include_tap=False, **kwargs):
         """Transform sensor model to response dict with camelCase keys"""
         if not sensor:
             return None
@@ -26,5 +26,13 @@ class SensorService:
                 from services.locations import LocationService
 
                 data["location"] = await LocationService.transform_response(sensor.location, db_session=db_session)
+
+        if include_tap:
+            from db.taps import Taps as TapsDB
+            from services.taps import TapService
+            taps = await TapsDB.query(db_session, sensor_id=sensor.id)
+            if taps:
+                tap = taps[0] #there can only be 1
+                data["tap"] = await TapService.transform_response(tap, db_session, include_location=False)
 
         return transform_dict_to_camel_case(data)
