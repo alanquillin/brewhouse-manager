@@ -47,6 +47,10 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header="locationName" sortActionDescription="Sort by location"> Location </th>
             <td mat-cell *matCellDef="let element">{{ _.isNil(element.location) ? getLocationName(element) : element.location.name }}</td>
           </ng-container>
+          <ng-container matColumnDef="tap">
+            <th mat-header-cell *matHeaderCellDef> Tap </th>
+            <td mat-cell *matCellDef="let element">{{ getTapDetails(element) }}</td>
+          </ng-container>
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef> </th>
             <td mat-cell *matCellDef="let element">

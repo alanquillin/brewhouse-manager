@@ -40,7 +40,7 @@ LOGGER = logging.getLogger(__name__)
 # Create FastAPI app
 app = FastAPI(
     title="Brewhouse Manager",
-    version="0.6.1",
+    version="0.7.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc" if CONFIG.get("ENV") == "development" else None,
 )
@@ -188,7 +188,7 @@ if os.path.exists(STATIC_DIR):
 
 
 # SPA routing - serve index.html for all unmatched routes
-@app.get("/{full_path:path}")
+@app.get("/{full_path:path}", include_in_schema=False)
 async def serve_spa(full_path: str):
     """
     Serve Angular SPA for all unmatched routes.

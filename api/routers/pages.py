@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 
 from dependencies.auth import get_optional_user, AuthUser
 
-router = APIRouter(tags=["pages"])
+router = APIRouter(tags=["pages"], include_in_schema=False)
 
 STATIC_DIR = os.path.join(os.getcwd(), "static")
 
