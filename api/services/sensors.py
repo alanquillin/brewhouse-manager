@@ -32,7 +32,7 @@ class SensorService:
             from services.taps import TapService
             taps = await TapsDB.query(db_session, sensor_id=sensor.id)
             if taps:
-                tap = taps[0] #there can only be 1
+                tap = taps[0] # Only one tap can be associated with a sensor
                 data["tap"] = await TapService.transform_response(tap, db_session, include_location=False)
 
         return transform_dict_to_camel_case(data)

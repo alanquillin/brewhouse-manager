@@ -436,6 +436,6 @@ export class ManageSensorsComponent implements OnInit {
       return '';
     }
 
-    return `Tap #${sensor.tap.tapNumber} (${sensor.tap.description})`
+    return `Tap #${sensor.tap.tapNumber} (${sensor.tap.description})`;
   }
 }

@@ -237,12 +237,6 @@ async def delete_sensor(
             status_code=403, detail="Not authorized to access this location"
         )
 
-    # Check authorization
-    if not current_user.admin and sensor.location_id not in current_user.locations:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to delete this sensor"
-        )
-
     # update associated 
     taps = await TapsDB.query(db_session, sensor_id=sensor_id)
     if taps:
