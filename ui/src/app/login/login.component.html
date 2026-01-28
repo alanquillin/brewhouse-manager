@@ -3,7 +3,7 @@
     <form [formGroup]="loginFormGroup" (ngSubmit)="submit()">
       <fieldset>
         <mat-card appearance="outlined" class="login-card">
-          <img mat-card-image src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="avatar">
+          <img mat-card-image src="../../assets/login logo.png" alt="avatar">
           <mat-card-content>
 
             <mat-form-field appearance="fill" class="login-field">
@@ -14,6 +14,7 @@
                 matInput
                 required />
               <mat-label>Email</mat-label>
+              <mat-icon matPrefix>person</mat-icon>
               <!-- <mat-error *ngIf="loginForm.email.hasError('required')">
               Email is required.
             </mat-error> -->
@@ -28,6 +29,7 @@
               matInput
               required />
             <mat-label>Password</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
             <!-- <mat-error *ngIf="loginForm.password.hasError('required')">
             Password is required.
           </mat-error> -->

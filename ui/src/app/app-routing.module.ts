@@ -36,6 +36,7 @@ const routes: Routes = [
     path: 'login',
     component: LoginComponent,
     data: {
+      emptyHeader: true,
       access: { restricted: false }
     }
   },

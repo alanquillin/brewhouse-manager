@@ -18,6 +18,7 @@ import { DataError, DataService } from './_services/data.service';
 export class AppComponent implements OnInit {
   title = 'Brewhouse Manager';
   hideHeader: boolean = false;
+  emptyHeader: boolean = false;
   hideFooter: boolean = false;
   restricted: boolean = true;
   routeData: any;
@@ -27,6 +28,7 @@ export class AppComponent implements OnInit {
   setConfig(data: any): void {
     this.title = _.get(data, "title", 'brewhouse-manager');
     this.hideHeader = toBoolean(_.get(data, "hideHeader", false));
+    this.emptyHeader = toBoolean(_.get(data, "emptyHeader", false));
     this.hideFooter = toBoolean(_.get(data, "hideFooter", false));
     this.restricted = toBoolean(_.get(data, "access.restricted", true))
 

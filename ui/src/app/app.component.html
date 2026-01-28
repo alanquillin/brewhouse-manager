@@ -1,6 +1,8 @@
 @if (!hideHeader) {
   <div class="header">
+    @if(!emptyHeader) {
     <app-header [title]="title"></app-header>
+    }
   </div>
 }
 <div class="content">
