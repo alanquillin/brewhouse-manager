@@ -841,6 +841,9 @@ export class ManageBeerComponent implements OnInit {
     this.selectedBatchBeer = beer;
     this.modifyBatchFormGroup.reset();
     var data:any = {};
+    if (this.locations.length == 1){
+      data["locationIds"] = [this.locations[0].id];
+    }
     this.modifyBatch = new Batch(data);
     this.modifyBatch.editValues = data;
     this.addingBatch = true;

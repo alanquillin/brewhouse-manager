@@ -20,7 +20,7 @@ from dependencies.auth import get_db_session, require_user, AuthUser
 from db.users import Users as UsersDB
 from lib.config import Config
 
-router = APIRouter(tags=["auth"])
+router = APIRouter(tags=["auth"], include_in_schema=False)
 CONFIG = Config()
 LOGGER = logging.getLogger(__name__)
 

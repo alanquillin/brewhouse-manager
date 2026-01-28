@@ -7,7 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import AuthUser, get_db_session, require_user, require_admin
+from db.batch_locations import BatchLocations as BatchLocationsDB
 from db.locations import Locations as LocationsDB
+from db.taps import Taps as TapsDB
+from db.user_locations import UserLocations as UserLocationsDB
 from services.locations import LocationService
 from schemas.locations import LocationCreate, LocationUpdate
 from lib import util
@@ -121,5 +124,8 @@ async def delete_location(
     if not loc:
         raise HTTPException(status_code=404, detail="Location not found")
 
+    await TapsDB.delete_by(db_session, location_id=location_id)
+    await BatchLocationsDB.delete_by(db_session, location_id=location_id)
+    await UserLocationsDB.delete_by(db_session, location_id=location_id)
     await LocationsDB.delete(db_session, location_id)
     return True

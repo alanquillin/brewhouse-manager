@@ -3,12 +3,13 @@
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import AuthUser, get_db_session, require_user
 from db.sensors import Sensors as SensorsDB
+from db.taps import Taps as TapsDB
 from lib import util
 from lib.sensors import InvalidDataType, get_sensor_lib
 from lib.sensors import get_types as get_sensor_types
@@ -73,6 +74,7 @@ async def discover_sensors(
 
 @router.get("", response_model=List[dict])
 async def list_sensors(
+    request: Request,
     location: Optional[str] = None,
     current_user: AuthUser = Depends(require_user),
     db_session: AsyncSession = Depends(get_db_session),
@@ -91,8 +93,9 @@ async def list_sensors(
         kwargs["locations"] = current_user.locations
 
     sensors = await SensorsDB.query(db_session, **kwargs)
+    include_tap_details = request.query_params.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
     return [
-        await SensorService.transform_response(s, db_session=db_session)
+        await SensorService.transform_response(s, db_session=db_session, include_tap=include_tap_details)
         for s in sensors
     ]
 
@@ -131,35 +134,31 @@ async def create_sensor(
 
 @router.get("/{sensor_id}", response_model=dict)
 async def get_sensor(
+    request: Request,
     sensor_id: str,
     location: Optional[str] = None,
     current_user: AuthUser = Depends(require_user),
     db_session: AsyncSession = Depends(get_db_session),
 ):
     """Get a specific sensor"""
-    kwargs = {"id": sensor_id}
-
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
             raise HTTPException(
                 status_code=403, detail="Not authorized to access this location"
             )
-        kwargs["locations"] = [location_id]
 
-    sensors = await SensorsDB.query(db_session, **kwargs)
-    if not sensors:
+    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
+    if not sensor:
         raise HTTPException(status_code=404, detail="Sensor not found")
-
-    sensor = sensors[0]
 
     # Check authorization
     if not current_user.admin and sensor.location_id not in current_user.locations:
         raise HTTPException(
             status_code=403, detail="Not authorized to access this sensor"
         )
-
-    return await SensorService.transform_response(sensor, db_session=db_session)
+    include_tap_details = request.query_params.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
+    return await SensorService.transform_response(sensor, db_session=db_session, include_tap=include_tap_details)
 
 
 @router.patch("/{sensor_id}", response_model=dict)
@@ -171,7 +170,6 @@ async def update_sensor(
     db_session: AsyncSession = Depends(get_db_session),
 ):
     """Update a sensor"""
-    kwargs = {"id": sensor_id}
 
     if location:
         location_id = await get_location_id(location, db_session)
@@ -179,21 +177,25 @@ async def update_sensor(
             raise HTTPException(
                 status_code=403, detail="Not authorized to access this location"
             )
-        kwargs["locations"] = [location_id]
+        
+    data = sensor_data.model_dump(exclude_unset=True)
 
-    sensors = await SensorsDB.query(db_session, **kwargs)
-    if not sensors:
+    location_id = data.get("location_id")
+    if location_id:
+        if not current_user.admin and location_id not in current_user.locations:
+            raise HTTPException(
+                status_code=403, detail="Not authorized to add sensor in this location"
+            )
+
+    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
+    if not sensor:
         raise HTTPException(status_code=404, detail="Sensor not found")
-
-    sensor = sensors[0]
 
     # Check authorization
     if not current_user.admin and sensor.location_id not in current_user.locations:
         raise HTTPException(
             status_code=403, detail="Not authorized to update this sensor"
         )
-
-    data = sensor_data.model_dump(exclude_unset=True)
 
     LOGGER.debug("Updating sensor %s with data: %s", sensor_id, data)
 
@@ -213,25 +215,33 @@ async def delete_sensor(
     """Delete a sensor"""
     kwargs = {"id": sensor_id}
 
+    # if location was passed as part of the query, first check that user is associated with location
+    location_id = None
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
             raise HTTPException(
                 status_code=403, detail="Not authorized to access this location"
             )
-        kwargs["locations"] = [location_id]
 
-    sensors = await SensorsDB.query(db_session, **kwargs)
-    if not sensors:
+    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
+    if not sensor:
         raise HTTPException(status_code=404, detail="Sensor not found")
-
-    sensor = sensors[0]
-
-    # Check authorization
+    
+    if location_id and (sensor.location_id != location_id):
+        LOGGER.warning("Sensor query succeeded but the user passed in a location that the sensor was not associated with, returning 404")
+        raise HTTPException(status_code=404, detail="Sensor not found")
+    
     if not current_user.admin and sensor.location_id not in current_user.locations:
         raise HTTPException(
-            status_code=403, detail="Not authorized to delete this sensor"
+            status_code=403, detail="Not authorized to access this location"
         )
+
+    # update associated 
+    taps = await TapsDB.query(db_session, sensor_id=sensor_id)
+    if taps:
+        for tap in taps:
+            await TapsDB.update(db_session, tap.id, sensor_id=None)
 
     await SensorsDB.delete(db_session, sensor.id)
     return True

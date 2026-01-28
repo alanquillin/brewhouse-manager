@@ -643,6 +643,9 @@ export class ManageBeverageComponent implements OnInit {
     this.selectedBatchBeverage = beer;
     this.modifyBeverageFormGroup.reset();
     var data:any = {};
+    if (this.locations.length == 1){
+      data["locationIds"] = [this.locations[0].id];
+    }
     this.modifyBatch = new Batch(data);
     this.modifyBatch.editValues = data;
     this.addingBatch = true;

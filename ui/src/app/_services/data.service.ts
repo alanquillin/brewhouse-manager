@@ -178,7 +178,7 @@ export class DataService {
     return this.http.patch<Beer>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getSensors(locationId?: string): Observable<Sensor[]> {
+  getSensors(locationId?: string, includeTapDetails:Boolean = false): Observable<Sensor[]> {
     var url: string;
     if (_.isNil(locationId)) {
       url = `${this.apiBaseUrl}/sensors`;
@@ -186,11 +186,20 @@ export class DataService {
       url = `${this.apiBaseUrl}/locations/${locationId}/sensors`;
     }
 
+    let params = [];
+    if (includeTapDetails) params.push('include_tap_details=true');
+    const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+    url = `${url}${queryString}`;
+
     return this.http.get<Sensor[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getSensor(sensorId: string): Observable<Sensor> {
-    const url = `${this.apiBaseUrl}/sensors/${sensorId}`;
+  getSensor(sensorId: string, includeTapDetails:Boolean = false): Observable<Sensor> {
+    let params = [];
+    if (includeTapDetails) params.push('include_tap_details=true');
+    const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+
+    const url = `${this.apiBaseUrl}/sensors/${sensorId}${queryString}`;
     return this.http.get<Sensor>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 

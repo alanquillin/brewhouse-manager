@@ -111,4 +111,4 @@ __pycache__/
 *.swp
 
 # AI
-.claude
+/.claude
