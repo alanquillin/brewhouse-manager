@@ -109,3 +109,6 @@ __pycache__/
 
 # vim
 *.swp
+
+# AI
+.claude
