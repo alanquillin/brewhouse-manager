@@ -1,11 +1,11 @@
 """Assets router for FastAPI"""
 
-import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from dependencies.auth import AuthUser, require_user
+from lib import logging
 from lib.config import Config
 from lib.assets.files import FileAssetManager
 from lib.assets.s3 import S3AssetManager
@@ -14,7 +14,6 @@ router = APIRouter(prefix="/api/v1/uploads", tags=["assets"])
 LOGGER = logging.getLogger(__name__)
 
 CONFIG = Config()
-CONFIG.setup(config_files=["default.json"])
 
 ALLOWED_IMAGE_TYPES = ["beer", "user", "beverage"]
 

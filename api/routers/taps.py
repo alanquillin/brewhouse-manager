@@ -1,6 +1,5 @@
 """Taps router for FastAPI"""
 
-import logging
 from datetime import datetime
 from typing import List, Optional
 
@@ -11,9 +10,9 @@ from dependencies.auth import AuthUser, get_db_session, require_user
 from db.taps import Taps as TapsDB
 from db.on_tap import OnTap as OnTapDB
 from db.batches import Batches as BatchesDB
+from lib import logging, util
 from services.taps import TapService
 from schemas.taps import TapCreate, TapUpdate
-from lib import util
 
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
@@ -205,7 +204,7 @@ async def update_tap(
     LOGGER.debug("Updating tap %s with data: %s", tap_id, data)
 
     if data:
-        tap = await TapsDB.update(db_session, tap.id, **data)
+        await TapsDB.update(db_session, tap.id, **data)
 
     # Refresh tap to get updated relationships
     tap = await TapsDB.get_by_pkey(db_session, tap_id)

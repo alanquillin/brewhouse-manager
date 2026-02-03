@@ -1,8 +1,8 @@
 """Tap service with business logic and transformations"""
 
-import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from lib import logging
 from services.base import transform_dict_to_camel_case
 
 LOGGER = logging.getLogger(__name__)

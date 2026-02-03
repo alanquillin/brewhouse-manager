@@ -1,12 +1,11 @@
 """External brew tools router for FastAPI"""
 
-import logging
 from typing import List
 
 from fastapi import APIRouter, Depends
 
 from dependencies.auth import AuthUser, require_user
-from lib import external_brew_tools
+from lib import external_brew_tools, logging
 from lib.util import snake_to_camel
 
 router = APIRouter(prefix="/api/v1/external_brew_tools", tags=["external_brew_tools"])

@@ -1,12 +1,11 @@
 """Image transitions router for FastAPI"""
 
-import logging
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import AuthUser, get_db_session, require_user
 from db.image_transitions import ImageTransitions as ImageTransitionsDB
+from lib import logging
 
 router = APIRouter(prefix="/api/v1/image_transitions", tags=["image_transitions"])
 LOGGER = logging.getLogger(__name__)

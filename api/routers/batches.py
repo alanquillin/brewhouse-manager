@@ -1,6 +1,5 @@
 """Batches router for FastAPI"""
 
-import logging
 from datetime import datetime
 from typing import List, Optional
 
@@ -9,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dependencies.auth import AuthUser, get_db_session, require_user
 from db.batches import Batches as BatchesDB
 from db.batch_locations import BatchLocations as BatchLocationsDB
+from lib import logging
 from schemas.batches import BatchCreate, BatchUpdate
 from services.batches import BatchService
 
@@ -223,7 +223,7 @@ async def update_batch(
     LOGGER.debug("Updating batch %s with data: %s", batch_id, data)
 
     if data:
-        batch = await BatchesDB.update(db_session, batch.id, **data)
+        await BatchesDB.update(db_session, batch.id, **data)
 
     # Refresh batch to get updated data
     batch = await BatchesDB.get_by_pkey(db_session, batch_id)

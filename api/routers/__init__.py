@@ -1,4 +1,7 @@
 """FastAPI routers"""
+from typing import Optional
+
+from pydantic import BaseModel
 
 # Import routers as they are created
 from . import (
@@ -10,5 +13,9 @@ from . import (
 __all__ = [
     "auth", "beers", "beverages", "batches", "locations", "sensors", "taps", "users",
     "dashboard", "assets", "settings", "external_brew_tools", "image_transitions",
-    "pages"
+    "pages", "plaato"
 ]
+
+
+class StringValueRequest(BaseModel):
+    value: str

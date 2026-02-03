@@ -9,7 +9,7 @@ from db.sensors import Sensors as SensorsDB
 from lib.sensors import InvalidDataType, SensorBase
 
 
-class PlaatoKeg(SensorBase):
+class PlaatoBlynk(SensorBase):
     _data_type_to_pin = {
         "percent_beer_remaining": "v48",
         "total_beer_remaining": "v51",
@@ -59,7 +59,8 @@ class PlaatoKeg(SensorBase):
 
     def _get(self, pin, meta, params=None):
         auth_token = meta.get("auth_token")
-        url = f"http://plaato.blynk.cc/{auth_token}/get/{pin}"
+        base_url = self.config.get("sensors.plaato_blynk.base_url", "http://plaato.blynk.cc")
+        url = f"{base_url}/{auth_token}/get/{pin}"
         self.logger.debug("GET Request: %s, params: %s", url, params)
         resp = requests.get(url, params=params)
         self.logger.debug("GET response code: %s", resp.status_code)

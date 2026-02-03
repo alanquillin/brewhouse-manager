@@ -1,6 +1,5 @@
 """Users router for FastAPI"""
 
-import logging
 from typing import List
 import uuid
 
@@ -10,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dependencies.auth import AuthUser, get_db_session, require_user, require_admin
 from db.users import Users as UsersDB
 from db.user_locations import UserLocations as UserLocationsDB
+from lib import logging
 from services.users import UserService
 from services.locations import LocationService
 from schemas.users import UserCreate, UserUpdate, UserLocationsUpdate
@@ -93,8 +93,9 @@ async def update_user(
     LOGGER.debug("Updating user %s with data: %s", user_id, data)
 
     if data:
-        user = await UsersDB.update(db_session, user_id, **data)
+        await UsersDB.update(db_session, user_id, **data)
 
+    user = UsersDB.get_by_pkey(db_session, user_id)
     return await UserService.transform_response(user, current_user)
 
 
@@ -148,8 +149,9 @@ async def generate_user_api_key(
 
     # Generate new API key
     new_api_key = str(uuid.uuid4())
-    user = await UsersDB.update(db_session, user_id, api_key=new_api_key)
+    await UsersDB.update(db_session, user_id, api_key=new_api_key)
 
+    user = UsersDB.get_by_api_key(db_session, user_id)
     return {"apiKey": user.api_key}
 
 

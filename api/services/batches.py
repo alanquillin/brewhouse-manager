@@ -1,12 +1,12 @@
 """Batch service with business logic and transformations"""
 
-import logging
 from datetime import datetime, timedelta, date
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.taps import Taps as TapsDB
+from lib import logging
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.external_brew_tools.exceptions import ResourceNotFoundError

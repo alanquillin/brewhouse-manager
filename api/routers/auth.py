@@ -3,9 +3,6 @@ Authentication router for FastAPI.
 Handles login, logout, and Google OAuth flows.
 """
 
-import logging
-import os
-
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -18,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import get_db_session, require_user, AuthUser
 from db.users import Users as UsersDB
+from lib import logging
 from lib.config import Config
 
 router = APIRouter(tags=["auth"], include_in_schema=False)

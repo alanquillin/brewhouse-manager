@@ -1,6 +1,5 @@
 """Beer service with business logic and transformations"""
 
-import logging
 from datetime import timedelta
 
 from fastapi import HTTPException
@@ -8,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.beers import Beers as BeersDB
 from db.image_transitions import ImageTransitions as ImageTransitionsDB
+from lib import logging
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.external_brew_tools.exceptions import ResourceNotFoundError

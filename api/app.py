@@ -1,10 +1,8 @@
 #! /usr/bin/env python3
 
 import argparse
-import logging as std_logging
 import os
 import sys
-import uuid
 
 from lib.config import Config
 from lib import logging
@@ -16,276 +14,147 @@ CONFIG.setup(config_files=["default.json"])
 # Initialize logging
 logging.init(fmt=logging.DEFAULT_LOG_FMT)
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.middleware.sessions import SessionMiddleware
-from sqlalchemy.exc import IntegrityError, DataError
-from schema import SchemaError
+import asyncio
+import uvicorn
 
-#from resources.exceptions import UserMessageError
-
-class UserMessageError(Exception):
-    def __init__(self, response_code, user_msg=None, server_msg=None):
-        self.user_msg = user_msg or ""
-        self.server_msg = server_msg or self.user_msg
-        self.response_code = response_code
-        super().__init__()
+from api import api
 
 LOGGER = logging.getLogger(__name__)
 
-# Create FastAPI app
-app = FastAPI(
-    title="Brewhouse Manager",
-    version="0.7.1",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc" if CONFIG.get("ENV") == "development" else None,
-)
+class Application:
+    """Main application class"""
+    
+    def __init__(self, log_level: str = "INFO"):
+        self.tcp_task = None
+        self.http_server = None
+        self.plaato_service = None
+        self.log_level = log_level
+    
+    async def initialize_first_user(self):
+        """Create initial user if no users exist"""
+        from db import async_session_scope
+        from db.users import Users as UsersDB
 
-# Session middleware - must be added before any dependencies use it
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=CONFIG.get("app.secret_key", str(uuid.uuid4())),
-    session_cookie="session",
-    max_age=None,  # Session expires when browser closes
-    same_site=CONFIG.get("api.cookies.samesite", "lax"),
-    https_only=CONFIG.get("api.cookies.secure", True),
-)
+        async with async_session_scope(CONFIG) as db_session:
+            users = await UsersDB.query(db_session)
 
-# CORS middleware
-if CONFIG.get("ENV") == "development":
-    LOGGER.debug("Setting up development environment with full CORS")
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-else:
-    # Production - selective CORS
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=CONFIG.get("api.registration_allow_origins", []),
-        allow_methods=["PUT", "OPTIONS"],
-        allow_headers=["Content-Type"],
-        expose_headers=["Content-Type"],
-        max_age=3000,
-        allow_credentials=True,
-    )
+            if not users:
+                init_user_email = CONFIG.get("auth.initial_user.email")
+                set_init_user_pass = CONFIG.get("auth.initial_user.set_password")
+                init_user_fname = CONFIG.get("auth.initial_user.first_name")
+                init_user_lname = CONFIG.get("auth.initial_user.last_name")
+                google_sso_enabled = CONFIG.get("auth.oidc.google.enabled")
 
+                if not google_sso_enabled and not set_init_user_pass:
+                    LOGGER.error("Cannot create an initial user! auth.initial_user.set_password and google authentication is disabled!")
+                    sys.exit(1)
 
-# Exception handlers
-@app.exception_handler(UserMessageError)
-async def user_message_error_handler(request: Request, exc: UserMessageError):
-    """Handle custom user message errors from resources"""
-    LOGGER.exception(exc.server_msg)
-    return JSONResponse(
-        status_code=exc.response_code,
-        content={"message": exc.user_msg}
-    )
+                data = {"email": init_user_email, "admin": True}
+                if init_user_fname:
+                    data["first_name"] = init_user_fname
+                if init_user_lname:
+                    data["last_name"] = init_user_lname
 
+                LOGGER.info("No users exist, creating initial user: %s", data)
+                if set_init_user_pass:
+                    data["password"] = CONFIG.get("auth.initial_user.password")
+                    LOGGER.warning("Creating initial user with password: %s", data["password"])
+                    LOGGER.warning("PLEASE REMEMBER TO LOG IN AND CHANGE IT ASAP!!")
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Handle Pydantic validation errors"""
-    return JSONResponse(
-        status_code=400,
-        content={"message": f"Validation error: {str(exc)}"}
-    )
+                await UsersDB.create(db_session, **data)
 
+    async def start_plaato_service(self):
+        from lib.sensors.plaato_keg import service_handler as plaato_service_handler
 
-@app.exception_handler(IntegrityError)
-async def integrity_error_handler(request: Request, exc: IntegrityError):
-    """Handle database integrity errors"""
-    LOGGER.exception("Database integrity error:")
-    return JSONResponse(
-        status_code=400,
-        content={"message": "Database integrity error"}
-    )
+        self.plaato_service = plaato_service_handler
+        
+        host = CONFIG.get("sensors.plaato_keg.host", "localhost")
+        port = CONFIG.get("sensors.plaato_keg.port", 5001)
+        LOGGER.info(f"Starting Plaato TCP server on {host}:{port}")
+        
+        self.tcp_task = asyncio.create_task(plaato_service_handler.connection_handler.start_server(
+            host=host,
+            port=port
+        ))
+        
+    async def start_http_server(self):
+        """Start the HTTP/WebSocket server"""        
+        host = CONFIG.get("api.host", "localhost")
+        port = CONFIG.get("api.port", 5000)
+        LOGGER.info(f"Serving API on {host}:{port}")
+        
+        config = uvicorn.Config(
+            app=api,
+            host=host,
+            port=port,
+            log_level=self.log_level.lower(),
+            proxy_headers=True,  # Handle X-Forwarded-* headers (replaces ProxyFix)
+            forwarded_allow_ips="*",
+            reload=CONFIG.get("ENV") == "development",  # Auto-reload in development
+        )
+        self.http_server = uvicorn.Server(config)
+        await self.http_server.serve()
+        
+    async def run(self):
+        # Initialize first user if needed
+        LOGGER.info("Checking for initial user...")
+        await self.initialize_first_user()
 
+        start_plaato_service = CONFIG.get("sensors.plaato_keg.enabled")
+        if start_plaato_service:
+            LOGGER.info("Starting the Plaato TCP Service task...")
+            await self.start_plaato_service()
+        
+        try:
+            await self.start_http_server()
+        except asyncio.CancelledError:
+            LOGGER.info("Application shutting down...")
+        finally:
+            await self.shutdown()
+            
+    async def shutdown(self):
+        """Cleanup on shutdown"""
+        LOGGER.info("Shutting down application...")
+        
+        if self.plaato_service and self.plaato_service.connection_handler:
+            self.plaato_service.connection_handler.stop_server()
 
-@app.exception_handler(DataError)
-async def data_error_handler(request: Request, exc: DataError):
-    """Handle database data errors"""
-    LOGGER.exception("Database data error:")
-    return JSONResponse(
-        status_code=400,
-        content={"message": "Invalid data format"}
-    )
-
-
-@app.exception_handler(SchemaError)
-async def schema_error_handler(request: Request, exc: SchemaError):
-    """Handle schema validation errors"""
-    return JSONResponse(
-        status_code=400,
-        content={"message": f"Schema validation error: {str(exc)}"}
-    )
-
-
-@app.exception_handler(Exception)
-async def generic_exception_handler(request: Request, exc: Exception):
-    """Catch-all exception handler"""
-    LOGGER.exception("Unhandled exception while processing request:")
-    return JSONResponse(
-        status_code=500,
-        content={"message": "An unhandled error occurred while processing the request"}
-    )
-
-@app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request, exc: StarletteHTTPException):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"message": exc.detail}
-    )
-
-
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    """Health check endpoint for load balancers"""
-    return {"healthy": True}
-
-
-# Register routers
-from routers import (
-    auth, beers, beverages, batches, locations, sensors, taps, users,
-    dashboard, assets, settings, external_brew_tools, image_transitions,
-    pages
-)
-
-app.include_router(auth.router)
-app.include_router(beers.router)
-app.include_router(beverages.router)
-app.include_router(batches.router, prefix="/api/v1/batches", tags=["batches"])
-app.include_router(batches.router, prefix="/api/v1/locations/{location}/batches", tags=["location_batches"])
-app.include_router(batches.router, prefix="/api/v1/beers/{beer_id}/batches", tags=["beer_batches"])
-app.include_router(batches.router, prefix="/api/v1/beverages/{beverage_id}/batches", tags=["beverage_batches"])
-app.include_router(locations.router)
-app.include_router(sensors.router, prefix="/api/v1/sensors", tags=["sensors"])
-app.include_router(sensors.router, prefix="/api/v1/locations/{location}/sensors", tags=["location_sensors"])
-app.include_router(taps.router, prefix="/api/v1/taps", tags=["taps"])
-app.include_router(taps.router, prefix="/api/v1/locations/{location}/taps", tags=["location_taps"])
-app.include_router(users.router)
-app.include_router(dashboard.router)
-app.include_router(assets.router)
-app.include_router(settings.router)
-app.include_router(external_brew_tools.router)
-app.include_router(image_transitions.router)
-
-# Register pages router last (has catch-all routes)
-app.include_router(pages.router)
-
-
-# Mount static files (Angular SPA)
-STATIC_DIR = os.path.join(os.getcwd(), "static")
-if os.path.exists(STATIC_DIR):
-    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
-
-# SPA routing - serve index.html for all unmatched routes
-@app.get("/{full_path:path}", include_in_schema=False)
-async def serve_spa(full_path: str):
-    """
-    Serve Angular SPA for all unmatched routes.
-    This allows Angular to handle client-side routing.
-    """
-    # Check if it's a file in static directory
-    static_file_path = os.path.join(STATIC_DIR, full_path)
-    if os.path.isfile(static_file_path):
-        return FileResponse(static_file_path)
-
-    # Otherwise serve index.html (Angular will handle routing)
-    index_path = os.path.join(STATIC_DIR, "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-
-    # If no static directory exists, return 404
-    return JSONResponse(
-        status_code=404,
-        content={"message": "Not found"}
-    )
-
-
-async def initialize_first_user():
-    """Create initial user if no users exist"""
-    from db import async_session_scope
-    from db.users import Users as UsersDB
-
-    async with async_session_scope(CONFIG) as db_session:
-        users = await UsersDB.query(db_session)
-
-        if not users:
-            init_user_email = CONFIG.get("auth.initial_user.email")
-            set_init_user_pass = CONFIG.get("auth.initial_user.set_password")
-            init_user_fname = CONFIG.get("auth.initial_user.first_name")
-            init_user_lname = CONFIG.get("auth.initial_user.last_name")
-            google_sso_enabled = CONFIG.get("auth.oidc.google.enabled")
-
-            if not google_sso_enabled and not set_init_user_pass:
-                LOGGER.error("Cannot create an initial user! auth.initial_user.set_password and google authentication is disabled!")
-                sys.exit(1)
-
-            data = {"email": init_user_email, "admin": True}
-            if init_user_fname:
-                data["first_name"] = init_user_fname
-            if init_user_lname:
-                data["last_name"] = init_user_lname
-
-            LOGGER.info("No users exist, creating initial user: %s", data)
-            if set_init_user_pass:
-                data["password"] = CONFIG.get("auth.initial_user.password")
-                LOGGER.warning("Creating initial user with password: %s", data["password"])
-                LOGGER.warning("PLEASE REMEMBER TO LOG IN AND CHANGE IT ASAP!!")
-
-            await UsersDB.create(db_session, **data)
-
-
-# Application startup
-@app.on_event("startup")
-async def startup_event():
-    """Initialize application on startup"""
-    LOGGER.info("Starting Brewhouse Manager API...")
-    LOGGER.debug("Config: %s", CONFIG.data_flat)
+        if self.tcp_task:
+            self.tcp_task.cancel()
+            try:
+                await self.tcp_task
+            except asyncio.CancelledError:
+                pass
+                
+        if self.plaato_service:
+            await self.plaato_service.connection_handler.stop_server()
+        
+        LOGGER.info("Application shutdown complete")
 
 
 if __name__ == "__main__":
-    import asyncio
-    import uvicorn
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-l",
         "--log",
         dest="loglevel",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        default=os.environ.get("LOG_LEVEL", "INFO").upper(),
+        default=os.environ.get("LOG_LEVEL", logging.get_def_log_level(CONFIG)).upper(),
         help="Set the logging level",
     )
     args = parser.parse_args()
 
     # Update logging level
-    logging_level = getattr(std_logging, args.loglevel)
-    std_logging.getLogger().setLevel(logging_level)
+    logging_level = logging.get_log_level(args.loglevel)
+    logging.set_log_level(logging_level)
 
-    port = CONFIG.get("api.port", 5000)
-
-    # Initialize first user if needed
-    LOGGER.info("Checking for initial user...")
-    asyncio.run(initialize_first_user())
-
-    # Run uvicorn
-    LOGGER.info("Serving on port %s", port)
-    uvicorn.run(
-        "app:app",
-        host="0.0.0.0",
-        port=port,
-        log_level=args.loglevel.lower(),
-        proxy_headers=True,  # Handle X-Forwarded-* headers (replaces ProxyFix)
-        forwarded_allow_ips="*",
-        reload=CONFIG.get("ENV") == "development",  # Auto-reload in development
-    )
+    app_instance = Application(log_level=args.loglevel)
+    
+    try:
+        asyncio.run(app_instance.run())
+    except KeyboardInterrupt:
+        LOGGER.info("Received keyboard interrupt, shutting down...")
+        app_instance.shutdown()
+    except Exception as e:
+        LOGGER.error(f"Unhandled application error", stack_info=True, exc_info=True)
+        sys.exit(1)

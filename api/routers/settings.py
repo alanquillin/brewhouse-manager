@@ -1,16 +1,14 @@
 """Settings router for FastAPI"""
 
-import logging
-
 from fastapi import APIRouter
 
+from lib import logging
 from lib.config import Config
 
 router = APIRouter(prefix="/api/v1/settings", tags=["settings"])
 LOGGER = logging.getLogger(__name__)
 
 CONFIG = Config()
-CONFIG.setup(config_files=["default.json"])
 
 
 @router.get("", response_model=dict)

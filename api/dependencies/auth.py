@@ -4,7 +4,6 @@ Replaces Flask-Login functionality with FastAPI dependency injection.
 """
 
 import base64
-import logging
 from typing import Optional
 
 from fastapi import Depends, HTTPException, Request, status
@@ -14,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db import async_session_scope
 from db.users import Users as UsersDB
 from lib.config import Config
+from lib import logging
 
 CONFIG = Config()
 LOGGER = logging.getLogger(__name__)
@@ -95,6 +95,8 @@ async def get_current_user_from_api_key(
     if request:
         api_key = request.query_params.get("api_key")
 
+    LOGGER.debug(f"api_key: {api_key}")
+    LOGGER.debug(f"credentials: {credentials}")
     # Try Bearer token from Authorization header
     if not api_key and credentials:
         api_key = credentials.credentials

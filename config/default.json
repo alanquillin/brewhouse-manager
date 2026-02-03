@@ -17,7 +17,9 @@
     "uploads.images.allowed_file_extensions": "list",
     "particle.device_services.enabled": "bool",
     "dashboard.refresh_sec": "int",
-    "sensors.plaato_keg.enabled": "bool",
+    "sensors.plaato.enabled": "bool",
+    "sensors.plaato.port": "int",
+    "sensors.plaato_blynk.enabled": "bool",
     "sensors.keg_volume_monitors.enabled": "bool",
     "sensors.keg_volume_monitors.weight.enabled": "bool",
     "sensors.keg_volume_monitors.flow.enabled": "bool",
@@ -86,7 +88,7 @@
   },
   "sensors": {
     "preferred_vol_unit": "gal",
-    "plaato_keg": {
+    "plaato_blynk": {
       "enabled": false
     },
     "keg_volume_monitors": {
@@ -106,6 +108,11 @@
     "open_plaato_keg": {
       "enabled": false,
       "insecure": false
+    },
+    "plaato_keg": {
+      "enabled": false,
+      "host": "localhost",
+      "port": 5001
     }
   }
 }

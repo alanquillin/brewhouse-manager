@@ -1,6 +1,5 @@
 """Locations router for FastAPI"""
 
-import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,9 +10,9 @@ from db.batch_locations import BatchLocations as BatchLocationsDB
 from db.locations import Locations as LocationsDB
 from db.taps import Taps as TapsDB
 from db.user_locations import UserLocations as UserLocationsDB
+from lib import logging, util
 from services.locations import LocationService
 from schemas.locations import LocationCreate, LocationUpdate
-from lib import util
 
 router = APIRouter(prefix="/api/v1/locations", tags=["locations"])
 LOGGER = logging.getLogger(__name__)
@@ -104,8 +103,9 @@ async def update_location(
     LOGGER.debug("Updating location %s with data: %s", location_id, data)
 
     if data:
-        loc = await LocationsDB.update(db_session, location_id, **data)
-
+        await LocationsDB.update(db_session, location_id, **data)
+        
+    loc = LocationsDB.get_by_pkey(db_session, location_id)
     return await LocationService.transform_response(loc, db_session=db_session)
 
 

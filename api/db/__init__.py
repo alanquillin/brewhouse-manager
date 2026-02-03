@@ -1,12 +1,10 @@
-import logging
-import re
 from contextlib import contextmanager, asynccontextmanager
 from functools import wraps
 from urllib.parse import quote
 
 from psycopg2.errors import InvalidTextRepresentation, NotNullViolation, UniqueViolation  # pylint: disable=no-name-in-module
 from psycopg2.extensions import QuotedString, register_adapter
-from sqlalchemy import DDL, Column, DateTime, String, create_engine, event, func, text, select, delete
+from sqlalchemy import DDL, Column, DateTime, String, create_engine, event, func, text, select, delete, update
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -19,12 +17,12 @@ from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.orm.session import Session
 
 from lib import exceptions as local_exc
-from lib import json
+from lib import json, logging
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
-__all__ = ["Base", "audit", "beers", "beverages", "locations", "sensors", "taps", "users", "image_transitions", "user_locations", "on_tap", "batches", "batch_overrides", "batch_locations"]
+__all__ = ["Base", "audit", "beers", "beverages", "locations", "sensors", "taps", "users", "image_transitions", "user_locations", "on_tap", "batches", "batch_overrides", "batch_locations", "plaato_data"]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -545,48 +543,28 @@ class AsyncQueryMethodsMixin:
         return row
 
     @classmethod
-    async def update_query(cls, session, filters=None, **updates):
+    async def update_query(cls, session, autocommit=True, filters=None, **updates) -> int:
         if filters is None:
             filters = {}
 
-        q = select(cls).filter_by(**filters)
+        q = update(cls).filter_by(**filters).values(**updates)
         result = await session.execute(q)
-        rows = result.scalars().all()
+        rowcnt = result.rowcount
 
-        for row in rows:
-            for key, value in updates.items():
-                setattr(row, key, value)
-
-    @classmethod
-    async def update(cls, session, pkey, merge_nested=False, autocommit=True, **kwargs):
-        merge_fields = getattr(cls, _MERGEABLE_FIELDS_LIST, [])
-        row = await cls.get_by_pkey(session, pkey)
-
-        for key, value in kwargs.items():
-            if not hasattr(cls, key):
-                raise local_exc.InvalidParameter(key)
-
-            if merge_nested and key in merge_fields:
-                current = getattr(row, key, {})
-                value = _merge_into(current, value)
-
-            setattr(row, key, value)
-
-        session.add(row)
         if autocommit:
             try:
                 await session.commit()
-                await session.refresh(row)
             except:
                 await session.rollback()
                 raise
-
-        return row
+        
+        return rowcnt
 
     @classmethod
-    async def delete(cls, session, pkey, autocommit=True):
-        row = await cls.get_by_pkey(session, pkey)
-        await session.delete(row)
+    async def update(cls, session, pkey, autocommit=True, **kwargs) -> int:
+        stmt = update(cls).where(cls.id == pkey).values(**kwargs)
+        result = await session.execute(stmt)
+        rowcnt = result.rowcount
 
         if autocommit:
             try:
@@ -595,10 +573,27 @@ class AsyncQueryMethodsMixin:
                 await session.rollback()
                 raise
 
+        return rowcnt
+
     @classmethod
-    async def delete_by(cls, session, autocommit=True, **kwargs):
+    async def delete(cls, session, pkey, autocommit=True) -> int:
+        stmt = await delete(cls).where(cls.id == pkey)
+        res = await session.execute(stmt)
+        rowcnt = res.rowcount
+
+        if autocommit:
+            try:
+                await session.commit()
+            except:
+                await session.rollback()
+                raise
+        return rowcnt
+
+    @classmethod
+    async def delete_by(cls, session, autocommit=True, **kwargs) -> int:
         q = delete(cls).filter_by(**kwargs)
-        await session.execute(q)
+        res = await session.execute(q)
+        rowcnt = res.rowcount
 
         if autocommit:
             try:
@@ -606,6 +601,8 @@ class AsyncQueryMethodsMixin:
             except:
                 await session.rollback()
                 raise
+        
+        return rowcnt
 
 
 from .audit import setup_trigger  # pylint: disable=wrong-import-position,cyclic-import

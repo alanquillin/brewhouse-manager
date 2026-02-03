@@ -1,4 +1,3 @@
-import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.base import transform_dict_to_camel_case

@@ -1,10 +1,10 @@
 """Pydantic schemas for beers"""
 
 from datetime import datetime
-import logging
 from typing import List, Optional
 from pydantic import Field
 
+from lib import logging
 from schemas.base import CamelCaseModel
 
 LOGGER = logging.getLogger(__name__)

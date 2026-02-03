@@ -28,13 +28,13 @@ def _init_sensors():
 
     LOGGER.info("Initializing Sensors")
     if not SENSORS:
-        if CONFIG.get("sensors.plaato_keg.enabled", False):
-            LOGGER.info("Enabling plaato-keg sensors ")
-            from lib.sensors.plaato_key import PlaatoKeg
+        if CONFIG.get("sensors.plaato_blynk.enabled", False):
+            LOGGER.info("Enabling plaato-blynk sensors ")
+            from lib.sensors.plaato_blynk import PlaatoBlynk
 
-            SENSORS["plaato-keg"] = PlaatoKeg()
+            SENSORS["plaato-blynk"] = PlaatoBlynk()
         else:
-            LOGGER.info("Disabling plaato-keg sensors")
+            LOGGER.info("Disabling plaato-blynk sensors")
 
         if CONFIG.get("sensors.kegtron.pro.enabled", False):
             LOGGER.info("Enabling kegtron pro sensors ")

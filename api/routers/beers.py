@@ -1,6 +1,5 @@
 """Beer router for FastAPI"""
 
-import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -8,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import AuthUser, get_db_session, require_user
 from db.beers import Beers as BeersDB
+from lib import logging
 from schemas.beers import BeerCreate, BeerResponse, BeerUpdate
 from services.beers import BeerService
 

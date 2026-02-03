@@ -1,6 +1,5 @@
 """Sensors router for FastAPI"""
 
-import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -10,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dependencies.auth import AuthUser, get_db_session, require_user
 from db.sensors import Sensors as SensorsDB
 from db.taps import Taps as TapsDB
-from lib import util
+from lib import logging, util
 from lib.sensors import InvalidDataType, get_sensor_lib
 from lib.sensors import get_types as get_sensor_types
 from services.base import transform_dict_to_camel_case
@@ -200,8 +199,9 @@ async def update_sensor(
     LOGGER.debug("Updating sensor %s with data: %s", sensor_id, data)
 
     if data:
-        sensor = await SensorsDB.update(db_session, sensor.id, **data)
+        await SensorsDB.update(db_session, sensor.id, **data)
 
+    sensor = SensorsDB.get_by_pkey(db_session, sensor_id)
     return await SensorService.transform_response(sensor, db_session=db_session)
 
 

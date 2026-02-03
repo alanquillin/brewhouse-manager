@@ -1,6 +1,5 @@
 """Dashboard router for FastAPI"""
 
-import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -12,12 +11,13 @@ from db.taps import Taps as TapsDB
 from db.beers import Beers as BeersDB
 from db.beverages import Beverages as BeveragesDB
 from db.sensors import Sensors as SensorsDB
+from lib import logging
+from lib import util
 from services.locations import LocationService
 from services.taps import TapService
 from services.beers import BeerService
 from services.beverages import BeverageService
 from services.sensors import SensorService
-from lib import util
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
 LOGGER = logging.getLogger(__name__)

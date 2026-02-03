@@ -1,6 +1,5 @@
 """Beverage router for FastAPI"""
 
-import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -8,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import AuthUser, get_db_session, require_user
 from db.beverages import Beverages as BeveragesDB
+from lib import logging
 from schemas.beverages import BeverageCreate, BeverageResponse, BeverageUpdate
 from services.beverages import BeverageService
 

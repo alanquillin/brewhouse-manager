@@ -1,6 +1,6 @@
 """FastAPI dependencies"""
 
-from .auth import (
+from dependencies.auth import (
     AuthUser,
     get_db_session,
     get_current_user_from_api_key,

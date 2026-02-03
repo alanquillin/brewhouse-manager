@@ -288,7 +288,7 @@ export class ManageSensorsComponent implements OnInit {
     this.dataService
       .updateSensor(this.modifySensor.id, this.modifySensor.changes)
       .subscribe({
-        next: (sensor: Sensor) => {
+        next: (res: any) => {
           this.modifySensor.disableEditing();
           this._refresh(
             () => {
