@@ -6,7 +6,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Location, Tap, Beer, Beverage, Sensor, UserInfo, Settings, Dashboard, Batch, SensorData, SensorDiscoveryData } from '../models/models';
+import { Location, Tap, Beer, Beverage, Sensor, UserInfo, Settings, Dashboard, Batch, SensorData, SensorDiscoveryData, PlaatoKegDevice } from '../models/models';
 import { WINDOW } from '../window.provider';
 import { isNilOrEmpty } from '../utils/helpers';
 
@@ -247,6 +247,52 @@ export class DataService {
   discoverSensors(sensorType: string): Observable<SensorDiscoveryData[]> {
     const url = `${this.apiBaseUrl}/sensors/discover/${sensorType}`;
     return this.http.get<SensorDiscoveryData[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  // Plaato Keg Device Management API methods
+  getPlaatoKegDevices(): Observable<PlaatoKegDevice[]> {
+    const url = `${this.apiBaseUrl}/sensors/plaato_keg`;
+    return this.http.get<PlaatoKegDevice[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  getPlaatoKegDevice(deviceId: string): Observable<PlaatoKegDevice> {
+    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}`;
+    return this.http.get<PlaatoKegDevice>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  getPlaatoKegConnectedDevices(): Observable<string[]> {
+    const url = `${this.apiBaseUrl}/sensors/plaato_keg/connected`;
+    return this.http.get<string[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  updatePlaatoKegDevice(deviceId: string, data: any): Observable<any> {
+    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}`;
+    return this.http.patch<any>(url, data).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  deletePlaatoKegDevice(deviceId: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}`;
+    return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  setPlaatoKegMode(deviceId: string, mode: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}/set/mode`;
+    return this.http.post<any>(url, { value: mode }, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  setPlaatoKegUnitType(deviceId: string, unitType: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}/set/unit_type`;
+    return this.http.post<any>(url, { value: unitType }, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  setPlaatoKegUnitMode(deviceId: string, unitMode: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}/set/unit_mode`;
+    return this.http.post<any>(url, { value: unitMode }, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
+  setPlaatoKegValue(deviceId: string, key: string, value: number): Observable<any> {
+    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}/set/${key}`;
+    return this.http.post<any>(url, { value: value }, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getCurrentUser(ignoreUnauthorized: boolean = false): Observable<UserInfo> {

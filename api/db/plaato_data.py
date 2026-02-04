@@ -14,6 +14,7 @@ class PlaatoData(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     __tablename__ = _TABLE_NAME
 
     id = Column(_PKEY, String, primary_key=True)
+    name = Column(String, nullable=True)
     last_pour_string = Column(String, nullable=True)
     percent_of_beer_left = Column(String, nullable=True)
     is_pouring = Column(String, nullable=True)

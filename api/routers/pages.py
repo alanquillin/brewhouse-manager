@@ -45,6 +45,7 @@ async def auth_required(current_user: AuthUser = Depends(get_optional_user)):
 
 # Admin pages
 @router.get("/manage/locations")
+@router.get("/manage/plaato_kegs")
 async def admin(current_user: AuthUser = Depends(get_optional_user)):
     if current_user and current_user.is_authenticated and current_user.admin:
         return await serve_spa()

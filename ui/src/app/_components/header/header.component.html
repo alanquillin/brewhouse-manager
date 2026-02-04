@@ -41,6 +41,9 @@
         <button mat-menu-item id="nav_manage_beers" (click)="goto('manage/beverages')"><mat-icon>local_drink</mat-icon>Beverages</button>
         <button mat-menu-item id="nav_manage_sensors" (click)="goto('manage/sensors')"><mat-icon>gps_fixed</mat-icon>Sensors</button>
         @if (admin) {
+          <button mat-menu-item id="nav_manage_plaato_keg" (click)="goto('manage/plaato_kegs')"><mat-icon>sensor_krx</mat-icon>Plaato Kegs</button>
+        }
+        @if (admin) {
           <button mat-menu-item id="nav_manage_users" (click)="goto('manage/users')"><mat-icon>group</mat-icon>Users</button>
         }
       </mat-menu>

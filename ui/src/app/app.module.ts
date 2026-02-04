@@ -54,6 +54,7 @@ import { ManageComponent } from './manage/manage.component';
 import { HeaderComponent } from './_components/header/header.component';
 import { ManageLocationsComponent } from './manage/locations/locations.component';
 import { ManageSensorsComponent } from './manage/sensors/sensors.component';
+import { ManagePlaatoKegComponent } from './manage/plaato-keg/plaato-keg.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
 import { ManageUsersComponent } from './manage/users/users.component'
 import { ProfileComponent } from './profile/profile.component';
@@ -82,6 +83,7 @@ import { ErrorsComponent } from './errors/errors.component';
         ManageComponent,
         ManageLocationsComponent,
         ManageSensorsComponent,
+        ManagePlaatoKegComponent,
         ManageTapsComponent,
         ManageUsersComponent,
         ProfileComponent,

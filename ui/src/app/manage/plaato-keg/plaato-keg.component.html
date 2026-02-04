@@ -1,0 +1,208 @@
+@if (!editing) {
+  <div class="plaato-keg-view">
+    <div class="heading">
+      <p>Plaato Keg Device Management</p>
+      <div class="heading-actions">
+        @if (!loading) {
+          <button matButton="elevated" class="refresh" (click)="refresh()" aria-label="Refresh">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="loading">
+        <mat-spinner></mat-spinner>
+      </div>
+    }
+
+    @if (!loading) {
+      <div class="devices-list">
+        <table mat-table matSort [dataSource]="filteredDevices"
+               class="mat-elevation-z8" (matSortChange)="filter($event)">
+
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="name">Name</th>
+            <td mat-cell *matCellDef="let device">{{ device.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="id">Device ID</th>
+            <td mat-cell *matCellDef="let device">{{ device.id }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="connected">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="connected">Connected</th>
+            <td mat-cell *matCellDef="let device">
+              <span class="connection-badge" [ngClass]="isConnected(device) ? 'connected' : 'disconnected'">
+                @if(isConnected(device) ) {
+                  <mat-icon>check</mat-icon>
+                }
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="temperature">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="kegTemperature">Temperature</th>
+            <td mat-cell *matCellDef="let device">
+              {{ device.kegTemperature ? (device.kegTemperature + ' ' + (device.temperatureUnit || '°F')) : '-' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="beerLeft">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="percentOfBeerLeft">Beer Remaining</th>
+            <td mat-cell *matCellDef="let device">
+              {{ device.percentOfBeerLeft ? (device.percentOfBeerLeft + '%') : '-' }}
+              @if (device.amountLeft) {
+                <span class="amount-left">
+                  ({{ device.amountLeft }} {{ device.beerLeftUnit }})
+                </span>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="mode">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="mode">Mode</th>
+            <td mat-cell *matCellDef="let device">
+              <mat-chip [ngClass]="device.mode === 'beer' ? 'beer-mode' : 'co2-mode'">
+                {{ device.mode || 'Unknown' }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="unitDetails">
+            <th mat-header-cell *matHeaderCellDef>Unit Details</th>
+            <td mat-cell *matCellDef="let device">
+              <mat-chip [ngClass]="device.unitType === 'us' ? 'us-units' : 'metric-units'">
+                {{ device.unitType || 'Unknown' }}
+              </mat-chip>
+              <mat-chip [ngClass]="device.unitMode === 'weight' ? 'weight-mode' : 'liquid-mode'">
+                {{ device.unitMode || 'Unknown' }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let device">
+              <div class="actions">
+                <button mat-icon-button color="primary" (click)="edit(device)" matTooltip="Configure Device" aria-label="Configure device">
+                    <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" matTooltip="Delete Device" aria-label="Delete Device" (click)="delete(device)">
+                    <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+    }
+  </div>
+}
+
+@if (editing) {
+  <div class="plaato-keg-edit">
+    <div class="heading">
+      <p>Configure Device: {{ modifyDevice.name || modifyDevice.id }}</p>
+    </div>
+
+    <div class="edit-form">
+      <form [formGroup]="modifyFormGroup">
+        <mat-card class="config-section">
+          <mat-card-header>
+            <mat-card-title>Device Settings</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-form-field appearance="fill">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name" [(ngModel)]="modifyDevice.editValues.name">
+              <button matSuffix mat-raised-button color="primary" (click)="save()"
+                      [disabled]="disableDeviceConfigButtons() || !modifyDevice.hasChanges">
+                @if (processing) {
+                <mat-spinner></mat-spinner>
+                } @else {
+                <mat-icon>save</mat-icon>
+                } Save
+              </button>
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+      </form>
+
+      @if (!modifyDevice.editValues.connected) {
+      <div class="not-connected-alert alert alert-danger" role="alert">
+        The device is not connected, the following settings cannot be set until the device is connected. 
+        <button matButton="elevated" class="refresh" (click)="refreshModifyDevice()" aria-label="Refresh">
+          <mat-icon>refresh</mat-icon> Refresh
+        </button>
+      </div>
+      }
+
+      <mat-card class="config-section">
+        <mat-card-header>
+          <mat-card-title>Device Mode</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-button-toggle-group [(ngModel)]="modifyDevice.editValues.mode" (change)="setMode(modifyDevice)" [disabled]="!modifyDevice.connected || disableDeviceConfigButtons()">
+            <mat-button-toggle value="beer"><mat-icon>sports_bar</mat-icon> Beer </mat-button-toggle>
+            <mat-button-toggle value="co2"><mat-icon>propane</mat-icon> CO2 </mat-button-toggle>
+          </mat-button-toggle-group>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="config-section">
+        <mat-card-header>
+          <mat-card-title>Units</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-button-toggle-group [(ngModel)]="modifyDevice.editValues.unitType" (change)="setUnitType(modifyDevice)" [disabled]="!modifyDevice.connected || disableDeviceConfigButtons()">
+            <mat-button-toggle value="us"><mat-icon>account_balance</mat-icon> US </mat-button-toggle>
+            <mat-button-toggle value="metric"><mat-icon>travel_explore</mat-icon> Metric </mat-button-toggle>
+          </mat-button-toggle-group>
+
+          <mat-button-toggle-group [(ngModel)]="modifyDevice.editValues.unitMode" (change)="setUnitMode(modifyDevice)" [disabled]="!modifyDevice.connected || disableDeviceConfigButtons()">
+            <mat-button-toggle value="liquid"><mat-icon>water_drop</mat-icon> Liquid </mat-button-toggle>
+            <mat-button-toggle value="weight"><mat-icon>balance</mat-icon> Weight </mat-button-toggle>
+          </mat-button-toggle-group>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="config-section">
+        <mat-card-header>
+          <mat-card-title>Calibration</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-form-field appearance="fill">
+            <mat-label>Empty Keg Weight</mat-label>
+            <input matInput type="number" [(ngModel)]="modifyDevice.editValues.emptyKegWeight" [disabled]="!modifyDevice.connected">
+            <span matTextSuffix="">{{modifyDevice.editValues.unitType == "metric" ? "Kg" : "lbs"}}</span>
+            <button mat-raised-button matSuffix color="primary" (click)="setEmptyKegWeight(modifyDevice)"[disabled]="!modifyDevice.connected || modifyDevice.emptyKegWeight === modifyDevice.editValues.emptyKegWeight || disableDeviceConfigButtons()">
+              @if (processingSetEmptyKegWeight) {
+              <mat-spinner></mat-spinner>
+              } @else {
+              <mat-icon>save</mat-icon>
+              } Save
+            </button>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Max Keg Volume</mat-label>
+            <input matInput type="number" [(ngModel)]="modifyDevice.editValues.maxKegVolume" [disabled]="!modifyDevice.connected">
+            <span matTextSuffix="">{{modifyDevice.editValues.unitType == "metric" ? "L" : "gal"}}</span>
+            <button mat-raised-button matSuffix color="primary" (click)="setMaxKegVolume(modifyDevice)"[disabled]="!modifyDevice.connected || modifyDevice.maxKegVolume === modifyDevice.editValues.maxKegVolume || disableDeviceConfigButtons()">
+              @if (processingSetMaxKegVolume) {
+              <mat-spinner></mat-spinner>
+              } @else {
+              <mat-icon>save</mat-icon>
+              } Save
+            </button>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+}

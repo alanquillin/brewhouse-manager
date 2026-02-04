@@ -34,11 +34,13 @@ class PlaatoKegBase(CamelCaseModel):
     calculatedAbv: Optional[float] = None
     connected: bool
     mode: str
+    name: Optional[str] = None
 
-    def model_dump(self, *args, **kwargs):
-        data = super().model_dump(*args, **kwargs)
-        meta = data.get("meta")
-        if meta:
-            meta = self.transform_meta(meta)
-            data["meta"] = meta
-        return data
+
+class PlaatoKegCreate(CamelCaseModel):
+    id: str
+    name: str
+
+
+class PlaatoKegUpdate(CamelCaseModel):
+    name: str

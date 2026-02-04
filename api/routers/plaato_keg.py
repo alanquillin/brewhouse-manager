@@ -7,11 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import AuthUser, get_db_session, require_admin
 from db.plaato_data import PlaatoData as PlaatoDataDB
-from lib import logging
+from lib import logging, util
 from lib.sensors.plaato_keg import service_handler
 from lib.sensors.plaato_keg.command_writer import COMMAND_MAPP, sanitize_command, Commands
 from services.plaato_keg import PlaatoKegService
-from schemas.plaato_keg import PlaatoKegBase
+from schemas.plaato_keg import PlaatoKegBase, PlaatoKegCreate, PlaatoKegUpdate
 from routers import StringValueRequest
 
 router = APIRouter(prefix="/api/v1/sensors/plaato_keg", tags=["plaato_keg_device_management"])
@@ -31,6 +31,22 @@ async def list(
         return []
 
     return [await PlaatoKegService.transform_response(dev, db_session) for dev in devices]
+
+@router.post("", response_model=PlaatoKegBase)
+async def create_sensor(
+    device_data: PlaatoKegCreate,
+    current_user: AuthUser = Depends(require_admin),
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    if len(device_data.id) != 32:
+        raise HTTPException(status_code=400, detail="Invalid id format.  Must be 32 characters and can only be number and lowercase letters a-z")
+    
+    data = device_data.model_dump()
+
+    LOGGER.debug(f"Creating plaato keg device with: {data}")
+    dev = await PlaatoDataDB.create(db_session, **data)
+
+    return await PlaatoKegService.transform_response(dev, db_session=db_session)
 
 
 @router.get("/connected", response_model=Dict[str, Any])
@@ -57,6 +73,39 @@ async def get(
         raise HTTPException(status_code=404, detail="Plaato keg device not found")
 
     return await PlaatoKegService.transform_response(dev, db_session)
+
+
+@router.patch("/{device_id}", response_model=PlaatoKegBase)
+async def create_sensor(
+    device_id: str,
+    device_data: PlaatoKegUpdate,
+    current_user: AuthUser = Depends(require_admin),
+    db_session: AsyncSession = Depends(get_db_session),
+):    
+    data = device_data.model_dump()
+
+    LOGGER.debug(f"Updating plaato keg device {device_id} with: {data}")
+    await PlaatoDataDB.update(db_session, device_id, **data)
+
+    dev = await PlaatoDataDB.get_by_pkey(db_session, device_id)
+
+    return await PlaatoKegService.transform_response(dev, db_session=db_session)
+
+
+@router.delete("/{device_id}", response_model=bool)
+async def get(
+    device_id: str,
+    current_user: AuthUser = Depends(require_admin),
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    """List all beers"""
+    dev = await PlaatoDataDB.get_by_pkey(db_session, device_id)
+    if not dev:
+        raise HTTPException(status_code=404, detail="Plaato keg device not found")
+
+    cnt = await PlaatoDataDB.delete(db_session, device_id)
+    
+    return True if cnt else False
 
 
 @router.post("/{device_id}/set/mode", response_model=bool)

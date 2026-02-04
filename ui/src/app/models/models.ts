@@ -547,3 +547,44 @@ export class SensorDiscoveryData {
   portNum!: number;
   token!: string;
 }
+
+export class PlaatoKegDevice extends EditableBase {
+  id!: string;  // Device ID
+  name?: string;
+  connected!: boolean;
+  updatedOn?: Date;
+
+  // Telemetry data
+  percentOfBeerLeft?: number;
+  amountLeft?: number;
+  beerLeftUnit?: string;
+  kegTemperature?: number;
+  temperatureUnit?: string;
+  lastPour?: string;
+  isPouring?: boolean;
+
+  // Beer info
+  og?: number;
+  fg?: number;
+  calculatedAbv?: number;
+  beerStyle?: string;
+
+  // Configuration
+  emptyKegWeight?: number;
+  maxKegVolume?: number;
+  unit?: string;
+  measureUnit?: string;
+  mode?: string;  // 'beer' or 'co2'
+  unitType?: string;  // 'metric' or 'us'
+  unitMode?: string;  // 'weight' or 'volume'
+
+  // Device health
+  wifiSignalStrength?: number;
+  firmwareVersion?: string;
+  chipTemperature?: number;
+  leakDetection?: boolean;
+
+  constructor(from?: any) {
+    super(['name'], from);
+  }
+}

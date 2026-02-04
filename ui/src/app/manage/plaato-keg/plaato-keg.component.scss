@@ -1,0 +1,124 @@
+.plaato-keg-view, .plaato-keg-edit {
+  padding: 20px;
+
+  .heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    p {
+      font-size: 24px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .heading-actions {
+      display: flex;
+      gap: 10px;
+    }
+  }
+
+  .loading {
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  .devices-list {
+    table {
+      width: 100%;
+
+      .connection-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+
+        &.connected {
+          color: #4caf50;
+        }
+
+        &.disconnected {
+          color: f44336;
+        }
+      }
+
+      .amount-left {
+        font-size: 12px;
+        color: #666;
+        margin-left: 8px;
+      }
+
+      mat-chip {
+        &.beer-mode {
+          background-color: #ff9800;
+          color: white;
+        }
+
+        &.co2-mode {
+          background-color: #3a3a3b;
+          color: white;
+        }
+
+        &.us-units {
+          background-color: #1104f8;
+          color: white;
+        }
+
+        &.metric-units {
+          background-color: #6495bb;
+          color: white;
+        }
+
+        &.liquid-mode {
+          background-color: #c0bfbc;
+          color: rgb(6, 6, 6);
+        }
+
+        &.weight-mode {
+          background-color: #2196f3;
+          color: white;
+        }
+      }
+
+      .actions {
+        display: flex;
+        gap: 4px;
+      }
+    }
+  }
+}
+
+.plaato-keg-edit {
+  .edit-form {
+    max-width: 800px;
+
+    .config-section {
+      margin-bottom: 20px;
+
+      mat-card-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding-top: 16px;
+
+        mat-form-field {
+          width: 100%;
+        }
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+
+      button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+  }
+}
