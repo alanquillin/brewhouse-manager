@@ -2,7 +2,7 @@
 _TABLE_NAME = "plaato_data"
 _PKEY = "id"
 
-from sqlalchemy import Column, String, Date
+from sqlalchemy import Column, String, DateTime
 from sqlalchemy.orm import backref, relationship
 
 from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail
@@ -48,4 +48,4 @@ class PlaatoData(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     chip_temperature_string = Column(String, nullable=True)
     firmware_version = Column(String, nullable=True)
     max_keg_volume = Column(String, nullable=True)
-    last_updated_on = Column(Date, nullable=True)
+    last_updated_on = Column(DateTime, nullable=True)

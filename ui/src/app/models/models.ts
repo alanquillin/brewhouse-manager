@@ -552,7 +552,7 @@ export class PlaatoKegDevice extends EditableBase {
   id!: string;  // Device ID
   name?: string;
   connected!: boolean;
-  updatedOn?: Date;
+  lastUpdatedOn?: Date;
 
   // Telemetry data
   percentOfBeerLeft?: number;

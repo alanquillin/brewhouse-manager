@@ -3,7 +3,7 @@ from typing import Dict, List, Any, Optional
 from db import async_session_scope
 from db.plaato_data import PlaatoData as PlaatoDataDB
 from lib.config import Config
-from lib import logging
+from lib import logging, time
 from lib.sensors.plaato_keg import plaato_protocol, blynk_protocol, plaato_data
 
 LOGGER = logging.getLogger(__name__)
@@ -59,6 +59,7 @@ class DataProcessor:
         if not data:
             LOGGER.debug(f"ignoring, nothing to write to DB.  device_id: {device_id}, data: {data}")
         
+        data["last_updated_on"] = time.utcnow_aware()
         async with async_session_scope(CONFIG) as db_session:
             LOGGER.debug(f"Updating DB record for keg {device_id}.  Data: {data}")
             rowcnt = await PlaatoDataDB.update(db_session, device_id, **data)

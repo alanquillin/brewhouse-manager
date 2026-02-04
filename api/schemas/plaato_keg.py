@@ -27,7 +27,7 @@ class PlaatoKegBase(CamelCaseModel):
     maxTemperature: Optional[float] = None
     chipTemperatureString: Optional[str] = None
     firmwareVersion: Optional[str] = None
-    updatedOn: datetime
+    lastUpdatedOn: datetime
     beerStyle: Optional[str] = None
     unitMode: str # Either weight or volume
     unitType: str # Either us or metric

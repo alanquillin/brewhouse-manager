@@ -36,7 +36,7 @@ export class ManagePlaatoKegComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   get displayedColumns(): string[] {
-    return ['name', 'id', 'connected', 'temperature', 'beerLeft', 'mode', 'unitDetails', 'actions'];
+    return ['name', 'id', 'connected', 'temperature', 'beerLeft', 'mode', 'unitDetails', 'firmware', 'wifiStrength', 'lastUpdatedOn', 'actions'];
   }
 
   constructor(
