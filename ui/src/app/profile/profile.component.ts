@@ -158,8 +158,8 @@ export class ProfileComponent implements OnInit {
   _generateAPIKey(user: UserInfo): void {
     this.processing = true;
     this.dataService.generateUserAPIKey(user.id).subscribe({
-      next: (resp: string) => {
-        user.apiKey = resp;
+      next: (resp: any) => {
+        user.apiKey = resp.apiKey;
         this.processing = false;
       },
       error: (err: DataError) => {

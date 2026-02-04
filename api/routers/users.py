@@ -151,8 +151,7 @@ async def generate_user_api_key(
     new_api_key = str(uuid.uuid4())
     await UsersDB.update(db_session, user_id, api_key=new_api_key)
 
-    user = UsersDB.get_by_api_key(db_session, user_id)
-    return {"apiKey": user.api_key}
+    return {"apiKey": new_api_key}
 
 
 @router.delete("/{user_id}/api_key")

@@ -325,7 +325,7 @@ export class DataService {
     return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  generateUserAPIKey(userId: string): Observable<string> {
+  generateUserAPIKey(userId: string): Observable<any> {
     const url = `${this.apiBaseUrl}/users/${userId}/api_key/generate?regen=true`;
     return this.http.post<string>(url, {}).pipe(catchError((err) => {return this.getError(err)}));
   }
