@@ -1,9 +1,12 @@
-@if (!editing) {
+@if (!editing && !setupMode) {
   <div class="plaato-keg-view">
     <div class="heading">
-      <p>Plaato Keg Device Management</p>
+      <p>Plaato Keg Devices</p>
       <div class="heading-actions">
         @if (!loading) {
+          <button mat-raised-button color="primary" (click)="startSetup()" aria-label="Setup New Device">
+            <mat-icon>settings</mat-icon> Setup New Device
+          </button>
           <button matButton="elevated" class="refresh" (click)="refresh()" aria-label="Refresh">
             <mat-icon>refresh</mat-icon>
           </button>
@@ -43,56 +46,60 @@
             </td>
           </ng-container>
 
-          <ng-container matColumnDef="temperature">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="kegTemperature">Temperature</th>
-            <td mat-cell *matCellDef="let device">
-              {{ device.kegTemperature ? (device.kegTemperature + ' ' + (device.temperatureUnit || '°F')) : '-' }}
-            </td>
-          </ng-container>
-
           <ng-container matColumnDef="beerLeft">
             <th mat-header-cell *matHeaderCellDef mat-sort-header="percentOfBeerLeft">Beer Remaining</th>
             <td mat-cell *matCellDef="let device">
-              {{ device.percentOfBeerLeft ? (device.percentOfBeerLeft + '%') : '-' }}
+            @if(!isNilOrEmpty(device.percentOfBeerLeft) || !isNilOrEmpty(device.amountLeft)) {
+              {{ isNilOrEmpty(device.percentOfBeerLeft) ? '-' : (device.percentOfBeerLeft + '%') }}
               @if (device.amountLeft) {
                 <span class="amount-left">
                   ({{ device.amountLeft }} {{ device.beerLeftUnit }})
                 </span>
               }
+            }
             </td>
           </ng-container>
 
           <ng-container matColumnDef="mode">
             <th mat-header-cell *matHeaderCellDef mat-sort-header="mode">Mode</th>
             <td mat-cell *matCellDef="let device">
+            @if(!isNilOrEmpty(device.mode)) {
               <mat-chip [ngClass]="device.mode === 'beer' ? 'beer-mode' : 'co2-mode'">
                 {{ device.mode || 'Unknown' }}
               </mat-chip>
+            }
             </td>
           </ng-container>
 
           <ng-container matColumnDef="unitDetails">
             <th mat-header-cell *matHeaderCellDef>Unit Details</th>
             <td mat-cell *matCellDef="let device">
+            @if(!isNilOrEmpty(device.unitType)) {
               <mat-chip [ngClass]="device.unitType === 'us' ? 'us-units' : 'metric-units'">
                 {{ device.unitType || 'Unknown' }}
               </mat-chip>
+            }
+            @if(!isNilOrEmpty(device.unitMode)) {
               <mat-chip [ngClass]="device.unitMode === 'weight' ? 'weight-mode' : 'liquid-mode'">
                 {{ device.unitMode || 'Unknown' }}
               </mat-chip>
+            }
             </td>
           </ng-container>
           
           <ng-container matColumnDef="firmware">
             <th mat-header-cell *matHeaderCellDef>Firmware</th>
             <td mat-cell *matCellDef="let device">
+            @if(!isNilOrEmpty(device.firmwareVersion)) {
               <span>{{ device.firmwareVersion }}</span>
+            }
             </td>
           </ng-container>
           
           <ng-container matColumnDef="wifiStrength">
             <th mat-header-cell *matHeaderCellDef>Wifi Strength</th>
             <td mat-cell *matCellDef="let device" class="wifi-details">
+            @if(!isNilOrEmpty(device.wifiSignalStrength)) {
               @if(device.wifiSignalStrength > 90){
                 <mat-icon>signal_wifi_4_bar</mat-icon>
               } @else if (device.wifiSignalStrength > 75) {
@@ -105,6 +112,7 @@
                 <mat-icon>signal_wifi_statusbar_null</mat-icon>
               }
               <span>{{ device.wifiSignalStrength }}</span>
+            }
             </td>
           </ng-container>
 
@@ -122,6 +130,11 @@
                 <button mat-icon-button color="primary" (click)="edit(device)" matTooltip="Configure Device" aria-label="Configure device">
                     <mat-icon>edit</mat-icon>
                 </button>
+                @if (isNilOrEmpty(device.lastUpdatedOn)) {
+                <button mat-icon-button color="accent" (click)="startDeviceSetup(device)" matTooltip="Setup Device" aria-label="Setup Device">
+                    <mat-icon>settings</mat-icon>
+                </button>
+                }
                 <button mat-icon-button color="warn" matTooltip="Delete Device" aria-label="Delete Device" (click)="delete(device)">
                     <mat-icon>delete</mat-icon>
                 </button>
@@ -140,6 +153,9 @@
 @if (editing) {
   <div class="plaato-keg-edit">
     <div class="heading">
+      <button mat-icon-button color="primary" aria-label="Back" title="Back to beer list" (click)="cancelEdit()">
+          <mat-icon>arrow_back</mat-icon>
+      </button>
       <p>Configure Device: {{ modifyDevice.name || modifyDevice.id }}</p>
     </div>
 
@@ -168,8 +184,8 @@
 
       @if (!modifyDevice.editValues.connected) {
       <div class="not-connected-alert alert alert-danger" role="alert">
-        The device is not connected, the following settings cannot be set until the device is connected. 
-        <button matButton="elevated" class="refresh" (click)="refreshModifyDevice()" aria-label="Refresh">
+        <span><mat-icon>warning</mat-icon> The device is not connected, the settings below cannot be set until the device reconnects.</span>
+        <button atSuffix mat-raised-button (click)="refreshModifyDevice()" aria-label="Refresh">
           <mat-icon>refresh</mat-icon> Refresh
         </button>
       </div>
@@ -197,7 +213,7 @@
           </mat-button-toggle-group>
 
           <mat-button-toggle-group [(ngModel)]="modifyDevice.editValues.unitMode" (change)="setUnitMode(modifyDevice)" [disabled]="!modifyDevice.connected || disableDeviceConfigButtons()">
-            <mat-button-toggle value="liquid"><mat-icon>water_drop</mat-icon> Liquid </mat-button-toggle>
+            <mat-button-toggle value="volume"><mat-icon>water_drop</mat-icon> Volume </mat-button-toggle>
             <mat-button-toggle value="weight"><mat-icon>balance</mat-icon> Weight </mat-button-toggle>
           </mat-button-toggle-group>
         </mat-card-content>
@@ -235,6 +251,141 @@
           </mat-form-field>
         </mat-card-content>
       </mat-card>
+    </div>
+  </div>
+}
+
+@if (setupMode) {
+  <div class="plaato-keg-setup">
+    <div class="heading">
+      <button mat-icon-button color="primary" aria-label="Back" title="Back to beer list" (click)="cancelSetup()">
+          <mat-icon>arrow_back</mat-icon>
+      </button>
+      <p>Setup New Plaato Keg Device</p>
+    </div>
+
+    <div class="setup-container">
+      <!-- Setup Form -->
+      @if (isNilOrEmpty(setupDevice.id)) {
+      <form [formGroup]="setupFormGroup" class="setup-form">
+        <mat-card class="config-section">
+          <mat-card-header>
+            <mat-card-title>Device Information</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-form-field appearance="fill">
+              <mat-label>Device Name</mat-label>
+              <input matInput formControlName="name"
+                     placeholder="e.g., Taproom Keg 1"
+                     [(ngModel)]="setupDevice.name">
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+        <div class="form-actions">
+          <button mat-raised-button color="primary" (click)="createDevice()" [disabled]="processingNewDevice || !setupFormGroup.valid">
+            @if (processingNewDevice) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+            Submit
+            }
+          </button>
+          <button mat-raised-button color="warn"  (click)="cancelSetup()" [disabled]="processing">
+            Cancel
+          </button>
+        </div>
+      </form>
+      }
+      @else {
+      <form [formGroup]="configureDeviceFormGroup" class="setup-form">
+        <mat-card class="config-section">
+          <mat-card-header>
+            <mat-card-title>
+              WiFi Configuration
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-form-field appearance="fill">
+              <mat-label>WiFi SSID</mat-label>
+              <input matInput formControlName="wifiSsid"
+                     placeholder="Your WiFi network SSID"
+                     [(ngModel)]="deviceConfig.ssid">
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>WiFi Password</mat-label>
+              <input matInput
+                     [type]="showWifiPassword ? 'text' : 'password'"
+                     formControlName="wifiPassword"
+                     placeholder="Your WiFi password"
+                     [(ngModel)]="deviceConfig.pass">
+              <button mat-icon-button matSuffix (click)="toggleWifiPassword()"
+                      type="button" aria-label="Toggle password visibility">
+                <mat-icon>{{ showWifiPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary"
+                  (click)="completeSetup()"
+                  [disabled]="processingDeviceConfig || !configureDeviceFormGroup.valid">
+            @if (processingDeviceConfig) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Configure Device
+            }
+          </button>
+          <button mat-raised-button color="warn" (click)="cancelSetup()" [disabled]="processing">
+            Cancel
+          </button>
+        </div>
+      </form>
+      }
+      <!-- Instructions Section -->
+      <div class="instructions-section">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>
+              Device Setup Instructions
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="instructions-content">
+              <span [ngClass]="!isNilOrEmpty(setupDevice.id) ? 'step-complete' : ''">
+              <h3>Step 1: Create new Device</h3>
+              <ol>
+                <li>Enter a descriptive name</li>
+                <li>Click the <strong>Submit</strong> button</li>
+              </ol>
+              </span>
+              <span [ngClass]="deviceConnectionVerified ? 'step-complete' : ''">
+              <h3>Step 2: Put Device in Setup Mode</h3>
+              <ol>
+                <li>Ensure your Plaato Keg is plugged into power</li>
+                <li>Take the magnetic reset key (located on the bottom of the unit) and place it in the reset slot</li>
+                <li>Reset the device by holding the magnet in the reset slot until the lights on the device start flashing, indicating it is in setup mode. <i>(roughly 3-5 seconds)</i></li>
+                <li>After reset, the device will create a WiFi access point (AP)</li>
+                <li>Connect to the devices WiFi network (named something like <code>"Plaato-XXXXX"</code> or <code>"PlaatoKeg-XXXXX"</code>)</li>
+              </ol>
+              </span>
+              <span>
+              <h3>Step 3: Configure WiFi on Physical Device</h3>
+              <strong>DO NOT disconnect from the Plaato Keg device wifi</strong>
+              <ol>
+                <li>Enter your WiFi SSID and password</li>
+                <li>Click the Configure Device button</li>
+                <li>A new window will open and you should see a message that looks like:<br/>
+                  <code>&lcub;"status":"ok","msg":"Configuration saved"&rcub;</code><br/>
+                  <i>Once verified the window <strong>should</strong> close automatically</i>
+                </li>
+                <li>Once the device configurations is set and the device registers with the service, it should automatically disconnect you from the device Wifi</li>
+              </ol>
+              </span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
     </div>
   </div>
 }

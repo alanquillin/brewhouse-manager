@@ -15,7 +15,8 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatDialogModule } from '@angular/material/dialog';  
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';  
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule} from '@angular/material/icon';
@@ -102,6 +103,7 @@ import { ErrorsComponent } from './errors/errors.component';
         MatChipsModule,
         MatDatepickerModule,
         MatDialogModule,
+        MatDividerModule,
         MatFormFieldModule,
         MatGridListModule,
         MatIconModule,

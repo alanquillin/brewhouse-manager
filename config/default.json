@@ -19,6 +19,7 @@
     "dashboard.refresh_sec": "int",
     "sensors.plaato.enabled": "bool",
     "sensors.plaato.port": "int",
+    "sensors.plaato.device_config_overrides.port": "int",
     "sensors.plaato_blynk.enabled": "bool",
     "sensors.keg_volume_monitors.enabled": "bool",
     "sensors.keg_volume_monitors.weight.enabled": "bool",

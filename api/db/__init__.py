@@ -577,7 +577,7 @@ class AsyncQueryMethodsMixin:
 
     @classmethod
     async def delete(cls, session, pkey, autocommit=True) -> int:
-        stmt = await delete(cls).where(cls.id == pkey)
+        stmt = delete(cls).where(cls.id == pkey)
         res = await session.execute(stmt)
         rowcnt = res.rowcount
 

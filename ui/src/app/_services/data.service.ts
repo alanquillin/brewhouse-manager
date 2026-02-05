@@ -265,6 +265,11 @@ export class DataService {
     return this.http.get<string[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
+  createPlaatoKegDevice(data: any): Observable<PlaatoKegDevice> {
+    const url = `${this.apiBaseUrl}/sensors/plaato_keg`;
+    return this.http.post<any>(url, data, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
   updatePlaatoKegDevice(deviceId: string, data: any): Observable<any> {
     const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}`;
     return this.http.patch<any>(url, data).pipe(catchError((err) => {return this.getError(err)}));
@@ -292,7 +297,7 @@ export class DataService {
 
   setPlaatoKegValue(deviceId: string, key: string, value: number): Observable<any> {
     const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}/set/${key}`;
-    return this.http.post<any>(url, { value: value }, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
+    return this.http.post<any>(url, { value: value.toString() }, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getCurrentUser(ignoreUnauthorized: boolean = false): Observable<UserInfo> {

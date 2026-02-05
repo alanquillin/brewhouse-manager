@@ -2,8 +2,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { DataService, DataError } from '../../_services/data.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { PlaatoKegDevice, UserInfo } from '../../models/models';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { PlaatoKegDevice, UserInfo, PlaatoDeviceResponse } from '../../models/models';
 import { forkJoin, Observable } from 'rxjs';
 import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
@@ -24,19 +24,40 @@ export class ManagePlaatoKegComponent implements OnInit {
   processingUnitModeChange = false;
   processingSetEmptyKegWeight = false;
   processingSetMaxKegVolume = false;
+  processingNewDevice = false;
+  processingDeviceConfig = false;
+  deviceConnectionVerified = false
   editing = false;
   modifyDevice: PlaatoKegDevice = new PlaatoKegDevice();
   userInfo!: UserInfo;
+  textNewDevCounter = 0;
+  iframeUrl = "";
   _ = _;
+  isNilOrEmpty = isNilOrEmpty;
+
+  // Setup new device state
+  setupMode = false;
+  setupDevice: PlaatoKegDevice = new PlaatoKegDevice();
+  deviceConfig: any = {}
+  showWifiPassword = false;
 
   modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
     name: new UntypedFormControl('', []),
   });
 
+  setupFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    name: new UntypedFormControl('', [Validators.required]),
+  });
+
+  configureDeviceFormGroup: UntypedFormGroup = new UntypedFormGroup({
+    wifiSsid: new UntypedFormControl('', []),
+    wifiPassword: new UntypedFormControl('', [])
+  });
+
   @ViewChild(MatSort) sort!: MatSort;
 
   get displayedColumns(): string[] {
-    return ['name', 'id', 'connected', 'temperature', 'beerLeft', 'mode', 'unitDetails', 'firmware', 'wifiStrength', 'lastUpdatedOn', 'actions'];
+    return ['name', 'id', 'connected', 'beerLeft', 'mode', 'unitDetails', 'firmware', 'wifiStrength', 'lastUpdatedOn', 'actions'];
   }
 
   constructor(
@@ -268,5 +289,119 @@ export class ManagePlaatoKegComponent implements OnInit {
           this.processingSetMaxKegVolume = false
         }
     });
+  }
+
+  startSetup(): void {
+    this.startDeviceSetup(new PlaatoKegDevice);
+  }
+
+  startDeviceSetup(dev: PlaatoKegDevice): void {
+    this.setupMode = true;
+    this.setupDevice = dev;
+    this.processingNewDevice = false;
+    this.processingDeviceConfig = false;
+    this.deviceConnectionVerified = false
+    this.setupFormGroup.reset();
+    this.deviceConfig = {ssid: '', pass: ''};
+    this.configureDeviceFormGroup.reset();
+    this.showWifiPassword = false;
+  }
+
+  cancelSetup(): void {
+    this.setupMode = false;
+    this.resetSetup();
+    this.refresh();
+  }
+
+  resetSetup(): void {
+    this.setupDevice = new PlaatoKegDevice();
+    this.deviceConfig = {}
+    this.setupFormGroup.reset();
+    this.configureDeviceFormGroup.reset();
+  }
+
+  toggleWifiPassword(): void {
+    this.showWifiPassword = !this.showWifiPassword;
+  }
+
+  createDevice(): void {
+    if (!this.setupFormGroup.valid) {
+      this._snackBar.open('Please fill in all required fields', 'Close');
+      return;
+    }
+
+    this.processingNewDevice = true;
+    const deviceData = {
+      name: this.setupFormGroup.value.name
+    };
+
+    this.dataService.createPlaatoKegDevice(deviceData).subscribe({
+      next: (dev: PlaatoKegDevice) => {
+        this._snackBar.open(
+          'Device created successfully.',
+          'Close',
+          { duration: 5000 }
+        );
+        this.setupDevice = new PlaatoKegDevice(dev);
+        this.processingNewDevice = false;
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processingNewDevice = false;
+      }
+    });
+  }
+
+  completeSetup(): void {
+    if (!this.configureDeviceFormGroup.valid) {
+      this._snackBar.open('Please fill in all required fields', 'Close');
+      return;
+    }
+
+    this.processingDeviceConfig = true;
+    this.textNewDevCounter = 0;
+    var host = encodeURIComponent("4.tcp.ngrok.io");
+    var port = 18341;
+    var ssid = encodeURIComponent(this.deviceConfig.ssid);
+    var pass = encodeURIComponent(this.deviceConfig.pass);
+    var id = encodeURIComponent(this.setupDevice.id);
+    const url = `http://192.168.4.1/config?ssid=${ssid}&pass=${pass}&blynk=${id}&host=${host}&port=${port}`
+    console.log(url);
+    console.log(encodeURI(url));
+    var popupRef = window.open(url);
+    setTimeout(() => {
+        this.checkNewDev(popupRef);
+        }, 500);
+  }
+
+  checkNewDev(popupRef: Window | null) {
+    this.dataService.getPlaatoKegDevice(this.setupDevice.id).subscribe({
+      next: (_dev: PlaatoKegDevice) => {
+        let dev = new PlaatoKegDevice(_dev);
+        if (isNilOrEmpty(dev.lastUpdatedOn)) {
+          this.textNewDevCounter = this.textNewDevCounter + 1;
+          if(this.textNewDevCounter > 10) {
+            this.displayError("Timeout trying to validate if the device was configured and connected correctly.")
+            popupRef?.close();
+            this.processingDeviceConfig = false;
+          } else {
+            setTimeout(() => {
+              this.checkNewDev(popupRef);
+            }, 2000)
+          }
+        } else {
+          this._snackBar.open('Device configured successfully.', 'Close', { duration: 5000 });
+          popupRef?.close();
+          this.processingDeviceConfig = false;
+          this.setupMode = false;
+          this.resetSetup();
+          this.refreshAll();
+        }
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processingDeviceConfig = false;
+      }
+    })
   }
 }

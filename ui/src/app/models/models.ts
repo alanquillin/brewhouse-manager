@@ -588,3 +588,8 @@ export class PlaatoKegDevice extends EditableBase {
     super(['name'], from);
   }
 }
+
+export class PlaatoDeviceResponse {
+  status!: string
+  msg!: string
+}

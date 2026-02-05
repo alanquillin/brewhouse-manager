@@ -81,31 +81,32 @@ class PlaatoKegService:
                 if isinstance(val, str):
                     data[key] = clean_str(val)
 
-        if not data.get("og") and not data.get("fg"):
-            data["mode"] = "co2"
-        else:
-            data["mode"] = "beer"
+        if plaato_keg.last_updated_on:
+            if not data.get("og") and not data.get("fg"):
+                data["mode"] = "co2"
+            else:
+                data["mode"] = "beer"
 
-        unit = data.get("unit")
-        measure_unit = data.get("measure_unit")
-    
+            unit = data.get("unit")
+            measure_unit = data.get("measure_unit")
+        
 
-        if unit == 1 and measure_unit == 1:
-            data["unitMode"] = "weight"
-            data["unitType"] = "metric"
-        elif unit == 2 and measure_unit == 2:
-            data["unitMode"] = "volume"
-            data["unitType"] = "us"
-        elif unit == 1 and measure_unit == 2:
-            data["unitMode"] = "volume"
-            data["unitType"] = "metric"
-        elif unit == 2 and measure_unit == 1:
-            data["unitMode"] = "weight"
-            data["unitType"] = "us"
-        else:
-            data["unitMode"] = None
-            data["unitType"] = None
+            if unit == 1 and measure_unit == 1:
+                data["unitMode"] = "weight"
+                data["unitType"] = "metric"
+            elif unit == 2 and measure_unit == 2:
+                data["unitMode"] = "volume"
+                data["unitType"] = "us"
+            elif unit == 1 and measure_unit == 2:
+                data["unitMode"] = "volume"
+                data["unitType"] = "metric"
+            elif unit == 2 and measure_unit == 1:
+                data["unitMode"] = "weight"
+                data["unitType"] = "us"
+            else:
+                data["unitMode"] = None
+                data["unitType"] = None
 
-        data["connected"] = data["id"] in service_handler.connection_handler.get_registered_device_ids()
+            data["connected"] = data["id"] in service_handler.connection_handler.get_registered_device_ids()
 
         return transform_dict_to_camel_case(data)

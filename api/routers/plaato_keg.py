@@ -37,11 +37,9 @@ async def create_sensor(
     device_data: PlaatoKegCreate,
     current_user: AuthUser = Depends(require_admin),
     db_session: AsyncSession = Depends(get_db_session),
-):
-    if len(device_data.id) != 32:
-        raise HTTPException(status_code=400, detail="Invalid id format.  Must be 32 characters and can only be number and lowercase letters a-z")
-    
+):    
     data = device_data.model_dump()
+    data["id"] = util.random_string(32, include_uppercase=False)
 
     LOGGER.debug(f"Creating plaato keg device with: {data}")
     dev = await PlaatoDataDB.create(db_session, **data)
@@ -206,7 +204,7 @@ async def set_unit_mode(
     
     val = request.value.lower()
     if val not in ["weight", "volume"]:
-        raise HTTPException(status_code=400, detail=f"Invalid unit type/system '{val}'.  Must be either 'us' or 'metric'.")
+        raise HTTPException(status_code=400, detail=f"Invalid unit mode '{val}'.  Must be either 'weight' or 'volume'.")
     
     dev_data = await PlaatoKegService.transform_response(dev, db_session)
 
