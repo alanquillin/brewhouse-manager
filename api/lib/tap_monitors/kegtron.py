@@ -51,7 +51,7 @@ class KegtronPro(TapMonitorBase):
     def supports_discovery(self):
         return True
 
-    async def get(self, data_type, monitor_id=None, monitor=None, meta=None):
+    async def get(self, data_type, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
             raise Exception("monitor_id, monitor, or meta must be provided")
 
@@ -195,7 +195,7 @@ class KegtronPro(TapMonitorBase):
 
         return device
 
-    async def discover(self, params=None):
+    async def discover(self, params=None, **kwargs):
         if not params:
             params = {}
         kwargs = {}

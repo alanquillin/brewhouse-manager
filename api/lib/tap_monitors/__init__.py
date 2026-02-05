@@ -74,7 +74,15 @@ def _init_tap_monitors():
         else:
             LOGGER.info("Disabling open_plaato_keg tap monitor types")
 
+        if CONFIG.get("tap_monitors.plaato_keg.enabled", False):
+            from lib.tap_monitors.plaato_keg import PlaatoKeg
 
+            LOGGER.info("Enabling plaato_keg tap monitor type")
+            TAP_MONITORS["plaato-keg"] = PlaatoKeg()
+        else:
+            LOGGER.info("Disabling plaato_keg tap monitor types")
+
+    
 def get_types():
     return TAP_MONITORS.keys()
 

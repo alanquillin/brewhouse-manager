@@ -24,7 +24,7 @@ class PlaatoBlynk(TapMonitorBase):
     def supports_discovery(self):
         return False
     
-    def get(self, data_type, monitor_id=None, monitor=None, meta=None):
+    def get(self, data_type, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
@@ -40,7 +40,7 @@ class PlaatoBlynk(TapMonitorBase):
 
         return self._get(pin, meta)
 
-    def get_all(self, monitor_id=None, monitor=None, meta=None):
+    def get_all(self, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
@@ -56,6 +56,8 @@ class PlaatoBlynk(TapMonitorBase):
             "displayVolumeUnit": self._get(self._data_type_to_pin["beer_remaining_unit"], meta),
             "firmwareVersion": self._get(self._data_type_to_pin["firmware_version"], meta)
         }
+    def discover(self, **kwargs):
+        raise NotImplementedError("Plaato Blynk does not support discovery")
 
     def _get(self, pin, meta, params=None):
         auth_token = meta.get("auth_token")

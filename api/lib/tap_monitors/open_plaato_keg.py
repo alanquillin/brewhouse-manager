@@ -19,7 +19,7 @@ class OpenPlaatoKeg(TapMonitorBase):
     def supports_discovery(self):
         return True
 
-    async def get(self, data_key, monitor_id=None, monitor=None, meta=None):
+    async def get(self, data_key, monitor_id=None, monitor=None, meta=None, **kwargs):
         data = await self._get_data(monitor_id, monitor, meta)
         map_key = KEYMAP.get(data_key, None)
 
@@ -28,7 +28,7 @@ class OpenPlaatoKeg(TapMonitorBase):
             raise InvalidDataType(data_key)
         return data.get(map_key)
 
-    async def get_all(self, monitor_id=None, monitor=None, meta=None):
+    async def get_all(self, monitor_id=None, monitor=None, meta=None, **kwargs):
         data = await self._get_data(monitor_id, monitor, meta)
 
         return {
@@ -38,7 +38,7 @@ class OpenPlaatoKeg(TapMonitorBase):
             "firmwareVersion": data.get("firmware_version"),
         }
 
-    async def discover(self):
+    async def discover(self, **kwargs):
         devices = await self._get("kegs")
 
         return [

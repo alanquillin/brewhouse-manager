@@ -269,7 +269,7 @@ async def get_tap_monitor_data(
 
     tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
     try:
-        return await tap_monitor_lib.get_all(monitor=tap_monitor)
+        return await tap_monitor_lib.get_all(monitor=tap_monitor, db_session=db_session)
     except InvalidDataType as ex:
         raise HTTPException(status_code=400, detail=str(ex))
 
@@ -298,7 +298,7 @@ async def get_specific_tap_monitor_data(
     tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
     try:
         try:
-            return await tap_monitor_lib.get(data_type, monitor=tap_monitor)
+            return await tap_monitor_lib.get(data_type, monitor=tap_monitor, db_session=db_session)
         except InvalidDataType as ex:
             raise HTTPException(
                 status_code=400, detail=f"Invalid data type: {data_type}"

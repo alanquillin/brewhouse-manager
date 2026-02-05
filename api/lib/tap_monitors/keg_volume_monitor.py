@@ -20,7 +20,7 @@ class KegVolumeMonitor(TapMonitorBase):
     def supports_discovery(self):
         return True
 
-    async def get(self, key, monitor_id=None, monitor=None, meta=None):
+    async def get(self, key, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
@@ -34,7 +34,7 @@ class KegVolumeMonitor(TapMonitorBase):
         data = await self._get(f"devices/{device_id}")
         return data.get(KEYMAP.get(key, "unknown"))
 
-    async def get_all(self, monitor_id=None, monitor=None, meta=None):
+    async def get_all(self, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
@@ -53,7 +53,7 @@ class KegVolumeMonitor(TapMonitorBase):
             "firmwareVersion": data.get("firmwareVersion"),
         }
 
-    async def discover(self):
+    async def discover(self, **kwargs):
         devices = await self._get("devices")
 
         return [{"id": dev["id"], "name": dev["name"]} for dev in devices]
