@@ -1,4 +1,5 @@
 from typing import Dict, List, Any, Optional
+from datetime import datetime, timezone
 
 from db import async_session_scope
 from db.plaato_data import PlaatoData as PlaatoDataDB
@@ -59,7 +60,7 @@ class DataProcessor:
         if not data:
             LOGGER.debug(f"ignoring, nothing to write to DB.  device_id: {device_id}, data: {data}")
         
-        data["last_updated_on"] = time.utcnow_aware()
+        data["last_updated_on"] = datetime.now(timezone.utc)
         async with async_session_scope(CONFIG) as db_session:
             LOGGER.debug(f"Updating DB record for keg {device_id}.  Data: {data}")
             rowcnt = await PlaatoDataDB.update(db_session, device_id, **data)

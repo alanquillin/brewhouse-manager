@@ -48,4 +48,4 @@ class PlaatoData(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     chip_temperature_string = Column(String, nullable=True)
     firmware_version = Column(String, nullable=True)
     max_keg_volume = Column(String, nullable=True)
-    last_updated_on = Column(DateTime, nullable=True)
+    last_updated_on = Column(DateTime(timezone=True), nullable=True)

@@ -53,7 +53,7 @@ def upgrade():
     sa.Column('sensitivity', sa.String(), nullable=True),
     sa.Column('chip_temperature_string', sa.String(), nullable=True),
     sa.Column('firmware_version', sa.String(), nullable=True),
-    sa.Column('last_updated_on', sa.DateTime(), nullable=True),
+    sa.Column('last_updated_on', sa.DateTime(timezone=True), nullable=True),
     sa.Column('created_app', sa.String(), server_default=sa.text("current_setting('application_name')"), nullable=False),
     sa.Column('created_user', sa.String(), server_default=sa.text('CURRENT_USER'), nullable=False),
     sa.Column('created_on', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
