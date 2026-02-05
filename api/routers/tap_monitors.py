@@ -13,8 +13,8 @@ from lib import logging, util
 from lib.tap_monitors import InvalidDataType, get_tap_monitor_lib
 from lib.tap_monitors import get_types as get_tap_monitor_types
 from services.base import transform_dict_to_camel_case
-from services.tap_monitors import TapMonitorService
-from schemas.tap_monitors import TapMonitorCreate, TapMonitorUpdate
+from services.tap_monitors import TapMonitorService, TapMonitorTypeService
+from schemas.tap_monitors import TapMonitorCreate, TapMonitorUpdate, TapMonitorBase
 
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
@@ -34,12 +34,12 @@ async def get_location_id(location_identifier: str, db_session: AsyncSession) ->
     return None
 
 
-@router.get("/types", response_model=List[str])
+@router.get("/types", response_model=List[TapMonitorBase])
 async def list_monitor_types(
     current_user: AuthUser = Depends(require_user),
 ):
     """List available tap monitor types"""
-    return [str(t) for t in get_tap_monitor_types()]
+    return [await TapMonitorTypeService.transform_response(t) for t in get_tap_monitor_types()]
 
 
 @router.get("/discover", response_model=dict)
@@ -55,7 +55,8 @@ async def discover_tap_monitors_by_type(
     current_user: AuthUser = Depends(require_user),
 ):
     """Discover tap monitors of a specific type"""
-    if monitor_type not in get_tap_monitor_types():
+    allowed_types = [t["type"] for t in get_tap_monitor_types()]
+    if monitor_type not in allowed_types:
         raise HTTPException(
             status_code=400, detail=f"Invalid monitor type: {monitor_type}"
         )
@@ -201,7 +202,7 @@ async def update_tap_monitor(
     if data:
         await TapMonitorsDB.update(db_session, tap_monitor.id, **data)
 
-    tap_monitor = TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
+    tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
     return await TapMonitorService.transform_response(tap_monitor, db_session=db_session)
 
 

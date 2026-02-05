@@ -156,9 +156,17 @@
       <button mat-icon-button color="primary" aria-label="Back" title="Back to beer list" (click)="cancelEdit()">
           <mat-icon>arrow_back</mat-icon>
       </button>
-      <p>Configure Device: {{ modifyDevice.name || modifyDevice.id }}</p>
+      <p>Configure Device: {{ isNilOrEmpty(modifyDevice.name) ? modifyDevice.id : modifyDevice.name + ' (' + modifyDevice.id + ')' }}</p>
+      <button matButton="elevated" class="refresh" (click)="refreshModifyDevice()" aria-label="Refresh">
+        <mat-icon>refresh</mat-icon>
+      </button>
     </div>
 
+    @if (loading) {
+      <div class="loading">
+        <mat-spinner></mat-spinner>
+      </div>
+    } @else {
     <div class="edit-form">
       <form [formGroup]="modifyFormGroup">
         <mat-card class="config-section">
@@ -172,7 +180,7 @@
               <button matSuffix mat-raised-button color="primary" (click)="save()"
                       [disabled]="disableDeviceConfigButtons() || !modifyDevice.hasChanges">
                 @if (processing) {
-                <mat-spinner></mat-spinner>
+                  <mat-spinner diameter="20"></mat-spinner>
                 } @else {
                 <mat-icon>save</mat-icon>
                 } Save
@@ -196,10 +204,15 @@
           <mat-card-title>Device Mode</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <mat-button-toggle-group [(ngModel)]="modifyDevice.editValues.mode" (change)="setMode(modifyDevice)" [disabled]="!modifyDevice.connected || disableDeviceConfigButtons()">
-            <mat-button-toggle value="beer"><mat-icon>sports_bar</mat-icon> Beer </mat-button-toggle>
-            <mat-button-toggle value="co2"><mat-icon>propane</mat-icon> CO2 </mat-button-toggle>
-          </mat-button-toggle-group>
+          <div class="slider-btn-conatiner">
+            <mat-button-toggle-group color="primary" [(ngModel)]="modifyDevice.editValues.mode" (change)="setMode(modifyDevice)" [disabled]="!modifyDevice.connected || disableDeviceConfigButtons()">
+              <mat-button-toggle value="beer"><mat-icon>sports_bar</mat-icon> Beer </mat-button-toggle>
+              <mat-button-toggle value="co2"><mat-icon>propane</mat-icon> CO2 </mat-button-toggle>
+            </mat-button-toggle-group>
+            @if (processingModeChange) {
+              <mat-spinner diameter="60"></mat-spinner>
+            
+          }</div>
         </mat-card-content>
       </mat-card>
       <mat-card class="config-section">
@@ -207,15 +220,24 @@
           <mat-card-title>Units</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <mat-button-toggle-group [(ngModel)]="modifyDevice.editValues.unitType" (change)="setUnitType(modifyDevice)" [disabled]="!modifyDevice.connected || disableDeviceConfigButtons()">
-            <mat-button-toggle value="us"><mat-icon>account_balance</mat-icon> US </mat-button-toggle>
-            <mat-button-toggle value="metric"><mat-icon>travel_explore</mat-icon> Metric </mat-button-toggle>
-          </mat-button-toggle-group>
-
-          <mat-button-toggle-group [(ngModel)]="modifyDevice.editValues.unitMode" (change)="setUnitMode(modifyDevice)" [disabled]="!modifyDevice.connected || disableDeviceConfigButtons()">
-            <mat-button-toggle value="volume"><mat-icon>water_drop</mat-icon> Volume </mat-button-toggle>
-            <mat-button-toggle value="weight"><mat-icon>balance</mat-icon> Weight </mat-button-toggle>
-          </mat-button-toggle-group>
+          <div class="slider-btn-conatiner">
+            <mat-button-toggle-group [(ngModel)]="modifyDevice.editValues.unitType" (change)="setUnitType(modifyDevice)" [disabled]="!modifyDevice.connected || disableDeviceConfigButtons()">
+              <mat-button-toggle value="us"><mat-icon>account_balance</mat-icon> US </mat-button-toggle>
+              <mat-button-toggle value="metric"><mat-icon>travel_explore</mat-icon> Metric </mat-button-toggle>
+            </mat-button-toggle-group>
+            @if (processingUnitTypeChange) {
+              <mat-spinner diameter="60"></mat-spinner>
+            }
+          </div>
+          <div class="slider-btn-conatiner">
+            <mat-button-toggle-group [(ngModel)]="modifyDevice.editValues.unitMode" (change)="setUnitMode(modifyDevice)" [disabled]="!modifyDevice.connected || disableDeviceConfigButtons()">
+              <mat-button-toggle value="volume"><mat-icon>water_drop</mat-icon> Volume </mat-button-toggle>
+              <mat-button-toggle value="weight"><mat-icon>balance</mat-icon> Weight </mat-button-toggle>
+            </mat-button-toggle-group>
+            @if (processingUnitModeChange) {
+              <mat-spinner diameter="60"></mat-spinner>
+            }
+          </div>
         </mat-card-content>
       </mat-card>
 
@@ -230,7 +252,7 @@
             <span matTextSuffix="">{{modifyDevice.editValues.unitType == "metric" ? "Kg" : "lbs"}}</span>
             <button mat-raised-button matSuffix color="primary" (click)="setEmptyKegWeight(modifyDevice)"[disabled]="!modifyDevice.connected || modifyDevice.emptyKegWeight === modifyDevice.editValues.emptyKegWeight || disableDeviceConfigButtons()">
               @if (processingSetEmptyKegWeight) {
-              <mat-spinner></mat-spinner>
+              <mat-spinner diameter="20"></mat-spinner>
               } @else {
               <mat-icon>save</mat-icon>
               } Save
@@ -243,7 +265,7 @@
             <span matTextSuffix="">{{modifyDevice.editValues.unitType == "metric" ? "L" : "gal"}}</span>
             <button mat-raised-button matSuffix color="primary" (click)="setMaxKegVolume(modifyDevice)"[disabled]="!modifyDevice.connected || modifyDevice.maxKegVolume === modifyDevice.editValues.maxKegVolume || disableDeviceConfigButtons()">
               @if (processingSetMaxKegVolume) {
-              <mat-spinner></mat-spinner>
+              <mat-spinner diameter="20"></mat-spinner>
               } @else {
               <mat-icon>save</mat-icon>
               } Save
@@ -252,6 +274,7 @@
         </mat-card-content>
       </mat-card>
     </div>
+  }
   </div>
 }
 

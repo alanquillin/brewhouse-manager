@@ -1,5 +1,5 @@
 """Tap monitor service with business logic and transformations"""
-
+from typing import Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lib import logging
@@ -35,4 +35,15 @@ class TapMonitorService:
                 tap = taps[0] # Only one tap can be associated with a tap monitor
                 data["tap"] = await TapService.transform_response(tap, db_session, include_location=False)
 
+        return transform_dict_to_camel_case(data)
+
+class TapMonitorTypeService:
+    """Service for tap monitor-related operations"""
+
+    @staticmethod
+    async def transform_response(data: Dict, **kwargs):
+        """Transform tap monitor model to response dict with camelCase keys"""
+        if not data:
+            return None
+        
         return transform_dict_to_camel_case(data)

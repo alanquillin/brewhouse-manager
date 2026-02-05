@@ -115,7 +115,11 @@
     "plaato_keg": {
       "enabled": false,
       "host": "localhost",
-      "port": 5001
+      "port": 5001,
+      "device_config": {
+        "host": "0.tcp.ngrok.io",
+        "port": 16526
+      }
     }
   }
 }

@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 from lib import Error, logging
 from lib.config import Config
 
@@ -83,8 +85,11 @@ def _init_tap_monitors():
             LOGGER.info("Disabling plaato_keg tap monitor types")
 
     
-def get_types():
-    return TAP_MONITORS.keys()
+def get_types() -> List[Dict]:
+    res = []
+    for k, v in  TAP_MONITORS.items():
+        res.append({"type": k, "supports_discovery": v.supports_discovery()})
+    return res
 
 
 def get_tap_monitor_lib(_type):

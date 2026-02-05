@@ -6,7 +6,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Location, Tap, Beer, Beverage, TapMonitor, UserInfo, Settings, Dashboard, Batch, TapMonitorData, TapMonitorDiscoveryData, PlaatoKegDevice } from '../models/models';
+import { Location, Tap, Beer, Beverage, TapMonitor, UserInfo, Settings, Dashboard, Batch, TapMonitorType, TapMonitorData, TapMonitorDiscoveryData, PlaatoKegDevice } from '../models/models';
 import { WINDOW } from '../window.provider';
 import { isNilOrEmpty } from '../utils/helpers';
 
@@ -218,9 +218,9 @@ export class DataService {
     return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getMonitorTypes(): Observable<string[]> {
+  getMonitorTypes(): Observable<TapMonitorType[]> {
     const url = `${this.apiBaseUrl}/tap_monitors/types`;
-    return this.http.get<string[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+    return this.http.get<TapMonitorType[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getTapMonitorData(tapMonitorId: string, dataType: string): Observable<any> {

@@ -12,6 +12,7 @@ import {
 
 import {
   TapMonitor,
+  TapMonitorType,
   Location,
   UserInfo,
   TapMonitorDiscoveryData,
@@ -33,7 +34,7 @@ export class ManageTapMonitorsComponent implements OnInit {
   tapMonitors: TapMonitor[] = [];
   filteredTapMonitors: TapMonitor[] = [];
   locations: Location[] = [];
-  monitorTypes: string[] = [];
+  monitorTypes: TapMonitorType[] = [];
   processing = false;
   adding = false;
   editing = false;
@@ -52,11 +53,7 @@ export class ManageTapMonitorsComponent implements OnInit {
     locationId: new UntypedFormControl("", [Validators.required]),
     metaAuthToken: new UntypedFormControl("", []),
     kvmDevice: new UntypedFormControl("", []),
-    opkDevice: new UntypedFormControl("", []),
-    metaEmptyKegWeight: new UntypedFormControl("", []),
-    metaEmptyKegWeightUnit: new UntypedFormControl("", []),
-    metaMaxKegVolume: new UntypedFormControl("", []),
-    metaMaxKegVolumeUnit: new UntypedFormControl("", []),
+    opkDevice: new UntypedFormControl("", [])
   });
 
   allowedMassUnits = ["g", "kg", "oz", "lb"];
@@ -123,8 +120,8 @@ export class ManageTapMonitorsComponent implements OnInit {
           },
         ]);
         this.dataService.getMonitorTypes().subscribe({
-          next: (monitorTypes: string[]) => {
-            this.monitorTypes = _.orderBy(monitorTypes, ["name"]);
+          next: (monitorTypes: TapMonitorType[]) => {
+            this.monitorTypes = _.orderBy(monitorTypes, ["type"]);
             this._refresh(always, next, error);
           },
           error: (err: DataError) => {
@@ -187,7 +184,7 @@ export class ManageTapMonitorsComponent implements OnInit {
       data["locationId"] = this.locations[0].id;
     }
     if (this.monitorTypes.length === 1) {
-      data["monitorType"] = this.monitorTypes[0];
+      data["monitorType"] = this.monitorTypes[0].type;
     }
 
     this.modifyTapMonitor = new TapMonitor(data);
@@ -198,27 +195,14 @@ export class ManageTapMonitorsComponent implements OnInit {
   create(): void {
     this.processing = true;
     var meta: any = {};
-    if (this.modifyTapMonitor.editValues.monitorType == "plaato-keg") {
+    if (this.modifyTapMonitor.editValues.monitorType == "plaato-blynk") {
       meta.authToken = this.modifyTapMonitor.editValues.meta.authToken;
-    } else if (
-      this.modifyTapMonitor.editValues.monitorType == "keg-volume-monitor-weight" ||
-      this.modifyTapMonitor.editValues.monitorType == "keg-volume-monitor-flow"
-    ) {
-      meta.deviceId = this.selectedDiscoveredTapMonitorId;
+    } else if (['keg-volume-monitor-weight', 'keg-volume-monitor-flow', 'kegtron-pro', 'open-plaato-keg', 'plaato-keg'].includes(this.modifyTapMonitor.editValues.monitorType)) {
+      meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
     } else if (this.modifyTapMonitor.editValues.monitorType == "kegtron-pro") {
       meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
       meta.portNum = _.toInteger(this.modifyTapMonitor.editValues.meta.portNum);
       meta.accessToken = this.modifyTapMonitor.editValues.meta.accessToken;
-    } else if (this.modifyTapMonitor.editValues.monitorType == "open-plaato-keg") {
-      meta.emptyKegWeight = _.toNumber(
-        this.modifyTapMonitor.editValues.meta.emptyKegWeight,
-      );
-      meta.emptyKegWeightUnit =
-        this.modifyTapMonitor.editValues.meta.emptyKegWeightUnit;
-      meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
-      meta.maxKegVolume = this.modifyTapMonitor.editValues.meta.maxKegVolume;
-      meta.maxKegVolumeUnit =
-        this.modifyTapMonitor.editValues.meta.maxKegVolumeUnit;
     }
 
     var data: any = {
@@ -254,7 +238,7 @@ export class ManageTapMonitorsComponent implements OnInit {
     this.modifyTapMonitor = tapMonitor;
     this.editing = true;
     this.modifyFormGroup.reset();
-    if (this.modifyTapMonitor.editValues.monitorType !== "plaato-keg") {
+    if (this.currentTypeSupportsDiscovery()) {
       this.discoverTapMonitors(() => {
         if (!isNilOrEmpty(this.modifyTapMonitor.editValues.meta)) {
           if (
@@ -376,8 +360,18 @@ export class ManageTapMonitorsComponent implements OnInit {
     this.filteredTapMonitors = filteredData;
   }
 
+  getMonitorType(type: string): TapMonitorType | undefined {
+    return _.find(this.monitorTypes, (mt) => mt.type === type);
+  }
+
+  currentTypeSupportsDiscovery(): boolean {
+    const monitorType = this.getMonitorType(this.modifyTapMonitor.editValues.monitorType);
+    return monitorType?.supportsDiscovery ?? false;
+  }
+
   monitorTypeChanged() {
-    if (this.modifyTapMonitor.editValues.monitorType !== "plaato-keg") {
+    console.log(this.modifyTapMonitor.editValues);
+    if (this.currentTypeSupportsDiscovery()) {
       this.discoverTapMonitors();
     }
   }
@@ -403,10 +397,7 @@ export class ManageTapMonitorsComponent implements OnInit {
   }
 
   selectedDiscoveredTapMonitorChange() {
-    if (
-      this.modifyTapMonitor.editValues.monitorType == "keg-volume-monitor-weight" ||
-      this.modifyTapMonitor.editValues.monitorType == "keg-volume-monitor-flow"
-    ) {
+    if (['keg-volume-monitor-weight', 'keg-volume-monitor-flow', 'kegtron-pro', 'open-plaato-keg', 'plaato-keg'].includes(this.modifyTapMonitor.editValues.monitorType)) {
       this.modifyTapMonitor.editValues.meta.deviceId =
         this.selectedDiscoveredTapMonitorId;
     } else if (this.modifyTapMonitor.editValues.monitorType == "kegtron-pro") {
@@ -421,10 +412,8 @@ export class ManageTapMonitorsComponent implements OnInit {
           this.modifyTapMonitor.editValues.meta.accessToken = dev.token;
         }
       });
-    } else if (this.modifyTapMonitor.editValues.monitorType == "open-plaato-keg") {
-      this.modifyTapMonitor.editValues.meta.deviceId =
-        this.selectedDiscoveredTapMonitorId;
     }
+    console.log(this.modifyTapMonitor.editValues);
   }
 
   get modifyForm(): { [key: string]: AbstractControl } {

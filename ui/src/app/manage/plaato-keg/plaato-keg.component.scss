@@ -25,12 +25,6 @@
     }
   }
 
-  .loading {
-    display: flex;
-    justify-content: center;
-    padding: 40px;
-  }
-
   .devices-list {
     table {
       width: 100%;
@@ -138,6 +132,13 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+  }
+
+  .slider-btn-conatiner {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
   }
 }
 

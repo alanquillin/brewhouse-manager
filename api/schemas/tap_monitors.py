@@ -27,3 +27,7 @@ class TapMonitorUpdate(TapMonitorBase):
     name: Optional[str] = None
     monitor_type: Optional[str] = None
     location_id: Optional[str] = None
+
+class TapMonitorBase(CamelCaseModel):
+    type: str
+    supports_discovery: bool

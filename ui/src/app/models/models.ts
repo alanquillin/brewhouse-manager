@@ -569,6 +569,17 @@ export class Dashboard {
   locations!: Location[];
 }
 
+export class TapMonitorType {
+  type!: string;
+  supportsDiscovery!: boolean;
+
+  constructor(from?: any) {
+    if(!isNilOrEmpty(from)) {
+      Object.assign(this, from);
+    }
+  }
+}
+
 export class TapMonitorData {
   percentRemaining!: number;
   totalVolumeRemaining!: number;
