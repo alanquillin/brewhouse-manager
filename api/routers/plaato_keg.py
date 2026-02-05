@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dependencies.auth import AuthUser, get_db_session, require_admin
 from db.plaato_data import PlaatoData as PlaatoDataDB
 from lib import logging, util
-from lib.tap_monitors.plaato_keg import service_handler
-from lib.tap_monitors.plaato_keg.command_writer import COMMAND_MAPP, sanitize_command, Commands
+from lib.devices.plaato_keg import service_handler
+from lib.devices.plaato_keg.command_writer import COMMAND_MAPP, sanitize_command, Commands
 from services.plaato_keg import PlaatoKegService
 from schemas.plaato_keg import PlaatoKegBase, PlaatoKegCreate, PlaatoKegUpdate
 from routers import StringValueRequest

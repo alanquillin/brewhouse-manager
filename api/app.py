@@ -64,7 +64,7 @@ class Application:
                 await UsersDB.create(db_session, **data)
 
     async def start_plaato_service(self):
-        from lib.tap_monitors.plaato_keg import service_handler as plaato_service_handler
+        from lib.devices.plaato_keg import service_handler as plaato_service_handler
 
         self.plaato_service = plaato_service_handler
         

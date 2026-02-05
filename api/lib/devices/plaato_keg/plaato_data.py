@@ -1,8 +1,8 @@
 from typing import Dict, Tuple, Optional, Any, List
 
 from lib import logging
-from lib.tap_monitors.plaato_keg.blynk_protocol import BlynkCommand
-from lib.tap_monitors.plaato_keg.plaato_protocol import PlaatoMessage, PlaatoPin
+from lib.devices.plaato_keg.blynk_protocol import BlynkCommand
+from lib.devices.plaato_keg.plaato_protocol import PlaatoMessage, PlaatoPin
 
 LOGGER = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Union
 
 from lib import logging
-from lib.tap_monitors.plaato_keg import service_handler
+from lib.devices.plaato_keg import service_handler
 from services.base import transform_dict_to_camel_case
 
 LOGGER = logging.getLogger(__name__)

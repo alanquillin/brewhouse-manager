@@ -2,7 +2,7 @@ from enum import IntEnum
 from typing import List, Any, Optional, Dict
 
 from lib import logging
-from lib.tap_monitors.plaato_keg.blynk_protocol import BlynkMessage, BlynkCommand, encode_command as encode_blynk_command
+from lib.devices.plaato_keg.blynk_protocol import BlynkMessage, BlynkCommand, encode_command as encode_blynk_command
 
 LOGGER = logging.getLogger(__name__)
 
