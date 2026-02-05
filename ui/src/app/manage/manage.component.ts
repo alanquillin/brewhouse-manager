@@ -2,6 +2,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Component, OnInit } from '@angular/core';
 import { DataService, DataError } from '../_services/data.service';
+import { SettingsService } from '../_services/settings.service';
 import { Router } from '@angular/router';
 import { UserInfo } from '../models/models';
 
@@ -21,7 +22,12 @@ export class ManageComponent implements OnInit {
 
   userInfo!: UserInfo;
 
-  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) {}
+  constructor(
+    private dataService: DataService,
+    private settingsService: SettingsService,
+    private router: Router,
+    private _snackBar: MatSnackBar
+  ) {}
 
   displayError(errMsg: string) {
     this._snackBar.open("Error: " + errMsg, "Close");
@@ -50,6 +56,10 @@ export class ManageComponent implements OnInit {
     }
 
     return this.userInfo.admin;
+  }
+
+  get plaatoKegEnabled(): boolean {
+    return this.settingsService.getSetting<boolean>('plaato_keg_devices.enabled') || false;
   }
 }
 

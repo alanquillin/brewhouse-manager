@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { DataService, DataError } from '../../_services/data.service';
+import { SettingsService } from '../../_services/settings.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
@@ -62,6 +63,7 @@ export class ManagePlaatoKegComponent implements OnInit {
 
   constructor(
     private dataService: DataService,
+    private settingsService: SettingsService,
     private _snackBar: MatSnackBar
   ) {}
 
@@ -360,8 +362,13 @@ export class ManagePlaatoKegComponent implements OnInit {
 
     this.processingDeviceConfig = true;
     this.textNewDevCounter = 0;
-    var host = encodeURIComponent("4.tcp.ngrok.io");
-    var port = 18341;
+
+    // Get host and port from settings
+    const host = encodeURIComponent(
+      this.settingsService.getSetting<string>('plaato_keg_devices.config.host') || 'localhost'
+    );
+    const port = this.settingsService.getSetting<number>('plaato_keg_devices.config.port') || 5001;
+
     var ssid = encodeURIComponent(this.deviceConfig.ssid);
     var pass = encodeURIComponent(this.deviceConfig.pass);
     var id = encodeURIComponent(this.setupDevice.id);

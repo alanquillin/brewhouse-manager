@@ -459,11 +459,43 @@ export class DashboardSettings {
   }
 }
 
+export class PlaatoKegDeviceConfig {
+  host!: string;
+  port!: number;
+
+  constructor(from?: any) {
+    this.host = 'localhost';
+    this.port = 5001;
+
+    if(!isNilOrEmpty(from)) {
+      Object.assign(this, from);
+    }
+  }
+}
+
+export class PlaatoKegDevicesSettings {
+  enabled: boolean;
+  config?: PlaatoKegDeviceConfig;
+
+  constructor(from?: any) {
+    this.enabled = false;
+
+    if(!isNilOrEmpty(from)) {
+      Object.assign(this, from);
+
+      if(!isNilOrEmpty(from.config)) {
+        this.config = new PlaatoKegDeviceConfig(from.config);
+      }
+    }
+  }
+}
+
 export class Settings {
   googleSSOEnabled: boolean;
   taps: TapSettings;
   beverages: BeverageSettings;
   dashboard: DashboardSettings;
+  plaato_keg_devices?: PlaatoKegDevicesSettings;
 
   constructor(from?: any) {
     this.googleSSOEnabled = false;
@@ -473,6 +505,10 @@ export class Settings {
 
     if(!isNilOrEmpty(from)) {
       Object.assign(this, from);
+
+      if(!isNilOrEmpty(from.plaato_keg_devices)) {
+        this.plaato_keg_devices = new PlaatoKegDevicesSettings(from.plaato_keg_devices);
+      }
     }
   }
 }

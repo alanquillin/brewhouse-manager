@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -9,6 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { SettingsService } from './_services/settings.service';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -64,6 +65,13 @@ import { VolumeCalculatorComponent } from './tools/volume-calculator/volume-calc
 import { WINDOW_PROVIDERS } from './window.provider';
 import { DndDirective } from './_directives/dnd.directive';
 import { ErrorsComponent } from './errors/errors.component';
+
+/**
+ * Factory function to initialize settings before the app starts
+ */
+export function initializeSettings(settingsService: SettingsService) {
+  return () => settingsService.loadSettings();
+}
 
 @NgModule({ declarations: [
         AppComponent,
@@ -125,7 +133,17 @@ import { ErrorsComponent } from './errors/errors.component';
         NgbPopoverModule,
         QRCodeComponent,
         ReactiveFormsModule
-        ], 
-        providers: [HttpClient, WINDOW_PROVIDERS, provideHttpClient(withInterceptorsFromDi())] 
+        ],
+        providers: [
+            HttpClient,
+            WINDOW_PROVIDERS,
+            provideHttpClient(withInterceptorsFromDi()),
+            {
+                provide: APP_INITIALIZER,
+                useFactory: initializeSettings,
+                deps: [SettingsService],
+                multi: true
+            }
+        ]
 })
 export class AppModule { }

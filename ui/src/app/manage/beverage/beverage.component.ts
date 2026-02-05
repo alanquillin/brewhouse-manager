@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { DataService, DataError } from '../../_services/data.service';
+import { SettingsService } from '../../_services/settings.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
@@ -99,7 +100,13 @@ export class ManageBeverageComponent implements OnInit {
     return _.concat(cols, ["brewDate", "kegDate", 'actions']);
   }
 
-  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) { }
+  constructor(
+    private dataService: DataService,
+    private settingsService: SettingsService,
+    private router: Router,
+    private _snackBar: MatSnackBar,
+    public dialog: MatDialog
+  ) { }
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -108,7 +115,7 @@ export class ManageBeverageComponent implements OnInit {
   }
 
   _refresh(always?:Function, next?: Function, error?: Function) {
-    this.dataService.getSettings().subscribe({
+    this.settingsService.settings$.subscribe({
       next: (data: Settings) => {
         this.defaultType = data.beverages.defaultType;
         this.supportedTypes = data.beverages.supportedTypes;

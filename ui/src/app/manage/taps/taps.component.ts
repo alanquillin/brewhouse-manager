@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { DataService, DataError } from '../../_services/data.service';
+import { SettingsService } from '../../_services/settings.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
@@ -58,7 +59,12 @@ export class ManageTapsComponent implements OnInit {
     return _.concat(cols, ['beer', 'beverage', 'sensor', 'actions']);
   }
 
-  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
+  constructor(
+    private dataService: DataService,
+    private settingsService: SettingsService,
+    private router: Router,
+    private _snackBar: MatSnackBar
+  ) { }
 
   @ViewChild(MatSort) sort!: MatSort;
 

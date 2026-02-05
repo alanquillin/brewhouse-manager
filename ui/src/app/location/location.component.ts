@@ -8,6 +8,7 @@ import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, Co
 import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
+import { SettingsService } from '../_services/settings.service';
 
 import { LocationImageDialog } from '../_dialogs/image-preview-dialog/image-preview-dialog.component'
 import { LocationQRCodeDialog } from '../_dialogs/qrcode-dialog/qrcode-dialog.component'
@@ -63,7 +64,15 @@ export class LocationComponent implements OnInit {
 
   _ = _; //allow the html template to access lodash
 
-  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private _snackBar: MatSnackBar, public dialog: MatDialog, private configService: ConfigService) {
+  constructor(
+    private dataService: DataService,
+    private settingsService: SettingsService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private _snackBar: MatSnackBar,
+    public dialog: MatDialog,
+    private configService: ConfigService
+  ) {
     this.route.params.subscribe( (params: any) => this.location_identifier = params['location'] );
   }
 
@@ -114,7 +123,7 @@ export class LocationComponent implements OnInit {
   }
 
   _refresh(next?: Function, always?: Function) {
-    this.dataService.getSettings().subscribe({
+    this.settingsService.settings$.subscribe({
       next: (data: Settings) => {
         this.tapRefreshSettings = new TapRefreshSettings(data.taps.refresh);
         this.dashboardSettings = new DashboardSettings(data.dashboard);
