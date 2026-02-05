@@ -15,6 +15,7 @@ import { ManageUsersComponent } from './manage/users/users.component';
 import { ProfileComponent } from './profile/profile.component';
 import { ErrorsComponent } from './errors/errors.component';
 import { VolumeCalculatorComponent } from './tools/volume-calculator/volume-calculator.component';
+import { PlaatoKegFeatureGuard } from './_guards/plaato-keg-feature.guard';
 
 const routes: Routes = [
   {
@@ -59,7 +60,8 @@ const routes: Routes = [
   },
   {
     path: 'manage/plaato_kegs',
-    component: ManagePlaatoKegComponent
+    component: ManagePlaatoKegComponent,
+    canActivate: [PlaatoKegFeatureGuard]
   },
   {
     path: 'manage/taps',
