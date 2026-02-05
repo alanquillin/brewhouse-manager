@@ -49,8 +49,14 @@ __enviornment variable__ -> __optional configuration file__ -> __default configu
 
 | key  | type | required | default | description |
 | ---- | ---- | -------- | ------- | ----------- |
-| `app.secret_key` | `string` | N | | A unique string used for signing the session cookies.  This is optional, and if not provided, one will be randomly generated when the server starts |
+| `app.secret_key` | `string` | N | _auto-generated_ | A unique string used for signing the session cookies.  This is optional, and if not provided, one will be randomly generated when the server starts |
+| `app_id` | `string` | N | `brewhouse-manager` | The application identifier |
+| `api.host` | `string` | N | `localhost` | The hostname/IP address for the web server to bind to |
 | `api.port` | `integer` | N | `5000` | The port number for the web server |
+| `api.schema` | `string` | N | `http` | The URL schema to use (http or https) |
+| `api.cookies.secure` | `boolean` | N | `true` | Whether to set the Secure flag on session cookies (requires HTTPS) |
+| `api.cookies.http_only` | `boolean` | N | `true` | Whether to set the HttpOnly flag on session cookies (prevents JavaScript access) |
+| `api.cookies.samesite` | `string` | N | `lax` | SameSite cookie attribute. Valid values: `strict`, `lax`, `none` |
 | `logging.level` | `string` | N | `INFO` | The logging level to set.  Valid values are: `[DEBUG, INFO, WARNING, ERROR]` |
 | `logging.levels.[package name]` | `string` | N | | The log level to set for a specific python dependency/package.  Ex: `urllib3` |
 
@@ -78,15 +84,71 @@ __enviornment variable__ -> __optional configuration file__ -> __default configu
 | `db.port` | `integer` | Y | `5432` | The port for connecting to the backend PostgreSQL database |
 | `db.name` | `string` | Y | `brewhouse` | The name of the backend PostgreSQL database |
 
-### Integrations
+### Dashboard settings
 
 | key  | type | required | default | description |
 | ---- | ---- | -------- | ------- | ----------- |
-| `external_brew_tools.brewfather.enabled` | `boolean` | N | `false` | Enables the integration with [brefather](https://brewfather.app) |
+| `dashboard.refresh_sec` | `integer` | N | `15` | The refresh interval in seconds for the dashboard display |
+
+### Beverages settings
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `beverages.default_type` | `string` | N | `cold-brew` | The default beverage type for new beverages |
+| `beverages.supported_types` | `list` | N | `["cold-brew", "soda", "kombucha"]` | List of supported beverage types |
+
+### Taps settings
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `taps.refresh.base_sec` | `integer` | N | `300` | Base refresh interval in seconds for tap status updates |
+| `taps.refresh.variable` | `integer` | N | `150` | Variable refresh interval in seconds added to the base for randomization |
+
+### Integrations
+
+#### Brewfather
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `external_brew_tools.brewfather.enabled` | `boolean` | N | `false` | Enables the integration with [brewfather](https://brewfather.app) |
 | `external_brew_tools.brewfather.username` | `string` | N |  | The brewfather API username (required if `external_brew_tools.brewfather.enabled` is `true`) |
 | `external_brew_tools.brewfather.api_key` | `string` | N |  | The brewfather API key (required if `external_brew_tools.brewfather.enabled` is `true`) |
+| `external_brew_tools.brewfather.completed_statuses` | `list` | N | `["Completed", "Archived", "Conditioning"]` | List of batch statuses considered as completed |
+| `external_brew_tools.brewfather.refresh_buffer_sec.soft` | `integer` | N | `1200` | Soft refresh buffer in seconds (20 minutes) |
+| `external_brew_tools.brewfather.refresh_buffer_sec.hard` | `integer` | N | `120` | Hard refresh buffer in seconds (2 minutes) |
+
+### Upload/Asset Management
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `uploads.storage_type` | `string` | N | `local_fs` | Storage backend for uploaded files. Valid values: `local_fs`, `s3` |
+| `uploads.base_dir` | `string` | N | `/brewhouse-manager/api/static/assets/uploads` | Base directory for local file storage (only used when `storage_type` is `local_fs`) |
+| `uploads.images.allowed_file_extensions` | `list` | N | `["jpg","jpeg","png","gif","svg"]` | List of allowed file extensions for image uploads |
+| `uploads.s3.bucket.name` | `string` | N | | S3 bucket name (required when `storage_type` is `s3`) |
+| `uploads.s3.bucket.prefix` | `string` | N | | Optional prefix/folder path within the S3 bucket |
+
+### AWS Configuration
+
+When using S3 for asset storage, you can configure AWS credentials and settings. These settings follow standard boto3 configuration patterns.
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `aws.profile_name` | `string` | N | | AWS profile name to use from ~/.aws/credentials |
+| `aws.aws_access_key_id` | `string` | N | | AWS access key ID |
+| `aws.aws_secret_access_key` | `string` | N | | AWS secret access key |
+| `aws.aws_session_token` | `string` | N | | AWS session token (for temporary credentials) |
+| `aws.region_name` | `string` | N | | AWS region name |
+| `aws.s3.[param]` | various | N | | S3-specific overrides (can override any of the above for S3 operations) |
+
+**Note:** AWS credentials can also be provided via standard AWS environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.) or IAM roles when running in AWS.
 
 ### Sensor Settings
+
+#### General Sensor Settings
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `sensors.preferred_vol_unit` | `string` | N | `gal` | Preferred volume unit for sensor data. Valid values: `gal`, `l` |
 
 #### Plaato Keg (Native Integration)
 
@@ -128,3 +190,38 @@ Using config file (config.json):
    - Register the device in the system
 
 Once configured, devices will automatically connect and begin streaming sensor data.
+
+#### Open Plaato Keg
+
+Integration with the [open-plaato-keg](https://github.com/sklopivo/open-plaato-keg) service for legacy Plaato Keg support.
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `sensors.open_plaato_keg.enabled` | `boolean` | N | `false` | Enables integration with open-plaato-keg service. Requires open-plaato-keg version 0.0.11+ to be running separately. |
+| `sensors.open_plaato_keg.insecure` | `boolean` | N | `false` | Disable SSL certificate verification when connecting to open-plaato-keg service |
+
+#### Plaato Blynk
+
+Legacy Plaato sensor integration via Blynk protocol (for older Plaato Airlock devices).
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `sensors.plaato_blynk.enabled` | `boolean` | N | `false` | Enables Plaato Blynk sensor integration |
+
+#### Kegtron Pro
+
+Integration with [Kegtron Pro](https://kegtron.com/pro/) keg monitoring devices.
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `sensors.kegtron.pro.enabled` | `boolean` | N | `false` | Enables Kegtron Pro sensor integration |
+
+#### Keg Volume Monitors
+
+Integration with [DIY Keg Volume Monitors](https://github.com/alanquillin/keg-volume-monitors).
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `sensors.keg_volume_monitors.enabled` | `boolean` | N | `false` | Enables DIY Keg Volume Monitor integration (must be enabled for weight or flow sensors) |
+| `sensors.keg_volume_monitors.weight.enabled` | `boolean` | N | `false` | Enables weight-based keg monitoring (requires `sensors.keg_volume_monitors.enabled` to be `true`) |
+| `sensors.keg_volume_monitors.flow.enabled` | `boolean` | N | `false` | Enables flow-based keg monitoring (requires `sensors.keg_volume_monitors.enabled` to be `true`) |
