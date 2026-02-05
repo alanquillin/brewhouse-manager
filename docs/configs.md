@@ -85,3 +85,46 @@ __enviornment variable__ -> __optional configuration file__ -> __default configu
 | `external_brew_tools.brewfather.enabled` | `boolean` | N | `false` | Enables the integration with [brefather](https://brewfather.app) |
 | `external_brew_tools.brewfather.username` | `string` | N |  | The brewfather API username (required if `external_brew_tools.brewfather.enabled` is `true`) |
 | `external_brew_tools.brewfather.api_key` | `string` | N |  | The brewfather API key (required if `external_brew_tools.brewfather.enabled` is `true`) |
+
+### Sensor Settings
+
+#### Plaato Keg (Native Integration)
+
+| key  | type | required | default | description |
+| ---- | ---- | -------- | ------- | ----------- |
+| `sensors.plaato_keg.enabled` | `boolean` | N | `false` | Enables native Plaato Keg integration. When enabled, starts a TCP server that Plaato Keg devices can connect to directly. |
+| `sensors.plaato_keg.host` | `string` | N | `localhost` | The hostname/IP address for the TCP server to bind to. Use `0.0.0.0` to accept connections from external devices on your network. |
+| `sensors.plaato_keg.port` | `integer` | N | `5001` | The TCP port for the server to listen on. Plaato Keg devices must be configured to connect to this port. |
+
+**Example Configuration:**
+
+Using environment variables:
+```bash
+SENSORS_PLAATO_KEG_ENABLED=true
+SENSORS_PLAATO_KEG_HOST=0.0.0.0
+SENSORS_PLAATO_KEG_PORT=5001
+```
+
+Using config file (config.json):
+```json
+{
+  "sensors": {
+    "plaato_keg": {
+      "enabled": true,
+      "host": "0.0.0.0",
+      "port": 5001
+    }
+  }
+}
+```
+
+**Device Setup:**
+1. Enable the integration using the configuration above
+2. Navigate to `/manage/plaato_kegs` in the web UI (admin access required)
+3. Click "Setup New Device" and follow the instructions to:
+   - Reset your Plaato Keg device
+   - Configure device WiFi settings
+   - Set the device to connect to your Brewhouse Manager server at the configured host:port
+   - Register the device in the system
+
+Once configured, devices will automatically connect and begin streaming sensor data.
