@@ -143,7 +143,7 @@ async def health_check():
 
 # Register routers
 from routers import (
-    auth, beers, beverages, batches, locations, sensors, taps, users,
+    auth, beers, beverages, batches, locations, tap_monitors, taps, users,
     dashboard, assets, settings, external_brew_tools, image_transitions,
     pages, plaato_keg
 )
@@ -157,8 +157,8 @@ api.include_router(batches.router, prefix="/api/v1/beers/{beer_id}/batches", tag
 api.include_router(batches.router, prefix="/api/v1/beverages/{beverage_id}/batches", tags=["beverage_batches"])
 api.include_router(locations.router)
 api.include_router(plaato_keg.router)
-api.include_router(sensors.router, prefix="/api/v1/sensors", tags=["sensors"])
-api.include_router(sensors.router, prefix="/api/v1/locations/{location}/sensors", tags=["location_sensors"])
+api.include_router(tap_monitors.router, prefix="/api/v1/tap_monitors", tags=["tap_monitors"])
+api.include_router(tap_monitors.router, prefix="/api/v1/locations/{location}/tap_monitors", tags=["location_tap_monitors"])
 api.include_router(taps.router, prefix="/api/v1/taps", tags=["taps"])
 api.include_router(taps.router, prefix="/api/v1/locations/{location}/taps", tags=["location_taps"])
 api.include_router(users.router)

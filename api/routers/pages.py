@@ -35,7 +35,7 @@ async def ui():
 @router.get("/manage")
 @router.get("/manage/beers")
 @router.get("/manage/beverages")
-@router.get("/manage/sensors")
+@router.get("/manage/tap_monitors")
 @router.get("/manage/taps")
 async def auth_required(current_user: AuthUser = Depends(get_optional_user)):
     if current_user and current_user.is_authenticated:

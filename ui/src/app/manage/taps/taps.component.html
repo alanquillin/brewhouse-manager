@@ -72,9 +72,9 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header="locationName" sortActionDescription="Sort by location"> Location </th>
             <td mat-cell *matCellDef="let element">{{ _.isNil(element.location) ? '' : element.location.name}}</td>
           </ng-container>
-          <ng-container matColumnDef="sensor">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="sensor" sortActionDescription="Sort by sensor"> Sensor </th>
-            <td mat-cell *matCellDef="let element">{{ getSensorName(element.sensor, element.sensorId) }}</td>
+          <ng-container matColumnDef="tapMonitor">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="tapMonitor" sortActionDescription="Sort by tap monitor"> Tap Monitor </th>
+            <td mat-cell *matCellDef="let element">{{ getTapMonitorName(element.tapMonitor, element.tapMonitorId) }}</td>
           </ng-container>
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef> </th>
@@ -175,12 +175,12 @@
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="fill">
-            <mat-label>Sensor</mat-label>
-            <mat-select formControlName="sensorId" name="sensorId" [(ngModel)]="modifyTap.editValues.sensorId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
+            <mat-label>Tap Monitor</mat-label>
+            <mat-select formControlName="tapMonitorId" name="tapMonitorId" [(ngModel)]="modifyTap.editValues.tapMonitorId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
               <mat-option value="-1">-- None --</mat-option>
-              @for (sensor of getSensorsForLocation(modifyTap.editValues.locationId); track sensor) {
-                <mat-option [value]="sensor.id">
-                  {{getSensorName(sensor)}}
+              @for (tapMonitor of getTapMonitorsForLocation(modifyTap.editValues.locationId); track tapMonitor) {
+                <mat-option [value]="tapMonitor.id">
+                  {{getTapMonitorName(tapMonitor)}}
                 </mat-option>
               }
             </mat-select>

@@ -22,7 +22,7 @@ from lib import json, logging
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
-__all__ = ["Base", "audit", "beers", "beverages", "locations", "sensors", "taps", "users", "image_transitions", "user_locations", "on_tap", "batches", "batch_overrides", "batch_locations", "plaato_data"]
+__all__ = ["Base", "audit", "beers", "beverages", "locations", "tap_monitors", "taps", "users", "image_transitions", "user_locations", "on_tap", "batches", "batch_overrides", "batch_locations", "plaato_data"]
 
 LOGGER = logging.getLogger(__name__)
 

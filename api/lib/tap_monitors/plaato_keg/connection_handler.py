@@ -4,8 +4,8 @@ from datetime import datetime
 from dataclasses import dataclass, field
 
 from lib import logging
-from lib.sensors.plaato_keg import plaato_protocol, blynk_protocol, plaato_data
-from lib.sensors.plaato_keg.data_processor import DataProcessor
+from lib.tap_monitors.plaato_keg import plaato_protocol, blynk_protocol, plaato_data
+from lib.tap_monitors.plaato_keg.data_processor import DataProcessor
 
 LOGGER = logging.getLogger(__name__)
 

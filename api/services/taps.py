@@ -74,12 +74,12 @@ class TapService:
 
                 data["location"] = await LocationService.transform_response(tap.location, db_session=db_session)
 
-        # Include sensor
-        await tap.awaitable_attrs.sensor
-        if tap.sensor:
-            from services.sensors import SensorService
+        # Include tap monitor
+        await tap.awaitable_attrs.tap_monitor
+        if tap.tap_monitor:
+            from services.tap_monitors import TapMonitorService
 
-            data["sensor"] = await SensorService.transform_response(tap.sensor, db_session=db_session, include_location=False)
+            data["tap_monitor"] = await TapMonitorService.transform_response(tap.tap_monitor, db_session=db_session, include_location=False)
 
         # Remove on_tap_id from response
         if "on_tap_id" in data:

@@ -11,11 +11,11 @@ import {
 } from "@angular/forms";
 
 import {
-  Sensor,
+  TapMonitor,
   Location,
   UserInfo,
-  SensorDiscoveryData,
-  SensorData,
+  TapMonitorDiscoveryData,
+  TapMonitorData,
 } from "../../models/models";
 
 import { isNilOrEmpty } from "../../utils/helpers";
@@ -23,32 +23,32 @@ import { isNilOrEmpty } from "../../utils/helpers";
 import * as _ from "lodash";
 
 @Component({
-  selector: "app-sensors",
-  templateUrl: "./sensors.component.html",
-  styleUrls: ["./sensors.component.scss"],
+  selector: "app-tap-monitors",
+  templateUrl: "./tap-monitors.component.html",
+  styleUrls: ["./tap-monitors.component.scss"],
   standalone: false,
 })
-export class ManageSensorsComponent implements OnInit {
+export class ManageTapMonitorsComponent implements OnInit {
   loading = false;
-  sensors: Sensor[] = [];
-  filteredSensors: Sensor[] = [];
+  tapMonitors: TapMonitor[] = [];
+  filteredTapMonitors: TapMonitor[] = [];
   locations: Location[] = [];
-  sensorTypes: string[] = [];
+  monitorTypes: string[] = [];
   processing = false;
   adding = false;
   editing = false;
-  modifySensor: Sensor = new Sensor();
+  modifyTapMonitor: TapMonitor = new TapMonitor();
   _ = _;
   selectedLocationFilters: string[] = [];
-  sensorDiscoveryData: SensorDiscoveryData[] = [];
-  sensoryDiscoveryProcessing = false;
-  selectedDiscoveredSensorId: any;
+  tapMonitorDiscoveryData: TapMonitorDiscoveryData[] = [];
+  tapMonitorDiscoveryProcessing = false;
+  selectedDiscoveredTapMonitorId: any;
 
   userInfo!: UserInfo;
 
   modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
     name: new UntypedFormControl("", [Validators.required]),
-    sensorType: new UntypedFormControl("", [Validators.required]),
+    monitorType: new UntypedFormControl("", [Validators.required]),
     locationId: new UntypedFormControl("", [Validators.required]),
     metaAuthToken: new UntypedFormControl("", []),
     kvmDevice: new UntypedFormControl("", []),
@@ -85,12 +85,12 @@ export class ManageSensorsComponent implements OnInit {
   }
 
   _refresh(always?: Function, next?: Function, error?: Function) {
-    this.dataService.getSensors(undefined, true).subscribe({
-      next: (sensors: Sensor[]) => {
-        this.sensors = [];
-        _.forEach(sensors, (sensor) => {
-          var _sensor = new Sensor(sensor);
-          this.sensors.push(_sensor);
+    this.dataService.getTapMonitors(undefined, true).subscribe({
+      next: (tapMonitors: TapMonitor[]) => {
+        this.tapMonitors = [];
+        _.forEach(tapMonitors, (tapMonitor) => {
+          var _tapMonitor = new TapMonitor(tapMonitor);
+          this.tapMonitors.push(_tapMonitor);
         });
         this.filter();
       },
@@ -122,9 +122,9 @@ export class ManageSensorsComponent implements OnInit {
             return l.description;
           },
         ]);
-        this.dataService.getSensorTypes().subscribe({
-          next: (sensorTypes: string[]) => {
-            this.sensorTypes = _.orderBy(sensorTypes, ["name"]);
+        this.dataService.getMonitorTypes().subscribe({
+          next: (monitorTypes: string[]) => {
+            this.monitorTypes = _.orderBy(monitorTypes, ["name"]);
             this._refresh(always, next, error);
           },
           error: (err: DataError) => {
@@ -186,49 +186,49 @@ export class ManageSensorsComponent implements OnInit {
     if (this.locations.length === 1) {
       data["locationId"] = this.locations[0].id;
     }
-    if (this.sensorTypes.length === 1) {
-      data["sensorType"] = this.sensorTypes[0];
+    if (this.monitorTypes.length === 1) {
+      data["monitorType"] = this.monitorTypes[0];
     }
 
-    this.modifySensor = new Sensor(data);
-    this.modifySensor.editValues = data;
+    this.modifyTapMonitor = new TapMonitor(data);
+    this.modifyTapMonitor.editValues = data;
     this.adding = true;
   }
 
   create(): void {
     this.processing = true;
     var meta: any = {};
-    if (this.modifySensor.editValues.sensorType == "plaato-keg") {
-      meta.authToken = this.modifySensor.editValues.meta.authToken;
+    if (this.modifyTapMonitor.editValues.monitorType == "plaato-keg") {
+      meta.authToken = this.modifyTapMonitor.editValues.meta.authToken;
     } else if (
-      this.modifySensor.editValues.sensorType == "keg-volume-monitor-weight" ||
-      this.modifySensor.editValues.sensorType == "keg-volume-monitor-flow"
+      this.modifyTapMonitor.editValues.monitorType == "keg-volume-monitor-weight" ||
+      this.modifyTapMonitor.editValues.monitorType == "keg-volume-monitor-flow"
     ) {
-      meta.deviceId = this.selectedDiscoveredSensorId;
-    } else if (this.modifySensor.editValues.sensorType == "kegtron-pro") {
-      meta.deviceId = this.modifySensor.editValues.meta.deviceId;
-      meta.portNum = _.toInteger(this.modifySensor.editValues.meta.portNum);
-      meta.accessToken = this.modifySensor.editValues.meta.accessToken;
-    } else if (this.modifySensor.editValues.sensorType == "open-plaato-keg") {
+      meta.deviceId = this.selectedDiscoveredTapMonitorId;
+    } else if (this.modifyTapMonitor.editValues.monitorType == "kegtron-pro") {
+      meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
+      meta.portNum = _.toInteger(this.modifyTapMonitor.editValues.meta.portNum);
+      meta.accessToken = this.modifyTapMonitor.editValues.meta.accessToken;
+    } else if (this.modifyTapMonitor.editValues.monitorType == "open-plaato-keg") {
       meta.emptyKegWeight = _.toNumber(
-        this.modifySensor.editValues.meta.emptyKegWeight,
+        this.modifyTapMonitor.editValues.meta.emptyKegWeight,
       );
       meta.emptyKegWeightUnit =
-        this.modifySensor.editValues.meta.emptyKegWeightUnit;
-      meta.deviceId = this.modifySensor.editValues.meta.deviceId;
-      meta.maxKegVolume = this.modifySensor.editValues.meta.maxKegVolume;
+        this.modifyTapMonitor.editValues.meta.emptyKegWeightUnit;
+      meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
+      meta.maxKegVolume = this.modifyTapMonitor.editValues.meta.maxKegVolume;
       meta.maxKegVolumeUnit =
-        this.modifySensor.editValues.meta.maxKegVolumeUnit;
+        this.modifyTapMonitor.editValues.meta.maxKegVolumeUnit;
     }
 
     var data: any = {
-      name: this.modifySensor.editValues.name,
-      sensorType: this.modifySensor.editValues.sensorType,
-      locationId: this.modifySensor.editValues.locationId,
+      name: this.modifyTapMonitor.editValues.name,
+      monitorType: this.modifyTapMonitor.editValues.monitorType,
+      locationId: this.modifyTapMonitor.editValues.locationId,
       meta: meta,
     };
-    this.dataService.createSensor(data).subscribe({
-      next: (sensor: Sensor) => {
+    this.dataService.createTapMonitor(data).subscribe({
+      next: (tapMonitor: TapMonitor) => {
         this._refresh(
           () => {
             this.processing = false;
@@ -249,32 +249,32 @@ export class ManageSensorsComponent implements OnInit {
     this.adding = false;
   }
 
-  edit(sensor: Sensor): void {
-    sensor.enableEditing();
-    this.modifySensor = sensor;
+  edit(tapMonitor: TapMonitor): void {
+    tapMonitor.enableEditing();
+    this.modifyTapMonitor = tapMonitor;
     this.editing = true;
     this.modifyFormGroup.reset();
-    if (this.modifySensor.editValues.sensorType !== "plaato-keg") {
-      this.discoverSensors(() => {
-        if (!isNilOrEmpty(this.modifySensor.editValues.meta)) {
+    if (this.modifyTapMonitor.editValues.monitorType !== "plaato-keg") {
+      this.discoverTapMonitors(() => {
+        if (!isNilOrEmpty(this.modifyTapMonitor.editValues.meta)) {
           if (
-            this.modifySensor.editValues.sensorType ==
+            this.modifyTapMonitor.editValues.monitorType ==
               "keg-volume-monitor-weight" ||
-            this.modifySensor.editValues.sensorType == "keg-volume-monitor-flow"
+            this.modifyTapMonitor.editValues.monitorType == "keg-volume-monitor-flow"
           ) {
-            this.selectedDiscoveredSensorId = _.get(
-              this.modifySensor.editValues.meta,
+            this.selectedDiscoveredTapMonitorId = _.get(
+              this.modifyTapMonitor.editValues.meta,
               "deviceId",
             );
-          } else if (this.modifySensor.editValues.sensorType == "kegtron-pro") {
-            let deviceId = _.get(this.modifySensor.editValues.meta, "deviceId");
-            let portNum = _.get(this.modifySensor.editValues.meta, "portNum");
-            this.selectedDiscoveredSensorId = deviceId + "|" + portNum;
+          } else if (this.modifyTapMonitor.editValues.monitorType == "kegtron-pro") {
+            let deviceId = _.get(this.modifyTapMonitor.editValues.meta, "deviceId");
+            let portNum = _.get(this.modifyTapMonitor.editValues.meta, "portNum");
+            this.selectedDiscoveredTapMonitorId = deviceId + "|" + portNum;
           } else if (
-            this.modifySensor.editValues.sensorType == "open-plaato-keg"
+            this.modifyTapMonitor.editValues.monitorType == "open-plaato-keg"
           ) {
-            this.selectedDiscoveredSensorId = _.get(
-              this.modifySensor.editValues.meta,
+            this.selectedDiscoveredTapMonitorId = _.get(
+              this.modifyTapMonitor.editValues.meta,
               "deviceId",
             );
           }
@@ -286,10 +286,10 @@ export class ManageSensorsComponent implements OnInit {
   save(): void {
     this.processing = true;
     this.dataService
-      .updateSensor(this.modifySensor.id, this.modifySensor.changes)
+      .updateTapMonitor(this.modifyTapMonitor.id, this.modifyTapMonitor.changes)
       .subscribe({
         next: (res: any) => {
-          this.modifySensor.disableEditing();
+          this.modifyTapMonitor.disableEditing();
           this._refresh(
             () => {
               this.processing = false;
@@ -307,14 +307,14 @@ export class ManageSensorsComponent implements OnInit {
   }
 
   cancelEdit(): void {
-    this.modifySensor.disableEditing();
+    this.modifyTapMonitor.disableEditing();
     this.editing = false;
   }
 
-  delete(sensor: Sensor): void {
-    if (confirm(`Are you sure you want to delete sensor '${sensor.name}'?`)) {
+  delete(tapMonitor: TapMonitor): void {
+    if (confirm(`Are you sure you want to delete tap monitor '${tapMonitor.name}'?`)) {
       this.processing = true;
-      this.dataService.deleteSensor(sensor.id).subscribe({
+      this.dataService.deleteTapMonitor(tapMonitor.id).subscribe({
         next: (resp: any) => {
           this.processing = false;
           this.loading = true;
@@ -330,9 +330,9 @@ export class ManageSensorsComponent implements OnInit {
     }
   }
 
-  getLocationName(sensor: Sensor): string {
+  getLocationName(tapMonitor: TapMonitor): string {
     var loc = _.find(this.locations, (l) => {
-      return l.id === sensor.locationId;
+      return l.id === tapMonitor.locationId;
     });
 
     if (_.isNil(loc) || _.isEmpty(loc)) {
@@ -355,15 +355,15 @@ export class ManageSensorsComponent implements OnInit {
       asc = this.sort.direction == "asc";
     }
 
-    var filteredData: Sensor[] = this.sensors;
+    var filteredData: TapMonitor[] = this.tapMonitors;
     if (!_.isEmpty(this.selectedLocationFilters)) {
-      filteredData = <Sensor[]>_.filter(this.sensors, (s) => {
+      filteredData = <TapMonitor[]>_.filter(this.tapMonitors, (s) => {
         return this.selectedLocationFilters.includes(s.locationId);
       });
     }
 
     filteredData = _.sortBy(filteredData, [
-      (d: Sensor) => {
+      (d: TapMonitor) => {
         if (sortBy === "location") {
           return _.isNil(d.location) ? "" : d.location.name;
         }
@@ -373,57 +373,57 @@ export class ManageSensorsComponent implements OnInit {
     if (!asc) {
       _.reverse(filteredData);
     }
-    this.filteredSensors = filteredData;
+    this.filteredTapMonitors = filteredData;
   }
 
-  sensorTypeChanged() {
-    if (this.modifySensor.editValues.sensorType !== "plaato-keg") {
-      this.discoverSensors();
+  monitorTypeChanged() {
+    if (this.modifyTapMonitor.editValues.monitorType !== "plaato-keg") {
+      this.discoverTapMonitors();
     }
   }
 
-  discoverSensors(next?: Function) {
-    this.sensorDiscoveryData = [];
-    this.sensoryDiscoveryProcessing = true;
+  discoverTapMonitors(next?: Function) {
+    this.tapMonitorDiscoveryData = [];
+    this.tapMonitorDiscoveryProcessing = true;
     this.dataService
-      .discoverSensors(this.modifySensor.editValues.sensorType)
+      .discoverTapMonitors(this.modifyTapMonitor.editValues.monitorType)
       .subscribe({
-        next: (data: SensorDiscoveryData[]) => {
-          this.sensorDiscoveryData = data;
+        next: (data: TapMonitorDiscoveryData[]) => {
+          this.tapMonitorDiscoveryData = data;
           if (!_.isNil(next)) {
             next();
           }
-          this.sensoryDiscoveryProcessing = false;
+          this.tapMonitorDiscoveryProcessing = false;
         },
         error: (err: DataError) => {
           this.displayError(err.message);
-          this.sensoryDiscoveryProcessing = false;
+          this.tapMonitorDiscoveryProcessing = false;
         },
       });
   }
 
-  selectedDiscoveredSensorChange() {
+  selectedDiscoveredTapMonitorChange() {
     if (
-      this.modifySensor.editValues.sensorType == "keg-volume-monitor-weight" ||
-      this.modifySensor.editValues.sensorType == "keg-volume-monitor-flow"
+      this.modifyTapMonitor.editValues.monitorType == "keg-volume-monitor-weight" ||
+      this.modifyTapMonitor.editValues.monitorType == "keg-volume-monitor-flow"
     ) {
-      this.modifySensor.editValues.meta.deviceId =
-        this.selectedDiscoveredSensorId;
-    } else if (this.modifySensor.editValues.sensorType == "kegtron-pro") {
-      let parts = _.split(this.selectedDiscoveredSensorId, "|");
-      this.modifySensor.editValues.meta.deviceId = parts[0];
-      this.modifySensor.editValues.meta.portNum = _.toInteger(parts[1]);
-      _.forEach(this.sensorDiscoveryData, (dev) => {
+      this.modifyTapMonitor.editValues.meta.deviceId =
+        this.selectedDiscoveredTapMonitorId;
+    } else if (this.modifyTapMonitor.editValues.monitorType == "kegtron-pro") {
+      let parts = _.split(this.selectedDiscoveredTapMonitorId, "|");
+      this.modifyTapMonitor.editValues.meta.deviceId = parts[0];
+      this.modifyTapMonitor.editValues.meta.portNum = _.toInteger(parts[1]);
+      _.forEach(this.tapMonitorDiscoveryData, (dev) => {
         if (
-          dev.id === this.modifySensor.editValues.meta.deviceId &&
-          dev.portNum === this.modifySensor.editValues.meta.portNum
+          dev.id === this.modifyTapMonitor.editValues.meta.deviceId &&
+          dev.portNum === this.modifyTapMonitor.editValues.meta.portNum
         ) {
-          this.modifySensor.editValues.meta.accessToken = dev.token;
+          this.modifyTapMonitor.editValues.meta.accessToken = dev.token;
         }
       });
-    } else if (this.modifySensor.editValues.sensorType == "open-plaato-keg") {
-      this.modifySensor.editValues.meta.deviceId =
-        this.selectedDiscoveredSensorId;
+    } else if (this.modifyTapMonitor.editValues.monitorType == "open-plaato-keg") {
+      this.modifyTapMonitor.editValues.meta.deviceId =
+        this.selectedDiscoveredTapMonitorId;
     }
   }
 
@@ -431,11 +431,11 @@ export class ManageSensorsComponent implements OnInit {
     return this.modifyFormGroup.controls;
   }
 
-  getTapDetails(sensor: Sensor): string {
-    if (isNilOrEmpty(sensor.tap)) {
+  getTapDetails(tapMonitor: TapMonitor): string {
+    if (isNilOrEmpty(tapMonitor.tap)) {
       return '';
     }
 
-    return `Tap #${sensor.tap.tapNumber} (${sensor.tap.description})`;
+    return `Tap #${tapMonitor.tap.tapNumber} (${tapMonitor.tap.description})`;
   }
 }

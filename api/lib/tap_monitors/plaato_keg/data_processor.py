@@ -5,7 +5,7 @@ from db import async_session_scope
 from db.plaato_data import PlaatoData as PlaatoDataDB
 from lib.config import Config
 from lib import logging, time
-from lib.sensors.plaato_keg import plaato_protocol, blynk_protocol, plaato_data
+from lib.tap_monitors.plaato_keg import plaato_protocol, blynk_protocol, plaato_data
 
 LOGGER = logging.getLogger(__name__)
 CONFIG = Config()

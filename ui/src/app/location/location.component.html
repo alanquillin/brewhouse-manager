@@ -50,7 +50,7 @@
               <div>
                 @if (!_.isNil(tap.batch) && !_.isNil(tap.beer) && tap.tapType === 'beer') {
                   <div class="tap-display">
-                    @if (!_.isNil(tap.sensor) && !_.isNaN(tap.sensor.percentBeerRemaining)) {
+                    @if (!_.isNil(tap.tapMonitor) && !_.isNaN(tap.tapMonitor.percentBeerRemaining)) {
                       <div class="tap-volume">
                         <mwl-gauge
                           [max]="100"
@@ -63,7 +63,7 @@
                         </mwl-gauge>
                       </div>
                     }
-                    @if (_.isNil(tap.sensor)) {
+                    @if (_.isNil(tap.tapMonitor)) {
                       <div class="tap-image">
                         <img src="assets/img/generic_beer.png" class="srm-{{getSrm(tap)}}" />
                       </div>
@@ -77,7 +77,7 @@
                       <p>{{ tap.beer.getAbv(tap.batch) }}% alc./vol.</p>
                       <p>IBU: {{ tap.beer.getIbu(tap.batch) }}</p>
                       @if (tap.showTotalBeerRemaining) {
-                        <p>Total Remaining: {{_.round(tap.sensor.totalBeerRemaining, 2)}} {{tap.sensor.beerRemainingUnit}} ({{getRemainingBeerValue(tap)}}%)</p>
+                        <p>Total Remaining: {{_.round(tap.tapMonitor.totalBeerRemaining, 2)}} {{tap.tapMonitor.beerRemainingUnit}} ({{getRemainingBeerValue(tap)}}%)</p>
                       }
                     </div>
                     <div class="tap-qrcode">
@@ -107,7 +107,7 @@
                   <div>
                     @if (!_.isNil(tap.coldBrew) && tap.beverage.type === 'cold-brew') {
                       <div class="tap-display">
-                        @if (!_.isNil(tap.sensor) && !_.isNaN(tap.sensor.percentBeerRemaining)) {
+                        @if (!_.isNil(tap.tapMonitor) && !_.isNaN(tap.tapMonitor.percentBeerRemaining)) {
                           <div class="tap-volume">
                             <mwl-gauge
                               [max]="100"
@@ -120,7 +120,7 @@
                             </mwl-gauge>
                           </div>
                         }
-                        @if (_.isNil(tap.sensor)) {
+                        @if (_.isNil(tap.tapMonitor)) {
                           <div class="tap-image">
                             <img src="assets/img/generic_cold_brew.png" />
                           </div>
@@ -170,7 +170,7 @@
                             <p>Kegged On: {{ tap.batch.getKegDate() }}</p>
                           }
                           @if (tap.showTotalBeerRemaining) {
-                            <p>Total Remaining: {{_.round(tap.sensor.totalBeerRemaining, 2)}} {{tap.sensor.beerRemainingUnit}} ({{getRemainingBeerValue(tap)}}%)</p>
+                            <p>Total Remaining: {{_.round(tap.tapMonitor.totalBeerRemaining, 2)}} {{tap.tapMonitor.beerRemainingUnit}} ({{getRemainingBeerValue(tap)}}%)</p>
                           }
                         </div>
                         @if (!isNilOrEmpty(getImageUrl(tap))) {

@@ -5,11 +5,11 @@ from requests import auth
 from requests.auth import HTTPBasicAuth
 
 from db import session_scope
-from db.sensors import Sensors as SensorsDB
-from lib.sensors import InvalidDataType, SensorBase
+from db.tap_monitors import TapMonitors as TapMonitorsDB
+from lib.tap_monitors import InvalidDataType, TapMonitorBase
 
 
-class PlaatoBlynk(SensorBase):
+class PlaatoBlynk(TapMonitorBase):
     _data_type_to_pin = {
         "percent_beer_remaining": "v48",
         "total_beer_remaining": "v51",
@@ -24,15 +24,15 @@ class PlaatoBlynk(SensorBase):
     def supports_discovery(self):
         return False
     
-    def get(self, data_type, sensor_id=None, sensor=None, meta=None):
-        if not sensor_id and not sensor and not meta:
+    def get(self, data_type, monitor_id=None, monitor=None, meta=None):
+        if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
         if not meta:
-            if not sensor:
+            if not monitor:
                 with session_scope as session:
-                    sensor = SensorsDB.get_by_pkey(session, sensor_id)
-            meta = sensor.meta
+                    monitor = TapMonitorsDB.get_by_pkey(session, monitor_id)
+            meta = monitor.meta
 
         pin = self._data_type_to_pin.get(data_type)
         if not pin:
@@ -40,15 +40,15 @@ class PlaatoBlynk(SensorBase):
 
         return self._get(pin, meta)
 
-    def get_all(self, sensor_id=None, sensor=None, meta=None):
-        if not sensor_id and not sensor and not meta:
+    def get_all(self, monitor_id=None, monitor=None, meta=None):
+        if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
         if not meta:
-            if not sensor:
+            if not monitor:
                 with session_scope as session:
-                    sensor = SensorsDB.get_by_pkey(session, sensor_id)
-            meta = sensor.meta
+                    monitor = TapMonitorsDB.get_by_pkey(session, monitor_id)
+            meta = monitor.meta
 
         return {
             "percentRemaining": self._get(self._data_type_to_pin["percent_beer_remaining"], meta),
@@ -59,7 +59,7 @@ class PlaatoBlynk(SensorBase):
 
     def _get(self, pin, meta, params=None):
         auth_token = meta.get("auth_token")
-        base_url = self.config.get("sensors.plaato_blynk.base_url", "http://plaato.blynk.cc")
+        base_url = self.config.get("tap_monitors.plaato_blynk.base_url", "http://plaato.blynk.cc")
         url = f"{base_url}/{auth_token}/get/{pin}"
         self.logger.debug("GET Request: %s, params: %s", url, params)
         resp = requests.get(url, params=params)

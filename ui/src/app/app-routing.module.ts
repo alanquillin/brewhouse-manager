@@ -8,7 +8,7 @@ import { ManageBeerComponent } from './manage/beer/beer.component';
 import { ManageBeverageComponent } from './manage/beverage/beverage.component';
 import { ManageComponent } from './manage/manage.component'
 import { ManageLocationsComponent } from './manage/locations/locations.component';
-import { ManageSensorsComponent } from './manage/sensors/sensors.component';
+import { ManageTapMonitorsComponent } from './manage/tap-monitors/tap-monitors.component';
 import { ManagePlaatoKegComponent } from './manage/plaato-keg/plaato-keg.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
 import { ManageUsersComponent } from './manage/users/users.component';
@@ -55,8 +55,8 @@ const routes: Routes = [
     component: ManageLocationsComponent
   },
   {
-    path: 'manage/sensors',
-    component: ManageSensorsComponent
+    path: 'manage/tap-monitors',
+    component: ManageTapMonitorsComponent
   },
   {
     path: 'manage/plaato_kegs',

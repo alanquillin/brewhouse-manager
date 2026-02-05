@@ -10,14 +10,14 @@ from db.locations import Locations as LocationsDB
 from db.taps import Taps as TapsDB
 from db.beers import Beers as BeersDB
 from db.beverages import Beverages as BeveragesDB
-from db.sensors import Sensors as SensorsDB
+from db.tap_monitors import TapMonitors as TapMonitorsDB
 from lib import logging
 from lib import util
 from services.locations import LocationService
 from services.taps import TapService
 from services.beers import BeerService
 from services.beverages import BeverageService
-from services.sensors import SensorService
+from services.tap_monitors import TapMonitorService
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
 LOGGER = logging.getLogger(__name__)
@@ -83,17 +83,17 @@ async def get_dashboard_beverage(
     return await BeverageService.transform_response(beverage, db_session=db_session)
 
 
-@router.get("/sensors/{sensor_id}", response_model=dict)
-async def get_dashboard_sensor(
-    sensor_id: str,
+@router.get("/tap_monitors/{tap_monitor_id}", response_model=dict)
+async def get_dashboard_tap_monitor(
+    tap_monitor_id: str,
     db_session: AsyncSession = Depends(get_db_session),
 ):
-    """Get a specific sensor for dashboard"""
-    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
-    if not sensor:
-        raise HTTPException(status_code=404, detail="Sensor not found")
+    """Get a specific tap monitor for dashboard"""
+    tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
+    if not tap_monitor:
+        raise HTTPException(status_code=404, detail="Tap monitor not found")
 
-    return await SensorService.transform_response(sensor, db_session=db_session)
+    return await TapMonitorService.transform_response(tap_monitor, db_session=db_session)
 
 
 @router.get("/locations/{location}", response_model=dict)

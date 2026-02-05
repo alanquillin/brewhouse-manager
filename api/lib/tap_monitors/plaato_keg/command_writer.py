@@ -2,8 +2,8 @@ from enum import IntEnum, StrEnum
 from typing import List, Any, Optional, Dict
 
 from lib import logging
-from lib.sensors.plaato_keg.blynk_protocol import BlynkCommand, encode_command as encode_blynk_command
-from lib.sensors.plaato_keg.plaato_protocol import PlaatoPin, validate_and_pad_1_and_2
+from lib.tap_monitors.plaato_keg.blynk_protocol import BlynkCommand, encode_command as encode_blynk_command
+from lib.tap_monitors.plaato_keg.plaato_protocol import PlaatoPin, validate_and_pad_1_and_2
 LOGGER = logging.getLogger(__name__)
 
 

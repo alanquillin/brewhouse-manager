@@ -4,9 +4,9 @@ This section covers the administrative features available in the Brewhouse Manag
 
 ## Available Management Guides
 
-### Sensor Management
+### Tap Monitor Management
 
-- **[Sensors Overview](./manage/sensors.md)** - General overview of sensor management and supported sensor types
+- **[Tap Monitors Overview](./manage/tap-monitors.md)** - General overview of tap monitor management and supported tap monitor types
 - **[Plaato Keg Devices](./manage/plaato-keg.md)** - Complete guide for setting up, configuring, and monitoring Plaato Keg devices using the native integration
 
 ## Additional Management Features

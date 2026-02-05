@@ -142,35 +142,35 @@ When using S3 for asset storage, you can configure AWS credentials and settings.
 
 **Note:** AWS credentials can also be provided via standard AWS environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.) or IAM roles when running in AWS.
 
-### Sensor Settings
+### Tap Monitor Settings
 
-#### General Sensor Settings
+#### General Tap Monitor Settings
 
 | key  | type | required | default | description |
 | ---- | ---- | -------- | ------- | ----------- |
-| `sensors.preferred_vol_unit` | `string` | N | `gal` | Preferred volume unit for sensor data. Valid values: `gal`, `l` |
+| `tap_monitors.preferred_vol_unit` | `string` | N | `gal` | Preferred volume unit for tap monitor data. Valid values: `gal`, `l` |
 
 #### Plaato Keg (Native Integration)
 
 | key  | type | required | default | description |
 | ---- | ---- | -------- | ------- | ----------- |
-| `sensors.plaato_keg.enabled` | `boolean` | N | `false` | Enables native Plaato Keg integration. When enabled, starts a TCP server that Plaato Keg devices can connect to directly. |
-| `sensors.plaato_keg.host` | `string` | N | `localhost` | The hostname/IP address for the TCP server to bind to. Use `0.0.0.0` to accept connections from external devices on your network. |
-| `sensors.plaato_keg.port` | `integer` | N | `5001` | The TCP port for the server to listen on. Plaato Keg devices must be configured to connect to this port. |
+| `tap_monitors.plaato_keg.enabled` | `boolean` | N | `false` | Enables native Plaato Keg integration. When enabled, starts a TCP server that Plaato Keg devices can connect to directly. |
+| `tap_monitors.plaato_keg.host` | `string` | N | `localhost` | The hostname/IP address for the TCP server to bind to. Use `0.0.0.0` to accept connections from external devices on your network. |
+| `tap_monitors.plaato_keg.port` | `integer` | N | `5001` | The TCP port for the server to listen on. Plaato Keg devices must be configured to connect to this port. |
 
 **Example Configuration:**
 
 Using environment variables:
 ```bash
-SENSORS_PLAATO_KEG_ENABLED=true
-SENSORS_PLAATO_KEG_HOST=0.0.0.0
-SENSORS_PLAATO_KEG_PORT=5001
+TAP_MONITORS_PLAATO_KEG_ENABLED=true
+TAP_MONITORS_PLAATO_KEG_HOST=0.0.0.0
+TAP_MONITORS_PLAATO_KEG_PORT=5001
 ```
 
 Using config file (config.json):
 ```json
 {
-  "sensors": {
+  "tap_monitors": {
     "plaato_keg": {
       "enabled": true,
       "host": "0.0.0.0",
@@ -197,16 +197,16 @@ Integration with the [open-plaato-keg](https://github.com/sklopivo/open-plaato-k
 
 | key  | type | required | default | description |
 | ---- | ---- | -------- | ------- | ----------- |
-| `sensors.open_plaato_keg.enabled` | `boolean` | N | `false` | Enables integration with open-plaato-keg service. Requires open-plaato-keg version 0.0.11+ to be running separately. |
-| `sensors.open_plaato_keg.insecure` | `boolean` | N | `false` | Disable SSL certificate verification when connecting to open-plaato-keg service |
+| `tap_monitors.open_plaato_keg.enabled` | `boolean` | N | `false` | Enables integration with open-plaato-keg service. Requires open-plaato-keg version 0.0.11+ to be running separately. |
+| `tap_monitors.open_plaato_keg.insecure` | `boolean` | N | `false` | Disable SSL certificate verification when connecting to open-plaato-keg service |
 
 #### Plaato Blynk
 
-Legacy Plaato sensor integration via Blynk protocol (for older Plaato Airlock devices).
+Legacy Plaato tap monitor integration via Blynk protocol (for older Plaato Airlock devices).
 
 | key  | type | required | default | description |
 | ---- | ---- | -------- | ------- | ----------- |
-| `sensors.plaato_blynk.enabled` | `boolean` | N | `false` | Enables Plaato Blynk sensor integration |
+| `tap_monitors.plaato_blynk.enabled` | `boolean` | N | `false` | Enables Plaato Blynk tap monitor integration |
 
 #### Kegtron Pro
 
@@ -214,7 +214,7 @@ Integration with [Kegtron Pro](https://kegtron.com/pro/) keg monitoring devices.
 
 | key  | type | required | default | description |
 | ---- | ---- | -------- | ------- | ----------- |
-| `sensors.kegtron.pro.enabled` | `boolean` | N | `false` | Enables Kegtron Pro sensor integration |
+| `tap_monitors.kegtron.pro.enabled` | `boolean` | N | `false` | Enables Kegtron Pro tap monitor integration |
 
 #### Keg Volume Monitors
 
@@ -222,6 +222,6 @@ Integration with [DIY Keg Volume Monitors](https://github.com/alanquillin/keg-vo
 
 | key  | type | required | default | description |
 | ---- | ---- | -------- | ------- | ----------- |
-| `sensors.keg_volume_monitors.enabled` | `boolean` | N | `false` | Enables DIY Keg Volume Monitor integration (must be enabled for weight or flow sensors) |
-| `sensors.keg_volume_monitors.weight.enabled` | `boolean` | N | `false` | Enables weight-based keg monitoring (requires `sensors.keg_volume_monitors.enabled` to be `true`) |
-| `sensors.keg_volume_monitors.flow.enabled` | `boolean` | N | `false` | Enables flow-based keg monitoring (requires `sensors.keg_volume_monitors.enabled` to be `true`) |
+| `tap_monitors.keg_volume_monitors.enabled` | `boolean` | N | `false` | Enables DIY Keg Volume Monitor integration (must be enabled for weight or flow tap monitors) |
+| `tap_monitors.keg_volume_monitors.weight.enabled` | `boolean` | N | `false` | Enables weight-based keg monitoring (requires `tap_monitors.keg_volume_monitors.enabled` to be `true`) |
+| `tap_monitors.keg_volume_monitors.flow.enabled` | `boolean` | N | `false` | Enables flow-based keg monitoring (requires `tap_monitors.keg_volume_monitors.enabled` to be `true`) |

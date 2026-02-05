@@ -64,12 +64,12 @@ class Application:
                 await UsersDB.create(db_session, **data)
 
     async def start_plaato_service(self):
-        from lib.sensors.plaato_keg import service_handler as plaato_service_handler
+        from lib.tap_monitors.plaato_keg import service_handler as plaato_service_handler
 
         self.plaato_service = plaato_service_handler
         
-        host = CONFIG.get("sensors.plaato_keg.host", "localhost")
-        port = CONFIG.get("sensors.plaato_keg.port", 5001)
+        host = CONFIG.get("tap_monitors.plaato_keg.host", "localhost")
+        port = CONFIG.get("tap_monitors.plaato_keg.port", 5001)
         LOGGER.info(f"Starting Plaato TCP server on {host}:{port}")
         
         self.tcp_task = asyncio.create_task(plaato_service_handler.connection_handler.start_server(
@@ -100,7 +100,7 @@ class Application:
         LOGGER.info("Checking for initial user...")
         await self.initialize_first_user()
 
-        start_plaato_service = CONFIG.get("sensors.plaato_keg.enabled")
+        start_plaato_service = CONFIG.get("tap_monitors.plaato_keg.enabled")
         if start_plaato_service:
             LOGGER.info("Starting the Plaato TCP Service task...")
             await self.start_plaato_service()

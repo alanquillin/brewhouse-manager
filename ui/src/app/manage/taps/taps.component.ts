@@ -6,7 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort} from '@angular/material/sort';
 import { UntypedFormControl, AbstractControl, Validators, UntypedFormGroup } from '@angular/forms';
 
-import { Beer, Beverage, Location, Tap, Sensor, UserInfo, Batch } from '../../models/models';
+import { Beer, Beverage, Location, Tap, TapMonitor, UserInfo, Batch } from '../../models/models';
 
 import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
@@ -23,7 +23,7 @@ export class ManageTapsComponent implements OnInit {
   filteredTaps: Tap[] = [];
   locations: Location[] = [];
   beers: Beer[] = [];
-  sensors: Sensor[] = [];
+  tapMonitors: TapMonitor[] = [];
   beverages: Beverage[] = [];
   batches: Batch[] = [];
   loading = false;
@@ -43,7 +43,7 @@ export class ManageTapsComponent implements OnInit {
     locationId: new UntypedFormControl('', [Validators.required]),
     beerBatchId: new UntypedFormControl(''),
     tapNumber: new UntypedFormControl('', [Validators.required, Validators.pattern("^[0-9]*$")]),
-    sensorId: new UntypedFormControl(''),
+    tapMonitorId: new UntypedFormControl(''),
     beverageBatchId: new UntypedFormControl(''),
     namePrefix: new UntypedFormControl('', []),
     nameSuffix: new UntypedFormControl('', [])
@@ -56,7 +56,7 @@ export class ManageTapsComponent implements OnInit {
       cols.push('location');
     }
 
-    return _.concat(cols, ['beer', 'beverage', 'sensor', 'actions']);
+    return _.concat(cols, ['beer', 'beverage', 'tapMonitor', 'actions']);
   }
 
   constructor(
@@ -131,9 +131,9 @@ export class ManageTapsComponent implements OnInit {
               this.beers.push(new Beer(beer));
             });
             this.beers = _.sortBy(this.beers, (beer) => { return beer.getName(); });
-            this.dataService.getSensors().subscribe({
-              next: (sensors: Sensor[]) => {
-                this.sensors = sensors;
+            this.dataService.getTapMonitors().subscribe({
+              next: (tapMonitors: TapMonitor[]) => {
+                this.tapMonitors = tapMonitors;
                 this.dataService.getBeverages().subscribe({
                   next: (beverages: Beverage[]) => {
                     this.beverages = [];
@@ -267,8 +267,8 @@ export class ManageTapsComponent implements OnInit {
       data["beerId"] = this.modifyTap.editValues.beerId;
     }
 
-    if(!_.isNil(this.modifyTap.editValues.sensorId) && this.modifyTap.editValues.sensorId !== "-1") {
-      data["sensorId"] = this.modifyTap.editValues.sensorId;
+    if(!_.isNil(this.modifyTap.editValues.tapMonitorId) && this.modifyTap.editValues.tapMonitorId !== "-1") {
+      data["tapMonitorId"] = this.modifyTap.editValues.tapMonitorId;
     }
 
     if(!_.isNil(this.modifyTap.editValues.beverageId) && this.modifyTap.editValues.beverageId !== "-1") {
@@ -305,8 +305,8 @@ export class ManageTapsComponent implements OnInit {
       updateData.batchId = null;
     }
 
-    if(_.has(updateData, "sensorId") && (updateData.sensorId === "-1" || _.isNil(updateData.sensorId))){
-      updateData.sensorId = null;
+    if(_.has(updateData, "tapMonitorId") && (updateData.tapMonitorId === "-1" || _.isNil(updateData.tapMonitorId))){
+      updateData.tapMonitorId = null;
     }
 
     this.processing = true;
@@ -363,8 +363,8 @@ export class ManageTapsComponent implements OnInit {
         if(sortBy === "location"){
           return _.isNil(d.location) ? "" : d.location.name
         }
-        if(sortBy === "sensor"){
-          return _.isNil(d.sensor) ? "" : d.sensor.name
+        if(sortBy === "tapMonitor"){
+          return _.isNil(d.tapMonitor) ? "" : d.tapMonitor.name
         }
         if(sortBy === "beer"){
           return _.isNil(d.beer) ? "" : d.beer.getName();
@@ -377,18 +377,18 @@ export class ManageTapsComponent implements OnInit {
     this.filteredTaps = filteredData;
   }
 
-  getSensorName(sensor: Sensor | undefined, sensorId?: string): string {
-    if(_.isNil(sensor) && !_.isNil(sensorId)){
-      sensor = _.find(this.sensors, (s) => {return s.id === sensorId});
+  getTapMonitorName(tapMonitor: TapMonitor | undefined, tapMonitorId?: string): string {
+    if(_.isNil(tapMonitor) && !_.isNil(tapMonitorId)){
+      tapMonitor = _.find(this.tapMonitors, (s) => {return s.id === tapMonitorId});
     }
-    if(_.isNil(sensor)) {
+    if(_.isNil(tapMonitor)) {
       return "";
     }
-    var name = sensor.name
+    var name = tapMonitor.name
     if(_.isEmpty(name)) {
       name = "UNNAMED";
     }
-    return `${name} (${sensor.sensorType})`
+    return `${name} (${tapMonitor.monitorType})`
   }
 
   findBeer(beerId: string) {
@@ -403,16 +403,16 @@ export class ManageTapsComponent implements OnInit {
     return _.find(this.batches, (b) => {return b.id == batchId});
   }
 
-  getSensorsForLocation(locationId: string | undefined): Sensor[] {
+  getTapMonitorsForLocation(locationId: string | undefined): TapMonitor[] {
     if(_.isNil(locationId)) {
       return [];
     }
 
-    var sensors = _.filter(this.sensors, (s) => { return s.locationId === locationId});
-    if(_.isNil(sensors)){
+    var tapMonitors = _.filter(this.tapMonitors, (s) => { return s.locationId === locationId});
+    if(_.isNil(tapMonitors)){
       return [];
     }
-    return sensors;
+    return tapMonitors;
   }
 
   get modifyForm(): { [key: string]: AbstractControl } {

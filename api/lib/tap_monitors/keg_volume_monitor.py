@@ -4,9 +4,9 @@ import httpx
 from httpx import AsyncClient, BasicAuth
 
 from db import async_session_scope
-from db.sensors import Sensors as SensorsDB
-from lib.sensors import InvalidDataType, SensorBase
-from lib.sensors.exceptions import SensorDependencyError
+from db.tap_monitors import TapMonitors as TapMonitorsDB
+from lib.tap_monitors import InvalidDataType, TapMonitorBase
+from lib.tap_monitors.exceptions import TapMonitorDependencyError
 
 KEYMAP = {
     "percent_beer_remaining": "percentRemaining",
@@ -16,33 +16,33 @@ KEYMAP = {
 }
 
 
-class KegVolumeMonitor(SensorBase):
+class KegVolumeMonitor(TapMonitorBase):
     def supports_discovery(self):
         return True
 
-    async def get(self, key, sensor_id=None, sensor=None, meta=None):
-        if not sensor_id and not sensor and not meta:
+    async def get(self, key, monitor_id=None, monitor=None, meta=None):
+        if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
         if not meta:
-            if not sensor:
+            if not monitor:
                 with async_session_scope(self.config) as session:
-                    sensor = await SensorsDB.get_by_pkey(session, sensor_id)
-            meta = sensor.meta
+                    monitor = await TapMonitorsDB.get_by_pkey(session, monitor_id)
+            meta = monitor.meta
 
         device_id = meta.get("device_id")
         data = await self._get(f"devices/{device_id}")
         return data.get(KEYMAP.get(key, "unknown"))
 
-    async def get_all(self, sensor_id=None, sensor=None, meta=None):
-        if not sensor_id and not sensor and not meta:
+    async def get_all(self, monitor_id=None, monitor=None, meta=None):
+        if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
         if not meta:
-            if not sensor:
+            if not monitor:
                 with async_session_scope(self.config) as session:
-                    sensor = await SensorsDB.get_by_pkey(session, sensor_id)
-            meta = sensor.meta
+                    monitor = await TapMonitorsDB.get_by_pkey(session, monitor_id)
+            meta = monitor.meta
 
         device_id = meta.get("device_id")
         data = await self._get(f"devices/{device_id}")
@@ -59,12 +59,12 @@ class KegVolumeMonitor(SensorBase):
         return [{"id": dev["id"], "name": dev["name"]} for dev in devices]
 
     def _get_auth_header_val(self):
-        api_key = self.config.get("sensors.keg_volume_monitors.api_key")
+        api_key = self.config.get("tap_monitors.keg_volume_monitors.api_key")
         api_key = f"svc|{api_key}"
         return f"Bearer {base64.b64encode(api_key.encode('ascii')).decode('ascii')}"
 
     async def _get(self, path, params=None):
-        base_url = self.config.get("sensors.keg_volume_monitors.base_url")
+        base_url = self.config.get("tap_monitors.keg_volume_monitors.base_url")
         headers = {"Authorization": self._get_auth_header_val()}
 
         url = f"{base_url}/api/v1/{path}"
@@ -78,7 +78,7 @@ class KegVolumeMonitor(SensorBase):
             self.logger.debug("GET response JSON: %s", j)
 
             if resp.status_code == 401:
-                raise SensorDependencyError(
+                raise TapMonitorDependencyError(
                     "Keg Volume Monitor returned a 401 Unauthorized.  Check your credencials in the config."
                 )
             return j

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Union
 
 from lib import logging
-from lib.sensors.plaato_keg import service_handler
+from lib.tap_monitors.plaato_keg import service_handler
 from services.base import transform_dict_to_camel_case
 
 LOGGER = logging.getLogger(__name__)
@@ -63,11 +63,9 @@ CONVERSIONS = {
 }
 
 class PlaatoKegService:
-    """Service for sensor-related operations"""
-
+    
     @staticmethod
     async def transform_response(plaato_keg, db_session: AsyncSession, **kwargs):
-        """Transform sensor model to response dict with camelCase keys"""
         if not plaato_keg:
             return None
 

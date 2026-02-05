@@ -1,4 +1,4 @@
-.sensors-view {
+.tap-monitors-view {
     display: flex;
     flex-direction: column;
 
@@ -29,7 +29,7 @@
         }
     }
 
-    .sensor-view-filters {
+    .tap-monitor-view-filters {
         padding: 0px 0px 12px;
         display: flex;
         flex-direction: row;
@@ -38,18 +38,18 @@
             margin-right: 12px;
         }
 
-        .sensor-view-actions {
+        .tap-monitor-view-actions {
             height: fit-content;
         }
     }
-    
-    .sensors-list {
+
+    .tap-monitors-list {
         table {
             .mat-mdc-header-cell,
             .mat-mdc-cell {
                 padding: 2px 8px;
             }
-        
+
             .actions {
                 width: 100%;
                 display: flex;
@@ -60,7 +60,7 @@
     }
 }
 
-.sensors-modify {
+.tap-monitors-modify {
     display: flex;
     flex-direction: column;
 
@@ -74,14 +74,14 @@
 
     .modify-actions {
         order: 3;
-        
+
         button {
             margin: 2px 6px
-        }    
-    } 
+        }
+    }
 }
 
-.sensors-modify fieldset {
+.tap-monitors-modify fieldset {
     display: flex;
     flex-direction: column;
     border: none;

@@ -3,7 +3,7 @@ from pydantic import Field
 
 from schemas.base import CamelCaseModel
 
-class SensorBase(CamelCaseModel):
+class TapMonitorBase(CamelCaseModel):
     meta: Optional[dict] = None
 
     def model_dump(self, *args, **kwargs):
@@ -14,16 +14,16 @@ class SensorBase(CamelCaseModel):
             data["meta"] = meta
         return data
 
-class SensorCreate(SensorBase):
-    """Schema for creating a sensor"""
+class TapMonitorCreate(TapMonitorBase):
+    """Schema for creating a tap monitor"""
 
     name: str
-    sensor_type: str
+    monitor_type: str
     location_id: str = None
 
-class SensorUpdate(SensorBase):
-    """Schema for updating a sensor"""
+class TapMonitorUpdate(TapMonitorBase):
+    """Schema for updating a tap monitor"""
 
     name: Optional[str] = None
-    sensor_type: Optional[str] = None
+    monitor_type: Optional[str] = None
     location_id: Optional[str] = None

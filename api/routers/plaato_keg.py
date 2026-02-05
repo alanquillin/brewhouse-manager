@@ -8,13 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dependencies.auth import AuthUser, get_db_session, require_admin
 from db.plaato_data import PlaatoData as PlaatoDataDB
 from lib import logging, util
-from lib.sensors.plaato_keg import service_handler
-from lib.sensors.plaato_keg.command_writer import COMMAND_MAPP, sanitize_command, Commands
+from lib.tap_monitors.plaato_keg import service_handler
+from lib.tap_monitors.plaato_keg.command_writer import COMMAND_MAPP, sanitize_command, Commands
 from services.plaato_keg import PlaatoKegService
 from schemas.plaato_keg import PlaatoKegBase, PlaatoKegCreate, PlaatoKegUpdate
 from routers import StringValueRequest
 
-router = APIRouter(prefix="/api/v1/sensors/plaato_keg", tags=["plaato_keg_device_management"])
+router = APIRouter(prefix="/api/v1/devices/plaato_keg", tags=["plaato_keg_device_management"])
 LOGGER = logging.getLogger(__name__)
 
 
@@ -33,7 +33,7 @@ async def list(
     return [await PlaatoKegService.transform_response(dev, db_session) for dev in devices]
 
 @router.post("", response_model=PlaatoKegBase)
-async def create_sensor(
+async def create_device(
     device_data: PlaatoKegCreate,
     current_user: AuthUser = Depends(require_admin),
     db_session: AsyncSession = Depends(get_db_session),
@@ -74,7 +74,7 @@ async def get(
 
 
 @router.patch("/{device_id}", response_model=PlaatoKegBase)
-async def create_sensor(
+async def update_device(
     device_id: str,
     device_data: PlaatoKegUpdate,
     current_user: AuthUser = Depends(require_admin),

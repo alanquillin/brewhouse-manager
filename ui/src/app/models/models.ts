@@ -107,8 +107,8 @@ export class Tap extends EditableBase {
   beverage: Beverage | undefined;
   batchId!: string;
   batch: Batch | undefined;
-  sensorId!: string;
-  sensor: Sensor | undefined;
+  tapMonitorId!: string;
+  tapMonitor: TapMonitor | undefined;
   coldBrew: ColdBrew | undefined;
   namePrefix!: string;
   nameSuffix!: string;
@@ -123,7 +123,7 @@ export class Tap extends EditableBase {
   }
 
   constructor(from?: any) {
-    super(["description", "tapNumber", "locationId", "beerId", "sensorId", "beverageId", "namePrefix", "nameSuffix", "batchId"], from);
+    super(["description", "tapNumber", "locationId", "beerId", "tapMonitorId", "beverageId", "namePrefix", "nameSuffix", "batchId"], from);
   }
 
   getDisplayName(name?: string) : string | undefined {
@@ -375,17 +375,17 @@ export class Beer extends ExtToolBase {
   }
 }
 
-export class Sensor extends EditableBase {
+export class TapMonitor extends EditableBase {
   id!: string;
   name!: string;
-  sensorType!: string;
+  monitorType!: string;
   locationId!: string;
   location: Location | undefined;
   meta!: any;
   tap!: Tap;
 
   constructor(from?: any) {
-    super(["name", "locationId", "sensorType", "meta"], from);
+    super(["name", "locationId", "monitorType", "meta"], from);
     if(isNilOrEmpty(this.meta)){
       this.meta = {}
     }
@@ -569,14 +569,14 @@ export class Dashboard {
   locations!: Location[];
 }
 
-export class SensorData {
+export class TapMonitorData {
   percentRemaining!: number;
   totalVolumeRemaining!: number;
   displayVolumeUnit!: string;
   firmwareVersion!: string
 }
 
-export class SensorDiscoveryData {
+export class TapMonitorDiscoveryData {
   id!: string;
   name!: string;
   model!: string;

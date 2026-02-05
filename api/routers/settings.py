@@ -30,14 +30,14 @@ async def get_settings():
             "refreshSec": CONFIG.get("dashboard.refresh_sec")
         },
     }
-    plaato_enabled = CONFIG.get("sensors.plaato_keg.enabled", False)
+    plaato_enabled = CONFIG.get("tap_monitors.plaato_keg.enabled", False)
     plaato = {
         "enabled": plaato_enabled
     }
     if plaato_enabled:
         plaato["config"] = {
-            "host": CONFIG.get("sensors.plaato_keg.device_config.host", "localhost"),
-            "port": CONFIG.get("sensors.plaato_keg.device_config.port", 5001)
+            "host": CONFIG.get("tap_monitors.plaato_keg.device_config.host", "localhost"),
+            "port": CONFIG.get("tap_monitors.plaato_keg.device_config.port", 5001)
         }
     
     data["plaato_keg_devices"] = plaato

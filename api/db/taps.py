@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, beers, beverages, column_as_enum, generate_audit_trail, locations, sensors, on_tap
+from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, beers, beverages, column_as_enum, generate_audit_trail, locations, tap_monitors, on_tap
 
 
 @generate_audit_trail
@@ -19,13 +19,13 @@ class Taps(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     tap_number = Column(Integer, nullable=False)
     description = Column(String)
     location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"), nullable=False)
-    sensor_id = Column(UUID, ForeignKey(f"{sensors._TABLE_NAME}.{sensors._PKEY}"))
+    tap_monitor_id = Column(UUID, ForeignKey(f"{tap_monitors._TABLE_NAME}.{tap_monitors._PKEY}"))
     on_tap_id = Column(UUID, ForeignKey(f"on_tap.id"))
     name_prefix = Column(String)
     name_suffix = Column(String)
 
     location = relationship(locations.Locations, backref=backref("Taps", cascade="all,delete"))
-    sensor = relationship(sensors.Sensors)
+    tap_monitor = relationship(tap_monitors.TapMonitors)
     on_tap = relationship(on_tap.OnTap)
 
     __table_args__ = (

@@ -4,21 +4,21 @@ import httpx
 from httpx import BasicAuth, AsyncClient
 
 from db import async_session_scope
-from db.sensors import Sensors as SensorsDB
-from lib.sensors import SensorBase
+from db.tap_monitors import TapMonitors as TapMonitorsDB
+from lib.tap_monitors import TapMonitorBase
 from lib.units import from_ml
-from lib.sensors.exceptions import SensorDependencyError
+from lib.tap_monitors.exceptions import TapMonitorDependencyError
 
 
-class KegtronBase(SensorBase):
+class KegtronBase(TapMonitorBase):
     def __init__(self):
         super().__init__()
 
 
-SENSOR_TYPE = "kegtron-pro"
+MONITOR_TYPE = "kegtron-pro"
 
 
-class KegtronPro(SensorBase):
+class KegtronPro(TapMonitorBase):
     supported_device_keys = ["beaconEna", "cleanEna"]
     supported_port_keys = [
         "abv",
@@ -33,7 +33,7 @@ class KegtronPro(SensorBase):
 
     def __init__(self) -> None:
         super().__init__()
-        self.sensor_data_included = True
+        self.monitor_data_included = True
 
         self._data_type_to_key = {
             "percent_beer_remaining": self._get_percent_remaining,
@@ -41,25 +41,25 @@ class KegtronPro(SensorBase):
             "beer_remaining_unit": self._get_vol_unit,
         }
 
-        self.default_vol_unit = self.config.get("sensors.preferred_vol_unit")
+        self.default_vol_unit = self.config.get("tap_monitors.preferred_vol_unit")
         self.kegtron_customer_api_key = self.config.get(
-            "sensors.kegtron.pro.auth.customer_api_key"
+            "tap_monitors.kegtron.pro.auth.customer_api_key"
         )
-        self.kegtron_username = self.config.get("sensors.kegtron.pro.auth.username")
-        self.kegtron_password = self.config.get("sensors.kegtron.pro.auth.password")
+        self.kegtron_username = self.config.get("tap_monitors.kegtron.pro.auth.username")
+        self.kegtron_password = self.config.get("tap_monitors.kegtron.pro.auth.password")
 
     def supports_discovery(self):
         return True
 
-    async def get(self, data_type, sensor_id=None, sensor=None, meta=None):
-        if not sensor_id and not sensor and not meta:
-            raise Exception("sensor_id, sensor, or meta must be provided")
+    async def get(self, data_type, monitor_id=None, monitor=None, meta=None):
+        if not monitor_id and not monitor and not meta:
+            raise Exception("monitor_id, monitor, or meta must be provided")
 
         if not meta:
-            if not sensor:
+            if not monitor:
                 with async_session_scope(self.config) as db_session:
-                    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
-            meta = sensor.meta
+                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
+            meta = monitor.meta
 
         fn = self._data_type_to_key[data_type]
 
@@ -135,8 +135,8 @@ class KegtronPro(SensorBase):
             self.logger.debug("GET response JSON: %s", j)
             if resp.status_code == 401:
                 self.logger.error("Kegtron API returned a 401")
-                raise SensorDependencyError(
-                    SENSOR_TYPE,
+                raise TapMonitorDependencyError(
+                    MONITOR_TYPE,
                     message=f"Kegtron API returned a 401 unauthorized when retrieving device details.",
                 )
 
@@ -219,7 +219,7 @@ class KegtronPro(SensorBase):
             self.logger.debug("GET response JSON: %s", j)
             if resp.status_code == 401:
                 self.logger.error("Kegtron API returned a 401 when retrieving customer details to get the device access tokens")
-                raise SensorDependencyError(SENSOR_TYPE)
+                raise TapMonitorDependencyError(MONITOR_TYPE)
 
             device_keys = j.get("pubkeys", {})
             devices = []
@@ -239,16 +239,16 @@ class KegtronPro(SensorBase):
             return devices
 
     async def update_device(
-        self, data, sensor_id=None, sensor=None, meta=None, params=None
+        self, data, monitor_id=None, monitor=None, meta=None, params=None
     ):
-        if not sensor_id and not sensor and not meta:
+        if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
         if not meta:
-            if not sensor:
+            if not monitor:
                 with async_session_scope(self.config) as db_session:
-                    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
-            meta = sensor.meta
+                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
+            meta = monitor.meta
 
         d_data = {}
         for k, v in data.items():
@@ -262,16 +262,16 @@ class KegtronPro(SensorBase):
         return await self._update(data, meta, params)
 
     async def update_port(
-        self, port_num, data, sensor_id=None, sensor=None, meta=None, params=None
+        self, port_num, data, monitor_id=None, monitor=None, meta=None, params=None
     ):
-        if not sensor_id and not sensor and not meta:
+        if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
         if not meta:
-            if not sensor:
+            if not monitor:
                 with async_session_scope(self.config) as db_session:
-                    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
-            meta = sensor.meta
+                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
+            meta = monitor.meta
         port_num = meta.get("port_num")
         if not port_num:
             raise Exception("Port num not found... WTH!?!?!")

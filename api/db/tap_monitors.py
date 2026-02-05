@@ -1,5 +1,5 @@
 # pylint: disable=wrong-import-position
-_TABLE_NAME = "sensors"
+_TABLE_NAME = "tap_monitors"
 _PKEY = "id"
 
 from psycopg2.errors import UniqueViolation  # pylint: disable=no-name-in-module
@@ -13,16 +13,16 @@ from db.types.nested import NestedMutableDict
 
 
 @generate_audit_trail
-class Sensors(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
+class TapMonitors(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     __tablename__ = _TABLE_NAME
 
     id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
     name = Column(String, nullable=False)
     location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"), nullable=False)
-    sensor_type = Column("sensor_type", String, nullable=False)
+    monitor_type = Column("monitor_type", String, nullable=False)
     meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
 
-    location = relationship(locations.Locations, backref=backref("Sensors", cascade="all,delete"))
+    location = relationship(locations.Locations, backref=backref("TapMonitors", cascade="all,delete"))
 
-    __table_args__ = (Index("ix_sensor_location_id", location_id, unique=False),)
+    __table_args__ = (Index("ix_tap_monitor_location_id", location_id, unique=False),)

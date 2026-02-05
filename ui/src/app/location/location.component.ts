@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, Sensor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings, Batch, UserInfo } from './../models/models';
+import { Location, Tap, Beer, TapMonitor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings, Batch, UserInfo } from './../models/models';
 import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
@@ -18,22 +18,22 @@ import * as _ from 'lodash';
 export class TapDetails extends Tap {
   isEmpty!: boolean;
   isLoading!: boolean;
-  override sensor!: SensorData;
+  override tapMonitor!: TapMonitorData;
 
   constructor(from?: any) {
     super(from);
   }
 
   get showTotalBeerRemaining(): boolean {
-    if(isNilOrEmpty(this.sensor)){
+    if(isNilOrEmpty(this.tapMonitor)){
       return false;
     }
 
-    return this.sensor.totalBeerRemaining > 0;
+    return this.tapMonitor.totalBeerRemaining > 0;
   }
 }
 
-export class SensorData extends Sensor {
+export class TapMonitorData extends TapMonitor {
   percentBeerRemaining: number = 0;
   totalBeerRemaining: number = 0;
   beerRemainingUnit: string = "";
@@ -215,21 +215,21 @@ export class LocationComponent implements OnInit {
         })
       }
 
-      if(!_.isEmpty(tap.sensorId)) {
-        this.dataService.getDashboardSensor(tap.sensorId).subscribe((sensor: Sensor) => {
-          let sensorData = <SensorData>sensor;
-          tap.sensor = sensorData;
+      if(!_.isEmpty(tap.tapMonitorId)) {
+        this.dataService.getDashboardTapMonitor(tap.tapMonitorId).subscribe((tapMonitor: TapMonitor) => {
+          let tapMonitorData = <TapMonitorData>tapMonitor;
+          tap.tapMonitor = tapMonitorData;
 
-          this.dataService.getPercentBeerRemaining(sensorData.id).subscribe((val: number) => {
-            sensorData.percentBeerRemaining = val as number;
+          this.dataService.getPercentBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
+            tapMonitorData.percentBeerRemaining = val as number;
             tap.isLoading = false;
           });
-          this.dataService.getTotalBeerRemaining(sensorData.id).subscribe((val: number) => {
-            sensorData.totalBeerRemaining = val as number;
+          this.dataService.getTotalBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
+            tapMonitorData.totalBeerRemaining = val as number;
             tap.isLoading = false;
           });
-          this.dataService.getBeerRemainingUnit(sensorData.id).subscribe((val: string) => {
-            sensorData.beerRemainingUnit = val;
+          this.dataService.getBeerRemainingUnit(tapMonitorData.id).subscribe((val: string) => {
+            tapMonitorData.beerRemainingUnit = val;
             tap.isLoading = false;
           });
         })
@@ -297,11 +297,11 @@ export class LocationComponent implements OnInit {
   }
 
   getRemainingBeerValue(tap: TapDetails): number {
-    if (isNilOrEmpty(tap.sensor.percentBeerRemaining)) {
+    if (isNilOrEmpty(tap.tapMonitor.percentBeerRemaining)) {
       return 0;
     }
 
-    return tap.sensor.percentBeerRemaining;
+    return tap.tapMonitor.percentBeerRemaining;
   }
 
   getImageUrl(tap: TapDetails): string {
@@ -316,12 +316,12 @@ export class LocationComponent implements OnInit {
     }
 
     let imageUrl = b.getImgUrl(tap.batch);
-    if(!tap.sensor) {
+    if(!tap.tapMonitor) {
       return imageUrl;
     }
-    
+
     if(b.imageTransitionsEnabled) {
-      let percentBeerRemaining = tap.sensor.percentBeerRemaining;
+      let percentBeerRemaining = tap.tapMonitor.percentBeerRemaining;
 
       if(isNilOrEmpty(percentBeerRemaining)) {
         return imageUrl;

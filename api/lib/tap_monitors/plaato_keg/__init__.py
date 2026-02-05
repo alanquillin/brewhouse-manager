@@ -1,6 +1,6 @@
 from lib import ThreadSafeSingleton
-from lib.sensors.plaato_keg.connection_handler import ConnectionHandler
-from lib.sensors.plaato_keg.command_writer import CommandWriter
+from lib.tap_monitors.plaato_keg.connection_handler import ConnectionHandler
+from lib.tap_monitors.plaato_keg.command_writer import CommandWriter
 
 
 class PlaatoServiceHandler(metaclass=ThreadSafeSingleton):

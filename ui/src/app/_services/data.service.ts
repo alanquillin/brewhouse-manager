@@ -6,7 +6,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Location, Tap, Beer, Beverage, Sensor, UserInfo, Settings, Dashboard, Batch, SensorData, SensorDiscoveryData, PlaatoKegDevice } from '../models/models';
+import { Location, Tap, Beer, Beverage, TapMonitor, UserInfo, Settings, Dashboard, Batch, TapMonitorData, TapMonitorDiscoveryData, PlaatoKegDevice } from '../models/models';
 import { WINDOW } from '../window.provider';
 import { isNilOrEmpty } from '../utils/helpers';
 
@@ -178,12 +178,12 @@ export class DataService {
     return this.http.patch<Beer>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getSensors(locationId?: string, includeTapDetails:Boolean = false): Observable<Sensor[]> {
+  getTapMonitors(locationId?: string, includeTapDetails:Boolean = false): Observable<TapMonitor[]> {
     var url: string;
     if (_.isNil(locationId)) {
-      url = `${this.apiBaseUrl}/sensors`;
+      url = `${this.apiBaseUrl}/tap_monitors`;
     } else {
-      url = `${this.apiBaseUrl}/locations/${locationId}/sensors`;
+      url = `${this.apiBaseUrl}/locations/${locationId}/tap_monitors`;
     }
 
     let params = [];
@@ -191,112 +191,112 @@ export class DataService {
     const queryString = params.length > 0 ? `?${params.join('&')}` : '';
     url = `${url}${queryString}`;
 
-    return this.http.get<Sensor[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+    return this.http.get<TapMonitor[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getSensor(sensorId: string, includeTapDetails:Boolean = false): Observable<Sensor> {
+  getTapMonitor(tapMonitorId: string, includeTapDetails:Boolean = false): Observable<TapMonitor> {
     let params = [];
     if (includeTapDetails) params.push('include_tap_details=true');
     const queryString = params.length > 0 ? `?${params.join('&')}` : '';
 
-    const url = `${this.apiBaseUrl}/sensors/${sensorId}${queryString}`;
-    return this.http.get<Sensor>(url).pipe(catchError((err) => {return this.getError(err)}));
+    const url = `${this.apiBaseUrl}/tap_monitors/${tapMonitorId}${queryString}`;
+    return this.http.get<TapMonitor>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  createSensor(data: any): Observable<Sensor> {
-    const url = `${this.apiBaseUrl}/sensors`;
-    return this.http.post<Sensor>(url, data).pipe(catchError((err) => {return this.getError(err)}));
+  createTapMonitor(data: any): Observable<TapMonitor> {
+    const url = `${this.apiBaseUrl}/tap_monitors`;
+    return this.http.post<TapMonitor>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  updateSensor(sensorId: string, data: any): Observable<Sensor> {
-    const url = `${this.apiBaseUrl}/sensors/${sensorId}`;
-    return this.http.patch<Sensor>(url, data).pipe(catchError((err) => {return this.getError(err)}));
+  updateTapMonitor(tapMonitorId: string, data: any): Observable<TapMonitor> {
+    const url = `${this.apiBaseUrl}/tap_monitors/${tapMonitorId}`;
+    return this.http.patch<TapMonitor>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  deleteSensor(sensorId: string): Observable<any> {
-    const url = `${this.apiBaseUrl}/sensors/${sensorId}`;
+  deleteTapMonitor(tapMonitorId: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/tap_monitors/${tapMonitorId}`;
     return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getSensorTypes(): Observable<string[]> {
-    const url = `${this.apiBaseUrl}/sensors/types`;
+  getMonitorTypes(): Observable<string[]> {
+    const url = `${this.apiBaseUrl}/tap_monitors/types`;
     return this.http.get<string[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getSensorData(sensorId: string, dataType: string): Observable<any> {
-    const url = `${this.apiBaseUrl}/sensors/${sensorId}/data/${dataType}`;
+  getTapMonitorData(tapMonitorId: string, dataType: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/tap_monitors/${tapMonitorId}/data/${dataType}`;
     return this.http.get<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
-  getPercentBeerRemaining(sensorId: string): Observable<number> {
-    return this.getSensorData(sensorId, "percent_beer_remaining");
+  getPercentBeerRemaining(tapMonitorId: string): Observable<number> {
+    return this.getTapMonitorData(tapMonitorId, "percent_beer_remaining");
   }
 
-  getTotalBeerRemaining(sensorId: string): Observable<number> {
-    return this.getSensorData(sensorId, "total_beer_remaining");
+  getTotalBeerRemaining(tapMonitorId: string): Observable<number> {
+    return this.getTapMonitorData(tapMonitorId, "total_beer_remaining");
   }
 
-  getBeerRemainingUnit(sensorId: string): Observable<string> {
-    return this.getSensorData(sensorId, "beer_remaining_unit");
+  getBeerRemainingUnit(tapMonitorId: string): Observable<string> {
+    return this.getTapMonitorData(tapMonitorId, "beer_remaining_unit");
   }
 
-  getSensorFirmwareVersion(sensorId: string): Observable<string> {
-    return this.getSensorData(sensorId, "firmware_version");
+  getTapMonitorFirmwareVersion(tapMonitorId: string): Observable<string> {
+    return this.getTapMonitorData(tapMonitorId, "firmware_version");
   }
 
-  discoverSensors(sensorType: string): Observable<SensorDiscoveryData[]> {
-    const url = `${this.apiBaseUrl}/sensors/discover/${sensorType}`;
-    return this.http.get<SensorDiscoveryData[]>(url).pipe(catchError((err) => {return this.getError(err)}));
+  discoverTapMonitors(monitorType: string): Observable<TapMonitorDiscoveryData[]> {
+    const url = `${this.apiBaseUrl}/tap_monitors/discover/${monitorType}`;
+    return this.http.get<TapMonitorDiscoveryData[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   // Plaato Keg Device Management API methods
   getPlaatoKegDevices(): Observable<PlaatoKegDevice[]> {
-    const url = `${this.apiBaseUrl}/sensors/plaato_keg`;
+    const url = `${this.apiBaseUrl}/devices/plaato_keg`;
     return this.http.get<PlaatoKegDevice[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getPlaatoKegDevice(deviceId: string): Observable<PlaatoKegDevice> {
-    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}`;
+    const url = `${this.apiBaseUrl}/devices/plaato_keg/${deviceId}`;
     return this.http.get<PlaatoKegDevice>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   getPlaatoKegConnectedDevices(): Observable<string[]> {
-    const url = `${this.apiBaseUrl}/sensors/plaato_keg/connected`;
+    const url = `${this.apiBaseUrl}/devices/plaato_keg/connected`;
     return this.http.get<string[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   createPlaatoKegDevice(data: any): Observable<PlaatoKegDevice> {
-    const url = `${this.apiBaseUrl}/sensors/plaato_keg`;
+    const url = `${this.apiBaseUrl}/devices/plaato_keg`;
     return this.http.post<any>(url, data, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   updatePlaatoKegDevice(deviceId: string, data: any): Observable<any> {
-    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}`;
+    const url = `${this.apiBaseUrl}/devices/plaato_keg/${deviceId}`;
     return this.http.patch<any>(url, data).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   deletePlaatoKegDevice(deviceId: string): Observable<any> {
-    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}`;
+    const url = `${this.apiBaseUrl}/devices/plaato_keg/${deviceId}`;
     return this.http.delete<any>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   setPlaatoKegMode(deviceId: string, mode: string): Observable<any> {
-    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}/set/mode`;
+    const url = `${this.apiBaseUrl}/devices/plaato_keg/${deviceId}/set/mode`;
     return this.http.post<any>(url, { value: mode }, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   setPlaatoKegUnitType(deviceId: string, unitType: string): Observable<any> {
-    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}/set/unit_type`;
+    const url = `${this.apiBaseUrl}/devices/plaato_keg/${deviceId}/set/unit_type`;
     return this.http.post<any>(url, { value: unitType }, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   setPlaatoKegUnitMode(deviceId: string, unitMode: string): Observable<any> {
-    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}/set/unit_mode`;
+    const url = `${this.apiBaseUrl}/devices/plaato_keg/${deviceId}/set/unit_mode`;
     return this.http.post<any>(url, { value: unitMode }, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   setPlaatoKegValue(deviceId: string, key: string, value: number): Observable<any> {
-    const url = `${this.apiBaseUrl}/sensors/plaato_keg/${deviceId}/set/${key}`;
+    const url = `${this.apiBaseUrl}/devices/plaato_keg/${deviceId}/set/${key}`;
     return this.http.post<any>(url, { value: value.toString() }, httpOptions).pipe(catchError((err) => {return this.getError(err)}));
   }
 
@@ -429,9 +429,9 @@ export class DataService {
     return this.http.get<Beverage>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
   
-  getDashboardSensor(sensorId: string) : Observable<Sensor> {
-    const url = `${this.apiBaseUrl}/dashboard/sensors/${sensorId}`;
-    return this.http.get<Sensor>(url).pipe(catchError((err) => {return this.getError(err)}));
+  getDashboardTapMonitor(tapMonitorId: string) : Observable<TapMonitor> {
+    const url = `${this.apiBaseUrl}/dashboard/tap_monitors/${tapMonitorId}`;
+    return this.http.get<TapMonitor>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
   isAvailable() : Observable<any> {
