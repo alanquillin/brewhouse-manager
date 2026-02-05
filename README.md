@@ -1,4 +1,8 @@
-# Brewhouse Manager
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/img/logo-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./docs/img/logo-light.png">
+  <img alt="Fallback image description" src="./docs/img/logo-light.png">
+</picture>
 
 The Brewhouse Manager is an open source application designed for the home/micro brewer to help track what they have
 brewed and what they have on tap.  In order to make tracking your beer better, the Brewhouse Manager optionally
