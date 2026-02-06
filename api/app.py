@@ -4,8 +4,8 @@ import argparse
 import os
 import sys
 
-from lib.config import Config
 from lib import logging
+from lib.config import Config
 
 # Initialize configuration
 CONFIG = Config()
@@ -15,21 +15,23 @@ CONFIG.setup(config_files=["default.json"])
 logging.init(fmt=logging.DEFAULT_LOG_FMT)
 
 import asyncio
+
 import uvicorn
 
 from api import api
 
 LOGGER = logging.getLogger(__name__)
 
+
 class Application:
     """Main application class"""
-    
+
     def __init__(self, log_level: str = "INFO"):
         self.tcp_task = None
         self.http_server = None
         self.plaato_service = None
         self.log_level = log_level
-    
+
     async def initialize_first_user(self):
         """Create initial user if no users exist"""
         from db import async_session_scope
@@ -67,22 +69,19 @@ class Application:
         from lib.devices.plaato_keg import service_handler as plaato_service_handler
 
         self.plaato_service = plaato_service_handler
-        
+
         host = CONFIG.get("tap_monitors.plaato_keg.host", "localhost")
         port = CONFIG.get("tap_monitors.plaato_keg.port", 5001)
         LOGGER.info(f"Starting Plaato TCP server on {host}:{port}")
-        
-        self.tcp_task = asyncio.create_task(plaato_service_handler.connection_handler.start_server(
-            host=host,
-            port=port
-        ))
-        
+
+        self.tcp_task = asyncio.create_task(plaato_service_handler.connection_handler.start_server(host=host, port=port))
+
     async def start_http_server(self):
-        """Start the HTTP/WebSocket server"""        
+        """Start the HTTP/WebSocket server"""
         host = CONFIG.get("api.host", "localhost")
         port = CONFIG.get("api.port", 5000)
         LOGGER.info(f"Serving API on {host}:{port}")
-        
+
         config = uvicorn.Config(
             app=api,
             host=host,
@@ -94,7 +93,7 @@ class Application:
         )
         self.http_server = uvicorn.Server(config)
         await self.http_server.serve()
-        
+
     async def run(self):
         # Initialize first user if needed
         LOGGER.info("Checking for initial user...")
@@ -104,18 +103,18 @@ class Application:
         if start_plaato_service:
             LOGGER.info("Starting the Plaato TCP Service task...")
             await self.start_plaato_service()
-        
+
         try:
             await self.start_http_server()
         except asyncio.CancelledError:
             LOGGER.info("Application shutting down...")
         finally:
             await self.shutdown()
-            
+
     async def shutdown(self):
         """Cleanup on shutdown"""
         LOGGER.info("Shutting down application...")
-        
+
         if self.plaato_service and self.plaato_service.connection_handler:
             self.plaato_service.connection_handler.stop_server()
 
@@ -125,10 +124,10 @@ class Application:
                 await self.tcp_task
             except asyncio.CancelledError:
                 pass
-                
+
         if self.plaato_service:
             await self.plaato_service.connection_handler.stop_server()
-        
+
         LOGGER.info("Application shutdown complete")
 
 
@@ -149,7 +148,7 @@ if __name__ == "__main__":
     logging.set_log_level(logging_level)
 
     app_instance = Application(log_level=args.loglevel)
-    
+
     try:
         asyncio.run(app_instance.run())
     except KeyboardInterrupt:

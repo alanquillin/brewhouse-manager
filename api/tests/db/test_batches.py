@@ -1,7 +1,8 @@
 """Tests for db/batches.py module - Batches model"""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from db.batches import Batches
 
@@ -33,7 +34,8 @@ class TestBatchesModel:
 
     def test_inherits_mixins(self):
         """Test Batches inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, AuditedMixin, DictifiableMixin
+
         assert issubclass(Batches, DictifiableMixin)
         assert issubclass(Batches, AuditedMixin)
         assert issubclass(Batches, AsyncQueryMethodsMixin)

@@ -6,15 +6,15 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import AuthUser, get_db_session, require_user
 from db.tap_monitors import TapMonitors as TapMonitorsDB
 from db.taps import Taps as TapsDB
+from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging, util
 from lib.tap_monitors import InvalidDataType, get_tap_monitor_lib
 from lib.tap_monitors import get_types as get_tap_monitor_types
+from schemas.tap_monitors import TapMonitorBase, TapMonitorCreate, TapMonitorUpdate
 from services.base import transform_dict_to_camel_case
 from services.tap_monitors import TapMonitorService, TapMonitorTypeService
-from schemas.tap_monitors import TapMonitorCreate, TapMonitorUpdate, TapMonitorBase
 
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
@@ -57,16 +57,12 @@ async def discover_tap_monitors_by_type(
     """Discover tap monitors of a specific type"""
     allowed_types = [t["type"] for t in get_tap_monitor_types()]
     if monitor_type not in allowed_types:
-        raise HTTPException(
-            status_code=400, detail=f"Invalid monitor type: {monitor_type}"
-        )
+        raise HTTPException(status_code=400, detail=f"Invalid monitor type: {monitor_type}")
 
     tap_monitor_lib = get_tap_monitor_lib(monitor_type)
 
     if not tap_monitor_lib.supports_discovery():
-        raise HTTPException(
-            status_code=400, detail=f"{monitor_type} tap monitors do not support discovery"
-        )
+        raise HTTPException(status_code=400, detail=f"{monitor_type} tap monitors do not support discovery")
 
     data = await tap_monitor_lib.discover()
     return transform_dict_to_camel_case(data)
@@ -85,19 +81,14 @@ async def list_tap_monitors(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(
-                status_code=403, detail="Not authorized to access this location"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
         kwargs["locations"] = [location_id]
     elif not current_user.admin:
         kwargs["locations"] = current_user.locations
 
     tap_monitors = await TapMonitorsDB.query(db_session, **kwargs)
     include_tap_details = request.query_params.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
-    return [
-        await TapMonitorService.transform_response(s, db_session=db_session, include_tap=include_tap_details)
-        for s in tap_monitors
-    ]
+    return [await TapMonitorService.transform_response(s, db_session=db_session, include_tap=include_tap_details) for s in tap_monitors]
 
 
 @router.post("", response_model=dict)
@@ -122,9 +113,7 @@ async def create_tap_monitor(
 
     # Check authorization for location in body
     if not current_user.admin and data.get("location_id") not in current_user.locations:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to create tap monitor in this location"
-        )
+        raise HTTPException(status_code=403, detail="Not authorized to create tap monitor in this location")
 
     LOGGER.debug("Creating tap monitor with: %s", data)
     tap_monitor = await TapMonitorsDB.create(db_session, **data)
@@ -144,9 +133,7 @@ async def get_tap_monitor(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(
-                status_code=403, detail="Not authorized to access this location"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
 
     tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
     if not tap_monitor:
@@ -154,9 +141,7 @@ async def get_tap_monitor(
 
     # Check authorization
     if not current_user.admin and tap_monitor.location_id not in current_user.locations:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to access this tap monitor"
-        )
+        raise HTTPException(status_code=403, detail="Not authorized to access this tap monitor")
     include_tap_details = request.query_params.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
     return await TapMonitorService.transform_response(tap_monitor, db_session=db_session, include_tap=include_tap_details)
 
@@ -174,18 +159,14 @@ async def update_tap_monitor(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(
-                status_code=403, detail="Not authorized to access this location"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
 
     data = tap_monitor_data.model_dump(exclude_unset=True)
 
     location_id = data.get("location_id")
     if location_id:
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(
-                status_code=403, detail="Not authorized to add tap monitor in this location"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to add tap monitor in this location")
 
     tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
     if not tap_monitor:
@@ -193,9 +174,7 @@ async def update_tap_monitor(
 
     # Check authorization
     if not current_user.admin and tap_monitor.location_id not in current_user.locations:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to update this tap monitor"
-        )
+        raise HTTPException(status_code=403, detail="Not authorized to update this tap monitor")
 
     LOGGER.debug("Updating tap monitor %s with data: %s", tap_monitor_id, data)
 
@@ -221,9 +200,7 @@ async def delete_tap_monitor(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(
-                status_code=403, detail="Not authorized to access this location"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
 
     tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
     if not tap_monitor:
@@ -234,9 +211,7 @@ async def delete_tap_monitor(
         raise HTTPException(status_code=404, detail="Tap monitor not found")
 
     if not current_user.admin and tap_monitor.location_id not in current_user.locations:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to access this location"
-        )
+        raise HTTPException(status_code=403, detail="Not authorized to access this location")
 
     # update associated taps
     taps = await TapsDB.query(db_session, tap_monitor_id=tap_monitor_id)
@@ -301,8 +276,6 @@ async def get_specific_tap_monitor_data(
         try:
             return await tap_monitor_lib.get(data_type, monitor=tap_monitor, db_session=db_session)
         except InvalidDataType as ex:
-            raise HTTPException(
-                status_code=400, detail=f"Invalid data type: {data_type}"
-            )
+            raise HTTPException(status_code=400, detail=f"Invalid data type: {data_type}")
     except InvalidDataType as ex:
         raise HTTPException(status_code=400, detail=str(ex))

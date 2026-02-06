@@ -4,10 +4,11 @@ Handles UI routes and redirects.
 """
 
 import os
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse, RedirectResponse
 
-from dependencies.auth import get_optional_user, AuthUser
+from dependencies.auth import AuthUser, get_optional_user
 
 router = APIRouter(tags=["pages"], include_in_schema=False)
 

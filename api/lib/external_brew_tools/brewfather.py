@@ -1,13 +1,14 @@
 import base64
 
 import httpx
-from httpx import BasicAuth, AsyncClient, TimeoutException
+from httpx import AsyncClient, BasicAuth, TimeoutException
 
 from db import session_scope
 from db.batches import Batches as BatchesDB
 from db.beers import Beers as BeersDB
 from lib.external_brew_tools import ExternalBrewToolBase
 from lib.external_brew_tools.exceptions import ResourceNotFoundError
+
 
 class Brewfather(ExternalBrewToolBase):
     async def get_batch_details(self, batch_id=None, batch=None, meta=None):
@@ -56,7 +57,7 @@ class Brewfather(ExternalBrewToolBase):
             details["_refresh_reason"] = "The batch was not in a completed status: %s." % ", ".join(complete_statuses)
 
         return details
-    
+
     async def get_recipe_details(self, beer_id=None, beer=None, meta=None):
         if not beer_id and not beer and not meta:
             raise Exception("WTH!!")
@@ -67,17 +68,7 @@ class Brewfather(ExternalBrewToolBase):
                     beer = BeersDB.get_by_pkey(session, beer_id)
             meta = beer.external_brewing_tool_meta
 
-        fields = [
-            "measuredAbv",
-            "status",
-            "ibu",
-            "color",
-            "name",
-            "img_url",
-            "style.name",
-            "style.type",
-            "abv"
-        ]
+        fields = ["measuredAbv", "status", "ibu", "color", "name", "img_url", "style.name", "style.type", "abv"]
         recipe = await self._get_recipe(meta=meta, params={"include": ",".join(fields)})
 
         details = {
@@ -107,9 +98,9 @@ class Brewfather(ExternalBrewToolBase):
         data, status_code = await self._get(f"v2/batches/{batch_id}", meta, params=params)
         if status_code == 404:
             raise ResourceNotFoundError(batch_id)
-        
+
         return data
-    
+
     async def _get_recipes(self, meta=None):
         data, _ = await self._get(f"v2/recipes", meta)
         return data
@@ -123,9 +114,9 @@ class Brewfather(ExternalBrewToolBase):
         data, status_code = await self._get(f"v2/recipes/{recipe_id}", meta, params=params)
         if status_code == 404:
             raise ResourceNotFoundError(recipe_id)
-        
+
         return data
-    
+
     async def _get(self, path, meta, params=None):
         url = f"https://api.brewfather.app/{path}"
         self.logger.debug("GET Request: %s, params: %s", url, params)

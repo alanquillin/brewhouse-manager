@@ -38,7 +38,7 @@ class TapService:
         if tap.on_tap:
             from services.batches import BatchService
 
-            on_tap = tap.on_tap 
+            on_tap = tap.on_tap
             await on_tap.awaitable_attrs.batch
             batch = on_tap.batch
             data["batch"] = await BatchService.transform_response(batch, db_session=db_session, include_location=False)
@@ -49,11 +49,7 @@ class TapService:
                 from services.beers import BeerService
 
                 data["beer"] = await BeerService.transform_response(
-                    batch.beer,
-                    db_session=db_session,
-                    skip_meta_refresh=True,
-                    include_batches=False,
-                    include_location=False
+                    batch.beer, db_session=db_session, skip_meta_refresh=True, include_batches=False, include_location=False
                 )
                 data["beer_id"] = batch.beer_id
 

@@ -1,8 +1,9 @@
 """Tests for routers/locations.py module - Locations router"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import HTTPException
 
 
@@ -38,7 +39,7 @@ class TestGetLocationId:
         mock_session = AsyncMock()
         uuid_str = "123e4567-e89b-12d3-a456-426614174000"
 
-        with patch('routers.locations.util.is_valid_uuid', return_value=True):
+        with patch("routers.locations.util.is_valid_uuid", return_value=True):
             result = run_async(get_location_id(uuid_str, mock_session))
 
         assert result == uuid_str
@@ -50,8 +51,7 @@ class TestGetLocationId:
         mock_session = AsyncMock()
         mock_location = create_mock_location(id_="loc-abc")
 
-        with patch('routers.locations.util.is_valid_uuid', return_value=False), \
-             patch('routers.locations.LocationsDB') as mock_db:
+        with patch("routers.locations.util.is_valid_uuid", return_value=False), patch("routers.locations.LocationsDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[mock_location])
 
             result = run_async(get_location_id("Test Location", mock_session))
@@ -64,8 +64,7 @@ class TestGetLocationId:
 
         mock_session = AsyncMock()
 
-        with patch('routers.locations.util.is_valid_uuid', return_value=False), \
-             patch('routers.locations.LocationsDB') as mock_db:
+        with patch("routers.locations.util.is_valid_uuid", return_value=False), patch("routers.locations.LocationsDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[])
 
             result = run_async(get_location_id("Unknown", mock_session))
@@ -84,8 +83,7 @@ class TestListLocations:
         mock_session = AsyncMock()
         mock_location = create_mock_location()
 
-        with patch('routers.locations.LocationsDB') as mock_db, \
-             patch('routers.locations.LocationService') as mock_service:
+        with patch("routers.locations.LocationsDB") as mock_db, patch("routers.locations.LocationService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_location])
             mock_service.transform_response = AsyncMock(return_value={"id": "loc-1"})
 
@@ -103,8 +101,7 @@ class TestListLocations:
         mock_session = AsyncMock()
         mock_location = create_mock_location()
 
-        with patch('routers.locations.LocationsDB') as mock_db, \
-             patch('routers.locations.LocationService') as mock_service:
+        with patch("routers.locations.LocationsDB") as mock_db, patch("routers.locations.LocationService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_location])
             mock_service.transform_response = AsyncMock(return_value={"id": "loc-1"})
 
@@ -127,8 +124,7 @@ class TestCreateLocation:
         mock_location = create_mock_location()
         location_data = LocationCreate(name="New Location")
 
-        with patch('routers.locations.LocationsDB') as mock_db, \
-             patch('routers.locations.LocationService') as mock_service:
+        with patch("routers.locations.LocationsDB") as mock_db, patch("routers.locations.LocationService") as mock_service:
             mock_db.create = AsyncMock(return_value=mock_location)
             mock_service.transform_response = AsyncMock(return_value={"id": "loc-1", "name": "New Location"})
 
@@ -149,9 +145,9 @@ class TestGetLocation:
         mock_session = AsyncMock()
         mock_location = create_mock_location(id_="loc-1")
 
-        with patch('routers.locations.get_location_id', new_callable=AsyncMock) as mock_get_id, \
-             patch('routers.locations.LocationsDB') as mock_db, \
-             patch('routers.locations.LocationService') as mock_service:
+        with patch("routers.locations.get_location_id", new_callable=AsyncMock) as mock_get_id, patch("routers.locations.LocationsDB") as mock_db, patch(
+            "routers.locations.LocationService"
+        ) as mock_service:
             mock_get_id.return_value = "loc-1"
             mock_db.get_by_pkey = AsyncMock(return_value=mock_location)
             mock_service.transform_response = AsyncMock(return_value={"id": "loc-1"})
@@ -167,7 +163,7 @@ class TestGetLocation:
         mock_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.locations.get_location_id', new_callable=AsyncMock) as mock_get_id:
+        with patch("routers.locations.get_location_id", new_callable=AsyncMock) as mock_get_id:
             mock_get_id.return_value = None
 
             with pytest.raises(HTTPException) as exc_info:
@@ -182,8 +178,7 @@ class TestGetLocation:
         mock_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.locations.get_location_id', new_callable=AsyncMock) as mock_get_id, \
-             patch('routers.locations.LocationsDB') as mock_db:
+        with patch("routers.locations.get_location_id", new_callable=AsyncMock) as mock_get_id, patch("routers.locations.LocationsDB") as mock_db:
             mock_get_id.return_value = "loc-1"
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
@@ -200,8 +195,7 @@ class TestGetLocation:
         mock_session = AsyncMock()
         mock_location = create_mock_location(id_="loc-1")
 
-        with patch('routers.locations.get_location_id', new_callable=AsyncMock) as mock_get_id, \
-             patch('routers.locations.LocationsDB') as mock_db:
+        with patch("routers.locations.get_location_id", new_callable=AsyncMock) as mock_get_id, patch("routers.locations.LocationsDB") as mock_db:
             mock_get_id.return_value = "loc-1"
             mock_db.get_by_pkey = AsyncMock(return_value=mock_location)
 
@@ -218,9 +212,9 @@ class TestGetLocation:
         mock_session = AsyncMock()
         mock_location = create_mock_location(id_="loc-1")
 
-        with patch('routers.locations.get_location_id', new_callable=AsyncMock) as mock_get_id, \
-             patch('routers.locations.LocationsDB') as mock_db, \
-             patch('routers.locations.LocationService') as mock_service:
+        with patch("routers.locations.get_location_id", new_callable=AsyncMock) as mock_get_id, patch("routers.locations.LocationsDB") as mock_db, patch(
+            "routers.locations.LocationService"
+        ) as mock_service:
             mock_get_id.return_value = "loc-1"
             mock_db.get_by_pkey = AsyncMock(return_value=mock_location)
             mock_service.transform_response = AsyncMock(return_value={"id": "loc-1"})
@@ -243,9 +237,9 @@ class TestUpdateLocation:
         mock_location = create_mock_location(id_="loc-1")
         update_data = LocationUpdate(name="Updated Location")
 
-        with patch('routers.locations.get_location_id', new_callable=AsyncMock) as mock_get_id, \
-             patch('routers.locations.LocationsDB') as mock_db, \
-             patch('routers.locations.LocationService') as mock_service:
+        with patch("routers.locations.get_location_id", new_callable=AsyncMock) as mock_get_id, patch("routers.locations.LocationsDB") as mock_db, patch(
+            "routers.locations.LocationService"
+        ) as mock_service:
             mock_get_id.return_value = "loc-1"
             mock_db.get_by_pkey = AsyncMock(return_value=mock_location)
             mock_db.update = AsyncMock()
@@ -264,7 +258,7 @@ class TestUpdateLocation:
         mock_session = AsyncMock()
         update_data = LocationUpdate(name="Updated")
 
-        with patch('routers.locations.get_location_id', new_callable=AsyncMock) as mock_get_id:
+        with patch("routers.locations.get_location_id", new_callable=AsyncMock) as mock_get_id:
             mock_get_id.return_value = None
 
             with pytest.raises(HTTPException) as exc_info:
@@ -284,11 +278,9 @@ class TestDeleteLocation:
         mock_session = AsyncMock()
         mock_location = create_mock_location(id_="loc-1")
 
-        with patch('routers.locations.get_location_id', new_callable=AsyncMock) as mock_get_id, \
-             patch('routers.locations.LocationsDB') as mock_loc_db, \
-             patch('routers.locations.TapsDB') as mock_taps_db, \
-             patch('routers.locations.BatchLocationsDB') as mock_batch_loc_db, \
-             patch('routers.locations.UserLocationsDB') as mock_user_loc_db:
+        with patch("routers.locations.get_location_id", new_callable=AsyncMock) as mock_get_id, patch("routers.locations.LocationsDB") as mock_loc_db, patch(
+            "routers.locations.TapsDB"
+        ) as mock_taps_db, patch("routers.locations.BatchLocationsDB") as mock_batch_loc_db, patch("routers.locations.UserLocationsDB") as mock_user_loc_db:
             mock_get_id.return_value = "loc-1"
             mock_loc_db.get_by_pkey = AsyncMock(return_value=mock_location)
             mock_loc_db.delete = AsyncMock()
@@ -311,7 +303,7 @@ class TestDeleteLocation:
         mock_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.locations.get_location_id', new_callable=AsyncMock) as mock_get_id:
+        with patch("routers.locations.get_location_id", new_callable=AsyncMock) as mock_get_id:
             mock_get_id.return_value = None
 
             with pytest.raises(HTTPException) as exc_info:

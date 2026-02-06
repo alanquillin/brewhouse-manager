@@ -35,7 +35,6 @@ def random_string(length, include_uppercase=True, include_lowercase=True, includ
 
 
 def flatten_dict(data, parent_name="", sep=".", key_converter=None, skip_key_check=None):
-
     """
     Flattens a dictionary to a single layer with child keys separated by `sep` charactor
 

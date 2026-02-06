@@ -1,8 +1,9 @@
 """Tests for services/users.py module - User service"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 
 from services.users import UserService
 
@@ -78,7 +79,7 @@ class TestUserServiceTransformResponse:
         mock_user = create_mock_user(password_hash="secret_hash")
         mock_current = create_mock_current_user(admin=True)
 
-        with patch('services.users.transform_dict_to_camel_case', side_effect=lambda x: x):
+        with patch("services.users.transform_dict_to_camel_case", side_effect=lambda x: x):
             result = run_async(UserService.transform_response(mock_user, mock_current))
 
         assert "password_hash" not in result
@@ -88,7 +89,7 @@ class TestUserServiceTransformResponse:
         mock_user = create_mock_user(google_oidc_id="google-secret")
         mock_current = create_mock_current_user(admin=True)
 
-        with patch('services.users.transform_dict_to_camel_case', side_effect=lambda x: x):
+        with patch("services.users.transform_dict_to_camel_case", side_effect=lambda x: x):
             result = run_async(UserService.transform_response(mock_user, mock_current))
 
         assert "google_oidc_id" not in result
@@ -98,7 +99,7 @@ class TestUserServiceTransformResponse:
         mock_user = create_mock_user(password_hash="hashed")
         mock_current = create_mock_current_user(admin=True)
 
-        with patch('services.users.transform_dict_to_camel_case', side_effect=lambda x: x):
+        with patch("services.users.transform_dict_to_camel_case", side_effect=lambda x: x):
             result = run_async(UserService.transform_response(mock_user, mock_current))
 
         assert result["password_enabled"] is True
@@ -109,7 +110,7 @@ class TestUserServiceTransformResponse:
         mock_user.to_dict.return_value["password_hash"] = None
         mock_current = create_mock_current_user(admin=True)
 
-        with patch('services.users.transform_dict_to_camel_case', side_effect=lambda x: x):
+        with patch("services.users.transform_dict_to_camel_case", side_effect=lambda x: x):
             result = run_async(UserService.transform_response(mock_user, mock_current))
 
         assert result["password_enabled"] is False
@@ -119,7 +120,7 @@ class TestUserServiceTransformResponse:
         mock_user = create_mock_user(id_="other-user", api_key="secret-key")
         mock_current = create_mock_current_user(id_="admin-user", admin=True)
 
-        with patch('services.users.transform_dict_to_camel_case', side_effect=lambda x: x):
+        with patch("services.users.transform_dict_to_camel_case", side_effect=lambda x: x):
             result = run_async(UserService.transform_response(mock_user, mock_current))
 
         assert "api_key" in result
@@ -130,7 +131,7 @@ class TestUserServiceTransformResponse:
         mock_user = create_mock_user(id_="other-user", api_key="secret-key")
         mock_current = create_mock_current_user(id_="regular-user", admin=False)
 
-        with patch('services.users.transform_dict_to_camel_case', side_effect=lambda x: x):
+        with patch("services.users.transform_dict_to_camel_case", side_effect=lambda x: x):
             result = run_async(UserService.transform_response(mock_user, mock_current))
 
         assert "api_key" not in result
@@ -140,7 +141,7 @@ class TestUserServiceTransformResponse:
         mock_user = create_mock_user(id_="user-123", api_key="my-key")
         mock_current = create_mock_current_user(id_="user-123", admin=False)
 
-        with patch('services.users.transform_dict_to_camel_case', side_effect=lambda x: x):
+        with patch("services.users.transform_dict_to_camel_case", side_effect=lambda x: x):
             result = run_async(UserService.transform_response(mock_user, mock_current))
 
         assert "api_key" in result
@@ -152,8 +153,9 @@ class TestUserServiceTransformResponse:
         mock_user = create_mock_user(locations=[mock_location])
         mock_current = create_mock_current_user(admin=True)
 
-        with patch('services.users.transform_dict_to_camel_case', side_effect=lambda x: x), \
-             patch('services.locations.LocationService.transform_response', new_callable=AsyncMock) as mock_loc_transform:
+        with patch("services.users.transform_dict_to_camel_case", side_effect=lambda x: x), patch(
+            "services.locations.LocationService.transform_response", new_callable=AsyncMock
+        ) as mock_loc_transform:
             mock_loc_transform.return_value = {"id": "loc-1", "name": "test-loc"}
             result = run_async(UserService.transform_response(mock_user, mock_current))
 
@@ -166,7 +168,7 @@ class TestUserServiceTransformResponse:
         mock_user = create_mock_user(locations=[])
         mock_current = create_mock_current_user(admin=True)
 
-        with patch('services.users.transform_dict_to_camel_case', side_effect=lambda x: x):
+        with patch("services.users.transform_dict_to_camel_case", side_effect=lambda x: x):
             result = run_async(UserService.transform_response(mock_user, mock_current))
 
         assert "locations" in result

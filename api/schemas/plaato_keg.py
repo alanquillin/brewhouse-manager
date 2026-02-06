@@ -1,8 +1,10 @@
-from typing import List, Optional
-from pydantic import Field
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import Field
 
 from schemas.base import CamelCaseModel
+
 
 class PlaatoKegBase(CamelCaseModel):
     id: str
@@ -29,8 +31,8 @@ class PlaatoKegBase(CamelCaseModel):
     firmwareVersion: Optional[str] = None
     lastUpdatedOn: Optional[datetime] = None
     beerStyle: Optional[str] = None
-    unitMode: Optional[str] = None # Either weight or volume
-    unitType: Optional[str] = None# Either us or metric
+    unitMode: Optional[str] = None  # Either weight or volume
+    unitType: Optional[str] = None  # Either us or metric
     calculatedAbv: Optional[float] = None
     connected: Optional[bool] = None
     mode: Optional[str] = None

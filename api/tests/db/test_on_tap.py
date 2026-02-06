@@ -1,7 +1,8 @@
 """Tests for db/on_tap.py module - OnTap model"""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from db.on_tap import OnTap
 
@@ -23,7 +24,8 @@ class TestOnTapModel:
 
     def test_inherits_mixins(self):
         """Test OnTap inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, AuditedMixin, DictifiableMixin
+
         assert issubclass(OnTap, DictifiableMixin)
         assert issubclass(OnTap, AuditedMixin)
         assert issubclass(OnTap, AsyncQueryMethodsMixin)

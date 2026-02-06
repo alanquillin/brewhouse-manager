@@ -2,12 +2,12 @@
 _TABLE_NAME = "beverages"
 _PKEY = "id"
 
-from sqlalchemy import Column, Date, ForeignKey, Boolean, String, func
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy import Boolean, Column, Date, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail, locations
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, generate_audit_trail, locations
 from db.types.nested import NestedMutableDict
 from lib import UsefulEnum
 from lib.exceptions import InvalidExternalBrewingTool

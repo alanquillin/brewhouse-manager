@@ -1,9 +1,10 @@
 """Tests for db/audit.py module - Audit trail functionality"""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
-from db.audit import DataChanges, Audit, setup_trigger, FUNC_NAME
+import pytest
+
+from db.audit import FUNC_NAME, Audit, DataChanges, setup_trigger
 
 
 class TestDataChangesModel:
@@ -25,7 +26,8 @@ class TestDataChangesModel:
 
     def test_inherits_mixins(self):
         """Test DataChanges inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, QueryMethodsMixin
+        from db import AuditedMixin, DictifiableMixin, QueryMethodsMixin
+
         assert issubclass(DataChanges, DictifiableMixin)
         assert issubclass(DataChanges, AuditedMixin)
         assert issubclass(DataChanges, QueryMethodsMixin)
@@ -47,7 +49,8 @@ class TestAuditModel:
 
     def test_inherits_mixins(self):
         """Test Audit inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, QueryMethodsMixin
+        from db import AuditedMixin, DictifiableMixin, QueryMethodsMixin
+
         assert issubclass(Audit, DictifiableMixin)
         assert issubclass(Audit, AuditedMixin)
         assert issubclass(Audit, QueryMethodsMixin)
@@ -73,13 +76,15 @@ class TestSetupTrigger:
 
         # Capture the event listeners that get registered
         listeners = []
-        with patch('db.audit.event.listens_for') as mock_listens_for:
+        with patch("db.audit.event.listens_for") as mock_listens_for:
             # Make listens_for return a decorator that captures the function
             def capture_listener(target, event_name):
                 def decorator(fn):
                     listeners.append((target, event_name, fn))
                     return fn
+
                 return decorator
+
             mock_listens_for.side_effect = capture_listener
 
             setup_trigger(mock_table)
@@ -100,7 +105,7 @@ class TestSetupTrigger:
         mock_table.__tablename__ = "my_table"
         mock_table.__table__ = MagicMock()
 
-        with patch('db.audit.event.listens_for') as mock_listens_for:
+        with patch("db.audit.event.listens_for") as mock_listens_for:
             setup_trigger(mock_table)
             # The function creates trigger named "{table}_audit"
             # We can't easily test the SQL content but we can verify setup completes
@@ -115,20 +120,24 @@ class TestAuditTriggerSQL:
         # The create_audit_trigger function creates SQL that handles INSERT
         # We can verify the SQL template contains the right operations
         from db.audit import create_audit_trigger
+
         # This is an event handler, we just verify it exists
         assert callable(create_audit_trigger)
 
     def test_audit_function_handles_update(self):
         """Test that audit function SQL handles UPDATE operations"""
         from db.audit import create_audit_trigger
+
         assert callable(create_audit_trigger)
 
     def test_audit_function_handles_delete(self):
         """Test that audit function SQL handles DELETE operations"""
         from db.audit import create_audit_trigger
+
         assert callable(create_audit_trigger)
 
     def test_drop_audit_trigger_exists(self):
         """Test drop_audit_trigger function exists"""
         from db.audit import drop_audit_trigger
+
         assert callable(drop_audit_trigger)

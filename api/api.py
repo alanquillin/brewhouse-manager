@@ -2,20 +2,21 @@
 import os
 import uuid
 
-from lib.config import Config
-from lib import logging
-
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.exceptions import RequestValidationError
+from schema import SchemaError
+from sqlalchemy.exc import DataError, IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
-from sqlalchemy.exc import IntegrityError, DataError
-from schema import SchemaError
 
-#from resources.exceptions import UserMessageError
+from lib import logging
+from lib.config import Config
+
+# from resources.exceptions import UserMessageError
+
 
 class UserMessageError(Exception):
     def __init__(self, response_code, user_msg=None, server_msg=None):
@@ -23,6 +24,7 @@ class UserMessageError(Exception):
         self.server_msg = server_msg or self.user_msg
         self.response_code = response_code
         super().__init__()
+
 
 LOGGER = logging.getLogger(__name__)
 CONFIG = Config()
@@ -73,65 +75,45 @@ else:
 async def user_message_error_handler(request: Request, exc: UserMessageError):
     """Handle custom user message errors from resources"""
     LOGGER.exception(exc.server_msg)
-    return JSONResponse(
-        status_code=exc.response_code,
-        content={"message": exc.user_msg}
-    )
+    return JSONResponse(status_code=exc.response_code, content={"message": exc.user_msg})
 
 
 @api.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle Pydantic validation errors"""
-    return JSONResponse(
-        status_code=400,
-        content={"message": f"Validation error: {str(exc)}"}
-    )
+    return JSONResponse(status_code=400, content={"message": f"Validation error: {str(exc)}"})
 
 
 @api.exception_handler(IntegrityError)
 async def integrity_error_handler(request: Request, exc: IntegrityError):
     """Handle database integrity errors"""
     LOGGER.exception("Database integrity error:")
-    return JSONResponse(
-        status_code=400,
-        content={"message": "Database integrity error"}
-    )
+    return JSONResponse(status_code=400, content={"message": "Database integrity error"})
 
 
 @api.exception_handler(DataError)
 async def data_error_handler(request: Request, exc: DataError):
     """Handle database data errors"""
     LOGGER.exception("Database data error:")
-    return JSONResponse(
-        status_code=400,
-        content={"message": "Invalid data format"}
-    )
+    return JSONResponse(status_code=400, content={"message": "Invalid data format"})
 
 
 @api.exception_handler(SchemaError)
 async def schema_error_handler(request: Request, exc: SchemaError):
     """Handle schema validation errors"""
-    return JSONResponse(
-        status_code=400,
-        content={"message": f"Schema validation error: {str(exc)}"}
-    )
+    return JSONResponse(status_code=400, content={"message": f"Schema validation error: {str(exc)}"})
 
 
 @api.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
     """Catch-all exception handler"""
     LOGGER.exception("Unhandled exception while processing request:")
-    return JSONResponse(
-        status_code=500,
-        content={"message": "An unhandled error occurred while processing the request"}
-    )
+    return JSONResponse(status_code=500, content={"message": "An unhandled error occurred while processing the request"})
+
 
 @api.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request, exc: StarletteHTTPException):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"message": exc.detail}
-    )
+    return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
 
 
 # Health check endpoint
@@ -143,9 +125,21 @@ async def health_check():
 
 # Register routers
 from routers import (
-    auth, beers, beverages, batches, locations, tap_monitors, taps, users,
-    dashboard, assets, settings, external_brew_tools, image_transitions,
-    pages, plaato_keg
+    assets,
+    auth,
+    batches,
+    beers,
+    beverages,
+    dashboard,
+    external_brew_tools,
+    image_transitions,
+    locations,
+    pages,
+    plaato_keg,
+    settings,
+    tap_monitors,
+    taps,
+    users,
 )
 
 api.include_router(auth.router)
@@ -196,7 +190,4 @@ async def serve_spa(full_path: str):
         return FileResponse(index_path)
 
     # If no static directory exists, return 404
-    return JSONResponse(
-        status_code=404,
-        content={"message": "Not found"}
-    )
+    return JSONResponse(status_code=404, content={"message": "Not found"})

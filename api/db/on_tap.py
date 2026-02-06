@@ -2,12 +2,12 @@
 _TABLE_NAME = "on_tap"
 _PKEY = "id"
 
-from sqlalchemy import Column, ForeignKey, Integer, String, func, Date
+from sqlalchemy import Column, Date, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, batches, column_as_enum, generate_audit_trail
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, batches, column_as_enum, generate_audit_trail
 
 
 @generate_audit_trail
@@ -22,6 +22,4 @@ class OnTap(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
     batch = relationship(batches.Batches, backref=backref("OnTap", cascade="all,delete"))
 
-    __table_args__ = (
-        Index("ix_on_tap_batch_id", batch_id, unique=False),
-    )
+    __table_args__ = (Index("ix_on_tap_batch_id", batch_id, unique=False),)

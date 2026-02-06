@@ -1,8 +1,9 @@
 """Tests for routers/taps.py module - Taps router"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import HTTPException
 
 
@@ -48,21 +49,20 @@ class TestGetLocationId:
         mock_session = AsyncMock()
         uuid_str = "123e4567-e89b-12d3-a456-426614174000"
 
-        with patch('routers.taps.util.is_valid_uuid', return_value=True):
+        with patch("routers.taps.util.is_valid_uuid", return_value=True):
             result = run_async(get_location_id(uuid_str, mock_session))
 
         assert result == uuid_str
 
     def test_looks_up_by_name(self):
         """Test looks up location by name"""
-        from routers.taps import get_location_id
         from db.locations import Locations as LocationsDB
+        from routers.taps import get_location_id
 
         mock_session = AsyncMock()
         mock_location = MagicMock(id="loc-abc")
 
-        with patch('routers.taps.util.is_valid_uuid', return_value=False), \
-             patch.object(LocationsDB, 'query', new_callable=AsyncMock) as mock_query:
+        with patch("routers.taps.util.is_valid_uuid", return_value=False), patch.object(LocationsDB, "query", new_callable=AsyncMock) as mock_query:
             mock_query.return_value = [mock_location]
 
             result = run_async(get_location_id("Test Location", mock_session))
@@ -81,8 +81,7 @@ class TestListTaps:
         mock_session = AsyncMock()
         mock_tap = create_mock_tap()
 
-        with patch('routers.taps.TapsDB') as mock_db, \
-             patch('routers.taps.TapService') as mock_service:
+        with patch("routers.taps.TapsDB") as mock_db, patch("routers.taps.TapService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_tap])
             mock_service.transform_response = AsyncMock(return_value={"id": "tap-1"})
 
@@ -99,8 +98,7 @@ class TestListTaps:
         mock_session = AsyncMock()
         mock_tap = create_mock_tap()
 
-        with patch('routers.taps.TapsDB') as mock_db, \
-             patch('routers.taps.TapService') as mock_service:
+        with patch("routers.taps.TapsDB") as mock_db, patch("routers.taps.TapService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_tap])
             mock_service.transform_response = AsyncMock(return_value={"id": "tap-1"})
 
@@ -116,9 +114,9 @@ class TestListTaps:
         mock_session = AsyncMock()
         mock_tap = create_mock_tap()
 
-        with patch('routers.taps.get_location_id', new_callable=AsyncMock) as mock_get_loc, \
-             patch('routers.taps.TapsDB') as mock_db, \
-             patch('routers.taps.TapService') as mock_service:
+        with patch("routers.taps.get_location_id", new_callable=AsyncMock) as mock_get_loc, patch("routers.taps.TapsDB") as mock_db, patch(
+            "routers.taps.TapService"
+        ) as mock_service:
             mock_get_loc.return_value = "loc-1"
             mock_db.query = AsyncMock(return_value=[mock_tap])
             mock_service.transform_response = AsyncMock(return_value={"id": "tap-1"})
@@ -134,7 +132,7 @@ class TestListTaps:
         mock_auth_user = create_mock_auth_user(admin=False, locations=["loc-other"])
         mock_session = AsyncMock()
 
-        with patch('routers.taps.get_location_id', new_callable=AsyncMock) as mock_get_loc:
+        with patch("routers.taps.get_location_id", new_callable=AsyncMock) as mock_get_loc:
             mock_get_loc.return_value = "loc-1"
 
             with pytest.raises(HTTPException) as exc_info:
@@ -156,8 +154,7 @@ class TestCreateTap:
         mock_tap = create_mock_tap()
         tap_data = TapCreate(tap_number=1, location_id="loc-1")
 
-        with patch('routers.taps.TapsDB') as mock_db, \
-             patch('routers.taps.TapService') as mock_service:
+        with patch("routers.taps.TapsDB") as mock_db, patch("routers.taps.TapService") as mock_service:
             mock_db.create = AsyncMock(return_value=mock_tap)
             mock_service.transform_response = AsyncMock(return_value={"id": "tap-1"})
 
@@ -177,10 +174,9 @@ class TestCreateTap:
         mock_on_tap = MagicMock(id="on-tap-1")
         tap_data = TapCreate(tap_number=1, location_id="loc-1", batch_id="batch-1")
 
-        with patch('routers.taps.TapsDB') as mock_taps_db, \
-             patch('routers.taps.BatchesDB') as mock_batches_db, \
-             patch('routers.taps.OnTapDB') as mock_on_tap_db, \
-             patch('routers.taps.TapService') as mock_service:
+        with patch("routers.taps.TapsDB") as mock_taps_db, patch("routers.taps.BatchesDB") as mock_batches_db, patch(
+            "routers.taps.OnTapDB"
+        ) as mock_on_tap_db, patch("routers.taps.TapService") as mock_service:
             mock_batches_db.get_by_pkey = AsyncMock(return_value=mock_batch)
             mock_on_tap_db.create = AsyncMock(return_value=mock_on_tap)
             mock_taps_db.create = AsyncMock(return_value=mock_tap)
@@ -216,8 +212,7 @@ class TestGetTap:
         mock_session = AsyncMock()
         mock_tap = create_mock_tap(location_id="loc-1")
 
-        with patch('routers.taps.TapsDB') as mock_db, \
-             patch('routers.taps.TapService') as mock_service:
+        with patch("routers.taps.TapsDB") as mock_db, patch("routers.taps.TapService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_tap])
             mock_service.transform_response = AsyncMock(return_value={"id": "tap-1"})
 
@@ -232,7 +227,7 @@ class TestGetTap:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.taps.TapsDB') as mock_db:
+        with patch("routers.taps.TapsDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[])
 
             with pytest.raises(HTTPException) as exc_info:
@@ -248,7 +243,7 @@ class TestGetTap:
         mock_session = AsyncMock()
         mock_tap = create_mock_tap(location_id="loc-1")
 
-        with patch('routers.taps.TapsDB') as mock_db:
+        with patch("routers.taps.TapsDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[mock_tap])
 
             with pytest.raises(HTTPException) as exc_info:
@@ -270,8 +265,7 @@ class TestUpdateTap:
         mock_tap = create_mock_tap(location_id="loc-1")
         update_data = TapUpdate(tap_number=2)
 
-        with patch('routers.taps.TapsDB') as mock_db, \
-             patch('routers.taps.TapService') as mock_service:
+        with patch("routers.taps.TapsDB") as mock_db, patch("routers.taps.TapService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_tap])
             mock_db.update = AsyncMock()
             mock_db.get_by_pkey = AsyncMock(return_value=mock_tap)
@@ -290,7 +284,7 @@ class TestUpdateTap:
         mock_session = AsyncMock()
         update_data = TapUpdate(tap_number=2)
 
-        with patch('routers.taps.TapsDB') as mock_db:
+        with patch("routers.taps.TapsDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[])
 
             with pytest.raises(HTTPException) as exc_info:
@@ -310,7 +304,7 @@ class TestDeleteTap:
         mock_session = AsyncMock()
         mock_tap = create_mock_tap(location_id="loc-1", on_tap_id=None)
 
-        with patch('routers.taps.TapsDB') as mock_taps_db:
+        with patch("routers.taps.TapsDB") as mock_taps_db:
             mock_taps_db.query = AsyncMock(return_value=[mock_tap])
             mock_taps_db.delete = AsyncMock()
 
@@ -327,8 +321,7 @@ class TestDeleteTap:
         mock_session = AsyncMock()
         mock_tap = create_mock_tap(location_id="loc-1", on_tap_id="on-tap-1")
 
-        with patch('routers.taps.TapsDB') as mock_taps_db, \
-             patch('routers.taps.OnTapDB') as mock_on_tap_db:
+        with patch("routers.taps.TapsDB") as mock_taps_db, patch("routers.taps.OnTapDB") as mock_on_tap_db:
             mock_taps_db.query = AsyncMock(return_value=[mock_tap])
             mock_taps_db.delete = AsyncMock()
             mock_on_tap_db.delete = AsyncMock()
@@ -345,7 +338,7 @@ class TestDeleteTap:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.taps.TapsDB') as mock_db:
+        with patch("routers.taps.TapsDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[])
 
             with pytest.raises(HTTPException) as exc_info:
@@ -361,7 +354,7 @@ class TestDeleteTap:
         mock_session = AsyncMock()
         mock_tap = create_mock_tap(location_id="loc-1")
 
-        with patch('routers.taps.TapsDB') as mock_db:
+        with patch("routers.taps.TapsDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[mock_tap])
 
             with pytest.raises(HTTPException) as exc_info:

@@ -1,18 +1,18 @@
 """Beer router for FastAPI"""
 
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import AuthUser, get_db_session, require_admin
 from db.plaato_data import PlaatoData as PlaatoDataDB
+from dependencies.auth import AuthUser, get_db_session, require_admin
 from lib import logging, util
 from lib.devices.plaato_keg import service_handler
-from lib.devices.plaato_keg.command_writer import COMMAND_MAPP, sanitize_command, Commands
-from services.plaato_keg import PlaatoKegService
-from schemas.plaato_keg import PlaatoKegBase, PlaatoKegCreate, PlaatoKegUpdate
+from lib.devices.plaato_keg.command_writer import COMMAND_MAPP, Commands, sanitize_command
 from routers import StringValueRequest
+from schemas.plaato_keg import PlaatoKegBase, PlaatoKegCreate, PlaatoKegUpdate
+from services.plaato_keg import PlaatoKegService
 
 router = APIRouter(prefix="/api/v1/devices/plaato_keg", tags=["plaato_keg_device_management"])
 LOGGER = logging.getLogger(__name__)
@@ -32,12 +32,13 @@ async def list(
 
     return [await PlaatoKegService.transform_response(dev, db_session) for dev in devices]
 
+
 @router.post("", response_model=PlaatoKegBase)
 async def create_device(
     device_data: PlaatoKegCreate,
     current_user: AuthUser = Depends(require_admin),
     db_session: AsyncSession = Depends(get_db_session),
-):    
+):
     data = device_data.model_dump()
     data["id"] = util.random_string(32, include_uppercase=False)
 
@@ -55,7 +56,7 @@ async def list(
 
     return {
         "registered": service_handler.command_writer.connection_handler.get_registered_device_ids(),
-        "connections": service_handler.command_writer.connection_handler.get_connection_ids()
+        "connections": service_handler.command_writer.connection_handler.get_connection_ids(),
     }
 
 
@@ -79,7 +80,7 @@ async def update_device(
     device_data: PlaatoKegUpdate,
     current_user: AuthUser = Depends(require_admin),
     db_session: AsyncSession = Depends(get_db_session),
-):    
+):
     data = device_data.model_dump()
 
     LOGGER.debug(f"Updating plaato keg device {device_id} with: {data}")
@@ -102,7 +103,7 @@ async def get(
         raise HTTPException(status_code=404, detail="Plaato keg device not found")
 
     cnt = await PlaatoDataDB.delete(db_session, device_id)
-    
+
     return True if cnt else False
 
 
@@ -115,29 +116,28 @@ async def set_mode(
 ):
     if device_id not in service_handler.command_writer.connection_handler.get_registered_device_ids():
         raise HTTPException(status_code=400, detail=f"Plaato keg '{device_id}' not connected.  Cannot send commands to disconnected devices.")
-    
+
     dev = await PlaatoDataDB.get_by_pkey(db_session, device_id)
     if not dev:
         raise HTTPException(status_code=404, detail="Plaato keg device not found")
-    
+
     val = request.value.lower()
     if val not in ["beer", "co2"]:
         raise HTTPException(status_code=400, detail=f"Invalid mode '{val}'.  Must be either 'beer' or 'co2'.")
-    
+
     dev_data = await PlaatoKegService.transform_response(dev, db_session)
 
     if dev_data.get("mode") == val:
         LOGGER.info(f"Request for setting plaato keg device {device_id} mode to {val} is being ignored.... mode is already {val}")
         return True
-    
+
     command_writer = service_handler.command_writer
     cmd_val = "1"
     if val == "co2":
         cmd_val = "2"
-    
+
     await PlaatoDataDB.update(db_session, device_id, user_keg_mode_c02_beer=cmd_val)
     return await command_writer.send_command(device_id, Commands.SET_MODE, cmd_val)
-    
 
 
 @router.post("/{device_id}/set/unit_type", response_model=bool)
@@ -149,26 +149,24 @@ async def set_unit_type(
 ):
     if device_id not in service_handler.command_writer.connection_handler.get_registered_device_ids():
         raise HTTPException(status_code=400, detail=f"Plaato keg '{device_id}' not connected.  Cannot send commands to disconnected devices.")
-    
+
     dev = await PlaatoDataDB.get_by_pkey(db_session, device_id)
     if not dev:
         raise HTTPException(status_code=404, detail="Plaato keg device not found")
-    
+
     val = request.value.lower()
     if val not in ["us", "metric"]:
         raise HTTPException(status_code=400, detail=f"Invalid unit type/system '{val}'.  Must be either 'us' or 'metric'.")
-    
+
     dev_data = await PlaatoKegService.transform_response(dev, db_session)
 
     if dev_data.get("unitType") == val:
         LOGGER.info(f"Request for setting plaato keg device {device_id} unit type to {val} is being ignored.... unit type is already {val}")
         return True
-    
+
     command_writer = service_handler.command_writer
     unit_mode = dev_data.get("unitMode")
-    
-    
-    
+
     LOGGER.debug(f"Updating unit type to {val}.  Exiting unit type: {dev_data.get('unitType')}, unit mode: {unit_mode}")
     unit_val = "1"
     measure_unit_val = "1"
@@ -182,13 +180,14 @@ async def set_unit_type(
     elif unit_mode == "volume":
         unit_val = "1"
         measure_unit_val = "2"
-    
+
     LOGGER.debug("Setting: Unit = 01, measure_unit = 01")
     await PlaatoDataDB.update(db_session, device_id, user_unit=unit_val, user_measure_unit=measure_unit_val)
     await command_writer.send_command(device_id, Commands.SET_UNIT, unit_val)
     await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, measure_unit_val)
     return True
-    
+
+
 @router.post("/{device_id}/set/unit_mode", response_model=bool)
 async def set_unit_mode(
     device_id: str,
@@ -198,21 +197,21 @@ async def set_unit_mode(
 ):
     if device_id not in service_handler.command_writer.connection_handler.get_registered_device_ids():
         raise HTTPException(status_code=400, detail=f"Plaato keg '{device_id}' not connected.  Cannot send commands to disconnected devices.")
-    
+
     dev = await PlaatoDataDB.get_by_pkey(db_session, device_id)
     if not dev:
         raise HTTPException(status_code=404, detail="Plaato keg device not found")
-    
+
     val = request.value.lower()
     if val not in ["weight", "volume"]:
         raise HTTPException(status_code=400, detail=f"Invalid unit mode '{val}'.  Must be either 'weight' or 'volume'.")
-    
+
     dev_data = await PlaatoKegService.transform_response(dev, db_session)
 
     if dev_data.get("unitMode") == val:
         LOGGER.info(f"Request for setting plaato keg device {device_id} unit mode to {val} is being ignored.... unit mode is already {val}")
         return True
-    
+
     command_writer = service_handler.command_writer
     unit_type = dev_data.get("unitType")
     unit_val = "1"
@@ -224,15 +223,16 @@ async def set_unit_mode(
         else:
             unit_val = "1"
             measure_unit_val = "2"
-    
+
     elif unit_type == "us":
         unit_val = "2"
         measure_unit_val = "1"
-    
+
     await PlaatoDataDB.update(db_session, device_id, user_unit=unit_val, user_measure_unit=measure_unit_val)
     await command_writer.send_command(device_id, Commands.SET_UNIT, unit_val)
     await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, measure_unit_val)
     return True
+
 
 @router.post("/{device_id}/set/{key}", response_model=bool)
 async def set_value(
@@ -244,15 +244,15 @@ async def set_value(
 ):
     if device_id not in service_handler.command_writer.connection_handler.get_registered_device_ids():
         raise HTTPException(status_code=400, detail=f"Plaato keg '{device_id}' not connected.  Cannot send commands to disconnected devices.")
-    
+
     dev = await PlaatoDataDB.get_by_pkey(db_session, device_id)
     if not dev:
         raise HTTPException(status_code=404, detail="Plaato keg device not found")
-    
+
     key = key.lower()
     if key not in ["empty_keg_weight", "max_keg_volume"]:
         raise HTTPException(status_code=400, detail=f"Invalid keg data data key '{key}'")
-    
+
     command = sanitize_command(f"set_{key}")
     if command not in COMMAND_MAPP.keys():
         raise HTTPException(status_code=400, detail=f"Invalid keg command '{command}'")
@@ -261,11 +261,11 @@ async def set_value(
     val = None
     if request:
         val = request.value
-    
+
     LOGGER.debug(f"Attempting to send device command: {command}, data: {val}")
     try:
         return await command_writer.send_command(device_id, command, val)
     except Exception:
         LOGGER.error(f"An unhandled exception when writing command {command} to keg {device_id}", stack_info=True, exc_info=True)
-    
+
     return False

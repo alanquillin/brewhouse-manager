@@ -1,19 +1,12 @@
 """Tests for db/__init__.py module - Core database utilities and mixins"""
 
+from unittest.mock import MagicMock, PropertyMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
 from sqlalchemy.exc import IntegrityError
 
-from db import (
-    convert_exception,
-    DictifiableMixin,
-    DictMethodsMixin,
-    mergeable_fields,
-    _merge_into,
-    generate_db_enum,
-    Base,
-)
-from lib.exceptions import InvalidParameter, RequiredParameterNotFound, ItemAlreadyExists
+from db import Base, DictifiableMixin, DictMethodsMixin, _merge_into, convert_exception, generate_db_enum, mergeable_fields
+from lib.exceptions import InvalidParameter, ItemAlreadyExists, RequiredParameterNotFound
 
 
 class TestConvertException:
@@ -55,13 +48,14 @@ class TestDictifiableMixin:
 
     def test_to_dict_uses_inspection(self):
         """Test to_dict calls SQLAlchemy inspect"""
+
         class MockModel(DictifiableMixin):
             pass
 
         mock_instance = MockModel()
 
         # Verify the inspect function is called when to_dict is invoked
-        with patch('db.inspect') as mock_inspect:
+        with patch("db.inspect") as mock_inspect:
             mock_mapper = MagicMock()
             mock_mapper.all_orm_descriptors.items.return_value = []
             mock_inspect.return_value = mock_mapper
@@ -73,6 +67,7 @@ class TestDictifiableMixin:
 
     def test_json_repr_calls_to_dict(self):
         """Test _json_repr_ delegates to to_dict"""
+
         class MockModel(DictifiableMixin):
             def to_dict(self, *args, **kwargs):
                 return {"test": "value"}
@@ -88,6 +83,7 @@ class TestDictMethodsMixin:
 
     def test_get_existing_attribute(self):
         """Test get() with existing attribute"""
+
         class MockModel(DictMethodsMixin):
             name = "test_value"
 
@@ -96,6 +92,7 @@ class TestDictMethodsMixin:
 
     def test_get_missing_attribute_returns_default(self):
         """Test get() with missing attribute returns default"""
+
         class MockModel(DictMethodsMixin):
             pass
 
@@ -104,6 +101,7 @@ class TestDictMethodsMixin:
 
     def test_getitem(self):
         """Test __getitem__ returns attribute"""
+
         class MockModel(DictMethodsMixin):
             name = "test"
 
@@ -112,6 +110,7 @@ class TestDictMethodsMixin:
 
     def test_setitem(self):
         """Test __setitem__ sets attribute"""
+
         class MockModel(DictMethodsMixin):
             name = None
 
@@ -121,6 +120,7 @@ class TestDictMethodsMixin:
 
     def test_contains_true(self):
         """Test __contains__ returns True for existing attribute"""
+
         class MockModel(DictMethodsMixin):
             name = "test"
 
@@ -129,6 +129,7 @@ class TestDictMethodsMixin:
 
     def test_contains_false(self):
         """Test __contains__ returns False for missing attribute"""
+
         class MockModel(DictMethodsMixin):
             pass
 
@@ -141,6 +142,7 @@ class TestMergeableFieldsDecorator:
 
     def test_decorator_sets_fields_list(self):
         """Test decorator sets _mergeable_fields attribute"""
+
         @mergeable_fields("field1", "field2")
         class TestClass:
             pass
@@ -150,6 +152,7 @@ class TestMergeableFieldsDecorator:
 
     def test_decorator_with_no_fields(self):
         """Test decorator with no fields"""
+
         @mergeable_fields()
         class TestClass:
             pass
@@ -227,6 +230,7 @@ class TestBase:
     def test_base_has_async_attrs(self):
         """Test Base inherits from AsyncAttrs"""
         from sqlalchemy.ext.asyncio import AsyncAttrs
+
         assert issubclass(Base, AsyncAttrs)
 
 
@@ -237,14 +241,7 @@ class TestAuditColumns:
         """Test audit column names are defined"""
         from db import audit_column_names
 
-        expected = [
-            "created_app",
-            "created_user",
-            "created_on",
-            "updated_app",
-            "updated_user",
-            "updated_on"
-        ]
+        expected = ["created_app", "created_user", "created_on", "updated_app", "updated_user", "updated_on"]
         assert audit_column_names == expected
 
     def test_audit_columns_defined(self):

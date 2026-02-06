@@ -84,91 +84,84 @@ class BlynkMessage:
         if self.command == BlynkCommand.RESPONSE:
             return f"BlynkMessage(command=RESPONSE, msg_id={self.msg_id}, status={self.status}, body={self.body})"
         return f"BlynkMessage(command={self.command}, msg_id={self.msg_id}, length={self.length}, body={self.body})"
-    
+
     def __len__(self):
         if not self.length:
             return -1
-        
+
         return self.length
 
-    
+
 def decode(data: bytes) -> List[BlynkMessage]:
     """Decode Blynk protocol messages from binary data"""
     messages = []
     offset = 0
-    
+
     while offset < len(data):
         if len(data) - offset < 5:
             break
-            
+
         cmd = data[offset]
-        msg_id = struct.unpack('>H', data[offset+1:offset+3])[0]
-        length = struct.unpack('>H', data[offset+3:offset+5])[0]
-        
+        msg_id = struct.unpack(">H", data[offset + 1 : offset + 3])[0]
+        length = struct.unpack(">H", data[offset + 3 : offset + 5])[0]
+
         try:
             cmd_enum = BlynkCommand(cmd)
         except ValueError:
             cmd_enum = f"unknown_cmd_{cmd}"
-        
+
         if cmd_enum == BlynkCommand.RESPONSE:
             try:
                 status = BlynkStatus(length)
             except ValueError:
                 status = f"unknown_status_{length}"
-            
+
             body_start = offset + 5
             if body_start < len(data):
                 body = data[body_start:]
             else:
-                body = b''
-                
-            messages.append(BlynkMessage(
-                command=cmd_enum,
-                msg_id=msg_id,
-                status=status,
-                body=body
-            ))
+                body = b""
+
+            messages.append(BlynkMessage(command=cmd_enum, msg_id=msg_id, status=status, body=body))
             break
         else:
             body_start = offset + 5
             body_end = body_start + length
-            
+
             if body_end > len(data):
                 break
-                
+
             body = data[body_start:body_end]
-            
-            messages.append(BlynkMessage(
-                command=cmd_enum,
-                msg_id=msg_id,
-                length=length,
-                body=body
-            ))
-            
+
+            messages.append(BlynkMessage(command=cmd_enum, msg_id=msg_id, length=length, body=body))
+
             offset = body_end
-            
+
     return messages
 
-def encode_command(cmd: Union[BlynkCommand, int], msg_id: int, body: bytes = b'') -> bytes:
+
+def encode_command(cmd: Union[BlynkCommand, int], msg_id: int, body: bytes = b"") -> bytes:
     """Encode a Blynk command message"""
     if isinstance(cmd, BlynkCommand):
         cmd_byte = cmd.value
     else:
         cmd_byte = cmd
-        
-    length = len(body)
-    return struct.pack('>BHH', cmd_byte, msg_id, length) + body
 
-def encode_response(msg_id: int, status: Union[BlynkStatus, int], body: bytes = b'') -> bytes:
+    length = len(body)
+    return struct.pack(">BHH", cmd_byte, msg_id, length) + body
+
+
+def encode_response(msg_id: int, status: Union[BlynkStatus, int], body: bytes = b"") -> bytes:
     """Encode a Blynk response message"""
     if isinstance(status, BlynkStatus):
         status_value = status.value
     else:
         status_value = status
-        
+
     length = len(body)
-    return struct.pack('>BHHH', 0, msg_id, status_value, length) + body
+    return struct.pack(">BHHH", 0, msg_id, status_value, length) + body
+
 
 def response_success(msg_id: int = 1) -> bytes:
     """Generate a standard success response"""
-    return struct.pack('>BHH', 0, msg_id, BlynkStatus.SUCCESS.value)
+    return struct.pack(">BHH", 0, msg_id, BlynkStatus.SUCCESS.value)

@@ -1,8 +1,9 @@
 """Tests for routers/tap_monitors.py module - Tap monitors router"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import HTTPException
 
 
@@ -20,12 +21,7 @@ def create_mock_auth_user(id_="user-1", admin=False, locations=None):
     return mock
 
 
-def create_mock_tap_monitor(
-    id_="monitor-1",
-    name="Test Monitor",
-    monitor_type="plaato_keg",
-    location_id="loc-1"
-):
+def create_mock_tap_monitor(id_="monitor-1", name="Test Monitor", monitor_type="plaato_keg", location_id="loc-1"):
     """Helper to create mock tap monitor"""
     mock = MagicMock()
     mock.id = id_
@@ -52,21 +48,20 @@ class TestGetLocationId:
         mock_session = AsyncMock()
         uuid_str = "123e4567-e89b-12d3-a456-426614174000"
 
-        with patch('routers.tap_monitors.util.is_valid_uuid', return_value=True):
+        with patch("routers.tap_monitors.util.is_valid_uuid", return_value=True):
             result = run_async(get_location_id(uuid_str, mock_session))
 
         assert result == uuid_str
 
     def test_looks_up_by_name(self):
         """Test looks up location by name"""
-        from routers.tap_monitors import get_location_id
         from db.locations import Locations as LocationsDB
+        from routers.tap_monitors import get_location_id
 
         mock_session = AsyncMock()
         mock_location = MagicMock(id="loc-abc")
 
-        with patch('routers.tap_monitors.util.is_valid_uuid', return_value=False), \
-             patch.object(LocationsDB, 'query', new_callable=AsyncMock) as mock_query:
+        with patch("routers.tap_monitors.util.is_valid_uuid", return_value=False), patch.object(LocationsDB, "query", new_callable=AsyncMock) as mock_query:
             mock_query.return_value = [mock_location]
 
             result = run_async(get_location_id("Test Location", mock_session))
@@ -87,12 +82,13 @@ class TestListMonitorTypes:
             {"type": "kegtron", "name": "Kegtron"},
         ]
 
-        with patch('routers.tap_monitors.get_tap_monitor_types', return_value=mock_types), \
-             patch('routers.tap_monitors.TapMonitorTypeService') as mock_service:
-            mock_service.transform_response = AsyncMock(side_effect=[
-                {"type": "plaato_keg", "name": "Plaato Keg"},
-                {"type": "kegtron", "name": "Kegtron"},
-            ])
+        with patch("routers.tap_monitors.get_tap_monitor_types", return_value=mock_types), patch("routers.tap_monitors.TapMonitorTypeService") as mock_service:
+            mock_service.transform_response = AsyncMock(
+                side_effect=[
+                    {"type": "plaato_keg", "name": "Plaato Keg"},
+                    {"type": "kegtron", "name": "Kegtron"},
+                ]
+            )
 
             result = run_async(list_monitor_types(mock_auth_user))
 
@@ -124,9 +120,9 @@ class TestDiscoverTapMonitorsByType:
         mock_auth_user = create_mock_auth_user()
         mock_types = [{"type": "plaato_keg"}, {"type": "kegtron"}]
 
-        with patch('routers.tap_monitors.get_tap_monitor_types', return_value=mock_types), \
-             patch('routers.tap_monitors.get_tap_monitor_lib') as mock_get_lib, \
-             patch('routers.tap_monitors.transform_dict_to_camel_case') as mock_transform:
+        with patch("routers.tap_monitors.get_tap_monitor_types", return_value=mock_types), patch(
+            "routers.tap_monitors.get_tap_monitor_lib"
+        ) as mock_get_lib, patch("routers.tap_monitors.transform_dict_to_camel_case") as mock_transform:
             mock_lib = MagicMock()
             mock_lib.supports_discovery.return_value = True
             mock_lib.discover = AsyncMock(return_value=[{"id": "device-1"}])
@@ -144,7 +140,7 @@ class TestDiscoverTapMonitorsByType:
         mock_auth_user = create_mock_auth_user()
         mock_types = [{"type": "plaato_keg"}]
 
-        with patch('routers.tap_monitors.get_tap_monitor_types', return_value=mock_types):
+        with patch("routers.tap_monitors.get_tap_monitor_types", return_value=mock_types):
             with pytest.raises(HTTPException) as exc_info:
                 run_async(discover_tap_monitors_by_type("invalid_type", mock_auth_user))
 
@@ -157,8 +153,7 @@ class TestDiscoverTapMonitorsByType:
         mock_auth_user = create_mock_auth_user()
         mock_types = [{"type": "plaato_keg"}]
 
-        with patch('routers.tap_monitors.get_tap_monitor_types', return_value=mock_types), \
-             patch('routers.tap_monitors.get_tap_monitor_lib') as mock_get_lib:
+        with patch("routers.tap_monitors.get_tap_monitor_types", return_value=mock_types), patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
             mock_lib = MagicMock()
             mock_lib.supports_discovery.return_value = False
             mock_get_lib.return_value = mock_lib
@@ -181,8 +176,7 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db, \
-             patch('routers.tap_monitors.TapMonitorService') as mock_service:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -200,8 +194,7 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db, \
-             patch('routers.tap_monitors.TapMonitorService') as mock_service:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -218,18 +211,13 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db, \
-             patch('routers.tap_monitors.TapMonitorService') as mock_service:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
             run_async(list_tap_monitors(mock_request, None, mock_auth_user, mock_session))
 
-            mock_service.transform_response.assert_called_with(
-                mock_monitor,
-                db_session=mock_session,
-                include_tap=True
-            )
+            mock_service.transform_response.assert_called_with(mock_monitor, db_session=mock_session, include_tap=True)
 
 
 class TestCreateTapMonitor:
@@ -245,8 +233,7 @@ class TestCreateTapMonitor:
         mock_monitor = create_mock_tap_monitor()
         monitor_data = TapMonitorCreate(name="New Monitor", monitor_type="plaato_keg", location_id="loc-1")
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db, \
-             patch('routers.tap_monitors.TapMonitorService') as mock_service:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
             mock_db.create = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -281,8 +268,7 @@ class TestGetTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor(location_id="loc-1")
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db, \
-             patch('routers.tap_monitors.TapMonitorService') as mock_service:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -298,7 +284,7 @@ class TestGetTapMonitor:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -315,7 +301,7 @@ class TestGetTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor(location_id="loc-1")
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -337,8 +323,7 @@ class TestUpdateTapMonitor:
         mock_monitor = create_mock_tap_monitor(location_id="loc-1")
         update_data = TapMonitorUpdate(name="Updated Monitor")
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db, \
-             patch('routers.tap_monitors.TapMonitorService') as mock_service:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_db.update = AsyncMock()
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
@@ -356,7 +341,7 @@ class TestUpdateTapMonitor:
         mock_session = AsyncMock()
         update_data = TapMonitorUpdate(name="Updated")
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -376,8 +361,7 @@ class TestDeleteTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor(location_id="loc-1")
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_monitor_db, \
-             patch('routers.tap_monitors.TapsDB') as mock_taps_db:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_monitor_db, patch("routers.tap_monitors.TapsDB") as mock_taps_db:
             mock_monitor_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_monitor_db.delete = AsyncMock()
             mock_taps_db.query = AsyncMock(return_value=[])
@@ -396,8 +380,7 @@ class TestDeleteTapMonitor:
         mock_monitor = create_mock_tap_monitor(location_id="loc-1")
         mock_tap = MagicMock(id="tap-1")
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_monitor_db, \
-             patch('routers.tap_monitors.TapsDB') as mock_taps_db:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_monitor_db, patch("routers.tap_monitors.TapsDB") as mock_taps_db:
             mock_monitor_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_monitor_db.delete = AsyncMock()
             mock_taps_db.query = AsyncMock(return_value=[mock_tap])
@@ -415,7 +398,7 @@ class TestDeleteTapMonitor:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -434,8 +417,7 @@ class TestGetTapMonitorData:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor(monitor_type="plaato_keg")
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db, \
-             patch('routers.tap_monitors.get_tap_monitor_lib') as mock_get_lib:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_lib = MagicMock()
             mock_lib.get_all = AsyncMock(return_value={"percent_left": 75.5})
@@ -451,7 +433,7 @@ class TestGetTapMonitorData:
 
         mock_session = AsyncMock()
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -470,8 +452,7 @@ class TestGetSpecificTapMonitorData:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor(monitor_type="plaato_keg")
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db, \
-             patch('routers.tap_monitors.get_tap_monitor_lib') as mock_get_lib:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_lib = MagicMock()
             mock_lib.get = AsyncMock(return_value=75.5)
@@ -487,7 +468,7 @@ class TestGetSpecificTapMonitorData:
 
         mock_session = AsyncMock()
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -497,14 +478,13 @@ class TestGetSpecificTapMonitorData:
 
     def test_raises_400_for_invalid_data_type(self):
         """Test raises 400 for invalid data type"""
-        from routers.tap_monitors import get_specific_tap_monitor_data
         from lib.tap_monitors import InvalidDataType
+        from routers.tap_monitors import get_specific_tap_monitor_data
 
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor(monitor_type="plaato_keg")
 
-        with patch('routers.tap_monitors.TapMonitorsDB') as mock_db, \
-             patch('routers.tap_monitors.get_tap_monitor_lib') as mock_get_lib:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_lib = MagicMock()
             mock_lib.get = AsyncMock(side_effect=InvalidDataType("Invalid data type"))

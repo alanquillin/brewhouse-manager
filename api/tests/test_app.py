@@ -1,8 +1,9 @@
 """Tests for app.py module - Application entry point"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch, PropertyMock
 
 
 def run_async(coro):
@@ -15,6 +16,7 @@ def run_async(coro):
 def app_module():
     """Import api.app module"""
     import api.app as module
+
     return module
 
 
@@ -51,8 +53,7 @@ class TestApplicationInitializeFirstUser:
         app = app_module.Application()
         mock_user = MagicMock()
 
-        with patch('db.async_session_scope') as mock_scope, \
-             patch('db.users.Users') as mock_users_db:
+        with patch("db.async_session_scope") as mock_scope, patch("db.users.Users") as mock_users_db:
             mock_session = AsyncMock()
             mock_scope.return_value.__aenter__ = AsyncMock(return_value=mock_session)
             mock_scope.return_value.__aexit__ = AsyncMock(return_value=None)
@@ -66,9 +67,7 @@ class TestApplicationInitializeFirstUser:
         """Test creates initial user when no users exist"""
         app = app_module.Application()
 
-        with patch('db.async_session_scope') as mock_scope, \
-             patch('db.users.Users') as mock_users_db, \
-             patch.object(app_module, 'CONFIG') as mock_config:
+        with patch("db.async_session_scope") as mock_scope, patch("db.users.Users") as mock_users_db, patch.object(app_module, "CONFIG") as mock_config:
             mock_session = AsyncMock()
             mock_scope.return_value.__aenter__ = AsyncMock(return_value=mock_session)
             mock_scope.return_value.__aexit__ = AsyncMock(return_value=None)
@@ -93,9 +92,7 @@ class TestApplicationInitializeFirstUser:
         """Test creates initial user with password when set_password is true"""
         app = app_module.Application()
 
-        with patch('db.async_session_scope') as mock_scope, \
-             patch('db.users.Users') as mock_users_db, \
-             patch.object(app_module, 'CONFIG') as mock_config:
+        with patch("db.async_session_scope") as mock_scope, patch("db.users.Users") as mock_users_db, patch.object(app_module, "CONFIG") as mock_config:
             mock_session = AsyncMock()
             mock_scope.return_value.__aenter__ = AsyncMock(return_value=mock_session)
             mock_scope.return_value.__aexit__ = AsyncMock(return_value=None)
@@ -119,10 +116,9 @@ class TestApplicationInitializeFirstUser:
         """Test exits when no authentication method available"""
         app = app_module.Application()
 
-        with patch('db.async_session_scope') as mock_scope, \
-             patch('db.users.Users') as mock_users_db, \
-             patch.object(app_module, 'CONFIG') as mock_config, \
-             patch.object(app_module, 'sys') as mock_sys:
+        with patch("db.async_session_scope") as mock_scope, patch("db.users.Users") as mock_users_db, patch.object(
+            app_module, "CONFIG"
+        ) as mock_config, patch.object(app_module, "sys") as mock_sys:
             mock_session = AsyncMock()
             mock_scope.return_value.__aenter__ = AsyncMock(return_value=mock_session)
             mock_scope.return_value.__aexit__ = AsyncMock(return_value=None)
@@ -150,9 +146,9 @@ class TestApplicationStartPlaatoService:
         """Test starts Plaato TCP server"""
         app = app_module.Application()
 
-        with patch('lib.devices.plaato_keg.service_handler') as mock_handler, \
-             patch.object(app_module, 'CONFIG') as mock_config, \
-             patch('asyncio.create_task') as mock_create_task:
+        with patch("lib.devices.plaato_keg.service_handler") as mock_handler, patch.object(app_module, "CONFIG") as mock_config, patch(
+            "asyncio.create_task"
+        ) as mock_create_task:
             mock_config.get.side_effect = lambda key, default=None: {
                 "tap_monitors.plaato_keg.host": "0.0.0.0",
                 "tap_monitors.plaato_keg.port": 5001,
@@ -169,9 +165,9 @@ class TestApplicationStartPlaatoService:
         """Test uses default host and port when not configured"""
         app = app_module.Application()
 
-        with patch('lib.devices.plaato_keg.service_handler') as mock_handler, \
-             patch.object(app_module, 'CONFIG') as mock_config, \
-             patch('asyncio.create_task') as mock_create_task:
+        with patch("lib.devices.plaato_keg.service_handler") as mock_handler, patch.object(app_module, "CONFIG") as mock_config, patch(
+            "asyncio.create_task"
+        ) as mock_create_task:
             mock_config.get.side_effect = lambda key, default=None: default
             mock_handler.connection_handler.start_server = AsyncMock()
             mock_create_task.return_value = MagicMock()
@@ -179,10 +175,7 @@ class TestApplicationStartPlaatoService:
             run_async(app.start_plaato_service())
 
             # Should use defaults
-            mock_handler.connection_handler.start_server.assert_called_once_with(
-                host="localhost",
-                port=5001
-            )
+            mock_handler.connection_handler.start_server.assert_called_once_with(host="localhost", port=5001)
 
 
 class TestApplicationStartHttpServer:
@@ -192,9 +185,9 @@ class TestApplicationStartHttpServer:
         """Test starts uvicorn server with correct config"""
         app = app_module.Application(log_level="INFO")
 
-        with patch('api.app.CONFIG') as mock_config, \
-             patch('api.app.uvicorn.Config') as mock_uvicorn_config, \
-             patch('api.app.uvicorn.Server') as mock_uvicorn_server:
+        with patch("api.app.CONFIG") as mock_config, patch("api.app.uvicorn.Config") as mock_uvicorn_config, patch(
+            "api.app.uvicorn.Server"
+        ) as mock_uvicorn_server:
             mock_config.get.side_effect = lambda key, default=None: {
                 "api.host": "0.0.0.0",
                 "api.port": 8000,
@@ -216,9 +209,9 @@ class TestApplicationStartHttpServer:
         """Test uses default host and port when not configured"""
         app = app_module.Application()
 
-        with patch('api.app.CONFIG') as mock_config, \
-             patch('api.app.uvicorn.Config') as mock_uvicorn_config, \
-             patch('api.app.uvicorn.Server') as mock_uvicorn_server:
+        with patch("api.app.CONFIG") as mock_config, patch("api.app.uvicorn.Config") as mock_uvicorn_config, patch(
+            "api.app.uvicorn.Server"
+        ) as mock_uvicorn_server:
             mock_config.get.side_effect = lambda key, default=None: default
             mock_server_instance = MagicMock()
             mock_server_instance.serve = AsyncMock()
@@ -234,9 +227,9 @@ class TestApplicationStartHttpServer:
         """Test enables reload in development environment"""
         app = app_module.Application()
 
-        with patch('api.app.CONFIG') as mock_config, \
-             patch('api.app.uvicorn.Config') as mock_uvicorn_config, \
-             patch('api.app.uvicorn.Server') as mock_uvicorn_server:
+        with patch("api.app.CONFIG") as mock_config, patch("api.app.uvicorn.Config") as mock_uvicorn_config, patch(
+            "api.app.uvicorn.Server"
+        ) as mock_uvicorn_server:
             mock_config.get.side_effect = lambda key, default=None: {
                 "api.host": "localhost",
                 "api.port": 5000,
@@ -301,7 +294,7 @@ class TestApplicationRun:
         app.start_http_server = AsyncMock(side_effect=asyncio.CancelledError())
         app.shutdown = AsyncMock()
 
-        with patch('api.app.CONFIG') as mock_config:
+        with patch("api.app.CONFIG") as mock_config:
             mock_config.get.return_value = False
 
             run_async(app.run())
@@ -316,7 +309,7 @@ class TestApplicationRun:
         app.start_http_server = AsyncMock(side_effect=asyncio.CancelledError())
         app.shutdown = AsyncMock()
 
-        with patch('api.app.CONFIG') as mock_config:
+        with patch("api.app.CONFIG") as mock_config:
             mock_config.get.side_effect = lambda key, default=None: {
                 "tap_monitors.plaato_keg.enabled": True,
             }.get(key, default)
@@ -333,7 +326,7 @@ class TestApplicationRun:
         app.start_http_server = AsyncMock(side_effect=asyncio.CancelledError())
         app.shutdown = AsyncMock()
 
-        with patch('api.app.CONFIG') as mock_config:
+        with patch("api.app.CONFIG") as mock_config:
             mock_config.get.side_effect = lambda key, default=None: {
                 "tap_monitors.plaato_keg.enabled": False,
             }.get(key, default)
@@ -349,7 +342,7 @@ class TestApplicationRun:
         app.start_http_server = AsyncMock(side_effect=asyncio.CancelledError())
         app.shutdown = AsyncMock()
 
-        with patch('api.app.CONFIG') as mock_config:
+        with patch("api.app.CONFIG") as mock_config:
             mock_config.get.return_value = False
 
             run_async(app.run())
@@ -363,7 +356,7 @@ class TestApplicationRun:
         app.start_http_server = AsyncMock()
         app.shutdown = AsyncMock()
 
-        with patch('api.app.CONFIG') as mock_config:
+        with patch("api.app.CONFIG") as mock_config:
             mock_config.get.return_value = False
 
             run_async(app.run())

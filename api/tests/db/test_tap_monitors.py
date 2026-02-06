@@ -1,7 +1,8 @@
 """Tests for db/tap_monitors.py module - TapMonitors model"""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from db.tap_monitors import TapMonitors
 
@@ -24,7 +25,8 @@ class TestTapMonitorsModel:
 
     def test_inherits_mixins(self):
         """Test TapMonitors inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, AuditedMixin, DictifiableMixin
+
         assert issubclass(TapMonitors, DictifiableMixin)
         assert issubclass(TapMonitors, AuditedMixin)
         assert issubclass(TapMonitors, AsyncQueryMethodsMixin)
@@ -60,5 +62,6 @@ class TestTapMonitorsModel:
         """Test meta column uses JSONB type"""
         meta_col = next(c for c in TapMonitors.__table__.columns if c.name == "meta")
         from sqlalchemy.dialects.postgresql import JSONB
+
         # Check that it's JSONB based
         assert "JSONB" in str(meta_col.type)

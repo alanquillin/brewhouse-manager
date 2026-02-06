@@ -1,8 +1,9 @@
 """Tests for services/tap_monitors.py module - Tap monitor service"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 
 from services.tap_monitors import TapMonitorService, TapMonitorTypeService
 
@@ -54,11 +55,7 @@ class TestTapMonitorServiceTransformResponse:
         mock_monitor = create_mock_tap_monitor(name="My Monitor")
         mock_session = AsyncMock()
 
-        result = run_async(TapMonitorService.transform_response(
-            mock_monitor,
-            mock_session,
-            include_location=False
-        ))
+        result = run_async(TapMonitorService.transform_response(mock_monitor, mock_session, include_location=False))
 
         assert result is not None
         assert result["name"] == "My Monitor"
@@ -70,14 +67,10 @@ class TestTapMonitorServiceTransformResponse:
         mock_monitor = create_mock_tap_monitor(location=mock_location)
         mock_session = AsyncMock()
 
-        with patch('services.locations.LocationService.transform_response', new_callable=AsyncMock) as mock_loc:
+        with patch("services.locations.LocationService.transform_response", new_callable=AsyncMock) as mock_loc:
             mock_loc.return_value = {"id": "loc-1", "name": "Test Location"}
 
-            result = run_async(TapMonitorService.transform_response(
-                mock_monitor,
-                mock_session,
-                include_location=True
-            ))
+            result = run_async(TapMonitorService.transform_response(mock_monitor, mock_session, include_location=True))
 
         assert "location" in result
         assert result["location"]["name"] == "Test Location"
@@ -88,11 +81,7 @@ class TestTapMonitorServiceTransformResponse:
         mock_monitor = create_mock_tap_monitor(location=mock_location)
         mock_session = AsyncMock()
 
-        result = run_async(TapMonitorService.transform_response(
-            mock_monitor,
-            mock_session,
-            include_location=False
-        ))
+        result = run_async(TapMonitorService.transform_response(mock_monitor, mock_session, include_location=False))
 
         assert "location" not in result
 
@@ -102,17 +91,13 @@ class TestTapMonitorServiceTransformResponse:
         mock_session = AsyncMock()
         mock_tap = MagicMock(id="tap-1")
 
-        with patch('db.taps.Taps.query', new_callable=AsyncMock) as mock_taps_query, \
-             patch('services.taps.TapService.transform_response', new_callable=AsyncMock) as mock_tap_transform:
+        with patch("db.taps.Taps.query", new_callable=AsyncMock) as mock_taps_query, patch(
+            "services.taps.TapService.transform_response", new_callable=AsyncMock
+        ) as mock_tap_transform:
             mock_taps_query.return_value = [mock_tap]
             mock_tap_transform.return_value = {"id": "tap-1", "tapNumber": 1}
 
-            result = run_async(TapMonitorService.transform_response(
-                mock_monitor,
-                mock_session,
-                include_location=False,
-                include_tap=True
-            ))
+            result = run_async(TapMonitorService.transform_response(mock_monitor, mock_session, include_location=False, include_tap=True))
 
         assert "tap" in result
         assert result["tap"]["tapNumber"] == 1
@@ -122,15 +107,10 @@ class TestTapMonitorServiceTransformResponse:
         mock_monitor = create_mock_tap_monitor()
         mock_session = AsyncMock()
 
-        with patch('db.taps.Taps.query', new_callable=AsyncMock) as mock_taps_query:
+        with patch("db.taps.Taps.query", new_callable=AsyncMock) as mock_taps_query:
             mock_taps_query.return_value = []
 
-            result = run_async(TapMonitorService.transform_response(
-                mock_monitor,
-                mock_session,
-                include_location=False,
-                include_tap=True
-            ))
+            result = run_async(TapMonitorService.transform_response(mock_monitor, mock_session, include_location=False, include_tap=True))
 
         assert "tap" not in result
 

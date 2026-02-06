@@ -1,5 +1,6 @@
 from lib.exceptions import Error
 
+
 class ResourceNotFoundError(Error):
     resource_id = None
 

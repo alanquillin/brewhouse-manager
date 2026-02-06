@@ -1,9 +1,9 @@
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 from db import async_session_scope
 from db.plaato_data import PlaatoData as PlaatoDataDB
 from db.tap_monitors import TapMonitors as TapMonitorsDB
-from lib.tap_monitors import TapMonitorBase, InvalidDataType
+from lib.tap_monitors import InvalidDataType, TapMonitorBase
 
 KEYMAP = {
     "percent_beer_remaining": "percent_of_beer_left",

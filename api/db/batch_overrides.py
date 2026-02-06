@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, batches, generate_audit_trail
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, batches, generate_audit_trail
 
 
 @generate_audit_trail
@@ -22,6 +22,4 @@ class BatchOverrides(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixi
 
     batch = relationship(batches.Batches, backref=backref("BatchOverrides", cascade="all,delete"))
 
-    __table_args__ = (
-        Index("ix_batch_overrides_batch_id", batch_id, unique=False),
-    )
+    __table_args__ = (Index("ix_batch_overrides_batch_id", batch_id, unique=False),)

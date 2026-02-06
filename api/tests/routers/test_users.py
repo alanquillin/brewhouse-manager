@@ -1,8 +1,9 @@
 """Tests for routers/users.py module - Users router"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import HTTPException
 
 
@@ -52,8 +53,7 @@ class TestGetCurrentUser:
         mock_user = create_mock_user(id_="user-1")
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db, \
-             patch('routers.users.UserService') as mock_service:
+        with patch("routers.users.UsersDB") as mock_db, patch("routers.users.UserService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
             mock_service.transform_response = AsyncMock(return_value={"id": "user-1", "email": "test@example.com"})
 
@@ -69,7 +69,7 @@ class TestGetCurrentUser:
         mock_auth_user = create_mock_auth_user(id_="user-1")
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db:
+        with patch("routers.users.UsersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -90,13 +90,14 @@ class TestListUsers:
         mock_user2 = create_mock_user(id_="user-2")
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db, \
-             patch('routers.users.UserService') as mock_service:
+        with patch("routers.users.UsersDB") as mock_db, patch("routers.users.UserService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_user1, mock_user2])
-            mock_service.transform_response = AsyncMock(side_effect=[
-                {"id": "user-1"},
-                {"id": "user-2"},
-            ])
+            mock_service.transform_response = AsyncMock(
+                side_effect=[
+                    {"id": "user-1"},
+                    {"id": "user-2"},
+                ]
+            )
 
             result = run_async(list_users(mock_auth_user, mock_session))
 
@@ -116,8 +117,7 @@ class TestCreateUser:
         mock_session = AsyncMock()
         user_data = UserCreate(email="new@example.com", first_name="New", last_name="User")
 
-        with patch('routers.users.UsersDB') as mock_db, \
-             patch('routers.users.UserService') as mock_service:
+        with patch("routers.users.UsersDB") as mock_db, patch("routers.users.UserService") as mock_service:
             mock_db.create = AsyncMock(return_value=mock_user)
             mock_service.transform_response = AsyncMock(return_value={"id": "new-user", "email": "new@example.com"})
 
@@ -138,8 +138,7 @@ class TestGetUser:
         mock_user = create_mock_user(id_="user-2")
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db, \
-             patch('routers.users.UserService') as mock_service:
+        with patch("routers.users.UsersDB") as mock_db, patch("routers.users.UserService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
             mock_service.transform_response = AsyncMock(return_value={"id": "user-2"})
 
@@ -154,7 +153,7 @@ class TestGetUser:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db:
+        with patch("routers.users.UsersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -176,8 +175,7 @@ class TestUpdateUser:
         mock_session = AsyncMock()
         update_data = UserUpdate(first_name="Updated")
 
-        with patch('routers.users.UsersDB') as mock_db, \
-             patch('routers.users.UserService') as mock_service:
+        with patch("routers.users.UsersDB") as mock_db, patch("routers.users.UserService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
             mock_db.update = AsyncMock()
             mock_service.transform_response = AsyncMock(return_value={"id": "user-1", "firstName": "Updated"})
@@ -210,8 +208,7 @@ class TestUpdateUser:
         mock_session = AsyncMock()
         update_data = UserUpdate(first_name="Updated")
 
-        with patch('routers.users.UsersDB') as mock_db, \
-             patch('routers.users.UserService') as mock_service:
+        with patch("routers.users.UsersDB") as mock_db, patch("routers.users.UserService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
             mock_db.update = AsyncMock()
             mock_service.transform_response = AsyncMock(return_value={"id": "user-2"})
@@ -230,8 +227,7 @@ class TestUpdateUser:
         mock_session = AsyncMock()
         update_data = UserUpdate(admin=True)
 
-        with patch('routers.users.UsersDB') as mock_db, \
-             patch('routers.users.UserService') as mock_service:
+        with patch("routers.users.UsersDB") as mock_db, patch("routers.users.UserService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
             mock_db.update = AsyncMock()
             mock_service.transform_response = AsyncMock(return_value={"id": "user-1"})
@@ -254,7 +250,7 @@ class TestDeleteUser:
         mock_user = create_mock_user(id_="user-2")
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db:
+        with patch("routers.users.UsersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
             mock_db.delete = AsyncMock()
 
@@ -270,7 +266,7 @@ class TestDeleteUser:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db:
+        with patch("routers.users.UsersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -290,7 +286,7 @@ class TestGetUserApiKey:
         mock_user = create_mock_user(id_="user-1", api_key="my-api-key")
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db:
+        with patch("routers.users.UsersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
 
             result = run_async(get_user_api_key("user-1", mock_auth_user, mock_session))
@@ -317,7 +313,7 @@ class TestGetUserApiKey:
         mock_user = create_mock_user(id_="user-2", api_key="other-api-key")
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db:
+        with patch("routers.users.UsersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
 
             result = run_async(get_user_api_key("user-2", mock_auth_user, mock_session))
@@ -336,8 +332,7 @@ class TestGenerateUserApiKey:
         mock_user = create_mock_user(id_="user-1")
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db, \
-             patch('routers.users.uuid') as mock_uuid:
+        with patch("routers.users.UsersDB") as mock_db, patch("routers.users.uuid") as mock_uuid:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
             mock_db.update = AsyncMock()
             mock_uuid.uuid4.return_value = "new-uuid-key"
@@ -371,7 +366,7 @@ class TestDeleteUserApiKey:
         mock_user = create_mock_user(id_="user-1", api_key="old-key")
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db:
+        with patch("routers.users.UsersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
             mock_db.update = AsyncMock()
 
@@ -405,8 +400,7 @@ class TestGetUserLocations:
         mock_user = create_mock_user(id_="user-2", locations=[mock_location])
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db, \
-             patch('routers.users.LocationService') as mock_service:
+        with patch("routers.users.UsersDB") as mock_db, patch("routers.users.LocationService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
             mock_service.transform_response = AsyncMock(return_value={"id": "loc-1"})
 
@@ -421,7 +415,7 @@ class TestGetUserLocations:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.users.UsersDB') as mock_db:
+        with patch("routers.users.UsersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -443,8 +437,7 @@ class TestUpdateUserLocations:
         mock_session = AsyncMock()
         location_data = UserLocationsUpdate(location_ids=["loc-1", "loc-2"])
 
-        with patch('routers.users.UsersDB') as mock_db, \
-             patch('routers.users.UserLocationsDB') as mock_user_loc_db:
+        with patch("routers.users.UsersDB") as mock_db, patch("routers.users.UserLocationsDB") as mock_user_loc_db:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_user)
             mock_user_loc_db.delete_by = AsyncMock()
             mock_user_loc_db.create = AsyncMock()
@@ -464,7 +457,7 @@ class TestUpdateUserLocations:
         mock_session = AsyncMock()
         location_data = UserLocationsUpdate(location_ids=["loc-1"])
 
-        with patch('routers.users.UsersDB') as mock_db:
+        with patch("routers.users.UsersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:

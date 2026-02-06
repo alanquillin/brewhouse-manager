@@ -10,7 +10,7 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail, beers, beverages
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, beers, beverages, generate_audit_trail
 from db.types.nested import NestedMutableDict
 
 
@@ -26,5 +26,4 @@ class ImageTransitions(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMi
     beer = relationship(beers.Beers, backref=backref("Beers", cascade="all,delete"))
     beverage = relationship(beverages.Beverages, backref=backref("Beverages", cascade="all,delete"))
 
-
-    __table_args__ = (Index("ix_image_transition_beer_id", beer_id, unique=False),Index("ix_image_transition_beverage_id", beverage_id, unique=False))
+    __table_args__ = (Index("ix_image_transition_beer_id", beer_id, unique=False), Index("ix_image_transition_beverage_id", beverage_id, unique=False))

@@ -1,7 +1,7 @@
 """Pytest configuration for API tests"""
 
-import sys
 import os
+import sys
 
 # Set CONFIG_BASE_DIR before any imports that might trigger Config loading.
 # The default.json config file is at the project root's config/ directory.
@@ -64,6 +64,7 @@ def mock_logging(monkeypatch):
     # Patch the lib module's logging
     try:
         import lib
-        monkeypatch.setattr(lib, 'logging', MockLoggingModule())
+
+        monkeypatch.setattr(lib, "logging", MockLoggingModule())
     except (ImportError, AttributeError):
         pass

@@ -3,16 +3,16 @@
 import pytest
 
 from lib.util import (
-    camel_to_snake,
-    snake_to_camel,
-    random_string,
-    flatten_dict,
-    extract_email_domain,
-    str_to_bool,
-    dt_str_now,
     add_query_string,
+    camel_to_snake,
+    dt_str_now,
+    extract_email_domain,
+    flatten_dict,
     get_query_string_params_from_url,
     is_valid_uuid,
+    random_string,
+    snake_to_camel,
+    str_to_bool,
 )
 
 
@@ -109,23 +109,13 @@ class TestFlattenDict:
 
     def test_simple_flatten(self):
         """Test simple nested dict flattening"""
-        data = {
-            "a": {
-                "b": "value"
-            }
-        }
+        data = {"a": {"b": "value"}}
         result = flatten_dict(data)
         assert result == {"a.b": "value"}
 
     def test_deep_nesting(self):
         """Test deeply nested dict"""
-        data = {
-            "level1": {
-                "level2": {
-                    "level3": "deep_value"
-                }
-            }
-        }
+        data = {"level1": {"level2": {"level3": "deep_value"}}}
         result = flatten_dict(data)
         assert result == {"level1.level2.level3": "deep_value"}
 
@@ -149,10 +139,7 @@ class TestFlattenDict:
 
     def test_skip_key_check(self):
         """Test skip_key_check function"""
-        data = {
-            "flatten_me": {"nested": "value"},
-            "skip_me": {"nested": "value2"}
-        }
+        data = {"flatten_me": {"nested": "value"}, "skip_me": {"nested": "value2"}}
         result = flatten_dict(data, skip_key_check=lambda k: k == "skip_me")
         assert "flatten_me.nested" in result
         assert "skip_me" in result
@@ -160,12 +147,7 @@ class TestFlattenDict:
 
     def test_mixed_values(self):
         """Test dict with mixed nested and flat values"""
-        data = {
-            "flat": "value1",
-            "nested": {
-                "child": "value2"
-            }
-        }
+        data = {"flat": "value1", "nested": {"child": "value2"}}
         result = flatten_dict(data)
         assert result == {"flat": "value1", "nested.child": "value2"}
 

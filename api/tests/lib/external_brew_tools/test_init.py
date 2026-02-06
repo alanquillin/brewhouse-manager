@@ -1,7 +1,8 @@
 """Tests for lib/external_brew_tools/__init__.py module"""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 
 class TestExternalBrewTools:
@@ -33,8 +34,8 @@ class TestExternalBrewTools:
 class TestExternalBrewToolBase:
     """Tests for ExternalBrewToolBase class"""
 
-    @patch('lib.external_brew_tools.Config')
-    @patch('lib.external_brew_tools.logging')
+    @patch("lib.external_brew_tools.Config")
+    @patch("lib.external_brew_tools.logging")
     def test_init(self, mock_logging, mock_config):
         """Test ExternalBrewToolBase initialization"""
         from lib.external_brew_tools import ExternalBrewToolBase

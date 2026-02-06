@@ -1,10 +1,11 @@
 """Tests for lib/tap_monitors/plaato_blynk.py module"""
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from lib.tap_monitors.plaato_blynk import PlaatoBlynk
+import pytest
+
 from lib.tap_monitors import InvalidDataType
+from lib.tap_monitors.plaato_blynk import PlaatoBlynk
 
 
 class TestPlaatoBlynk:
@@ -20,7 +21,7 @@ class TestPlaatoBlynk:
         return config
 
     @pytest.fixture
-    @patch('lib.tap_monitors.plaato_blynk.TapMonitorBase.__init__')
+    @patch("lib.tap_monitors.plaato_blynk.TapMonitorBase.__init__")
     def monitor(self, mock_init, mock_config):
         """Create a PlaatoBlynk instance with mocked dependencies"""
         mock_init.return_value = None
@@ -45,7 +46,7 @@ class TestPlaatoBlynk:
         assert monitor._data_type_to_pin["beer_remaining_unit"] == "v74"
         assert monitor._data_type_to_pin["firmware_version"] == "v93"
 
-    @patch('lib.tap_monitors.plaato_blynk.requests')
+    @patch("lib.tap_monitors.plaato_blynk.requests")
     def test_get_success(self, mock_requests, monitor):
         """Test get with successful response"""
         mock_response = MagicMock()
@@ -59,7 +60,7 @@ class TestPlaatoBlynk:
         assert result == ["75.5"]
         mock_requests.get.assert_called_once()
 
-    @patch('lib.tap_monitors.plaato_blynk.requests')
+    @patch("lib.tap_monitors.plaato_blynk.requests")
     def test_get_invalid_data_type_raises(self, mock_requests, monitor):
         """Test get raises InvalidDataType for unknown data type"""
         meta = {"auth_token": "test_token"}
@@ -67,7 +68,7 @@ class TestPlaatoBlynk:
         with pytest.raises(InvalidDataType):
             monitor.get("unknown_data_type", meta=meta)
 
-    @patch('lib.tap_monitors.plaato_blynk.requests')
+    @patch("lib.tap_monitors.plaato_blynk.requests")
     def test_get_non_200_returns_empty_dict(self, mock_requests, monitor):
         """Test _get returns empty dict on non-200 response"""
         mock_response = MagicMock()
@@ -79,7 +80,7 @@ class TestPlaatoBlynk:
 
         assert result == {}
 
-    @patch('lib.tap_monitors.plaato_blynk.requests')
+    @patch("lib.tap_monitors.plaato_blynk.requests")
     def test_get_all(self, mock_requests, monitor):
         """Test get_all returns all data"""
         responses = [
@@ -108,7 +109,7 @@ class TestPlaatoBlynk:
         with pytest.raises(Exception):
             monitor.get_all()
 
-    @patch('lib.tap_monitors.plaato_blynk.requests')
+    @patch("lib.tap_monitors.plaato_blynk.requests")
     def test_get_url_construction(self, mock_requests, monitor):
         """Test _get constructs correct URL"""
         mock_response = MagicMock()

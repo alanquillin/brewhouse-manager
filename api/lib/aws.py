@@ -1,10 +1,10 @@
 import functools
 import uuid
 
+import boto3
+
 from lib import logging
 from lib.config import Config
-
-import boto3
 
 CONFIG = Config()
 

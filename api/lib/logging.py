@@ -11,8 +11,10 @@ DEFAULT_LOG_FMT = "%(levelname)-8s: %(asctime)-15s [%(name)s]: %(message)s"
 def get_log_level(log_level_str: str, default_level=INFO) -> int:
     return getattr(logging, log_level_str.upper(), default_level)
 
+
 def set_log_level(logging_level: int) -> None:
     logging.getLogger().setLevel(logging_level)
+
 
 def get_def_log_level(config, log_levels=None) -> str:
     if not log_levels:
@@ -21,10 +23,11 @@ def get_def_log_level(config, log_levels=None) -> str:
 
     return config.get("log_level", config.get("logging.level", default_log_level_fallback))
 
+
 def init(config=None, fmt=DEFAULT_LOG_FMT):
     if not config:
         config = Config()
-    
+
     log_levels = config.get("logging.levels", {})
     log_level = get_log_level(get_def_log_level(config, log_levels))
 

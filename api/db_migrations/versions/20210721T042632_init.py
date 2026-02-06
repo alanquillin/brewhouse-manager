@@ -1,10 +1,11 @@
 """init
 
 Revision ID: 068b0261c11f
-Revises: 
+Revises:
 Create Date: 2021-07-21 04:26:32.236176+01:00
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql

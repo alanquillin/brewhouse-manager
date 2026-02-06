@@ -1,8 +1,9 @@
 """Tests for routers/dashboard.py module - Dashboard router"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import HTTPException
 
 
@@ -62,7 +63,7 @@ class TestGetLocationId:
         mock_session = AsyncMock()
         uuid_str = "123e4567-e89b-12d3-a456-426614174000"
 
-        with patch('routers.dashboard.util.is_valid_uuid', return_value=True):
+        with patch("routers.dashboard.util.is_valid_uuid", return_value=True):
             result = run_async(get_location_id(uuid_str, mock_session))
 
         assert result == uuid_str
@@ -74,8 +75,7 @@ class TestGetLocationId:
         mock_session = AsyncMock()
         mock_location = create_mock_location(id_="loc-abc")
 
-        with patch('routers.dashboard.util.is_valid_uuid', return_value=False), \
-             patch('routers.dashboard.LocationsDB') as mock_db:
+        with patch("routers.dashboard.util.is_valid_uuid", return_value=False), patch("routers.dashboard.LocationsDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[mock_location])
 
             result = run_async(get_location_id("Test Location", mock_session))
@@ -88,8 +88,7 @@ class TestGetLocationId:
 
         mock_session = AsyncMock()
 
-        with patch('routers.dashboard.util.is_valid_uuid', return_value=False), \
-             patch('routers.dashboard.LocationsDB') as mock_db:
+        with patch("routers.dashboard.util.is_valid_uuid", return_value=False), patch("routers.dashboard.LocationsDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[])
 
             result = run_async(get_location_id("Unknown", mock_session))
@@ -107,8 +106,7 @@ class TestListDashboardLocations:
         mock_session = AsyncMock()
         mock_location = create_mock_location()
 
-        with patch('routers.dashboard.LocationsDB') as mock_db, \
-             patch('routers.dashboard.LocationService') as mock_service:
+        with patch("routers.dashboard.LocationsDB") as mock_db, patch("routers.dashboard.LocationService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_location])
             mock_service.transform_response = AsyncMock(return_value={"id": "loc-1"})
 
@@ -119,8 +117,9 @@ class TestListDashboardLocations:
 
     def test_no_auth_required(self):
         """Test that list_dashboard_locations has no auth dependency"""
-        from routers.dashboard import list_dashboard_locations
         import inspect
+
+        from routers.dashboard import list_dashboard_locations
 
         sig = inspect.signature(list_dashboard_locations)
         params = list(sig.parameters.keys())
@@ -139,8 +138,7 @@ class TestGetDashboardTap:
         mock_session = AsyncMock()
         mock_tap = create_mock_tap()
 
-        with patch('routers.dashboard.TapsDB') as mock_db, \
-             patch('routers.dashboard.TapService') as mock_service:
+        with patch("routers.dashboard.TapsDB") as mock_db, patch("routers.dashboard.TapService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_tap)
             mock_service.transform_response = AsyncMock(return_value={"id": "tap-1"})
 
@@ -154,7 +152,7 @@ class TestGetDashboardTap:
 
         mock_session = AsyncMock()
 
-        with patch('routers.dashboard.TapsDB') as mock_db:
+        with patch("routers.dashboard.TapsDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -173,8 +171,7 @@ class TestGetDashboardBeer:
         mock_session = AsyncMock()
         mock_beer = create_mock_beer()
 
-        with patch('routers.dashboard.BeersDB') as mock_db, \
-             patch('routers.dashboard.BeerService') as mock_service:
+        with patch("routers.dashboard.BeersDB") as mock_db, patch("routers.dashboard.BeerService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_beer)
             mock_service.transform_response = AsyncMock(return_value={"id": "beer-1"})
 
@@ -188,7 +185,7 @@ class TestGetDashboardBeer:
 
         mock_session = AsyncMock()
 
-        with patch('routers.dashboard.BeersDB') as mock_db:
+        with patch("routers.dashboard.BeersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -207,8 +204,7 @@ class TestGetDashboardBeverage:
         mock_session = AsyncMock()
         mock_beverage = create_mock_beverage()
 
-        with patch('routers.dashboard.BeveragesDB') as mock_db, \
-             patch('routers.dashboard.BeverageService') as mock_service:
+        with patch("routers.dashboard.BeveragesDB") as mock_db, patch("routers.dashboard.BeverageService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_beverage)
             mock_service.transform_response = AsyncMock(return_value={"id": "bev-1"})
 
@@ -222,7 +218,7 @@ class TestGetDashboardBeverage:
 
         mock_session = AsyncMock()
 
-        with patch('routers.dashboard.BeveragesDB') as mock_db:
+        with patch("routers.dashboard.BeveragesDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -241,8 +237,7 @@ class TestGetDashboardTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch('routers.dashboard.TapMonitorsDB') as mock_db, \
-             patch('routers.dashboard.TapMonitorService') as mock_service:
+        with patch("routers.dashboard.TapMonitorsDB") as mock_db, patch("routers.dashboard.TapMonitorService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -256,7 +251,7 @@ class TestGetDashboardTapMonitor:
 
         mock_session = AsyncMock()
 
-        with patch('routers.dashboard.TapMonitorsDB') as mock_db:
+        with patch("routers.dashboard.TapMonitorsDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -276,11 +271,9 @@ class TestGetDashboard:
         mock_location = create_mock_location(id_="loc-1")
         mock_tap = create_mock_tap()
 
-        with patch('routers.dashboard.get_location_id', new_callable=AsyncMock) as mock_get_loc, \
-             patch('routers.dashboard.LocationsDB') as mock_loc_db, \
-             patch('routers.dashboard.TapsDB') as mock_taps_db, \
-             patch('routers.dashboard.LocationService') as mock_loc_service, \
-             patch('routers.dashboard.TapService') as mock_tap_service:
+        with patch("routers.dashboard.get_location_id", new_callable=AsyncMock) as mock_get_loc, patch("routers.dashboard.LocationsDB") as mock_loc_db, patch(
+            "routers.dashboard.TapsDB"
+        ) as mock_taps_db, patch("routers.dashboard.LocationService") as mock_loc_service, patch("routers.dashboard.TapService") as mock_tap_service:
             mock_get_loc.return_value = "loc-1"
             mock_loc_db.query = AsyncMock(return_value=[mock_location])
             mock_loc_db.get_by_pkey = AsyncMock(return_value=mock_location)
@@ -301,7 +294,7 @@ class TestGetDashboard:
 
         mock_session = AsyncMock()
 
-        with patch('routers.dashboard.get_location_id', new_callable=AsyncMock) as mock_get_loc:
+        with patch("routers.dashboard.get_location_id", new_callable=AsyncMock) as mock_get_loc:
             mock_get_loc.return_value = None
 
             with pytest.raises(HTTPException) as exc_info:
@@ -317,11 +310,9 @@ class TestGetDashboard:
         mock_location = create_mock_location(id_="loc-1")
         mock_tap = create_mock_tap()
 
-        with patch('routers.dashboard.get_location_id', new_callable=AsyncMock) as mock_get_loc, \
-             patch('routers.dashboard.LocationsDB') as mock_loc_db, \
-             patch('routers.dashboard.TapsDB') as mock_taps_db, \
-             patch('routers.dashboard.LocationService') as mock_loc_service, \
-             patch('routers.dashboard.TapService') as mock_tap_service:
+        with patch("routers.dashboard.get_location_id", new_callable=AsyncMock) as mock_get_loc, patch("routers.dashboard.LocationsDB") as mock_loc_db, patch(
+            "routers.dashboard.TapsDB"
+        ) as mock_taps_db, patch("routers.dashboard.LocationService") as mock_loc_service, patch("routers.dashboard.TapService") as mock_tap_service:
             mock_get_loc.return_value = "loc-1"
             mock_loc_db.query = AsyncMock(return_value=[mock_location])
             mock_loc_db.get_by_pkey = AsyncMock(return_value=mock_location)

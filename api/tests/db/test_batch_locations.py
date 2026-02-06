@@ -1,7 +1,8 @@
 """Tests for db/batch_locations.py module - BatchLocations model"""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 # Import batches first to resolve circular dependency with batch_locations
 import db.batches  # noqa: F401 - needed to avoid circular import
@@ -24,7 +25,8 @@ class TestBatchLocationsModel:
 
     def test_inherits_mixins(self):
         """Test BatchLocations inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, AuditedMixin, DictifiableMixin
+
         assert issubclass(BatchLocations, DictifiableMixin)
         assert issubclass(BatchLocations, AuditedMixin)
         assert issubclass(BatchLocations, AsyncQueryMethodsMixin)

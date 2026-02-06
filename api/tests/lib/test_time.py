@@ -1,9 +1,10 @@
 """Tests for lib/time.py module"""
 
 import datetime
+
 import pytest
 
-from lib.time import parse_iso8601_utc, utcnow_aware, next_month
+from lib.time import next_month, parse_iso8601_utc, utcnow_aware
 
 
 class TestParseIso8601Utc:

@@ -7,6 +7,7 @@ from json import dump
 from json import dumps as _dumps
 from json import load, loads
 from uuid import UUID
+
 import simplejson
 
 from lib import UsefulEnum

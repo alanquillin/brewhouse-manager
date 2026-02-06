@@ -1,11 +1,12 @@
 """Tests for lib/tap_monitors/kegtron.py module"""
 
 import asyncio
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from lib.tap_monitors.kegtron import KegtronPro, MONITOR_TYPE
+import pytest
+
 from lib.tap_monitors.exceptions import TapMonitorDependencyError
+from lib.tap_monitors.kegtron import MONITOR_TYPE, KegtronPro
 
 
 # Helper to run async functions in sync tests
@@ -37,7 +38,7 @@ class TestKegtronPro:
         return config
 
     @pytest.fixture
-    @patch('lib.tap_monitors.kegtron.TapMonitorBase.__init__')
+    @patch("lib.tap_monitors.kegtron.TapMonitorBase.__init__")
     def monitor(self, mock_init, mock_config):
         """Create a KegtronPro instance with mocked dependencies"""
         mock_init.return_value = None
@@ -133,10 +134,10 @@ class TestKegtronPro:
                             "serialNum": "SN123",
                             "macAddr": "AA:BB:CC:DD:EE:FF",
                             "port0": {"volSize": 20000, "volStart": 20000, "volDisp": 5000},
-                        }
+                        },
                     }
                 }
-            }
+            },
         }
 
         result = monitor.parse_resp(api_response)
@@ -150,7 +151,7 @@ class TestKegtronPro:
         assert result["ports"][0]["num"] == 0
         assert result["ports"][0]["volSize"] == 20000
 
-    @patch('lib.tap_monitors.kegtron.AsyncClient')
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
     def test_get_success(self, mock_async_client, monitor):
         """Test _get with successful response"""
         api_response = {
@@ -164,7 +165,7 @@ class TestKegtronPro:
                         "config_readonly": {"portCount": 1, "port0": {}},
                     }
                 }
-            }
+            },
         }
 
         mock_response = MagicMock()
@@ -182,7 +183,7 @@ class TestKegtronPro:
 
         assert result["id"] == "dev1"
 
-    @patch('lib.tap_monitors.kegtron.AsyncClient')
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
     def test_get_401_raises_dependency_error(self, mock_async_client, monitor):
         """Test _get raises TapMonitorDependencyError on 401"""
         mock_response = MagicMock()
@@ -199,7 +200,7 @@ class TestKegtronPro:
         with pytest.raises(TapMonitorDependencyError):
             run_async(monitor._get(meta))
 
-    @patch('lib.tap_monitors.kegtron.AsyncClient')
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
     def test_get_percent_remaining(self, mock_async_client, monitor):
         """Test _get_percent_remaining calculates correctly"""
         api_response = {
@@ -210,13 +211,10 @@ class TestKegtronPro:
                         "online": True,
                         "ota": {},
                         "config": {"port0": {}},
-                        "config_readonly": {
-                            "portCount": 1,
-                            "port0": {"volSize": 20000, "volStart": 20000, "volDisp": 5000}
-                        },
+                        "config_readonly": {"portCount": 1, "port0": {"volSize": 20000, "volStart": 20000, "volDisp": 5000}},
                     }
                 }
-            }
+            },
         }
 
         mock_response = MagicMock()
@@ -235,7 +233,7 @@ class TestKegtronPro:
         # (20000 - 5000) / 20000 * 100 = 75%
         assert result == 75.0
 
-    @patch('lib.tap_monitors.kegtron.AsyncClient')
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
     def test_discover_with_customer_api_key(self, mock_async_client, monitor):
         """Test discover uses customer API key"""
         # Customer API response
@@ -250,14 +248,10 @@ class TestKegtronPro:
                         "online": True,
                         "ota": {},
                         "config": {"siteName": "Test Site", "port0": {}},
-                        "config_readonly": {
-                            "portCount": 1,
-                            "modelNum": "KT-100",
-                            "port0": {}
-                        },
+                        "config_readonly": {"portCount": 1, "modelNum": "KT-100", "port0": {}},
                     }
                 }
-            }
+            },
         }
 
         mock_response1 = MagicMock()
@@ -279,7 +273,7 @@ class TestKegtronPro:
         assert len(result) == 2
         assert result[0]["name"] == "Test Site"
 
-    @patch('lib.tap_monitors.kegtron.AsyncClient')
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
     def test_discover_401_raises_dependency_error(self, mock_async_client, monitor):
         """Test discover raises TapMonitorDependencyError on 401"""
         mock_response = MagicMock()

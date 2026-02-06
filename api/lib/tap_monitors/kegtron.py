@@ -1,13 +1,13 @@
 import base64
 
 import httpx
-from httpx import BasicAuth, AsyncClient
+from httpx import AsyncClient, BasicAuth
 
 from db import async_session_scope
 from db.tap_monitors import TapMonitors as TapMonitorsDB
 from lib.tap_monitors import TapMonitorBase
-from lib.units import from_ml
 from lib.tap_monitors.exceptions import TapMonitorDependencyError
+from lib.units import from_ml
 
 
 class KegtronBase(TapMonitorBase):
@@ -42,9 +42,7 @@ class KegtronPro(TapMonitorBase):
         }
 
         self.default_vol_unit = self.config.get("tap_monitors.preferred_vol_unit")
-        self.kegtron_customer_api_key = self.config.get(
-            "tap_monitors.kegtron.pro.auth.customer_api_key"
-        )
+        self.kegtron_customer_api_key = self.config.get("tap_monitors.kegtron.pro.auth.customer_api_key")
         self.kegtron_username = self.config.get("tap_monitors.kegtron.pro.auth.username")
         self.kegtron_password = self.config.get("tap_monitors.kegtron.pro.auth.password")
 
@@ -99,9 +97,7 @@ class KegtronPro(TapMonitorBase):
         start = port.get("volStart", 0)
         disp = port.get("volDisp", 0)
 
-        self.logger.debug(
-            f"serve data: max = {max}, start = {start}, dispensed = {disp}"
-        )
+        self.logger.debug(f"serve data: max = {max}, start = {start}, dispensed = {disp}")
         return max, start, disp
 
     def _get_from_key(self, key, meta, params=None):
@@ -125,9 +121,7 @@ class KegtronPro(TapMonitorBase):
         access_token = self._get_device_access_token(meta)
         params["access_token"] = access_token
         url = "https://mdash.net/api/v2/m/device"
-        self.logger.debug(
-            f"Retriving devive data for access token {access_token}. GET Request: {url}, params: {params}"
-        )
+        self.logger.debug(f"Retriving devive data for access token {access_token}. GET Request: {url}, params: {params}")
         async with AsyncClient() as client:
             resp = await client.get(url, params=params)
             self.logger.debug("GET response code: %s", resp.status_code)
@@ -201,14 +195,10 @@ class KegtronPro(TapMonitorBase):
         kwargs = {}
         url = "https://mdash.net/customer"
         if self.kegtron_customer_api_key:
-            self.logger.debug(
-                "Discovering kegtron pro devices - using customer api key auth"
-            )
+            self.logger.debug("Discovering kegtron pro devices - using customer api key auth")
             params["access_token"] = self.kegtron_customer_api_key
         else:
-            self.logger.debug(
-                "Discovering kegtron pro devices - using username/password auth"
-            )
+            self.logger.debug("Discovering kegtron pro devices - using username/password auth")
             kwargs["auth"] = BasicAuth(self.kegtron_username, self.kegtron_password)
 
         async with AsyncClient() as client:
@@ -238,9 +228,7 @@ class KegtronPro(TapMonitorBase):
 
             return devices
 
-    async def update_device(
-        self, data, monitor_id=None, monitor=None, meta=None, params=None
-    ):
+    async def update_device(self, data, monitor_id=None, monitor=None, meta=None, params=None):
         if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
@@ -255,15 +243,11 @@ class KegtronPro(TapMonitorBase):
             if k in self.supported_device_keys:
                 d_data[k] = v
             else:
-                self.warn(
-                    f"ignoring unsupported kegtron pro device data with key `{k}`"
-                )
+                self.warn(f"ignoring unsupported kegtron pro device data with key `{k}`")
         data = {"shadow": {"state": {"desired": {"config": d_data}}}}
         return await self._update(data, meta, params)
 
-    async def update_port(
-        self, port_num, data, monitor_id=None, monitor=None, meta=None, params=None
-    ):
+    async def update_port(self, port_num, data, monitor_id=None, monitor=None, meta=None, params=None):
         if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
@@ -281,13 +265,9 @@ class KegtronPro(TapMonitorBase):
             if k in self.supported_port_keys:
                 p_data[k] = v
             else:
-                self.warn(
-                    f"ignoring unsupported kegtron pro device data with key `{k}`"
-                )
+                self.warn(f"ignoring unsupported kegtron pro device data with key `{k}`")
 
-        data = {
-            "shadow": {"state": {"desired": {"config": {f"port{port_num}": p_data}}}}
-        }
+        data = {"shadow": {"state": {"desired": {"config": {f"port{port_num}": p_data}}}}}
         return await self._update(data, meta, params)
 
     async def _update(self, data, meta, params=None):

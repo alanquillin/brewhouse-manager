@@ -2,7 +2,7 @@
 
 import pytest
 
-from lib.units import to_ml, from_ml, to_g, from_g
+from lib.units import from_g, from_ml, to_g, to_ml
 
 
 class TestToMl:

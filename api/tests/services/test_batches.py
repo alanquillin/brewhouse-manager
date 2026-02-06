@@ -1,9 +1,10 @@
 """Tests for services/batches.py module - Batch service"""
 
 import asyncio
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from datetime import date, datetime, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from services.batches import BatchService
 
@@ -73,12 +74,7 @@ class TestBatchServiceTransformResponse:
         mock_batch = create_mock_batch(name="Test Batch")
         mock_session = AsyncMock()
 
-        result = run_async(BatchService.transform_response(
-            mock_batch,
-            mock_session,
-            skip_meta_refresh=True,
-            include_location=False
-        ))
+        result = run_async(BatchService.transform_response(mock_batch, mock_session, skip_meta_refresh=True, include_location=False))
 
         assert result is not None
         assert result["name"] == "Test Batch"
@@ -90,12 +86,7 @@ class TestBatchServiceTransformResponse:
         mock_batch = create_mock_batch(locations=[loc1, loc2])
         mock_session = AsyncMock()
 
-        result = run_async(BatchService.transform_response(
-            mock_batch,
-            mock_session,
-            skip_meta_refresh=True,
-            include_location=False
-        ))
+        result = run_async(BatchService.transform_response(mock_batch, mock_session, skip_meta_refresh=True, include_location=False))
 
         assert "locationIds" in result
         assert result["locationIds"] == ["loc-1", "loc-2"]
@@ -106,15 +97,10 @@ class TestBatchServiceTransformResponse:
         mock_batch = create_mock_batch(locations=[loc])
         mock_session = AsyncMock()
 
-        with patch('services.locations.LocationService.transform_response', new_callable=AsyncMock) as mock_loc:
+        with patch("services.locations.LocationService.transform_response", new_callable=AsyncMock) as mock_loc:
             mock_loc.return_value = {"id": "loc-1", "name": "Test Location"}
 
-            result = run_async(BatchService.transform_response(
-                mock_batch,
-                mock_session,
-                skip_meta_refresh=True,
-                include_location=True
-            ))
+            result = run_async(BatchService.transform_response(mock_batch, mock_session, skip_meta_refresh=True, include_location=True))
 
         assert "locations" in result
         assert len(result["locations"]) == 1
@@ -127,12 +113,7 @@ class TestBatchServiceTransformResponse:
         mock_batch.to_dict.return_value["brew_date"] = brew
         mock_session = AsyncMock()
 
-        result = run_async(BatchService.transform_response(
-            mock_batch,
-            mock_session,
-            skip_meta_refresh=True,
-            include_location=False
-        ))
+        result = run_async(BatchService.transform_response(mock_batch, mock_session, skip_meta_refresh=True, include_location=False))
 
         # Should be a timestamp (number)
         assert isinstance(result["brewDate"], float)
@@ -148,6 +129,7 @@ class TestBatchServiceCanUserSeeBatch:
 
         async def _awaitable():
             return []
+
         mock_batch.awaitable_attrs.locations = _awaitable()
 
         result = run_async(BatchService.can_user_see_batch(mock_user, batch=mock_batch))
@@ -161,6 +143,7 @@ class TestBatchServiceCanUserSeeBatch:
 
         async def _awaitable():
             return [loc]
+
         mock_batch.awaitable_attrs.locations = _awaitable()
 
         result = run_async(BatchService.can_user_see_batch(mock_user, batch=mock_batch))
@@ -174,6 +157,7 @@ class TestBatchServiceCanUserSeeBatch:
 
         async def _awaitable():
             return [loc]
+
         mock_batch.awaitable_attrs.locations = _awaitable()
 
         result = run_async(BatchService.can_user_see_batch(mock_user, batch=mock_batch))
@@ -183,20 +167,14 @@ class TestBatchServiceCanUserSeeBatch:
         """Test can use provided location_ids instead of batch"""
         mock_user = create_mock_user(admin=False, locations=["loc-1"])
 
-        result = run_async(BatchService.can_user_see_batch(
-            mock_user,
-            location_ids=["loc-1", "loc-2"]
-        ))
+        result = run_async(BatchService.can_user_see_batch(mock_user, location_ids=["loc-1", "loc-2"]))
         assert result is True
 
     def test_returns_false_for_empty_locations(self):
         """Test returns False when no locations"""
         mock_user = create_mock_user(admin=False, locations=["loc-1"])
 
-        result = run_async(BatchService.can_user_see_batch(
-            mock_user,
-            location_ids=[]
-        ))
+        result = run_async(BatchService.can_user_see_batch(mock_user, location_ids=[]))
         assert result is False
 
 
@@ -239,11 +217,7 @@ class TestBatchServiceVerifyExternalBrewToolBatch:
         """Test raises HTTPException when batch_id missing"""
         from fastapi import HTTPException
 
-        request_data = {
-            "name": "Test Batch",
-            "external_brewing_tool": "brewfather",
-            "external_brewing_tool_meta": {}
-        }
+        request_data = {"name": "Test Batch", "external_brewing_tool": "brewfather", "external_brewing_tool_meta": {}}
 
         with pytest.raises(HTTPException) as exc_info:
             run_async(BatchService.verify_and_update_external_brew_tool_batch(request_data))
@@ -254,14 +228,12 @@ class TestBatchServiceVerifyExternalBrewToolBatch:
     def test_raises_error_when_batch_not_found(self):
         """Test raises HTTPException when batch not found"""
         from fastapi import HTTPException
+
         from lib.external_brew_tools.exceptions import ResourceNotFoundError
 
-        request_data = {
-            "external_brewing_tool": "brewfather",
-            "external_brewing_tool_meta": {"batch_id": "123"}
-        }
+        request_data = {"external_brewing_tool": "brewfather", "external_brewing_tool_meta": {"batch_id": "123"}}
 
-        with patch('services.batches.get_external_brewing_tool') as mock_get_tool:
+        with patch("services.batches.get_external_brewing_tool") as mock_get_tool:
             mock_tool = MagicMock()
             mock_tool.get_batch_details = AsyncMock(side_effect=ResourceNotFoundError("Not found"))
             mock_get_tool.return_value = mock_tool
@@ -274,12 +246,9 @@ class TestBatchServiceVerifyExternalBrewToolBatch:
 
     def test_updates_metadata_on_success(self):
         """Test updates metadata when batch found"""
-        request_data = {
-            "external_brewing_tool": "brewfather",
-            "external_brewing_tool_meta": {"batch_id": "123"}
-        }
+        request_data = {"external_brewing_tool": "brewfather", "external_brewing_tool_meta": {"batch_id": "123"}}
 
-        with patch('services.batches.get_external_brewing_tool') as mock_get_tool:
+        with patch("services.batches.get_external_brewing_tool") as mock_get_tool:
             mock_tool = MagicMock()
             mock_tool.get_batch_details = AsyncMock(return_value={"status": "Fermenting"})
             mock_get_tool.return_value = mock_tool

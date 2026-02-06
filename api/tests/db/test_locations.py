@@ -1,8 +1,9 @@
 """Tests for db/locations.py module - Location model with name normalization"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 
 from db.locations import Locations
 
@@ -28,7 +29,8 @@ class TestLocationsModel:
 
     def test_inherits_mixins(self):
         """Test Locations inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, AuditedMixin, DictifiableMixin
+
         assert issubclass(Locations, DictifiableMixin)
         assert issubclass(Locations, AuditedMixin)
         assert issubclass(Locations, AsyncQueryMethodsMixin)
@@ -99,7 +101,7 @@ class TestLocationsCreate:
         """Test that create normalizes the name"""
         mock_session = AsyncMock()
 
-        with patch('db.AsyncQueryMethodsMixin.create', new_callable=AsyncMock) as mock_create:
+        with patch("db.AsyncQueryMethodsMixin.create", new_callable=AsyncMock) as mock_create:
             mock_create.return_value = MagicMock()
             run_async(Locations.create(mock_session, name="My Location"))
 
@@ -110,13 +112,9 @@ class TestLocationsCreate:
         """Test that create passes through other kwargs"""
         mock_session = AsyncMock()
 
-        with patch('db.AsyncQueryMethodsMixin.create', new_callable=AsyncMock) as mock_create:
+        with patch("db.AsyncQueryMethodsMixin.create", new_callable=AsyncMock) as mock_create:
             mock_create.return_value = MagicMock()
-            run_async(Locations.create(
-                mock_session,
-                name="My Location",
-                description="Test description"
-            ))
+            run_async(Locations.create(mock_session, name="My Location", description="Test description"))
 
             call_kwargs = mock_create.call_args[1]
             assert call_kwargs["description"] == "Test description"
@@ -129,7 +127,7 @@ class TestLocationsUpdate:
         """Test that update normalizes the name"""
         mock_session = AsyncMock()
 
-        with patch('db.AsyncQueryMethodsMixin.update', new_callable=AsyncMock) as mock_update:
+        with patch("db.AsyncQueryMethodsMixin.update", new_callable=AsyncMock) as mock_update:
             mock_update.return_value = 1
             run_async(Locations.update(mock_session, "loc-id", name="New Location"))
 
@@ -140,13 +138,9 @@ class TestLocationsUpdate:
         """Test that update works without name"""
         mock_session = AsyncMock()
 
-        with patch('db.AsyncQueryMethodsMixin.update', new_callable=AsyncMock) as mock_update:
+        with patch("db.AsyncQueryMethodsMixin.update", new_callable=AsyncMock) as mock_update:
             mock_update.return_value = 1
-            run_async(Locations.update(
-                mock_session,
-                "loc-id",
-                description="Updated description"
-            ))
+            run_async(Locations.update(mock_session, "loc-id", description="Updated description"))
 
             call_kwargs = mock_update.call_args[1]
             assert "name" not in call_kwargs

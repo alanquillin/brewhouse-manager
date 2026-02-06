@@ -1,19 +1,15 @@
 """Tests for command_writer module"""
 
-import struct
-import pytest
 import asyncio
+import struct
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
+
 from lib.devices.plaato_keg.blynk_protocol import BlynkCommand
+from lib.devices.plaato_keg.command_writer import COMMAND_MAPP, Commands, CommandWriter, command_from_pin, sanitize_command
 from lib.devices.plaato_keg.plaato_protocol import PlaatoPin
-from lib.devices.plaato_keg.command_writer import (
-    Commands,
-    COMMAND_MAPP,
-    sanitize_command,
-    command_from_pin,
-    CommandWriter,
-)
+
 
 # Helper to run async functions in sync tests
 def run_async(coro):
@@ -172,7 +168,7 @@ class TestCommandWriter:
         assert device_id == "device123"
 
         # Verify it's a valid Blynk HARDWARE command
-        cmd, msg_id, length = struct.unpack('>BHH', command_bytes[:5])
+        cmd, msg_id, length = struct.unpack(">BHH", command_bytes[:5])
         assert cmd == BlynkCommand.HARDWARE
 
     def test_send_command_set_mode(self, command_writer, mock_connection_handler):
@@ -259,7 +255,7 @@ class TestCommandWriterMessageIdSequence:
         msg_ids = []
         for call in mock_connection_handler.send_command_to_keg.call_args_list:
             command_bytes = call[0][1]
-            _, msg_id, _ = struct.unpack('>BHH', command_bytes[:5])
+            _, msg_id, _ = struct.unpack(">BHH", command_bytes[:5])
             msg_ids.append(msg_id)
 
         # All message IDs should be unique

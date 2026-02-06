@@ -5,14 +5,14 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import AuthUser, get_db_session, require_user, require_admin
 from db.batch_locations import BatchLocations as BatchLocationsDB
 from db.locations import Locations as LocationsDB
 from db.taps import Taps as TapsDB
 from db.user_locations import UserLocations as UserLocationsDB
+from dependencies.auth import AuthUser, get_db_session, require_admin, require_user
 from lib import logging, util
-from services.locations import LocationService
 from schemas.locations import LocationCreate, LocationUpdate
+from services.locations import LocationService
 
 router = APIRouter(prefix="/api/v1/locations", tags=["locations"])
 LOGGER = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ async def update_location(
 
     if data:
         await LocationsDB.update(db_session, location_id, **data)
-        
+
     loc = LocationsDB.get_by_pkey(db_session, location_id)
     return await LocationService.transform_response(loc, db_session=db_session)
 

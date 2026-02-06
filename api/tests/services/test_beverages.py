@@ -1,8 +1,9 @@
 """Tests for services/beverages.py module - Beverage service"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 
 from services.beverages import BeverageService
 
@@ -51,13 +52,9 @@ class TestBeverageServiceTransformResponse:
         mock_bev = create_mock_beverage(name="Apple Cider")
         mock_session = AsyncMock()
 
-        with patch('services.beverages.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beverages.ImageTransitionsDB") as mock_it_db:
             mock_it_db.query = AsyncMock(return_value=[])
-            result = run_async(BeverageService.transform_response(
-                mock_bev,
-                mock_session,
-                include_batches=False
-            ))
+            result = run_async(BeverageService.transform_response(mock_bev, mock_session, include_batches=False))
 
         assert result is not None
         assert result["name"] == "Apple Cider"
@@ -68,16 +65,13 @@ class TestBeverageServiceTransformResponse:
         mock_bev = create_mock_beverage(batches=[mock_batch])
         mock_session = AsyncMock()
 
-        with patch('services.beverages.ImageTransitionsDB') as mock_it_db, \
-             patch('services.batches.BatchService.transform_response', new_callable=AsyncMock) as mock_batch_transform:
+        with patch("services.beverages.ImageTransitionsDB") as mock_it_db, patch(
+            "services.batches.BatchService.transform_response", new_callable=AsyncMock
+        ) as mock_batch_transform:
             mock_it_db.query = AsyncMock(return_value=[])
             mock_batch_transform.return_value = {"id": "batch-1"}
 
-            result = run_async(BeverageService.transform_response(
-                mock_bev,
-                mock_session,
-                include_batches=True
-            ))
+            result = run_async(BeverageService.transform_response(mock_bev, mock_session, include_batches=True))
 
         assert "batches" in result
         assert len(result["batches"]) == 1
@@ -90,13 +84,9 @@ class TestBeverageServiceTransformResponse:
         mock_transition = MagicMock()
         mock_transition.to_dict.return_value = {"id": "it-1", "img_url": "http://example.com/img.jpg"}
 
-        with patch('services.beverages.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beverages.ImageTransitionsDB") as mock_it_db:
             mock_it_db.query = AsyncMock(return_value=[mock_transition])
-            result = run_async(BeverageService.transform_response(
-                mock_bev,
-                mock_session,
-                include_batches=False
-            ))
+            result = run_async(BeverageService.transform_response(mock_bev, mock_session, include_batches=False))
 
         assert "imageTransitions" in result
         assert len(result["imageTransitions"]) == 1
@@ -109,14 +99,9 @@ class TestBeverageServiceTransformResponse:
         mock_transition = MagicMock()
         mock_transition.to_dict.return_value = {"id": "it-provided"}
 
-        with patch('services.beverages.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beverages.ImageTransitionsDB") as mock_it_db:
             mock_it_db.query = AsyncMock(return_value=[])
-            result = run_async(BeverageService.transform_response(
-                mock_bev,
-                mock_session,
-                include_batches=False,
-                image_transitions=[mock_transition]
-            ))
+            result = run_async(BeverageService.transform_response(mock_bev, mock_session, include_batches=False, image_transitions=[mock_transition]))
 
         # Should NOT have queried DB since transitions were provided
         mock_it_db.query.assert_not_called()
@@ -141,13 +126,9 @@ class TestBeverageServiceProcessImageTransitions:
         mock_session = AsyncMock()
         transitions = [{"img_url": "http://example.com/img.jpg"}]
 
-        with patch('services.beverages.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beverages.ImageTransitionsDB") as mock_it_db:
             mock_it_db.create = AsyncMock(return_value=MagicMock())
-            result = run_async(BeverageService.process_image_transitions(
-                mock_session,
-                transitions,
-                beverage_id="bev-1"
-            ))
+            result = run_async(BeverageService.process_image_transitions(mock_session, transitions, beverage_id="bev-1"))
 
         mock_it_db.create.assert_called_once()
         assert len(result) == 1
@@ -157,12 +138,9 @@ class TestBeverageServiceProcessImageTransitions:
         mock_session = AsyncMock()
         transitions = [{"id": "it-1", "img_url": "http://example.com/new.jpg"}]
 
-        with patch('services.beverages.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beverages.ImageTransitionsDB") as mock_it_db:
             mock_it_db.update = AsyncMock(return_value=MagicMock())
-            result = run_async(BeverageService.process_image_transitions(
-                mock_session,
-                transitions
-            ))
+            result = run_async(BeverageService.process_image_transitions(mock_session, transitions))
 
         mock_it_db.update.assert_called_once()
 
@@ -171,13 +149,9 @@ class TestBeverageServiceProcessImageTransitions:
         mock_session = AsyncMock()
         transitions = [{"img_url": "http://example.com/img.jpg"}]
 
-        with patch('services.beverages.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beverages.ImageTransitionsDB") as mock_it_db:
             mock_it_db.create = AsyncMock(return_value=MagicMock())
-            run_async(BeverageService.process_image_transitions(
-                mock_session,
-                transitions,
-                beverage_id="bev-123"
-            ))
+            run_async(BeverageService.process_image_transitions(mock_session, transitions, beverage_id="bev-123"))
 
         call_kwargs = mock_it_db.create.call_args[1]
         assert call_kwargs["beverage_id"] == "bev-123"

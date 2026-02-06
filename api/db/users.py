@@ -3,12 +3,13 @@ _TABLE_NAME = "users"
 _PKEY = "id"
 
 from argon2 import PasswordHasher
-from sqlalchemy import Column, Boolean, String, func
+from sqlalchemy import Boolean, Column, String, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, joinedload
+from sqlalchemy.orm import joinedload, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, AsyncQueryMethodsMixin, generate_audit_trail, locations, user_locations
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail, locations, user_locations
+
 
 @generate_audit_trail
 class Users(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
@@ -28,14 +29,16 @@ class Users(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     locations = relationship(locations.Locations, secondary=user_locations.user_locations)
 
     __table_args__ = (
-        Index("ix_user_email", email, unique=True), 
+        Index("ix_user_email", email, unique=True),
         Index("ix_user_google_oidc_id", google_oidc_id, unique=True),
         Index("ix_user_api_key", api_key, unique=True),
     )
+
     @classmethod
     async def query(cls, session, **kwargs):
         def q_fn(q):
             return q.options(joinedload(Users.locations))
+
         res = await super().query(session, q_fn=q_fn, **kwargs)
         return res
 

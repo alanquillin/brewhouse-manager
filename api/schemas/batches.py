@@ -1,9 +1,11 @@
 """Pydantic schemas for batches"""
 
 from typing import List, Optional
+
 from pydantic import Field
 
 from schemas.base import CamelCaseModel
+
 
 class BatchBase(CamelCaseModel):
     beer_id: Optional[str] = None
@@ -28,6 +30,7 @@ class BatchBase(CamelCaseModel):
             ext_brew_tool_meta = self.transform_meta(ext_brew_tool_meta)
             data["external_brewing_tool_meta"] = ext_brew_tool_meta
         return data
+
 
 class BatchCreate(BatchBase):
     """Schema for creating a batch"""

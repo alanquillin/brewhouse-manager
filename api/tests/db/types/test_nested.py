@@ -1,15 +1,10 @@
 """Tests for db/types/nested.py module - JSONB change tracking utilities"""
 
-import pytest
 from unittest.mock import MagicMock
 
-from db.types.nested import (
-    TrackedObject,
-    TrackedDict,
-    TrackedList,
-    NestedMutableDict,
-    NestedMutableList,
-)
+import pytest
+
+from db.types.nested import NestedMutableDict, NestedMutableList, TrackedDict, TrackedList, TrackedObject
 
 
 class TestTrackedObject:
@@ -400,9 +395,11 @@ class TestDeepNesting:
         # Track that changed() was called on root
         original_changed = root.changed
         changed_called = []
+
         def track_changed():
             changed_called.append(True)
             original_changed()
+
         root.changed = track_changed
 
         # Modify deeply nested value

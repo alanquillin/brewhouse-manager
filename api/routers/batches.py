@@ -5,9 +5,10 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from dependencies.auth import AuthUser, get_db_session, require_user
-from db.batches import Batches as BatchesDB
+
 from db.batch_locations import BatchLocations as BatchLocationsDB
+from db.batches import Batches as BatchesDB
+from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
 from schemas.batches import BatchCreate, BatchUpdate
 from services.batches import BatchService
@@ -22,6 +23,7 @@ class BeerOrBeverageOnlyError(HTTPException):
             status_code=400,
             detail="You can only associate a beer or a beverage to the selected batch, not both",
         )
+
 
 @router.get("", response_model=List[dict])
 async def list_batches(
@@ -200,7 +202,7 @@ async def update_batch(
     if external_brewing_tool_meta and batch.external_brewing_tool_meta:
         data["external_brewing_tool_meta"] = {**batch.external_brewing_tool_meta, **external_brewing_tool_meta}
 
-    skip_meta_refresh=False
+    skip_meta_refresh = False
     # Merge external_brewing_tool_meta if both exist
     external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
     if external_brewing_tool_meta:

@@ -5,8 +5,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import AuthUser, get_db_session, require_user
 from db.beers import Beers as BeersDB
+from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
 from schemas.beers import BeerCreate, BeerResponse, BeerUpdate
 from services.beers import BeerService
@@ -25,9 +25,7 @@ async def list_beers(
     beers = await BeersDB.query(db_session)
     force_refresh = request.query_params.get("force_refresh", "false").lower() in ["true", "yes", "", "1"]
 
-    return [
-        await BeerService.transform_response(b, db_session=db_session, force_refresh=force_refresh) for b in beers
-    ]
+    return [await BeerService.transform_response(b, db_session=db_session, force_refresh=force_refresh) for b in beers]
 
 
 @router.post("", response_model=dict)
@@ -48,9 +46,7 @@ async def create_beer(
     # Process image transitions if provided
     image_transitions = None
     if beer_data.image_transitions:
-        image_transitions = await BeerService.process_image_transitions(
-            db_session, beer_data.image_transitions, beer_id=beer.id
-        )
+        image_transitions = await BeerService.process_image_transitions(db_session, beer_data.image_transitions, beer_id=beer.id)
 
     return await BeerService.transform_response(beer, db_session=db_session, image_transitions=image_transitions, skip_meta_refresh=True)
 
@@ -88,7 +84,7 @@ async def update_beer(
     # Extract data, excluding id and image_transitions
     data = beer_data.model_dump(exclude_unset=True, exclude={"id", "image_transitions"})
 
-    skip_meta_refresh=False
+    skip_meta_refresh = False
     # Merge external_brewing_tool_meta if both exist
     external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
     if external_brewing_tool_meta:
@@ -101,7 +97,7 @@ async def update_beer(
                 LOGGER.debug(f"beer ({beer_id}) external brew tool recipe id change details: old = {old_ext_recipe_id}, new = {new_ext_recipe_id}")
                 data = await BeerService.verify_and_update_external_brew_tool_recipe(data)
                 skip_meta_refresh = True
-    
+
     LOGGER.debug("Updating beer %s with data: %s", beer_id, data)
     # Update beer if there's data
     if data:
@@ -110,9 +106,7 @@ async def update_beer(
     # Process image transitions
     image_transitions = None
     if beer_data.image_transitions:
-        image_transitions = await BeerService.process_image_transitions(
-            db_session, beer_data.image_transitions, beer_id=beer_id
-        )
+        image_transitions = await BeerService.process_image_transitions(db_session, beer_data.image_transitions, beer_id=beer_id)
 
     # Fetch updated beer
     beer = await BeersDB.get_by_pkey(db_session, beer_id)

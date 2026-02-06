@@ -1,6 +1,7 @@
 """Tests for lib/__init__.py module (Singleton, ThreadSafeSingleton, UsefulEnum)"""
 
 import threading
+
 import pytest
 
 from lib import Singleton, ThreadSafeSingleton, UsefulEnum
@@ -16,6 +17,7 @@ class TestSingleton:
 
     def test_singleton_returns_same_instance(self):
         """Test that Singleton returns the same instance"""
+
         class MySingleton(metaclass=Singleton):
             def __init__(self, value=None):
                 self.value = value
@@ -28,6 +30,7 @@ class TestSingleton:
 
     def test_different_singleton_classes_have_different_instances(self):
         """Test that different singleton classes have independent instances"""
+
         class SingletonA(metaclass=Singleton):
             pass
 
@@ -49,6 +52,7 @@ class TestThreadSafeSingleton:
 
     def test_thread_safe_singleton_returns_same_instance(self):
         """Test that ThreadSafeSingleton returns the same instance"""
+
         class MyThreadSafeSingleton(metaclass=ThreadSafeSingleton):
             def __init__(self, value=None):
                 self.value = value
@@ -61,6 +65,7 @@ class TestThreadSafeSingleton:
 
     def test_thread_safe_singleton_concurrent_access(self):
         """Test that ThreadSafeSingleton works correctly with concurrent access"""
+
         class ConcurrentSingleton(metaclass=ThreadSafeSingleton):
             def __init__(self):
                 self.initialized = True
@@ -92,6 +97,7 @@ class TestUsefulEnum:
 
     def test_str_returns_value(self):
         """Test that __str__ returns the enum value"""
+
         class Color(UsefulEnum):
             RED = "red"
             BLUE = "blue"
@@ -101,6 +107,7 @@ class TestUsefulEnum:
 
     def test_eq_with_string(self):
         """Test equality comparison with string"""
+
         class Status(UsefulEnum):
             ACTIVE = "active"
             INACTIVE = "inactive"
@@ -111,6 +118,7 @@ class TestUsefulEnum:
 
     def test_eq_with_enum(self):
         """Test equality comparison with another enum"""
+
         class Status(UsefulEnum):
             ACTIVE = "active"
 
@@ -118,6 +126,7 @@ class TestUsefulEnum:
 
     def test_hash(self):
         """Test that enum values can be used in sets and dicts"""
+
         class Color(UsefulEnum):
             RED = "red"
             BLUE = "blue"
@@ -131,6 +140,7 @@ class TestUsefulEnum:
 
     def test_find_existing_value(self):
         """Test find() returns correct enum for existing value"""
+
         class Size(UsefulEnum):
             SMALL = "small"
             LARGE = "large"
@@ -140,6 +150,7 @@ class TestUsefulEnum:
 
     def test_find_invalid_value_raises(self):
         """Test find() raises InvalidEnum for invalid value"""
+
         class Size(UsefulEnum):
             SMALL = "small"
 
@@ -148,6 +159,7 @@ class TestUsefulEnum:
 
     def test_find_invalid_value_with_default(self):
         """Test find() returns default when raise_on_not_found=False"""
+
         class Size(UsefulEnum):
             SMALL = "small"
 
@@ -159,6 +171,7 @@ class TestUsefulEnum:
 
     def test_missing_raises_invalid_enum(self):
         """Test that creating enum with invalid value raises InvalidEnum"""
+
         class Size(UsefulEnum):
             SMALL = "small"
 

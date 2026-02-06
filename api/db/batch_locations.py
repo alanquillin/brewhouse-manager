@@ -7,7 +7,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import audit_columns, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail, batches, locations, AuditedMixin
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, audit_columns, batches, generate_audit_trail, locations
+
 
 @generate_audit_trail
 class BatchLocations(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
@@ -19,7 +20,4 @@ class BatchLocations(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixi
     batch = relationship("Batches", backref=backref("BatchLocations", cascade="all,delete"))
     location = relationship(locations.Locations, backref=backref("BatchLocations", cascade="all,delete"))
 
-    __table_args__ = (
-        Index("ix_locations_batch_id", batch_id, unique=False), 
-        Index("ix_locations_batch_id_location_id", batch_id, location_id, unique=True)
-    )
+    __table_args__ = (Index("ix_locations_batch_id", batch_id, unique=False), Index("ix_locations_batch_id_location_id", batch_id, location_id, unique=True))

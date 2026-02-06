@@ -1,11 +1,12 @@
 """Tests for lib/tap_monitors/plaato_keg.py module"""
 
 import asyncio
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from lib.tap_monitors.plaato_keg import PlaatoKeg, KEYMAP
+import pytest
+
 from lib.tap_monitors import InvalidDataType
+from lib.tap_monitors.plaato_keg import KEYMAP, PlaatoKeg
 
 
 # Helper to run async functions in sync tests
@@ -34,7 +35,7 @@ class TestPlaatoKeg:
         return config
 
     @pytest.fixture
-    @patch('lib.tap_monitors.plaato_keg.TapMonitorBase.__init__')
+    @patch("lib.tap_monitors.plaato_keg.TapMonitorBase.__init__")
     def monitor(self, mock_init, mock_config):
         """Create a PlaatoKeg instance with mocked dependencies"""
         mock_init.return_value = None
@@ -47,17 +48,12 @@ class TestPlaatoKeg:
         """Test supports_discovery returns True"""
         assert monitor.supports_discovery() is True
 
-    @patch('lib.tap_monitors.plaato_keg.PlaatoDataDB')
-    @patch('lib.tap_monitors.plaato_keg.async_session_scope')
+    @patch("lib.tap_monitors.plaato_keg.PlaatoDataDB")
+    @patch("lib.tap_monitors.plaato_keg.async_session_scope")
     def test_get_success(self, mock_session_scope, mock_plaato_db, monitor):
         """Test get with successful data retrieval"""
         mock_data = MagicMock()
-        mock_data.to_dict.return_value = {
-            "percent_of_beer_left": 75.5,
-            "amount_left": 10.5,
-            "beer_left_unit": "L",
-            "firmware_version": "1.2.3"
-        }
+        mock_data.to_dict.return_value = {"percent_of_beer_left": 75.5, "amount_left": 10.5, "beer_left_unit": "L", "firmware_version": "1.2.3"}
         mock_plaato_db.get_by_pkey = AsyncMock(return_value=mock_data)
 
         meta = {"device_id": "device123"}
@@ -65,7 +61,7 @@ class TestPlaatoKeg:
 
         assert result == 75.5
 
-    @patch('lib.tap_monitors.plaato_keg.PlaatoDataDB')
+    @patch("lib.tap_monitors.plaato_keg.PlaatoDataDB")
     def test_get_invalid_data_key_raises(self, mock_plaato_db, monitor):
         """Test get raises InvalidDataType for unknown key"""
         mock_data = MagicMock()
@@ -76,16 +72,11 @@ class TestPlaatoKeg:
         with pytest.raises(InvalidDataType):
             run_async(monitor.get("unknown_key", meta=meta, db_session=MagicMock()))
 
-    @patch('lib.tap_monitors.plaato_keg.PlaatoDataDB')
+    @patch("lib.tap_monitors.plaato_keg.PlaatoDataDB")
     def test_get_all(self, mock_plaato_db, monitor):
         """Test get_all returns all data"""
         mock_data = MagicMock()
-        mock_data.to_dict.return_value = {
-            "percent_of_beer_left": 80,
-            "amount_left": 15,
-            "beer_left_unit": "gal",
-            "firmware_version": "2.0.0"
-        }
+        mock_data.to_dict.return_value = {"percent_of_beer_left": 80, "amount_left": 15, "beer_left_unit": "gal", "firmware_version": "2.0.0"}
         mock_plaato_db.get_by_pkey = AsyncMock(return_value=mock_data)
 
         meta = {"device_id": "device456"}
@@ -96,8 +87,8 @@ class TestPlaatoKeg:
         assert result["displayVolumeUnit"] == "gal"
         assert result["firmwareVersion"] == "2.0.0"
 
-    @patch('lib.tap_monitors.plaato_keg.PlaatoDataDB')
-    @patch('lib.tap_monitors.plaato_keg.async_session_scope')
+    @patch("lib.tap_monitors.plaato_keg.PlaatoDataDB")
+    @patch("lib.tap_monitors.plaato_keg.async_session_scope")
     def test_discover(self, mock_session_scope, mock_plaato_db, monitor):
         """Test discover returns list of devices"""
         mock_device1 = MagicMock()
@@ -119,7 +110,7 @@ class TestPlaatoKeg:
         assert {"id": "dev1", "name": "Keg 1"} in result
         assert {"id": "dev2", "name": "Keg 2"} in result
 
-    @patch('lib.tap_monitors.plaato_keg.PlaatoDataDB')
+    @patch("lib.tap_monitors.plaato_keg.PlaatoDataDB")
     def test_discover_excludes_devices_without_last_updated(self, mock_plaato_db, monitor):
         """Test discover excludes devices without last_updated_on"""
         mock_device = MagicMock()
@@ -133,7 +124,7 @@ class TestPlaatoKeg:
 
         assert len(result) == 0
 
-    @patch('lib.tap_monitors.plaato_keg.PlaatoDataDB')
+    @patch("lib.tap_monitors.plaato_keg.PlaatoDataDB")
     def test_get_data_no_data_returns_empty_dict(self, mock_plaato_db, monitor):
         """Test _get returns empty dict when no data found"""
         mock_plaato_db.get_by_pkey = AsyncMock(return_value=None)

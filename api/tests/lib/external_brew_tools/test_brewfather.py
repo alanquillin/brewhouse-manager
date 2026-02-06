@@ -1,9 +1,9 @@
 """Tests for lib/external_brew_tools/brewfather.py module"""
 
 import asyncio
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from httpx import BasicAuth
 
 from lib.external_brew_tools.brewfather import Brewfather
@@ -31,7 +31,7 @@ class TestBrewfather:
         return config
 
     @pytest.fixture
-    @patch('lib.external_brew_tools.brewfather.ExternalBrewToolBase.__init__')
+    @patch("lib.external_brew_tools.brewfather.ExternalBrewToolBase.__init__")
     def brewfather(self, mock_init, mock_config):
         """Create a Brewfather instance with mocked dependencies"""
         mock_init.return_value = None
@@ -90,7 +90,7 @@ class TestBrewfatherAsync:
         return config
 
     @pytest.fixture
-    @patch('lib.external_brew_tools.brewfather.ExternalBrewToolBase.__init__')
+    @patch("lib.external_brew_tools.brewfather.ExternalBrewToolBase.__init__")
     def brewfather(self, mock_init, mock_config):
         """Create a Brewfather instance with mocked dependencies"""
         mock_init.return_value = None
@@ -99,7 +99,7 @@ class TestBrewfatherAsync:
         bf.logger = MagicMock()
         return bf
 
-    @patch('lib.external_brew_tools.brewfather.AsyncClient')
+    @patch("lib.external_brew_tools.brewfather.AsyncClient")
     def test_get_success(self, mock_async_client, brewfather):
         """Test _get with successful response"""
         mock_response = MagicMock()
@@ -116,7 +116,7 @@ class TestBrewfatherAsync:
 
         assert result == ({"data": "test"}, 200)
 
-    @patch('lib.external_brew_tools.brewfather.AsyncClient')
+    @patch("lib.external_brew_tools.brewfather.AsyncClient")
     def test_get_not_found(self, mock_async_client, brewfather):
         """Test _get with 404 response"""
         mock_response = MagicMock()
@@ -132,7 +132,7 @@ class TestBrewfatherAsync:
 
         assert result == (None, 404)
 
-    @patch('lib.external_brew_tools.brewfather.AsyncClient')
+    @patch("lib.external_brew_tools.brewfather.AsyncClient")
     def test_get_batch_success(self, mock_async_client, brewfather):
         """Test _get_batch with successful response"""
         mock_response = MagicMock()
@@ -150,7 +150,7 @@ class TestBrewfatherAsync:
 
         assert result == {"id": "123", "name": "Test Batch"}
 
-    @patch('lib.external_brew_tools.brewfather.AsyncClient')
+    @patch("lib.external_brew_tools.brewfather.AsyncClient")
     def test_get_batch_not_found_raises(self, mock_async_client, brewfather):
         """Test _get_batch raises ResourceNotFoundError on 404"""
         mock_response = MagicMock()
@@ -166,7 +166,7 @@ class TestBrewfatherAsync:
         with pytest.raises(ResourceNotFoundError):
             run_async(brewfather._get_batch(meta=meta))
 
-    @patch('lib.external_brew_tools.brewfather.AsyncClient')
+    @patch("lib.external_brew_tools.brewfather.AsyncClient")
     def test_get_batches(self, mock_async_client, brewfather):
         """Test _get_batches returns list"""
         mock_response = MagicMock()
@@ -183,7 +183,7 @@ class TestBrewfatherAsync:
 
         assert len(result) == 2
 
-    @patch('lib.external_brew_tools.brewfather.AsyncClient')
+    @patch("lib.external_brew_tools.brewfather.AsyncClient")
     def test_get_batch_details(self, mock_async_client, brewfather):
         """Test get_batch_details parses response correctly"""
         mock_response = MagicMock()
@@ -196,11 +196,7 @@ class TestBrewfatherAsync:
             "brewDate": 1640000000000,
             "bottlingDate": 1641000000000,
             "estimatedColor": 8,
-            "recipe": {
-                "name": "Test IPA",
-                "img_url": "http://example.com/img.jpg",
-                "style": {"name": "American IPA", "type": "IPA"}
-            }
+            "recipe": {"name": "Test IPA", "img_url": "http://example.com/img.jpg", "style": {"name": "American IPA", "type": "IPA"}},
         }
 
         mock_client = MagicMock()
@@ -218,16 +214,12 @@ class TestBrewfatherAsync:
         assert result["style"] == "American IPA"
         assert result["batch_number"] == "42"
 
-    @patch('lib.external_brew_tools.brewfather.AsyncClient')
+    @patch("lib.external_brew_tools.brewfather.AsyncClient")
     def test_get_batch_details_incomplete_status(self, mock_async_client, brewfather):
         """Test get_batch_details marks refresh when status incomplete"""
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "batchNo": 1,
-            "status": "Fermenting",
-            "recipe": {"name": "Test", "style": {}}
-        }
+        mock_response.json.return_value = {"batchNo": 1, "status": "Fermenting", "recipe": {"name": "Test", "style": {}}}
 
         mock_client = MagicMock()
         mock_client.get = AsyncMock(return_value=mock_response)
@@ -241,7 +233,7 @@ class TestBrewfatherAsync:
         assert result.get("_refresh_on_next_check") is True
         assert "completed status" in result.get("_refresh_reason", "").lower()
 
-    @patch('lib.external_brew_tools.brewfather.AsyncClient')
+    @patch("lib.external_brew_tools.brewfather.AsyncClient")
     def test_get_recipe_details(self, mock_async_client, brewfather):
         """Test get_recipe_details parses response correctly"""
         mock_response = MagicMock()
@@ -252,7 +244,7 @@ class TestBrewfatherAsync:
             "ibu": 40,
             "color": 10,
             "img_url": "http://example.com/recipe.jpg",
-            "style": {"name": "Pale Ale"}
+            "style": {"name": "Pale Ale"},
         }
 
         mock_client = MagicMock()
@@ -270,7 +262,7 @@ class TestBrewfatherAsync:
         assert result["srm"] == 10
         assert result["style"] == "Pale Ale"
 
-    @patch('lib.external_brew_tools.brewfather.AsyncClient')
+    @patch("lib.external_brew_tools.brewfather.AsyncClient")
     def test_search_batches(self, mock_async_client, brewfather):
         """Test search_batches returns batch list"""
         mock_response = MagicMock()

@@ -2,15 +2,7 @@
 
 import pytest
 
-from lib.exceptions import (
-    Error,
-    InvalidEnum,
-    InvalidParameter,
-    RequiredParameterNotFound,
-    ItemAlreadyExists,
-    InvalidExternalBrewingTool,
-    InvalidTapMonitorType,
-)
+from lib.exceptions import Error, InvalidEnum, InvalidExternalBrewingTool, InvalidParameter, InvalidTapMonitorType, ItemAlreadyExists, RequiredParameterNotFound
 
 
 class TestError:

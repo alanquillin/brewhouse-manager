@@ -1,7 +1,8 @@
 """Tests for db/user_locations.py module - UserLocations model and table"""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 # Import users first to resolve circular dependency with user_locations
 import db.users  # noqa: F401 - needed to avoid circular import
@@ -56,7 +57,8 @@ class TestUserLocationsModel:
 
     def test_inherits_mixins(self):
         """Test UserLocations inherits required mixins"""
-        from db import DictifiableMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, DictifiableMixin
+
         assert issubclass(UserLocations, DictifiableMixin)
         assert issubclass(UserLocations, AsyncQueryMethodsMixin)
 

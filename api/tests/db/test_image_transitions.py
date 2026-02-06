@@ -1,7 +1,8 @@
 """Tests for db/image_transitions.py module - ImageTransitions model"""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from db.image_transitions import ImageTransitions
 
@@ -24,7 +25,8 @@ class TestImageTransitionsModel:
 
     def test_inherits_mixins(self):
         """Test ImageTransitions inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, AuditedMixin, DictifiableMixin
+
         assert issubclass(ImageTransitions, DictifiableMixin)
         assert issubclass(ImageTransitions, AuditedMixin)
         assert issubclass(ImageTransitions, AsyncQueryMethodsMixin)

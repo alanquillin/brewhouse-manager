@@ -40,10 +40,8 @@ def _init_tap_monitors():
 
         if CONFIG.get("tap_monitors.kegtron.pro.enabled", False):
             LOGGER.info("Enabling kegtron pro tap monitors ")
-            from lib.tap_monitors.kegtron import (
-                KegtronPro,
-                MONITOR_TYPE as kegtron_monitor_type,
-            )
+            from lib.tap_monitors.kegtron import MONITOR_TYPE as kegtron_monitor_type
+            from lib.tap_monitors.kegtron import KegtronPro
 
             TAP_MONITORS[kegtron_monitor_type] = KegtronPro()
         else:
@@ -84,10 +82,10 @@ def _init_tap_monitors():
         else:
             LOGGER.info("Disabling plaato_keg tap monitor types")
 
-    
+
 def get_types() -> List[Dict]:
     res = []
-    for k, v in  TAP_MONITORS.items():
+    for k, v in TAP_MONITORS.items():
         res.append({"type": k, "supports_discovery": v.supports_discovery()})
     return res
 

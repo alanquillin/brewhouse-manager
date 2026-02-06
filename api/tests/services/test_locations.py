@@ -1,8 +1,9 @@
 """Tests for services/locations.py module - Location service"""
 
 import asyncio
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from services.locations import LocationService
 
@@ -25,7 +26,7 @@ class TestLocationServiceTransformResponse:
         mock_location = MagicMock()
         mock_location.to_dict.return_value = {"id": "loc-1", "name": "test-location"}
 
-        with patch('services.locations.transform_dict_to_camel_case', side_effect=lambda x: x):
+        with patch("services.locations.transform_dict_to_camel_case", side_effect=lambda x: x):
             result = run_async(LocationService.transform_response(mock_location))
 
         mock_location.to_dict.assert_called_once()
@@ -35,11 +36,7 @@ class TestLocationServiceTransformResponse:
     def test_transforms_to_camel_case(self):
         """Test response is transformed to camelCase"""
         mock_location = MagicMock()
-        mock_location.to_dict.return_value = {
-            "id": "loc-1",
-            "name": "test-location",
-            "created_on": "2024-01-01"
-        }
+        mock_location.to_dict.return_value = {"id": "loc-1", "name": "test-location", "created_on": "2024-01-01"}
 
         result = run_async(LocationService.transform_response(mock_location))
 
@@ -52,10 +49,6 @@ class TestLocationServiceTransformResponse:
         mock_location.to_dict.return_value = {"id": "loc-1"}
 
         # Should not raise
-        result = run_async(LocationService.transform_response(
-            mock_location,
-            extra_param="value",
-            another="test"
-        ))
+        result = run_async(LocationService.transform_response(mock_location, extra_param="value", another="test"))
 
         assert result is not None

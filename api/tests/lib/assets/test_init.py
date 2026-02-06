@@ -1,7 +1,8 @@
 """Tests for lib/assets/__init__.py module (AssetManagerBase)"""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from lib.assets import AssetManagerBase
 
@@ -9,8 +10,8 @@ from lib.assets import AssetManagerBase
 class TestAssetManagerBase:
     """Tests for AssetManagerBase class"""
 
-    @patch('lib.assets.Config')
-    @patch('lib.assets.logging')
+    @patch("lib.assets.Config")
+    @patch("lib.assets.logging")
     def test_init(self, mock_logging, mock_config):
         """Test AssetManagerBase initialization"""
         mock_logger = MagicMock()

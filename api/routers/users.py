@@ -1,27 +1,25 @@
 """Users router for FastAPI"""
 
-from typing import List
 import uuid
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import AuthUser, get_db_session, require_user, require_admin
-from db.users import Users as UsersDB
 from db.user_locations import UserLocations as UserLocationsDB
+from db.users import Users as UsersDB
+from dependencies.auth import AuthUser, get_db_session, require_admin, require_user
 from lib import logging
-from services.users import UserService
+from schemas.users import UserCreate, UserLocationsUpdate, UserUpdate
 from services.locations import LocationService
-from schemas.users import UserCreate, UserUpdate, UserLocationsUpdate
+from services.users import UserService
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 LOGGER = logging.getLogger(__name__)
 
 
 @router.get("/current", response_model=dict)
-async def get_current_user(
-    current_user: AuthUser = Depends(require_user), db_session: AsyncSession = Depends(get_db_session)
-):
+async def get_current_user(current_user: AuthUser = Depends(require_user), db_session: AsyncSession = Depends(get_db_session)):
     """Get current authenticated user"""
     user = await UsersDB.get_by_pkey(db_session, current_user.id)
     if not user:
@@ -31,9 +29,7 @@ async def get_current_user(
 
 
 @router.get("", response_model=List[dict])
-async def list_users(
-    current_user: AuthUser = Depends(require_admin), db_session: AsyncSession = Depends(get_db_session)
-):
+async def list_users(current_user: AuthUser = Depends(require_admin), db_session: AsyncSession = Depends(get_db_session)):
     """List all users (admin only)"""
     users = await UsersDB.query(db_session)
     return [await UserService.transform_response(u, current_user) for u in users]

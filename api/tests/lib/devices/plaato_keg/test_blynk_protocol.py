@@ -1,17 +1,10 @@
 """Tests for blynk_protocol module"""
 
 import struct
+
 import pytest
 
-from lib.devices.plaato_keg.blynk_protocol import (
-    BlynkCommand,
-    BlynkStatus,
-    BlynkMessage,
-    decode,
-    encode_command,
-    encode_response,
-    response_success,
-)
+from lib.devices.plaato_keg.blynk_protocol import BlynkCommand, BlynkMessage, BlynkStatus, decode, encode_command, encode_response, response_success
 
 
 class TestBlynkCommand:
@@ -43,12 +36,7 @@ class TestBlynkMessage:
 
     def test_init(self):
         """Test BlynkMessage initialization"""
-        msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=10,
-            body=b"test"
-        )
+        msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=10, body=b"test")
         assert msg.command == BlynkCommand.HARDWARE
         assert msg.msg_id == 1
         assert msg.length == 10
@@ -57,23 +45,14 @@ class TestBlynkMessage:
 
     def test_repr_response(self):
         """Test __repr__ for response message"""
-        msg = BlynkMessage(
-            command=BlynkCommand.RESPONSE,
-            msg_id=1,
-            status=BlynkStatus.SUCCESS
-        )
+        msg = BlynkMessage(command=BlynkCommand.RESPONSE, msg_id=1, status=BlynkStatus.SUCCESS)
         repr_str = repr(msg)
         assert "RESPONSE" in repr_str
         assert "200" in repr_str or "SUCCESS" in repr_str
 
     def test_repr_command(self):
         """Test __repr__ for command message"""
-        msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=4,
-            body=b"test"
-        )
+        msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=4, body=b"test")
         repr_str = repr(msg)
         # Command may be shown as enum name or int value
         assert "HARDWARE" in repr_str or "20" in repr_str
@@ -98,7 +77,7 @@ class TestDecode:
         """Test decoding a hardware message"""
         # Build a HARDWARE message: cmd=20, msg_id=1, length=7, body="vw\x0048\x0050"
         body = b"vw\x0048\x0050"
-        data = struct.pack('>BHH', BlynkCommand.HARDWARE, 1, len(body)) + body
+        data = struct.pack(">BHH", BlynkCommand.HARDWARE, 1, len(body)) + body
 
         messages = decode(data)
 
@@ -112,7 +91,7 @@ class TestDecode:
     def test_decode_response_message(self):
         """Test decoding a response message"""
         # Response: cmd=0, msg_id=1, status=200 (SUCCESS)
-        data = struct.pack('>BHH', BlynkCommand.RESPONSE, 1, BlynkStatus.SUCCESS)
+        data = struct.pack(">BHH", BlynkCommand.RESPONSE, 1, BlynkStatus.SUCCESS)
 
         messages = decode(data)
 
@@ -126,11 +105,11 @@ class TestDecode:
         """Test decoding multiple messages in sequence"""
         # First message: HARDWARE
         body1 = b"vw\x0048\x0050"
-        msg1 = struct.pack('>BHH', BlynkCommand.HARDWARE, 1, len(body1)) + body1
+        msg1 = struct.pack(">BHH", BlynkCommand.HARDWARE, 1, len(body1)) + body1
 
         # Second message: PROPERTY
         body2 = b"51\x00max\x00100"
-        msg2 = struct.pack('>BHH', BlynkCommand.PROPERTY, 2, len(body2)) + body2
+        msg2 = struct.pack(">BHH", BlynkCommand.PROPERTY, 2, len(body2)) + body2
 
         data = msg1 + msg2
         messages = decode(data)
@@ -142,7 +121,7 @@ class TestDecode:
     def test_decode_internal_message(self):
         """Test decoding an internal message"""
         body = b"ver\x001.0.0\x00dev\x00plaato"
-        data = struct.pack('>BHH', BlynkCommand.INTERNAL, 1, len(body)) + body
+        data = struct.pack(">BHH", BlynkCommand.INTERNAL, 1, len(body)) + body
 
         messages = decode(data)
 
@@ -163,7 +142,7 @@ class TestDecode:
     def test_decode_unknown_command(self):
         """Test decoding unknown command value"""
         body = b"test"
-        data = struct.pack('>BHH', 99, 1, len(body)) + body  # 99 is not a valid command
+        data = struct.pack(">BHH", 99, 1, len(body)) + body  # 99 is not a valid command
 
         messages = decode(data)
 
@@ -174,7 +153,7 @@ class TestDecode:
     def test_decode_get_shared_dash(self):
         """Test decoding GET_SHARED_DASH message"""
         body = b"abc123deviceid"
-        data = struct.pack('>BHH', BlynkCommand.GET_SHARED_DASH, 1, len(body)) + body
+        data = struct.pack(">BHH", BlynkCommand.GET_SHARED_DASH, 1, len(body)) + body
 
         messages = decode(data)
 
@@ -191,7 +170,7 @@ class TestEncodeCommand:
         result = encode_command(BlynkCommand.HARDWARE, 1, body)
 
         # Verify header
-        cmd, msg_id, length = struct.unpack('>BHH', result[:5])
+        cmd, msg_id, length = struct.unpack(">BHH", result[:5])
         assert cmd == BlynkCommand.HARDWARE
         assert msg_id == 1
         assert length == len(body)
@@ -204,7 +183,7 @@ class TestEncodeCommand:
         body = b"test"
         result = encode_command(20, 5, body)  # 20 = HARDWARE
 
-        cmd, msg_id, length = struct.unpack('>BHH', result[:5])
+        cmd, msg_id, length = struct.unpack(">BHH", result[:5])
         assert cmd == 20
         assert msg_id == 5
         assert length == len(body)
@@ -213,7 +192,7 @@ class TestEncodeCommand:
         """Test encoding with empty body"""
         result = encode_command(BlynkCommand.PING, 1)
 
-        cmd, msg_id, length = struct.unpack('>BHH', result[:5])
+        cmd, msg_id, length = struct.unpack(">BHH", result[:5])
         assert cmd == BlynkCommand.PING
         assert length == 0
         assert len(result) == 5
@@ -226,7 +205,7 @@ class TestEncodeResponse:
         """Test encoding a success response"""
         result = encode_response(1, BlynkStatus.SUCCESS)
 
-        cmd, msg_id, status, length = struct.unpack('>BHHH', result[:7])
+        cmd, msg_id, status, length = struct.unpack(">BHHH", result[:7])
         assert cmd == 0  # Response command
         assert msg_id == 1
         assert status == BlynkStatus.SUCCESS
@@ -237,7 +216,7 @@ class TestEncodeResponse:
         body = b"error details"
         result = encode_response(2, BlynkStatus.ILLEGAL_COMMAND, body)
 
-        cmd, msg_id, status, length = struct.unpack('>BHHH', result[:7])
+        cmd, msg_id, status, length = struct.unpack(">BHHH", result[:7])
         assert cmd == 0
         assert status == BlynkStatus.ILLEGAL_COMMAND
         assert length == len(body)
@@ -247,7 +226,7 @@ class TestEncodeResponse:
         """Test encoding response with integer status"""
         result = encode_response(1, 200)
 
-        _, _, status, _ = struct.unpack('>BHHH', result[:7])
+        _, _, status, _ = struct.unpack(">BHHH", result[:7])
         assert status == 200
 
 
@@ -258,7 +237,7 @@ class TestResponseSuccess:
         """Test response_success with default msg_id"""
         result = response_success()
 
-        cmd, msg_id, status = struct.unpack('>BHH', result)
+        cmd, msg_id, status = struct.unpack(">BHH", result)
         assert cmd == 0
         assert msg_id == 1
         assert status == BlynkStatus.SUCCESS
@@ -267,7 +246,7 @@ class TestResponseSuccess:
         """Test response_success with custom msg_id"""
         result = response_success(msg_id=42)
 
-        _, msg_id, status = struct.unpack('>BHH', result)
+        _, msg_id, status = struct.unpack(">BHH", result)
         assert msg_id == 42
         assert status == BlynkStatus.SUCCESS
 

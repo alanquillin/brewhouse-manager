@@ -26,6 +26,7 @@ class TestCloudCommonJsonEncoder:
 
     def test_encode_useful_enum(self):
         """Test encoding UsefulEnum values"""
+
         class Status(UsefulEnum):
             ACTIVE = "active"
             INACTIVE = "inactive"
@@ -42,6 +43,7 @@ class TestCloudCommonJsonEncoder:
 
     def test_encode_object_with_json_repr(self):
         """Test encoding objects with _json_repr_ method"""
+
         class CustomObject:
             def __init__(self, value):
                 self.value = value
@@ -56,16 +58,11 @@ class TestCloudCommonJsonEncoder:
 
     def test_encode_nested_objects(self):
         """Test encoding nested objects with special types"""
+
         class Status(UsefulEnum):
             ACTIVE = "active"
 
-        data = {
-            "created": datetime.datetime(2024, 1, 1),
-            "status": Status.ACTIVE,
-            "nested": {
-                "id": UUID("550e8400-e29b-41d4-a716-446655440000")
-            }
-        }
+        data = {"created": datetime.datetime(2024, 1, 1), "status": Status.ACTIVE, "nested": {"id": UUID("550e8400-e29b-41d4-a716-446655440000")}}
         result = dumps(data)
         assert "2024-01-01" in result
         assert "active" in result
@@ -73,15 +70,7 @@ class TestCloudCommonJsonEncoder:
 
     def test_encode_standard_types(self):
         """Test that standard types still work"""
-        data = {
-            "string": "hello",
-            "number": 42,
-            "float": 3.14,
-            "boolean": True,
-            "null": None,
-            "list": [1, 2, 3],
-            "dict": {"nested": "value"}
-        }
+        data = {"string": "hello", "number": 42, "float": 3.14, "boolean": True, "null": None, "list": [1, 2, 3], "dict": {"nested": "value"}}
         result = dumps(data)
         assert '"string": "hello"' in result
         assert '"number": 42' in result

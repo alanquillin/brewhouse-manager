@@ -26,11 +26,12 @@ def from_ml(val, unit):
         raise Exception(f"invalid volume unit for conversion: '{unit}'")
     return val
 
+
 def to_ml(val, unit: str):
     unit = unit.lower()
     if unit == "ml":
         return val
-    
+
     if unit == "l":
         val = val * 1000
     elif unit == "gal":
@@ -55,15 +56,16 @@ def to_ml(val, unit: str):
         val = val / 0.0351951
     else:
         raise Exception(f"invalid volume unit for conversion: '{unit}'")
-    
+
     return val
 
-def to_g(val, unit:str):
+
+def to_g(val, unit: str):
     unit = unit.lower()
 
     if unit == "g":
         return val
-    
+
     if unit == "kg":
         val = val * 1000
     elif unit == "oz":
@@ -72,10 +74,11 @@ def to_g(val, unit:str):
         val = val * 453.59237
     else:
         raise Exception(f"invalid volume unit for conversion: '{unit}'")
-    
+
     return val
 
-def from_g(val, unit:str):
+
+def from_g(val, unit: str):
     unit = unit.lower()
 
     if val == 0:
@@ -92,5 +95,5 @@ def from_g(val, unit:str):
         val = val * 0.0022046226
     else:
         raise Exception(f"invalid volume unit for conversion: '{unit}'")
-    
+
     return val

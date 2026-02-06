@@ -34,12 +34,7 @@ class BeverageService:
             if beverage.batches:
                 from services.batches import BatchService
 
-                data["batches"] = [
-                    await BatchService.transform_response(
-                        b, db_session=db_session, include_location=include_location
-                    )
-                    for b in beverage.batches
-                ]
+                data["batches"] = [await BatchService.transform_response(b, db_session=db_session, include_location=include_location) for b in beverage.batches]
 
         # Add image transitions
         if not image_transitions:

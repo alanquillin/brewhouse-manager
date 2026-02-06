@@ -1,8 +1,9 @@
 """Tests for db/beers.py module - Beers model"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 
 from db.beers import Beers
 
@@ -38,7 +39,8 @@ class TestBeersModel:
 
     def test_inherits_mixins(self):
         """Test Beers inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, AuditedMixin, DictifiableMixin
+
         assert issubclass(Beers, DictifiableMixin)
         assert issubclass(Beers, AuditedMixin)
         assert issubclass(Beers, AsyncQueryMethodsMixin)
@@ -56,7 +58,7 @@ class TestBeersCreate:
         """Test that create defaults image_transitions_enabled to False"""
         mock_session = AsyncMock()
 
-        with patch('db.AsyncQueryMethodsMixin.create', new_callable=AsyncMock) as mock_create:
+        with patch("db.AsyncQueryMethodsMixin.create", new_callable=AsyncMock) as mock_create:
             mock_create.return_value = MagicMock()
             run_async(Beers.create(mock_session, name="Test Beer"))
 
@@ -67,13 +69,9 @@ class TestBeersCreate:
         """Test that create preserves explicit image_transitions_enabled value"""
         mock_session = AsyncMock()
 
-        with patch('db.AsyncQueryMethodsMixin.create', new_callable=AsyncMock) as mock_create:
+        with patch("db.AsyncQueryMethodsMixin.create", new_callable=AsyncMock) as mock_create:
             mock_create.return_value = MagicMock()
-            run_async(Beers.create(
-                mock_session,
-                name="Test Beer",
-                image_transitions_enabled=True
-            ))
+            run_async(Beers.create(mock_session, name="Test Beer", image_transitions_enabled=True))
 
             call_kwargs = mock_create.call_args[1]
             assert call_kwargs["image_transitions_enabled"] is True
@@ -82,16 +80,9 @@ class TestBeersCreate:
         """Test that create passes all kwargs to parent"""
         mock_session = AsyncMock()
 
-        with patch('db.AsyncQueryMethodsMixin.create', new_callable=AsyncMock) as mock_create:
+        with patch("db.AsyncQueryMethodsMixin.create", new_callable=AsyncMock) as mock_create:
             mock_create.return_value = MagicMock()
-            run_async(Beers.create(
-                mock_session,
-                name="Test IPA",
-                brewery="Test Brewery",
-                style="IPA",
-                abv=6.5,
-                ibu=65
-            ))
+            run_async(Beers.create(mock_session, name="Test IPA", brewery="Test Brewery", style="IPA", abv=6.5, ibu=65))
 
             call_kwargs = mock_create.call_args[1]
             assert call_kwargs["name"] == "Test IPA"

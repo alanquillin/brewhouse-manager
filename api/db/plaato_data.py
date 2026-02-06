@@ -2,10 +2,10 @@
 _TABLE_NAME = "plaato_data"
 _PKEY = "id"
 
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, DateTime, String
 from sqlalchemy.orm import backref, relationship
 
-from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, generate_audit_trail
 
 
 @generate_audit_trail

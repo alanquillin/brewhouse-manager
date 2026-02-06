@@ -5,19 +5,18 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import get_db_session
-from db.locations import Locations as LocationsDB
-from db.taps import Taps as TapsDB
 from db.beers import Beers as BeersDB
 from db.beverages import Beverages as BeveragesDB
+from db.locations import Locations as LocationsDB
 from db.tap_monitors import TapMonitors as TapMonitorsDB
-from lib import logging
-from lib import util
-from services.locations import LocationService
-from services.taps import TapService
+from db.taps import Taps as TapsDB
+from dependencies.auth import get_db_session
+from lib import logging, util
 from services.beers import BeerService
 from services.beverages import BeverageService
+from services.locations import LocationService
 from services.tap_monitors import TapMonitorService
+from services.taps import TapService
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
 LOGGER = logging.getLogger(__name__)
@@ -122,5 +121,5 @@ async def get_dashboard(
     return {
         "taps": [await TapService.transform_response(t, db_session=db_session, include_location=False) for t in taps],
         "locations": [await LocationService.transform_response(l, db_session=db_session) for l in locations],
-        "location": await LocationService.transform_response(current_location, db_session=db_session) if current_location else None
+        "location": await LocationService.transform_response(current_location, db_session=db_session) if current_location else None,
     }

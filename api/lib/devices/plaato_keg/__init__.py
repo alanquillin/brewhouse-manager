@@ -1,6 +1,6 @@
 from lib import ThreadSafeSingleton
-from lib.devices.plaato_keg.connection_handler import ConnectionHandler
 from lib.devices.plaato_keg.command_writer import CommandWriter
+from lib.devices.plaato_keg.connection_handler import ConnectionHandler
 
 
 class PlaatoServiceHandler(metaclass=ThreadSafeSingleton):

@@ -1,11 +1,12 @@
 """Tests for lib/tap_monitors/open_plaato_keg.py module"""
 
 import asyncio
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from lib.tap_monitors.open_plaato_keg import OpenPlaatoKeg, KEYMAP
+import pytest
+
 from lib.tap_monitors import InvalidDataType
+from lib.tap_monitors.open_plaato_keg import KEYMAP, OpenPlaatoKeg
 
 
 # Helper to run async functions in sync tests
@@ -38,7 +39,7 @@ class TestOpenPlaatoKeg:
         return config
 
     @pytest.fixture
-    @patch('lib.tap_monitors.open_plaato_keg.TapMonitorBase.__init__')
+    @patch("lib.tap_monitors.open_plaato_keg.TapMonitorBase.__init__")
     def monitor(self, mock_init, mock_config):
         """Create an OpenPlaatoKeg instance with mocked dependencies"""
         mock_init.return_value = None
@@ -51,7 +52,7 @@ class TestOpenPlaatoKeg:
         """Test supports_discovery returns True"""
         assert monitor.supports_discovery() is True
 
-    @patch('lib.tap_monitors.open_plaato_keg.AsyncClient')
+    @patch("lib.tap_monitors.open_plaato_keg.AsyncClient")
     def test_get_success(self, mock_async_client, monitor):
         """Test get with successful response"""
         mock_response = MagicMock()
@@ -73,7 +74,7 @@ class TestOpenPlaatoKeg:
 
         assert result == 75.5
 
-    @patch('lib.tap_monitors.open_plaato_keg.AsyncClient')
+    @patch("lib.tap_monitors.open_plaato_keg.AsyncClient")
     def test_get_invalid_data_key_raises(self, mock_async_client, monitor):
         """Test get raises InvalidDataType for unknown key"""
         mock_response = MagicMock()
@@ -90,17 +91,12 @@ class TestOpenPlaatoKeg:
         with pytest.raises(InvalidDataType):
             run_async(monitor.get("unknown_key", meta=meta))
 
-    @patch('lib.tap_monitors.open_plaato_keg.AsyncClient')
+    @patch("lib.tap_monitors.open_plaato_keg.AsyncClient")
     def test_get_all(self, mock_async_client, monitor):
         """Test get_all returns all data"""
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "percent_of_beer_left": 80,
-            "amount_left": 15,
-            "beer_left_unit": "gal",
-            "firmware_version": "2.0.0"
-        }
+        mock_response.json.return_value = {"percent_of_beer_left": 80, "amount_left": 15, "beer_left_unit": "gal", "firmware_version": "2.0.0"}
 
         mock_client = MagicMock()
         mock_client.get = AsyncMock(return_value=mock_response)
@@ -116,7 +112,7 @@ class TestOpenPlaatoKeg:
         assert result["displayVolumeUnit"] == "gal"
         assert result["firmwareVersion"] == "2.0.0"
 
-    @patch('lib.tap_monitors.open_plaato_keg.AsyncClient')
+    @patch("lib.tap_monitors.open_plaato_keg.AsyncClient")
     def test_discover(self, mock_async_client, monitor):
         """Test discover returns list of devices"""
         mock_response = MagicMock()
@@ -137,7 +133,7 @@ class TestOpenPlaatoKeg:
         assert len(result) == 2
         assert {"id": "keg1", "name": "Kitchen Keg"} in result
 
-    @patch('lib.tap_monitors.open_plaato_keg.AsyncClient')
+    @patch("lib.tap_monitors.open_plaato_keg.AsyncClient")
     def test_discover_unknown_name(self, mock_async_client, monitor):
         """Test discover uses 'unknown' for missing name"""
         mock_response = MagicMock()
@@ -156,7 +152,7 @@ class TestOpenPlaatoKeg:
 
         assert result[0]["name"] == "unknown"
 
-    @patch('lib.tap_monitors.open_plaato_keg.AsyncClient')
+    @patch("lib.tap_monitors.open_plaato_keg.AsyncClient")
     def test_insecure_mode(self, mock_async_client, monitor, mock_config):
         """Test insecure mode disables SSL verification"""
         mock_config.get.side_effect = lambda key, default=None: {

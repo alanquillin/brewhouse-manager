@@ -1,9 +1,10 @@
 """Tests for services/beers.py module - Beer service"""
 
 import asyncio
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from services.beers import BeerService
 
@@ -58,14 +59,9 @@ class TestBeerServiceTransformResponse:
         mock_beer = create_mock_beer(name="Test Beer")
         mock_session = AsyncMock()
 
-        with patch('services.beers.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beers.ImageTransitionsDB") as mock_it_db:
             mock_it_db.query = AsyncMock(return_value=[])
-            result = run_async(BeerService.transform_response(
-                mock_beer,
-                mock_session,
-                skip_meta_refresh=True,
-                include_batches=False
-            ))
+            result = run_async(BeerService.transform_response(mock_beer, mock_session, skip_meta_refresh=True, include_batches=False))
 
         assert result is not None
         assert result["name"] == "Test Beer"
@@ -76,17 +72,13 @@ class TestBeerServiceTransformResponse:
         mock_beer = create_mock_beer(batches=[mock_batch])
         mock_session = AsyncMock()
 
-        with patch('services.beers.ImageTransitionsDB') as mock_it_db, \
-             patch('services.batches.BatchService.transform_response', new_callable=AsyncMock) as mock_batch_transform:
+        with patch("services.beers.ImageTransitionsDB") as mock_it_db, patch(
+            "services.batches.BatchService.transform_response", new_callable=AsyncMock
+        ) as mock_batch_transform:
             mock_it_db.query = AsyncMock(return_value=[])
             mock_batch_transform.return_value = {"id": "batch-1"}
 
-            result = run_async(BeerService.transform_response(
-                mock_beer,
-                mock_session,
-                skip_meta_refresh=True,
-                include_batches=True
-            ))
+            result = run_async(BeerService.transform_response(mock_beer, mock_session, skip_meta_refresh=True, include_batches=True))
 
         assert "batches" in result
         assert len(result["batches"]) == 1
@@ -96,14 +88,9 @@ class TestBeerServiceTransformResponse:
         mock_beer = create_mock_beer()
         mock_session = AsyncMock()
 
-        with patch('services.beers.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beers.ImageTransitionsDB") as mock_it_db:
             mock_it_db.query = AsyncMock(return_value=[])
-            result = run_async(BeerService.transform_response(
-                mock_beer,
-                mock_session,
-                skip_meta_refresh=True,
-                include_batches=False
-            ))
+            result = run_async(BeerService.transform_response(mock_beer, mock_session, skip_meta_refresh=True, include_batches=False))
 
         assert "batches" not in result
 
@@ -115,14 +102,9 @@ class TestBeerServiceTransformResponse:
         mock_transition = MagicMock()
         mock_transition.to_dict.return_value = {"id": "it-1", "img_url": "http://example.com/img.jpg"}
 
-        with patch('services.beers.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beers.ImageTransitionsDB") as mock_it_db:
             mock_it_db.query = AsyncMock(return_value=[mock_transition])
-            result = run_async(BeerService.transform_response(
-                mock_beer,
-                mock_session,
-                skip_meta_refresh=True,
-                include_batches=False
-            ))
+            result = run_async(BeerService.transform_response(mock_beer, mock_session, skip_meta_refresh=True, include_batches=False))
 
         assert "imageTransitions" in result
         assert len(result["imageTransitions"]) == 1
@@ -181,13 +163,9 @@ class TestBeerServiceProcessImageTransitions:
         mock_session = AsyncMock()
         transitions = [{"img_url": "http://example.com/img.jpg", "change_percent": 50}]
 
-        with patch('services.beers.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beers.ImageTransitionsDB") as mock_it_db:
             mock_it_db.create = AsyncMock(return_value=MagicMock())
-            result = run_async(BeerService.process_image_transitions(
-                mock_session,
-                transitions,
-                beer_id="beer-1"
-            ))
+            result = run_async(BeerService.process_image_transitions(mock_session, transitions, beer_id="beer-1"))
 
         mock_it_db.create.assert_called_once()
         assert len(result) == 1
@@ -197,12 +175,9 @@ class TestBeerServiceProcessImageTransitions:
         mock_session = AsyncMock()
         transitions = [{"id": "it-1", "img_url": "http://example.com/new.jpg"}]
 
-        with patch('services.beers.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beers.ImageTransitionsDB") as mock_it_db:
             mock_it_db.update = AsyncMock(return_value=MagicMock())
-            result = run_async(BeerService.process_image_transitions(
-                mock_session,
-                transitions
-            ))
+            result = run_async(BeerService.process_image_transitions(mock_session, transitions))
 
         mock_it_db.update.assert_called_once()
         assert len(result) == 1
@@ -214,12 +189,9 @@ class TestBeerServiceProcessImageTransitions:
         mock_transition = MagicMock()
         mock_transition.model_dump.return_value = {"img_url": "http://example.com/img.jpg"}
 
-        with patch('services.beers.ImageTransitionsDB') as mock_it_db:
+        with patch("services.beers.ImageTransitionsDB") as mock_it_db:
             mock_it_db.create = AsyncMock(return_value=MagicMock())
-            result = run_async(BeerService.process_image_transitions(
-                mock_session,
-                [mock_transition]
-            ))
+            result = run_async(BeerService.process_image_transitions(mock_session, [mock_transition]))
 
         mock_transition.model_dump.assert_called_once()
 
@@ -239,11 +211,7 @@ class TestBeerServiceVerifyExternalBrewToolRecipe:
         """Test raises HTTPException when recipe_id missing"""
         from fastapi import HTTPException
 
-        request_data = {
-            "name": "Test Beer",
-            "external_brewing_tool": "brewfather",
-            "external_brewing_tool_meta": {}
-        }
+        request_data = {"name": "Test Beer", "external_brewing_tool": "brewfather", "external_brewing_tool_meta": {}}
 
         with pytest.raises(HTTPException) as exc_info:
             run_async(BeerService.verify_and_update_external_brew_tool_recipe(request_data))
@@ -254,14 +222,12 @@ class TestBeerServiceVerifyExternalBrewToolRecipe:
     def test_raises_error_when_recipe_not_found(self):
         """Test raises HTTPException when recipe not found"""
         from fastapi import HTTPException
+
         from lib.external_brew_tools.exceptions import ResourceNotFoundError
 
-        request_data = {
-            "external_brewing_tool": "brewfather",
-            "external_brewing_tool_meta": {"recipe_id": "123"}
-        }
+        request_data = {"external_brewing_tool": "brewfather", "external_brewing_tool_meta": {"recipe_id": "123"}}
 
-        with patch('services.beers.get_external_brewing_tool') as mock_get_tool:
+        with patch("services.beers.get_external_brewing_tool") as mock_get_tool:
             mock_tool = MagicMock()
             mock_tool.get_recipe_details = AsyncMock(side_effect=ResourceNotFoundError("Not found"))
             mock_get_tool.return_value = mock_tool
@@ -274,12 +240,9 @@ class TestBeerServiceVerifyExternalBrewToolRecipe:
 
     def test_updates_metadata_on_success(self):
         """Test updates metadata when recipe found"""
-        request_data = {
-            "external_brewing_tool": "brewfather",
-            "external_brewing_tool_meta": {"recipe_id": "123"}
-        }
+        request_data = {"external_brewing_tool": "brewfather", "external_brewing_tool_meta": {"recipe_id": "123"}}
 
-        with patch('services.beers.get_external_brewing_tool') as mock_get_tool:
+        with patch("services.beers.get_external_brewing_tool") as mock_get_tool:
             mock_tool = MagicMock()
             mock_tool.get_recipe_details = AsyncMock(return_value={"name": "Found Recipe"})
             mock_get_tool.return_value = mock_tool

@@ -1,7 +1,8 @@
 """Tests for db/plaato_data.py module - PlaatoData model"""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from db.plaato_data import PlaatoData
 
@@ -87,7 +88,8 @@ class TestPlaatoDataModel:
 
     def test_inherits_mixins(self):
         """Test PlaatoData inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, AuditedMixin, DictifiableMixin
+
         assert issubclass(PlaatoData, DictifiableMixin)
         assert issubclass(PlaatoData, AuditedMixin)
         assert issubclass(PlaatoData, AsyncQueryMethodsMixin)
@@ -101,4 +103,5 @@ class TestPlaatoDataModel:
         """Test id is String type (Plaato device ID)"""
         id_col = next(c for c in PlaatoData.__table__.columns if c.name == "id")
         from sqlalchemy import String
+
         assert isinstance(id_col.type, String)

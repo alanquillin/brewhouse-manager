@@ -2,11 +2,12 @@
 
 import asyncio
 import base64
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from lib.tap_monitors.keg_volume_monitor import KegVolumeMonitor, KEYMAP
+import pytest
+
 from lib.tap_monitors.exceptions import TapMonitorDependencyError
+from lib.tap_monitors.keg_volume_monitor import KEYMAP, KegVolumeMonitor
 
 
 # Helper to run async functions in sync tests
@@ -39,7 +40,7 @@ class TestKegVolumeMonitor:
         return config
 
     @pytest.fixture
-    @patch('lib.tap_monitors.keg_volume_monitor.TapMonitorBase.__init__')
+    @patch("lib.tap_monitors.keg_volume_monitor.TapMonitorBase.__init__")
     def monitor(self, mock_init, mock_config):
         """Create a KegVolumeMonitor instance with mocked dependencies"""
         mock_init.return_value = None
@@ -59,20 +60,15 @@ class TestKegVolumeMonitor:
         assert result.startswith("Bearer ")
         # Decode and verify format
         token_b64 = result.replace("Bearer ", "")
-        decoded = base64.b64decode(token_b64).decode('ascii')
+        decoded = base64.b64decode(token_b64).decode("ascii")
         assert decoded == "svc|test_api_key"
 
-    @patch('lib.tap_monitors.keg_volume_monitor.AsyncClient')
+    @patch("lib.tap_monitors.keg_volume_monitor.AsyncClient")
     def test_get_success(self, mock_async_client, monitor):
         """Test get with successful response"""
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "percentRemaining": 75.5,
-            "totalVolumeRemaining": 10.5,
-            "displayVolumeUnit": "L",
-            "firmwareVersion": "1.2.3"
-        }
+        mock_response.json.return_value = {"percentRemaining": 75.5, "totalVolumeRemaining": 10.5, "displayVolumeUnit": "L", "firmwareVersion": "1.2.3"}
 
         mock_client = MagicMock()
         mock_client.get = AsyncMock(return_value=mock_response)
@@ -85,17 +81,12 @@ class TestKegVolumeMonitor:
 
         assert result == 75.5
 
-    @patch('lib.tap_monitors.keg_volume_monitor.AsyncClient')
+    @patch("lib.tap_monitors.keg_volume_monitor.AsyncClient")
     def test_get_all(self, mock_async_client, monitor):
         """Test get_all returns all data"""
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "percentRemaining": 80,
-            "totalVolumeRemaining": 15,
-            "displayVolumeUnit": "gal",
-            "firmwareVersion": "2.0.0"
-        }
+        mock_response.json.return_value = {"percentRemaining": 80, "totalVolumeRemaining": 15, "displayVolumeUnit": "gal", "firmwareVersion": "2.0.0"}
 
         mock_client = MagicMock()
         mock_client.get = AsyncMock(return_value=mock_response)
@@ -111,7 +102,7 @@ class TestKegVolumeMonitor:
         assert result["displayVolumeUnit"] == "gal"
         assert result["firmwareVersion"] == "2.0.0"
 
-    @patch('lib.tap_monitors.keg_volume_monitor.AsyncClient')
+    @patch("lib.tap_monitors.keg_volume_monitor.AsyncClient")
     def test_discover(self, mock_async_client, monitor):
         """Test discover returns list of devices"""
         mock_response = MagicMock()
@@ -132,7 +123,7 @@ class TestKegVolumeMonitor:
         assert len(result) == 2
         assert {"id": "dev1", "name": "Device 1"} in result
 
-    @patch('lib.tap_monitors.keg_volume_monitor.AsyncClient')
+    @patch("lib.tap_monitors.keg_volume_monitor.AsyncClient")
     def test_get_401_raises_dependency_error(self, mock_async_client, monitor):
         """Test _get raises TapMonitorDependencyError on 401"""
         mock_response = MagicMock()
@@ -148,7 +139,7 @@ class TestKegVolumeMonitor:
         with pytest.raises(TapMonitorDependencyError):
             run_async(monitor._get("devices"))
 
-    @patch('lib.tap_monitors.keg_volume_monitor.AsyncClient')
+    @patch("lib.tap_monitors.keg_volume_monitor.AsyncClient")
     def test_get_includes_auth_header(self, mock_async_client, monitor):
         """Test _get includes Authorization header"""
         mock_response = MagicMock()

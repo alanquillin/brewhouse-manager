@@ -1,18 +1,12 @@
 """Tests for services/plaato_keg.py module - Plaato Keg service"""
 
 import asyncio
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from services.plaato_keg import (
-    PlaatoKegService,
-    to_int,
-    to_float,
-    to_bool,
-    clean_str,
-    CONVERSIONS,
-)
+import pytest
+
+from services.plaato_keg import CONVERSIONS, PlaatoKegService, clean_str, to_bool, to_float, to_int
 
 
 def run_async(coro):
@@ -179,7 +173,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = []
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 
@@ -201,7 +195,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = []
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 
@@ -222,7 +216,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = []
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 
@@ -241,7 +235,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = []
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 
@@ -260,7 +254,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = []
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 
@@ -280,7 +274,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = []
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 
@@ -300,7 +294,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = []
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 
@@ -320,7 +314,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = []
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 
@@ -336,7 +330,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = ["plaato-1"]
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 
@@ -351,7 +345,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = ["other-device"]
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 
@@ -370,7 +364,7 @@ class TestPlaatoKegServiceTransformResponse:
 
         mock_session = AsyncMock()
 
-        with patch('services.plaato_keg.service_handler') as mock_handler:
+        with patch("services.plaato_keg.service_handler") as mock_handler:
             mock_handler.connection_handler.get_registered_device_ids.return_value = []
             result = run_async(PlaatoKegService.transform_response(mock_keg, mock_session))
 

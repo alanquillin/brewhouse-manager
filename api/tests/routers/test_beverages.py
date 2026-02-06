@@ -1,8 +1,9 @@
 """Tests for routers/beverages.py module - Beverages router"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import HTTPException
 
 
@@ -39,8 +40,7 @@ class TestListBeverages:
         mock_session = AsyncMock()
         mock_beverage = create_mock_beverage()
 
-        with patch('routers.beverages.BeveragesDB') as mock_db, \
-             patch('routers.beverages.BeverageService') as mock_service:
+        with patch("routers.beverages.BeveragesDB") as mock_db, patch("routers.beverages.BeverageService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_beverage])
             mock_service.transform_response = AsyncMock(return_value={"id": "bev-1"})
 
@@ -63,8 +63,7 @@ class TestCreateBeverage:
         mock_beverage = create_mock_beverage()
         beverage_data = BeverageCreate(name="New Cider", type="cider")
 
-        with patch('routers.beverages.BeveragesDB') as mock_db, \
-             patch('routers.beverages.BeverageService') as mock_service:
+        with patch("routers.beverages.BeveragesDB") as mock_db, patch("routers.beverages.BeverageService") as mock_service:
             mock_db.create = AsyncMock(return_value=mock_beverage)
             mock_service.process_image_transitions = AsyncMock(return_value=None)
             mock_service.transform_response = AsyncMock(return_value={"id": "bev-1", "name": "New Cider"})
@@ -82,14 +81,9 @@ class TestCreateBeverage:
         mock_auth_user = create_mock_auth_user()
         mock_session = AsyncMock()
         mock_beverage = create_mock_beverage()
-        beverage_data = BeverageCreate(
-            name="New Cider",
-            type="cider",
-            image_transitions=[{"img_url": "http://example.com/img.jpg"}]
-        )
+        beverage_data = BeverageCreate(name="New Cider", type="cider", image_transitions=[{"img_url": "http://example.com/img.jpg"}])
 
-        with patch('routers.beverages.BeveragesDB') as mock_db, \
-             patch('routers.beverages.BeverageService') as mock_service:
+        with patch("routers.beverages.BeveragesDB") as mock_db, patch("routers.beverages.BeverageService") as mock_service:
             mock_db.create = AsyncMock(return_value=mock_beverage)
             mock_service.process_image_transitions = AsyncMock(return_value=[{"id": "it-1"}])
             mock_service.transform_response = AsyncMock(return_value={"id": "bev-1"})
@@ -110,8 +104,7 @@ class TestGetBeverage:
         mock_session = AsyncMock()
         mock_beverage = create_mock_beverage()
 
-        with patch('routers.beverages.BeveragesDB') as mock_db, \
-             patch('routers.beverages.BeverageService') as mock_service:
+        with patch("routers.beverages.BeveragesDB") as mock_db, patch("routers.beverages.BeverageService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_beverage)
             mock_service.transform_response = AsyncMock(return_value={"id": "bev-1"})
 
@@ -126,7 +119,7 @@ class TestGetBeverage:
         mock_auth_user = create_mock_auth_user()
         mock_session = AsyncMock()
 
-        with patch('routers.beverages.BeveragesDB') as mock_db:
+        with patch("routers.beverages.BeveragesDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -148,8 +141,7 @@ class TestUpdateBeverage:
         mock_beverage = create_mock_beverage()
         update_data = BeverageUpdate(name="Updated Cider")
 
-        with patch('routers.beverages.BeveragesDB') as mock_db, \
-             patch('routers.beverages.BeverageService') as mock_service:
+        with patch("routers.beverages.BeveragesDB") as mock_db, patch("routers.beverages.BeverageService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_beverage)
             mock_db.update = AsyncMock()
             mock_service.process_image_transitions = AsyncMock(return_value=None)
@@ -168,7 +160,7 @@ class TestUpdateBeverage:
         mock_session = AsyncMock()
         update_data = BeverageUpdate(name="Updated")
 
-        with patch('routers.beverages.BeveragesDB') as mock_db:
+        with patch("routers.beverages.BeveragesDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -184,13 +176,9 @@ class TestUpdateBeverage:
         mock_auth_user = create_mock_auth_user()
         mock_session = AsyncMock()
         mock_beverage = create_mock_beverage()
-        update_data = BeverageUpdate(
-            name="Updated Cider",
-            image_transitions=[{"id": "it-1", "img_url": "http://example.com/new.jpg"}]
-        )
+        update_data = BeverageUpdate(name="Updated Cider", image_transitions=[{"id": "it-1", "img_url": "http://example.com/new.jpg"}])
 
-        with patch('routers.beverages.BeveragesDB') as mock_db, \
-             patch('routers.beverages.BeverageService') as mock_service:
+        with patch("routers.beverages.BeveragesDB") as mock_db, patch("routers.beverages.BeverageService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_beverage)
             mock_db.update = AsyncMock()
             mock_service.process_image_transitions = AsyncMock(return_value=[{"id": "it-1"}])
@@ -212,7 +200,7 @@ class TestDeleteBeverage:
         mock_session = AsyncMock()
         mock_beverage = create_mock_beverage()
 
-        with patch('routers.beverages.BeveragesDB') as mock_db:
+        with patch("routers.beverages.BeveragesDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_beverage)
             mock_db.delete = AsyncMock()
 
@@ -228,7 +216,7 @@ class TestDeleteBeverage:
         mock_auth_user = create_mock_auth_user()
         mock_session = AsyncMock()
 
-        with patch('routers.beverages.BeveragesDB') as mock_db:
+        with patch("routers.beverages.BeveragesDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:

@@ -1,7 +1,9 @@
 from typing import List, Optional
+
 from pydantic import Field
 
 from schemas.base import CamelCaseModel
+
 
 class TapBase(CamelCaseModel):
     tap_monitor_id: Optional[str] = None
@@ -16,6 +18,7 @@ class TapCreate(TapBase):
     description: str = None
     tap_number: int = None
     location_id: str = None
+
 
 class TapUpdate(TapBase):
     """Schema for updating a tap"""

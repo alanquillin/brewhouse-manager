@@ -2,13 +2,14 @@
 _TABLE_NAME = "batches"
 _PKEY = "id"
 
-from sqlalchemy import Column, ForeignKey, Float, String, func, Date, or_
+from sqlalchemy import Column, Date, Float, ForeignKey, String, func, or_
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import backref, relationship, joinedload
+from sqlalchemy.orm import backref, joinedload, relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, beers, beverages, generate_audit_trail, batch_locations, locations
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, batch_locations, beers, beverages, generate_audit_trail, locations
 from db.types.nested import NestedMutableDict
+
 
 @generate_audit_trail
 class Batches(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
@@ -29,12 +30,12 @@ class Batches(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     brew_date = Column(Date, nullable=True)
     keg_date = Column(Date, nullable=True)
     archived_on = Column(Date, nullable=True)
-    
+
     locations = relationship(locations.Locations, secondary=batch_locations.BatchLocations.__table__)
     beer = relationship(beers.Beers, backref=backref("Batches", cascade="all,delete"))
     beverage = relationship(beverages.Beverages, backref=backref("Batches", cascade="all,delete"))
 
-    #overrides = relationship("BatchOverrides", back_populates="batch")
+    # overrides = relationship("BatchOverrides", back_populates="batch")
 
     __table_args__ = (
         Index("ix_batches_beer_id", beer_id, unique=False),

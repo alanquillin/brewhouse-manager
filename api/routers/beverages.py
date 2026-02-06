@@ -5,8 +5,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import AuthUser, get_db_session, require_user
 from db.beverages import Beverages as BeveragesDB
+from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
 from schemas.beverages import BeverageCreate, BeverageResponse, BeverageUpdate
 from services.beverages import BeverageService
@@ -41,13 +41,9 @@ async def create_beverage(
     # Process image transitions if provided
     image_transitions = None
     if beverage_data.image_transitions:
-        image_transitions = await BeverageService.process_image_transitions(
-            db_session, beverage_data.image_transitions, beverage_id=beverage.id
-        )
+        image_transitions = await BeverageService.process_image_transitions(db_session, beverage_data.image_transitions, beverage_id=beverage.id)
 
-    return await BeverageService.transform_response(
-        beverage, db_session=db_session, image_transitions=image_transitions
-    )
+    return await BeverageService.transform_response(beverage, db_session=db_session, image_transitions=image_transitions)
 
 
 @router.get("/{beverage_id}", response_model=dict)
@@ -90,16 +86,12 @@ async def update_beverage(
     # Process image transitions
     image_transitions = None
     if beverage_data.image_transitions:
-        image_transitions = await BeverageService.process_image_transitions(
-            db_session, beverage_data.image_transitions, beverage_id=beverage_id
-        )
+        image_transitions = await BeverageService.process_image_transitions(db_session, beverage_data.image_transitions, beverage_id=beverage_id)
 
     # Fetch updated beverage
     beverage = await BeveragesDB.get_by_pkey(db_session, beverage_id)
 
-    return await BeverageService.transform_response(
-        beverage, db_session=db_session, image_transitions=image_transitions
-    )
+    return await BeverageService.transform_response(beverage, db_session=db_session, image_transitions=image_transitions)
 
 
 @router.delete("/{beverage_id}")

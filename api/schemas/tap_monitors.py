@@ -1,7 +1,9 @@
 from typing import List, Optional
+
 from pydantic import Field
 
 from schemas.base import CamelCaseModel
+
 
 class TapMonitorBase(CamelCaseModel):
     meta: Optional[dict] = None
@@ -14,6 +16,7 @@ class TapMonitorBase(CamelCaseModel):
             data["meta"] = meta
         return data
 
+
 class TapMonitorCreate(TapMonitorBase):
     """Schema for creating a tap monitor"""
 
@@ -21,12 +24,14 @@ class TapMonitorCreate(TapMonitorBase):
     monitor_type: str
     location_id: str = None
 
+
 class TapMonitorUpdate(TapMonitorBase):
     """Schema for updating a tap monitor"""
 
     name: Optional[str] = None
     monitor_type: Optional[str] = None
     location_id: Optional[str] = None
+
 
 class TapMonitorBase(CamelCaseModel):
     type: str

@@ -1,13 +1,10 @@
 """Tests for services/base.py module - Base service utilities"""
 
-import pytest
 from unittest.mock import MagicMock
 
-from services.base import (
-    to_camel_case,
-    transform_dict_to_camel_case,
-    BaseService,
-)
+import pytest
+
+from services.base import BaseService, to_camel_case, transform_dict_to_camel_case
 
 
 class TestToCamelCase:
@@ -58,35 +55,15 @@ class TestTransformDictToCamelCase:
 
     def test_nested_dict(self):
         """Test nested dict transformation"""
-        data = {
-            "user_info": {
-                "first_name": "John",
-                "email_address": "john@test.com"
-            }
-        }
+        data = {"user_info": {"first_name": "John", "email_address": "john@test.com"}}
         result = transform_dict_to_camel_case(data)
-        assert result == {
-            "userInfo": {
-                "firstName": "John",
-                "emailAddress": "john@test.com"
-            }
-        }
+        assert result == {"userInfo": {"firstName": "John", "emailAddress": "john@test.com"}}
 
     def test_list_of_dicts(self):
         """Test list of dicts transformation"""
-        data = {
-            "users": [
-                {"first_name": "John"},
-                {"first_name": "Jane"}
-            ]
-        }
+        data = {"users": [{"first_name": "John"}, {"first_name": "Jane"}]}
         result = transform_dict_to_camel_case(data)
-        assert result == {
-            "users": [
-                {"firstName": "John"},
-                {"firstName": "Jane"}
-            ]
-        }
+        assert result == {"users": [{"firstName": "John"}, {"firstName": "Jane"}]}
 
     def test_removes_none_values(self):
         """Test that None values are removed"""
@@ -119,28 +96,13 @@ class TestTransformDictToCamelCase:
 
     def test_deeply_nested(self):
         """Test deeply nested structure"""
-        data = {
-            "level_one": {
-                "level_two": {
-                    "level_three": {
-                        "deep_value": "test"
-                    }
-                }
-            }
-        }
+        data = {"level_one": {"level_two": {"level_three": {"deep_value": "test"}}}}
         result = transform_dict_to_camel_case(data)
         assert result["levelOne"]["levelTwo"]["levelThree"]["deepValue"] == "test"
 
     def test_mixed_list_values(self):
         """Test list with mixed types"""
-        data = {
-            "items": [
-                {"item_name": "first"},
-                "string_value",
-                123,
-                {"another_item": "second"}
-            ]
-        }
+        data = {"items": [{"item_name": "first"}, "string_value", 123, {"another_item": "second"}]}
         result = transform_dict_to_camel_case(data)
         assert result["items"][0] == {"itemName": "first"}
         assert result["items"][1] == "string_value"

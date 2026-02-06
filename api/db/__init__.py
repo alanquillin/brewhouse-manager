@@ -1,30 +1,48 @@
-from contextlib import contextmanager, asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 from functools import wraps
 from urllib.parse import quote
 
 from psycopg2.errors import InvalidTextRepresentation, NotNullViolation, UniqueViolation  # pylint: disable=no-name-in-module
 from psycopg2.extensions import QuotedString, register_adapter
-from sqlalchemy import DDL, Column, DateTime, String, create_engine, event, func, text, select, delete, update
+from sqlalchemy import DDL, Column, DateTime, String, create_engine, delete, event, func, select, text, update
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.exc import DataError, IntegrityError
+from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from sqlalchemy.ext.asyncio import AsyncAttrs
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.orm.session import Session
 
 from lib import exceptions as local_exc
 from lib import json, logging
 
+
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
-__all__ = ["Base", "audit", "beers", "beverages", "locations", "tap_monitors", "taps", "users", "image_transitions", "user_locations", "on_tap", "batches", "batch_overrides", "batch_locations", "plaato_data"]
+
+__all__ = [
+    "Base",
+    "audit",
+    "beers",
+    "beverages",
+    "locations",
+    "tap_monitors",
+    "taps",
+    "users",
+    "image_transitions",
+    "user_locations",
+    "on_tap",
+    "batches",
+    "batch_overrides",
+    "batch_locations",
+    "plaato_data",
+]
 
 LOGGER = logging.getLogger(__name__)
+
 
 @event.listens_for(Base.metadata, "before_create")
 def create_extensions(_target, connection, **_):
@@ -212,33 +230,30 @@ class DictMethodsMixin:
     def __contains__(self, key):
         return hasattr(self, key)
 
-audit_column_names = [
-    "created_app",
-    "created_user",
-    "created_on",
-    "updated_app",
-    "updated_user",
-    "updated_on"
-]
+
+audit_column_names = ["created_app", "created_user", "created_on", "updated_app", "updated_user", "updated_on"]
 
 audit_columns = [
     Column("created_app", String, server_default=func.current_setting("application_name"), nullable=False),
     Column("created_user", String, server_default=func.current_user(), nullable=False),
     Column("created_on", DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False),
-    Column("updated_app",
+    Column(
+        "updated_app",
         String,
         server_default=func.current_setting("application_name"),
         onupdate=func.current_setting("application_name"),
         nullable=False,
     ),
     Column("updated_user", String, server_default=func.current_user(), onupdate=func.current_user(), nullable=False),
-    Column("updated_on", 
+    Column(
+        "updated_on",
         DateTime(timezone=True),
         server_default=func.current_timestamp(),
         onupdate=func.current_timestamp(),
         nullable=False,
-    )
+    ),
 ]
+
 
 class AuditedMixin:
     created_app = Column(String, server_default=func.current_setting("application_name"), nullable=False)
@@ -463,7 +478,7 @@ class QueryMethodsMixin:
             except:
                 session.rollback()
                 raise
-    
+
     @classmethod
     def delete_by(cls, session, autocommit=True, **kwargs):
         session.query(cls).filter_by(**kwargs).delete()
@@ -494,7 +509,7 @@ class AsyncQueryMethodsMixin:
         if ids:
             LOGGER.debug("filtering query by ids: %s", ids)
             q = q.where(cls.id.in_(ids))
-        
+
         if q_fn:
             q = q_fn(q)
 
@@ -557,7 +572,7 @@ class AsyncQueryMethodsMixin:
             except:
                 await session.rollback()
                 raise
-        
+
         return rowcnt
 
     @classmethod
@@ -601,7 +616,7 @@ class AsyncQueryMethodsMixin:
             except:
                 await session.rollback()
                 raise
-        
+
         return rowcnt
 
 

@@ -9,7 +9,7 @@ from sqlalchemy import Column, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, generate_audit_trail
 
 
 @generate_audit_trail

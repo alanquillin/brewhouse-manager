@@ -3,14 +3,15 @@
 import asyncio
 import os
 import sys
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import Request
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from sqlalchemy.exc import IntegrityError, DataError
+from fastapi.responses import JSONResponse
 from schema import SchemaError
+from sqlalchemy.exc import DataError, IntegrityError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
 def run_async(coro):
@@ -23,6 +24,7 @@ def run_async(coro):
 def api_module():
     """Import api.api module (it should be importable after config is set up)"""
     import api.api as module
+
     return module
 
 
@@ -31,11 +33,7 @@ class TestUserMessageError:
 
     def test_init_with_all_params(self, api_module):
         """Test initialization with all parameters"""
-        error = api_module.UserMessageError(
-            response_code=400,
-            user_msg="User friendly message",
-            server_msg="Server log message"
-        )
+        error = api_module.UserMessageError(response_code=400, user_msg="User friendly message", server_msg="Server log message")
 
         assert error.response_code == 400
         assert error.user_msg == "User friendly message"
@@ -79,11 +77,7 @@ class TestUserMessageErrorHandler:
     def test_uses_user_msg_in_response(self, api_module):
         """Test uses user_msg in response content"""
         mock_request = MagicMock(spec=Request)
-        exc = api_module.UserMessageError(
-            response_code=403,
-            user_msg="Access denied",
-            server_msg="User attempted unauthorized access"
-        )
+        exc = api_module.UserMessageError(response_code=403, user_msg="Access denied", server_msg="User attempted unauthorized access")
 
         result = run_async(api_module.user_message_error_handler(mock_request, exc))
 
@@ -208,9 +202,7 @@ class TestServeSpa:
 
     def test_returns_404_when_no_static_dir(self, api_module):
         """Test returns 404 when static directory doesn't exist"""
-        with patch.object(api_module, 'STATIC_DIR', '/nonexistent'), \
-             patch('os.path.isfile', return_value=False), \
-             patch('os.path.exists', return_value=False):
+        with patch.object(api_module, "STATIC_DIR", "/nonexistent"), patch("os.path.isfile", return_value=False), patch("os.path.exists", return_value=False):
             result = run_async(api_module.serve_spa("some/path"))
 
         assert isinstance(result, JSONResponse)
@@ -220,25 +212,24 @@ class TestServeSpa:
         """Test serves static file when it exists"""
         mock_file_response = MagicMock()
 
-        with patch.object(api_module, 'STATIC_DIR', '/static'), \
-             patch('os.path.isfile', return_value=True), \
-             patch('api.api.FileResponse', return_value=mock_file_response) as mock_fr_class:
+        with patch.object(api_module, "STATIC_DIR", "/static"), patch("os.path.isfile", return_value=True), patch(
+            "api.api.FileResponse", return_value=mock_file_response
+        ) as mock_fr_class:
             result = run_async(api_module.serve_spa("js/app.js"))
 
-        mock_fr_class.assert_called_once_with('/static/js/app.js')
+        mock_fr_class.assert_called_once_with("/static/js/app.js")
         assert result == mock_file_response
 
     def test_serves_index_html_for_spa_routes(self, api_module):
         """Test serves index.html for SPA routes"""
         mock_file_response = MagicMock()
 
-        with patch.object(api_module, 'STATIC_DIR', '/static'), \
-             patch('os.path.isfile', return_value=False), \
-             patch('os.path.exists', return_value=True), \
-             patch('api.api.FileResponse', return_value=mock_file_response) as mock_fr_class:
+        with patch.object(api_module, "STATIC_DIR", "/static"), patch("os.path.isfile", return_value=False), patch("os.path.exists", return_value=True), patch(
+            "api.api.FileResponse", return_value=mock_file_response
+        ) as mock_fr_class:
             result = run_async(api_module.serve_spa("manage/locations"))
 
-        mock_fr_class.assert_called_once_with('/static/index.html')
+        mock_fr_class.assert_called_once_with("/static/index.html")
         assert result == mock_file_response
 
 

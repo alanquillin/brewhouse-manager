@@ -2,9 +2,9 @@
 
 import asyncio
 import base64
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from fastapi import HTTPException, status
 
 from dependencies.auth import (
@@ -12,9 +12,9 @@ from dependencies.auth import (
     get_current_user_from_api_key,
     get_current_user_from_session,
     get_optional_user,
-    require_user,
     require_admin,
     require_location_access,
+    require_user,
 )
 
 
@@ -181,12 +181,8 @@ class TestGetCurrentUserFromApiKey:
         mock_request.query_params = {}
         mock_session = AsyncMock()
 
-        with patch('dependencies.auth.UsersDB') as mock_users_db:
-            result = run_async(get_current_user_from_api_key(
-                credentials=None,
-                request=mock_request,
-                db_session=mock_session
-            ))
+        with patch("dependencies.auth.UsersDB") as mock_users_db:
+            result = run_async(get_current_user_from_api_key(credentials=None, request=mock_request, db_session=mock_session))
 
         assert result is None
 
@@ -201,13 +197,9 @@ class TestGetCurrentUserFromApiKey:
             api_key="my-api-key",
         )
 
-        with patch('dependencies.auth.UsersDB') as mock_users_db:
+        with patch("dependencies.auth.UsersDB") as mock_users_db:
             mock_users_db.get_by_api_key = AsyncMock(return_value=mock_user)
-            result = run_async(get_current_user_from_api_key(
-                credentials=None,
-                request=mock_request,
-                db_session=mock_session
-            ))
+            result = run_async(get_current_user_from_api_key(credentials=None, request=mock_request, db_session=mock_session))
 
         assert result is not None
         assert result.email == "test@test.com"
@@ -227,13 +219,9 @@ class TestGetCurrentUserFromApiKey:
             api_key="bearer-api-key",
         )
 
-        with patch('dependencies.auth.UsersDB') as mock_users_db:
+        with patch("dependencies.auth.UsersDB") as mock_users_db:
             mock_users_db.get_by_api_key = AsyncMock(return_value=mock_user)
-            result = run_async(get_current_user_from_api_key(
-                credentials=mock_credentials,
-                request=mock_request,
-                db_session=mock_session
-            ))
+            result = run_async(get_current_user_from_api_key(credentials=mock_credentials, request=mock_request, db_session=mock_session))
 
         assert result is not None
         assert result.email == "bearer@test.com"
@@ -256,13 +244,9 @@ class TestGetCurrentUserFromApiKey:
             api_key=original_key,
         )
 
-        with patch('dependencies.auth.UsersDB') as mock_users_db:
+        with patch("dependencies.auth.UsersDB") as mock_users_db:
             mock_users_db.get_by_api_key = AsyncMock(return_value=mock_user)
-            result = run_async(get_current_user_from_api_key(
-                credentials=mock_credentials,
-                request=mock_request,
-                db_session=mock_session
-            ))
+            result = run_async(get_current_user_from_api_key(credentials=mock_credentials, request=mock_request, db_session=mock_session))
 
         assert result is not None
         mock_users_db.get_by_api_key.assert_called_once_with(mock_session, original_key)
@@ -284,13 +268,9 @@ class TestGetCurrentUserFromApiKey:
             api_key=raw_key,
         )
 
-        with patch('dependencies.auth.UsersDB') as mock_users_db:
+        with patch("dependencies.auth.UsersDB") as mock_users_db:
             mock_users_db.get_by_api_key = AsyncMock(return_value=mock_user)
-            result = run_async(get_current_user_from_api_key(
-                credentials=mock_credentials,
-                request=mock_request,
-                db_session=mock_session
-            ))
+            result = run_async(get_current_user_from_api_key(credentials=mock_credentials, request=mock_request, db_session=mock_session))
 
         assert result is not None
 
@@ -300,13 +280,9 @@ class TestGetCurrentUserFromApiKey:
         mock_request.query_params = {"api_key": "invalid-key"}
         mock_session = AsyncMock()
 
-        with patch('dependencies.auth.UsersDB') as mock_users_db:
+        with patch("dependencies.auth.UsersDB") as mock_users_db:
             mock_users_db.get_by_api_key = AsyncMock(return_value=None)
-            result = run_async(get_current_user_from_api_key(
-                credentials=None,
-                request=mock_request,
-                db_session=mock_session
-            ))
+            result = run_async(get_current_user_from_api_key(credentials=None, request=mock_request, db_session=mock_session))
 
         assert result is None
 
@@ -324,13 +300,9 @@ class TestGetCurrentUserFromApiKey:
             api_key="query-key",
         )
 
-        with patch('dependencies.auth.UsersDB') as mock_users_db:
+        with patch("dependencies.auth.UsersDB") as mock_users_db:
             mock_users_db.get_by_api_key = AsyncMock(return_value=mock_user)
-            result = run_async(get_current_user_from_api_key(
-                credentials=mock_credentials,
-                request=mock_request,
-                db_session=mock_session
-            ))
+            result = run_async(get_current_user_from_api_key(credentials=mock_credentials, request=mock_request, db_session=mock_session))
 
         mock_users_db.get_by_api_key.assert_called_once_with(mock_session, "query-key")
 
@@ -344,10 +316,7 @@ class TestGetCurrentUserFromSession:
         mock_request.session = {}
         mock_session = AsyncMock()
 
-        result = run_async(get_current_user_from_session(
-            request=mock_request,
-            db_session=mock_session
-        ))
+        result = run_async(get_current_user_from_session(request=mock_request, db_session=mock_session))
 
         assert result is None
 
@@ -364,12 +333,9 @@ class TestGetCurrentUserFromSession:
             email="session@test.com",
         )
 
-        with patch('dependencies.auth.UsersDB') as mock_users_db:
+        with patch("dependencies.auth.UsersDB") as mock_users_db:
             mock_users_db.get_by_pkey = AsyncMock(return_value=mock_user)
-            result = run_async(get_current_user_from_session(
-                request=mock_request,
-                db_session=mock_session
-            ))
+            result = run_async(get_current_user_from_session(request=mock_request, db_session=mock_session))
 
         assert result is not None
         assert result.email == "session@test.com"
@@ -381,12 +347,9 @@ class TestGetCurrentUserFromSession:
         mock_request.session = {"user_id": "deleted-user"}
         mock_session = AsyncMock()
 
-        with patch('dependencies.auth.UsersDB') as mock_users_db:
+        with patch("dependencies.auth.UsersDB") as mock_users_db:
             mock_users_db.get_by_pkey = AsyncMock(return_value=None)
-            result = run_async(get_current_user_from_session(
-                request=mock_request,
-                db_session=mock_session
-            ))
+            result = run_async(get_current_user_from_session(request=mock_request, db_session=mock_session))
 
         assert result is None
 
@@ -401,10 +364,7 @@ class TestGetOptionalUser:
         session_user = MagicMock()
         session_user.email = "session@test.com"
 
-        result = run_async(get_optional_user(
-            api_key_user=api_user,
-            session_user=session_user
-        ))
+        result = run_async(get_optional_user(api_key_user=api_user, session_user=session_user))
 
         assert result == api_user
 
@@ -413,19 +373,13 @@ class TestGetOptionalUser:
         session_user = MagicMock()
         session_user.email = "session@test.com"
 
-        result = run_async(get_optional_user(
-            api_key_user=None,
-            session_user=session_user
-        ))
+        result = run_async(get_optional_user(api_key_user=None, session_user=session_user))
 
         assert result == session_user
 
     def test_returns_none_when_no_user(self):
         """Test returns None when neither auth method provides user"""
-        result = run_async(get_optional_user(
-            api_key_user=None,
-            session_user=None
-        ))
+        result = run_async(get_optional_user(api_key_user=None, session_user=None))
 
         assert result is None
 
@@ -536,13 +490,13 @@ class TestModuleExports:
         """Test __init__.py exports all required dependencies"""
         from dependencies import (
             AuthUser,
-            get_db_session,
             get_current_user_from_api_key,
             get_current_user_from_session,
+            get_db_session,
             get_optional_user,
-            require_user,
             require_admin,
             require_location_access,
+            require_user,
         )
 
         assert AuthUser is not None

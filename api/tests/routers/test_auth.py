@@ -1,8 +1,9 @@
 """Tests for routers/auth.py module - Authentication router"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import HTTPException
 
 
@@ -69,15 +70,14 @@ class TestLogin:
 
     def test_successful_login(self):
         """Test successful password login"""
-        from routers.auth import login, LoginRequest
+        from routers.auth import LoginRequest, login
 
         mock_request = create_mock_request()
         mock_user = create_mock_user(password_hash="hashed_password")
         mock_session = AsyncMock()
         login_data = LoginRequest(email="test@example.com", password="password123")
 
-        with patch('routers.auth.UsersDB') as mock_users_db, \
-             patch('routers.auth.PasswordHasher') as mock_ph_class:
+        with patch("routers.auth.UsersDB") as mock_users_db, patch("routers.auth.PasswordHasher") as mock_ph_class:
             mock_users_db.get_by_email = AsyncMock(return_value=mock_user)
             mock_ph = MagicMock()
             mock_ph.verify.return_value = True
@@ -90,13 +90,13 @@ class TestLogin:
 
     def test_login_user_not_found(self):
         """Test login fails when user not found"""
-        from routers.auth import login, LoginRequest
+        from routers.auth import LoginRequest, login
 
         mock_request = create_mock_request()
         mock_session = AsyncMock()
         login_data = LoginRequest(email="unknown@example.com", password="password123")
 
-        with patch('routers.auth.UsersDB') as mock_users_db:
+        with patch("routers.auth.UsersDB") as mock_users_db:
             mock_users_db.get_by_email = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -106,14 +106,14 @@ class TestLogin:
 
     def test_login_no_password_set(self):
         """Test login fails when user has no password set"""
-        from routers.auth import login, LoginRequest
+        from routers.auth import LoginRequest, login
 
         mock_request = create_mock_request()
         mock_user = create_mock_user(password_hash=None)
         mock_session = AsyncMock()
         login_data = LoginRequest(email="test@example.com", password="password123")
 
-        with patch('routers.auth.UsersDB') as mock_users_db:
+        with patch("routers.auth.UsersDB") as mock_users_db:
             mock_users_db.get_by_email = AsyncMock(return_value=mock_user)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -124,16 +124,16 @@ class TestLogin:
 
     def test_login_wrong_password(self):
         """Test login fails with wrong password"""
-        from routers.auth import login, LoginRequest
         from argon2.exceptions import VerifyMismatchError
+
+        from routers.auth import LoginRequest, login
 
         mock_request = create_mock_request()
         mock_user = create_mock_user(password_hash="hashed_password")
         mock_session = AsyncMock()
         login_data = LoginRequest(email="test@example.com", password="wrong_password")
 
-        with patch('routers.auth.UsersDB') as mock_users_db, \
-             patch('routers.auth.PasswordHasher') as mock_ph_class:
+        with patch("routers.auth.UsersDB") as mock_users_db, patch("routers.auth.PasswordHasher") as mock_ph_class:
             mock_users_db.get_by_email = AsyncMock(return_value=mock_user)
             mock_ph = MagicMock()
             mock_ph.verify.side_effect = VerifyMismatchError()
@@ -154,7 +154,7 @@ class TestGoogleLogin:
 
         mock_request = create_mock_request()
 
-        with patch('routers.auth.CONFIG') as mock_config:
+        with patch("routers.auth.CONFIG") as mock_config:
             mock_config.get.return_value = False
 
             with pytest.raises(HTTPException) as exc_info:
@@ -168,7 +168,7 @@ class TestGoogleLogin:
 
         mock_request = create_mock_request()
 
-        with patch('routers.auth.CONFIG') as mock_config:
+        with patch("routers.auth.CONFIG") as mock_config:
             mock_config.get.side_effect = lambda key: {
                 "auth.oidc.google.enabled": True,
                 "auth.oidc.google.client_id": None,
@@ -182,13 +182,13 @@ class TestGoogleLogin:
 
     def test_google_login_redirects(self):
         """Test google login returns redirect response"""
-        from routers.auth import google_login
         from fastapi.responses import RedirectResponse
+
+        from routers.auth import google_login
 
         mock_request = create_mock_request()
 
-        with patch('routers.auth.CONFIG') as mock_config, \
-             patch('routers.auth.Flow') as mock_flow_class:
+        with patch("routers.auth.CONFIG") as mock_config, patch("routers.auth.Flow") as mock_flow_class:
             mock_config.get.side_effect = lambda key: {
                 "auth.oidc.google.enabled": True,
                 "auth.oidc.google.client_id": "client_id",
@@ -215,7 +215,7 @@ class TestGoogleCallback:
         mock_request = create_mock_request(session={"oauth_state": "state123"})
         mock_session = AsyncMock()
 
-        with patch('routers.auth.CONFIG') as mock_config:
+        with patch("routers.auth.CONFIG") as mock_config:
             mock_config.get.return_value = False
 
             with pytest.raises(HTTPException) as exc_info:
@@ -230,7 +230,7 @@ class TestGoogleCallback:
         mock_request = create_mock_request(session={"oauth_state": "different_state"})
         mock_session = AsyncMock()
 
-        with patch('routers.auth.CONFIG') as mock_config:
+        with patch("routers.auth.CONFIG") as mock_config:
             mock_config.get.return_value = True
 
             with pytest.raises(HTTPException) as exc_info:
@@ -246,7 +246,7 @@ class TestGoogleCallback:
         mock_request = create_mock_request(session={})
         mock_session = AsyncMock()
 
-        with patch('routers.auth.CONFIG') as mock_config:
+        with patch("routers.auth.CONFIG") as mock_config:
             mock_config.get.return_value = True
 
             with pytest.raises(HTTPException) as exc_info:
@@ -260,8 +260,9 @@ class TestLogout:
 
     def test_logout_clears_session(self):
         """Test logout clears session"""
-        from routers.auth import logout
         from fastapi.responses import RedirectResponse
+
+        from routers.auth import logout
 
         session = {"user_id": "user-1", "other_data": "value"}
         mock_request = create_mock_request(session=session)

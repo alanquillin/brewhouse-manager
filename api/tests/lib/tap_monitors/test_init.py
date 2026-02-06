@@ -1,10 +1,11 @@
 """Tests for lib/tap_monitors/__init__.py module"""
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from lib.tap_monitors import InvalidDataType, TapMonitorBase, get_types, get_tap_monitor_lib
+import pytest
+
 from lib.exceptions import Error
+from lib.tap_monitors import InvalidDataType, TapMonitorBase, get_tap_monitor_lib, get_types
 
 
 class TestInvalidDataType:
@@ -37,8 +38,8 @@ class TestInvalidDataType:
 class TestTapMonitorBase:
     """Tests for TapMonitorBase class"""
 
-    @patch('lib.tap_monitors.Config')
-    @patch('lib.tap_monitors.logging')
+    @patch("lib.tap_monitors.Config")
+    @patch("lib.tap_monitors.logging")
     def test_init(self, mock_logging, mock_config):
         """Test TapMonitorBase initialization"""
         mock_logger = MagicMock()

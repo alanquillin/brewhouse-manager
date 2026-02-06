@@ -1,8 +1,9 @@
 """Tests for services/taps.py module - Tap service"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 
 from services.taps import TapService
 
@@ -58,11 +59,7 @@ class TestTapServiceTransformTapResponse:
         mock_tap = create_mock_tap(tap_number=1)
         mock_session = AsyncMock()
 
-        result = run_async(TapService.transform_tap_response(
-            mock_tap,
-            mock_session,
-            include_location=False
-        ))
+        result = run_async(TapService.transform_tap_response(mock_tap, mock_session, include_location=False))
 
         assert result is not None
         assert result["tapNumber"] == 1
@@ -73,14 +70,10 @@ class TestTapServiceTransformTapResponse:
         mock_tap = create_mock_tap(location=mock_location)
         mock_session = AsyncMock()
 
-        with patch('services.locations.LocationService.transform_response', new_callable=AsyncMock) as mock_loc:
+        with patch("services.locations.LocationService.transform_response", new_callable=AsyncMock) as mock_loc:
             mock_loc.return_value = {"id": "loc-1", "name": "Test Location"}
 
-            result = run_async(TapService.transform_tap_response(
-                mock_tap,
-                mock_session,
-                include_location=True
-            ))
+            result = run_async(TapService.transform_tap_response(mock_tap, mock_session, include_location=True))
 
         assert "location" in result
         assert result["location"]["name"] == "Test Location"
@@ -100,11 +93,7 @@ class TestTapServiceTransformResponse:
         mock_tap = create_mock_tap(tap_number=2)
         mock_session = AsyncMock()
 
-        result = run_async(TapService.transform_response(
-            mock_tap,
-            mock_session,
-            include_location=False
-        ))
+        result = run_async(TapService.transform_response(mock_tap, mock_session, include_location=False))
 
         assert result is not None
         assert result["tapNumber"] == 2
@@ -120,11 +109,7 @@ class TestTapServiceTransformResponse:
         }
         mock_session = AsyncMock()
 
-        result = run_async(TapService.transform_response(
-            mock_tap,
-            mock_session,
-            include_location=False
-        ))
+        result = run_async(TapService.transform_response(mock_tap, mock_session, include_location=False))
 
         assert "onTapId" not in result
         assert "on_tap_id" not in result
@@ -154,16 +139,13 @@ class TestTapServiceTransformResponse:
         mock_tap = create_mock_tap(on_tap=mock_on_tap)
         mock_session = AsyncMock()
 
-        with patch('services.batches.BatchService.transform_response', new_callable=AsyncMock) as mock_batch_transform, \
-             patch('services.beers.BeerService.transform_response', new_callable=AsyncMock) as mock_beer_transform:
+        with patch("services.batches.BatchService.transform_response", new_callable=AsyncMock) as mock_batch_transform, patch(
+            "services.beers.BeerService.transform_response", new_callable=AsyncMock
+        ) as mock_beer_transform:
             mock_batch_transform.return_value = {"id": "batch-1"}
             mock_beer_transform.return_value = {"id": "beer-1", "name": "Test Beer"}
 
-            result = run_async(TapService.transform_response(
-                mock_tap,
-                mock_session,
-                include_location=False
-            ))
+            result = run_async(TapService.transform_response(mock_tap, mock_session, include_location=False))
 
         assert "batch" in result
         assert result["batchId"] == "batch-1"
@@ -176,14 +158,10 @@ class TestTapServiceTransformResponse:
         mock_tap = create_mock_tap(tap_monitor=mock_monitor)
         mock_session = AsyncMock()
 
-        with patch('services.tap_monitors.TapMonitorService.transform_response', new_callable=AsyncMock) as mock_monitor_transform:
+        with patch("services.tap_monitors.TapMonitorService.transform_response", new_callable=AsyncMock) as mock_monitor_transform:
             mock_monitor_transform.return_value = {"id": "monitor-1", "name": "Test Monitor"}
 
-            result = run_async(TapService.transform_response(
-                mock_tap,
-                mock_session,
-                include_location=False
-            ))
+            result = run_async(TapService.transform_response(mock_tap, mock_session, include_location=False))
 
         assert "tapMonitor" in result
         assert result["tapMonitor"]["name"] == "Test Monitor"
@@ -194,14 +172,10 @@ class TestTapServiceTransformResponse:
         mock_tap = create_mock_tap(location=mock_location)
         mock_session = AsyncMock()
 
-        with patch('services.locations.LocationService.transform_response', new_callable=AsyncMock) as mock_loc:
+        with patch("services.locations.LocationService.transform_response", new_callable=AsyncMock) as mock_loc:
             mock_loc.return_value = {"id": "loc-1", "name": "Test Location"}
 
-            result = run_async(TapService.transform_response(
-                mock_tap,
-                mock_session,
-                include_location=True
-            ))
+            result = run_async(TapService.transform_response(mock_tap, mock_session, include_location=True))
 
         assert "location" in result
         assert result["location"]["name"] == "Test Location"

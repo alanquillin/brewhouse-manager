@@ -1,7 +1,8 @@
 """Tests for db/batch_overrides.py module - BatchOverrides model"""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from db.batch_overrides import BatchOverrides
 
@@ -23,7 +24,8 @@ class TestBatchOverridesModel:
 
     def test_inherits_mixins(self):
         """Test BatchOverrides inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, AuditedMixin, DictifiableMixin
+
         assert issubclass(BatchOverrides, DictifiableMixin)
         assert issubclass(BatchOverrides, AuditedMixin)
         assert issubclass(BatchOverrides, AsyncQueryMethodsMixin)

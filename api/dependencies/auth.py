@@ -7,13 +7,13 @@ import base64
 from typing import Optional
 
 from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import async_session_scope
 from db.users import Users as UsersDB
-from lib.config import Config
 from lib import logging
+from lib.config import Config
 
 CONFIG = Config()
 LOGGER = logging.getLogger(__name__)
@@ -56,19 +56,9 @@ class AuthUser:
         """Create AuthUser from database User model"""
         if not user:
             return None
-        
+
         await user.awaitable_attrs.locations
-        return AuthUser(
-            user.id,
-            user.first_name,
-            user.last_name,
-            user.email,
-            user.profile_pic,
-            user.google_oidc_id,
-            user.api_key,
-            user.admin,
-            user.locations
-        )
+        return AuthUser(user.id, user.first_name, user.last_name, user.email, user.profile_pic, user.google_oidc_id, user.api_key, user.admin, user.locations)
 
 
 async def get_db_session() -> AsyncSession:
@@ -119,9 +109,7 @@ async def get_current_user_from_api_key(
     return None
 
 
-async def get_current_user_from_session(
-    request: Request, db_session: AsyncSession = Depends(get_db_session)
-) -> Optional[AuthUser]:
+async def get_current_user_from_session(request: Request, db_session: AsyncSession = Depends(get_db_session)) -> Optional[AuthUser]:
     """
     Check for session-based authentication (cookie).
     Returns AuthUser if valid session found, None otherwise.

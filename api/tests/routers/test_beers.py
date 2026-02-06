@@ -1,8 +1,9 @@
 """Tests for routers/beers.py module - Beers router"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import HTTPException
 
 
@@ -49,8 +50,7 @@ class TestListBeers:
         mock_session = AsyncMock()
         mock_beer = create_mock_beer()
 
-        with patch('routers.beers.BeersDB') as mock_db, \
-             patch('routers.beers.BeerService') as mock_service:
+        with patch("routers.beers.BeersDB") as mock_db, patch("routers.beers.BeerService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_beer])
             mock_service.transform_response = AsyncMock(return_value={"id": "beer-1"})
 
@@ -68,18 +68,13 @@ class TestListBeers:
         mock_session = AsyncMock()
         mock_beer = create_mock_beer()
 
-        with patch('routers.beers.BeersDB') as mock_db, \
-             patch('routers.beers.BeerService') as mock_service:
+        with patch("routers.beers.BeersDB") as mock_db, patch("routers.beers.BeerService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_beer])
             mock_service.transform_response = AsyncMock(return_value={"id": "beer-1"})
 
             run_async(list_beers(mock_request, mock_auth_user, mock_session))
 
-            mock_service.transform_response.assert_called_with(
-                mock_beer,
-                db_session=mock_session,
-                force_refresh=True
-            )
+            mock_service.transform_response.assert_called_with(mock_beer, db_session=mock_session, force_refresh=True)
 
     def test_force_refresh_false_by_default(self):
         """Test force_refresh defaults to false"""
@@ -90,18 +85,13 @@ class TestListBeers:
         mock_session = AsyncMock()
         mock_beer = create_mock_beer()
 
-        with patch('routers.beers.BeersDB') as mock_db, \
-             patch('routers.beers.BeerService') as mock_service:
+        with patch("routers.beers.BeersDB") as mock_db, patch("routers.beers.BeerService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_beer])
             mock_service.transform_response = AsyncMock(return_value={"id": "beer-1"})
 
             run_async(list_beers(mock_request, mock_auth_user, mock_session))
 
-            mock_service.transform_response.assert_called_with(
-                mock_beer,
-                db_session=mock_session,
-                force_refresh=False
-            )
+            mock_service.transform_response.assert_called_with(mock_beer, db_session=mock_session, force_refresh=False)
 
 
 class TestCreateBeer:
@@ -117,12 +107,9 @@ class TestCreateBeer:
         mock_beer = create_mock_beer()
         beer_data = BeerCreate(name="New Beer", style="IPA")
 
-        with patch('routers.beers.BeersDB') as mock_db, \
-             patch('routers.beers.BeerService') as mock_service:
+        with patch("routers.beers.BeersDB") as mock_db, patch("routers.beers.BeerService") as mock_service:
             mock_db.create = AsyncMock(return_value=mock_beer)
-            mock_service.verify_and_update_external_brew_tool_recipe = AsyncMock(
-                return_value={"name": "New Beer", "style": "IPA"}
-            )
+            mock_service.verify_and_update_external_brew_tool_recipe = AsyncMock(return_value={"name": "New Beer", "style": "IPA"})
             mock_service.process_image_transitions = AsyncMock(return_value=None)
             mock_service.transform_response = AsyncMock(return_value={"id": "beer-1", "name": "New Beer"})
 
@@ -139,17 +126,11 @@ class TestCreateBeer:
         mock_auth_user = create_mock_auth_user()
         mock_session = AsyncMock()
         mock_beer = create_mock_beer()
-        beer_data = BeerCreate(
-            name="New Beer",
-            image_transitions=[{"img_url": "http://example.com/img.jpg"}]
-        )
+        beer_data = BeerCreate(name="New Beer", image_transitions=[{"img_url": "http://example.com/img.jpg"}])
 
-        with patch('routers.beers.BeersDB') as mock_db, \
-             patch('routers.beers.BeerService') as mock_service:
+        with patch("routers.beers.BeersDB") as mock_db, patch("routers.beers.BeerService") as mock_service:
             mock_db.create = AsyncMock(return_value=mock_beer)
-            mock_service.verify_and_update_external_brew_tool_recipe = AsyncMock(
-                return_value={"name": "New Beer"}
-            )
+            mock_service.verify_and_update_external_brew_tool_recipe = AsyncMock(return_value={"name": "New Beer"})
             mock_service.process_image_transitions = AsyncMock(return_value=[{"id": "it-1"}])
             mock_service.transform_response = AsyncMock(return_value={"id": "beer-1"})
 
@@ -170,8 +151,7 @@ class TestGetBeer:
         mock_session = AsyncMock()
         mock_beer = create_mock_beer()
 
-        with patch('routers.beers.BeersDB') as mock_db, \
-             patch('routers.beers.BeerService') as mock_service:
+        with patch("routers.beers.BeersDB") as mock_db, patch("routers.beers.BeerService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_beer)
             mock_service.transform_response = AsyncMock(return_value={"id": "beer-1"})
 
@@ -187,7 +167,7 @@ class TestGetBeer:
         mock_auth_user = create_mock_auth_user()
         mock_session = AsyncMock()
 
-        with patch('routers.beers.BeersDB') as mock_db:
+        with patch("routers.beers.BeersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -209,8 +189,7 @@ class TestUpdateBeer:
         mock_beer = create_mock_beer()
         update_data = BeerUpdate(name="Updated Beer")
 
-        with patch('routers.beers.BeersDB') as mock_db, \
-             patch('routers.beers.BeerService') as mock_service:
+        with patch("routers.beers.BeersDB") as mock_db, patch("routers.beers.BeerService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_beer)
             mock_db.update = AsyncMock()
             mock_service.process_image_transitions = AsyncMock(return_value=None)
@@ -229,7 +208,7 @@ class TestUpdateBeer:
         mock_session = AsyncMock()
         update_data = BeerUpdate(name="Updated")
 
-        with patch('routers.beers.BeersDB') as mock_db:
+        with patch("routers.beers.BeersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -245,13 +224,9 @@ class TestUpdateBeer:
         mock_auth_user = create_mock_auth_user()
         mock_session = AsyncMock()
         mock_beer = create_mock_beer()
-        update_data = BeerUpdate(
-            name="Updated Beer",
-            image_transitions=[{"id": "it-1", "img_url": "http://example.com/new.jpg"}]
-        )
+        update_data = BeerUpdate(name="Updated Beer", image_transitions=[{"id": "it-1", "img_url": "http://example.com/new.jpg"}])
 
-        with patch('routers.beers.BeersDB') as mock_db, \
-             patch('routers.beers.BeerService') as mock_service:
+        with patch("routers.beers.BeersDB") as mock_db, patch("routers.beers.BeerService") as mock_service:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_beer)
             mock_db.update = AsyncMock()
             mock_service.process_image_transitions = AsyncMock(return_value=[{"id": "it-1"}])
@@ -273,7 +248,7 @@ class TestDeleteBeer:
         mock_session = AsyncMock()
         mock_beer = create_mock_beer()
 
-        with patch('routers.beers.BeersDB') as mock_db:
+        with patch("routers.beers.BeersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_beer)
             mock_db.delete = AsyncMock()
 
@@ -289,7 +264,7 @@ class TestDeleteBeer:
         mock_auth_user = create_mock_auth_user()
         mock_session = AsyncMock()
 
-        with patch('routers.beers.BeersDB') as mock_db:
+        with patch("routers.beers.BeersDB") as mock_db:
             mock_db.get_by_pkey = AsyncMock(return_value=None)
 
             with pytest.raises(HTTPException) as exc_info:

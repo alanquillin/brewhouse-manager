@@ -1,8 +1,9 @@
 """Tests for routers/batches.py module - Batches router"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import HTTPException
 
 
@@ -70,8 +71,7 @@ class TestListBatches:
         mock_session = AsyncMock()
         mock_batch = create_mock_batch()
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_batch])
             mock_service.can_user_see_batch = AsyncMock(return_value=True)
             mock_service.transform_response = AsyncMock(return_value={"id": "batch-1"})
@@ -89,8 +89,7 @@ class TestListBatches:
         mock_session = AsyncMock()
         mock_batch = create_mock_batch()
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_batch])
             mock_service.can_user_see_batch = AsyncMock(return_value=True)
             mock_service.transform_response = AsyncMock(return_value={"id": "batch-1"})
@@ -108,8 +107,7 @@ class TestListBatches:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.query = AsyncMock(return_value=[])
             mock_service.can_user_see_batch = AsyncMock(return_value=True)
             mock_service.transform_response = AsyncMock(return_value={})
@@ -127,8 +125,7 @@ class TestListBatches:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.query = AsyncMock(return_value=[])
             mock_service.can_user_see_batch = AsyncMock(return_value=True)
             mock_service.transform_response = AsyncMock(return_value={})
@@ -148,8 +145,7 @@ class TestListBatches:
         mock_batch1 = create_mock_batch(id_="batch-1")
         mock_batch2 = create_mock_batch(id_="batch-2")
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_batch1, mock_batch2])
             # User can only see first batch
             mock_service.can_user_see_batch = AsyncMock(side_effect=[True, False])
@@ -173,12 +169,9 @@ class TestCreateBatch:
         mock_batch = create_mock_batch()
         batch_data = BatchCreate(name="New Batch", beer_id="beer-1")
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.create = AsyncMock(return_value=mock_batch)
-            mock_service.verify_and_update_external_brew_tool_batch = AsyncMock(
-                return_value={"name": "New Batch", "beer_id": "beer-1"}
-            )
+            mock_service.verify_and_update_external_brew_tool_batch = AsyncMock(return_value={"name": "New Batch", "beer_id": "beer-1"})
             mock_service.transform_response = AsyncMock(return_value={"id": "batch-1"})
 
             result = run_async(create_batch(batch_data, mock_auth_user, mock_session))
@@ -195,15 +188,13 @@ class TestCreateBatch:
         mock_batch = create_mock_batch()
         batch_data = BatchCreate(name="New Batch", location_ids=["loc-1"])
 
-        with patch('routers.batches.BatchesDB') as mock_batch_db, \
-             patch('routers.batches.BatchLocationsDB') as mock_batch_loc_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_batch_db, patch("routers.batches.BatchLocationsDB") as mock_batch_loc_db, patch(
+            "routers.batches.BatchService"
+        ) as mock_service:
             mock_batch_db.create = AsyncMock(return_value=mock_batch)
             mock_batch_db.get_by_pkey = AsyncMock(return_value=mock_batch)
             mock_batch_loc_db.create = AsyncMock()
-            mock_service.verify_and_update_external_brew_tool_batch = AsyncMock(
-                return_value={"name": "New Batch", "location_ids": ["loc-1"]}
-            )
+            mock_service.verify_and_update_external_brew_tool_batch = AsyncMock(return_value={"name": "New Batch", "location_ids": ["loc-1"]})
             mock_service.can_user_see_batch = AsyncMock(return_value=True)
             mock_service.transform_response = AsyncMock(return_value={"id": "batch-1"})
 
@@ -220,10 +211,8 @@ class TestCreateBatch:
         mock_session = AsyncMock()
         batch_data = BatchCreate(name="New Batch", location_ids=["loc-1"])
 
-        with patch('routers.batches.BatchService') as mock_service:
-            mock_service.verify_and_update_external_brew_tool_batch = AsyncMock(
-                return_value={"name": "New Batch", "location_ids": ["loc-1"]}
-            )
+        with patch("routers.batches.BatchService") as mock_service:
+            mock_service.verify_and_update_external_brew_tool_batch = AsyncMock(return_value={"name": "New Batch", "location_ids": ["loc-1"]})
             mock_service.can_user_see_batch = AsyncMock(return_value=False)
 
             with pytest.raises(HTTPException) as exc_info:
@@ -240,10 +229,8 @@ class TestCreateBatch:
         mock_session = AsyncMock()
         batch_data = BatchCreate(name="New Batch", beer_id="beer-1", beverage_id="bev-1")
 
-        with patch('routers.batches.BatchService') as mock_service:
-            mock_service.verify_and_update_external_brew_tool_batch = AsyncMock(
-                return_value={"name": "New Batch", "beer_id": "beer-1", "beverage_id": "bev-1"}
-            )
+        with patch("routers.batches.BatchService") as mock_service:
+            mock_service.verify_and_update_external_brew_tool_batch = AsyncMock(return_value={"name": "New Batch", "beer_id": "beer-1", "beverage_id": "bev-1"})
 
             with pytest.raises(HTTPException) as exc_info:
                 run_async(create_batch(batch_data, mock_auth_user, mock_session))
@@ -263,8 +250,7 @@ class TestGetBatch:
         mock_session = AsyncMock()
         mock_batch = create_mock_batch()
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_batch])
             mock_service.can_user_see_batch = AsyncMock(return_value=True)
             mock_service.transform_response = AsyncMock(return_value={"id": "batch-1"})
@@ -281,7 +267,7 @@ class TestGetBatch:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.batches.BatchesDB') as mock_db:
+        with patch("routers.batches.BatchesDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[])
 
             with pytest.raises(HTTPException) as exc_info:
@@ -298,8 +284,7 @@ class TestGetBatch:
         mock_session = AsyncMock()
         mock_batch = create_mock_batch()
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_batch])
             mock_service.can_user_see_batch = AsyncMock(return_value=False)
 
@@ -322,8 +307,7 @@ class TestUpdateBatch:
         mock_batch = create_mock_batch()
         update_data = BatchUpdate(name="Updated Batch")
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_batch])
             mock_db.update = AsyncMock()
             mock_db.get_by_pkey = AsyncMock(return_value=mock_batch)
@@ -343,7 +327,7 @@ class TestUpdateBatch:
         mock_session = AsyncMock()
         update_data = BatchUpdate(name="Updated")
 
-        with patch('routers.batches.BatchesDB') as mock_db:
+        with patch("routers.batches.BatchesDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[])
 
             with pytest.raises(HTTPException) as exc_info:
@@ -363,8 +347,7 @@ class TestDeleteBatch:
         mock_session = AsyncMock()
         mock_batch = create_mock_batch()
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_batch])
             mock_db.delete = AsyncMock()
             mock_service.can_user_see_batch = AsyncMock(return_value=True)
@@ -381,7 +364,7 @@ class TestDeleteBatch:
         mock_auth_user = create_mock_auth_user(admin=True)
         mock_session = AsyncMock()
 
-        with patch('routers.batches.BatchesDB') as mock_db:
+        with patch("routers.batches.BatchesDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[])
 
             with pytest.raises(HTTPException) as exc_info:
@@ -397,8 +380,7 @@ class TestDeleteBatch:
         mock_session = AsyncMock()
         mock_batch = create_mock_batch()
 
-        with patch('routers.batches.BatchesDB') as mock_db, \
-             patch('routers.batches.BatchService') as mock_service:
+        with patch("routers.batches.BatchesDB") as mock_db, patch("routers.batches.BatchService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_batch])
             mock_service.can_user_see_batch = AsyncMock(return_value=False)
 

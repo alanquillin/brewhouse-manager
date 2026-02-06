@@ -2,8 +2,8 @@
 
 import pytest
 
-from lib.tap_monitors.exceptions import TapMonitorDependencyError
 from lib.exceptions import Error
+from lib.tap_monitors.exceptions import TapMonitorDependencyError
 
 
 class TestTapMonitorDependencyError:

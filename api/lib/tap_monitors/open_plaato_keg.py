@@ -1,11 +1,11 @@
 import base64
 
 import httpx
-from httpx import BasicAuth, AsyncClient
+from httpx import AsyncClient, BasicAuth
 
 from db import async_session_scope
 from db.tap_monitors import TapMonitors as TapMonitorsDB
-from lib.tap_monitors import TapMonitorBase, InvalidDataType
+from lib.tap_monitors import InvalidDataType, TapMonitorBase
 
 KEYMAP = {
     "percent_beer_remaining": "percent_of_beer_left",
@@ -41,9 +41,7 @@ class OpenPlaatoKeg(TapMonitorBase):
     async def discover(self, **kwargs):
         devices = await self._get("kegs")
 
-        return [
-            {"id": dev["id"], "name": dev.get("name", "unknown")} for dev in devices
-        ]
+        return [{"id": dev["id"], "name": dev.get("name", "unknown")} for dev in devices]
 
     async def _get_data(self, monitor_id=None, monitor=None, meta=None):
         if not monitor_id and not monitor and not meta:

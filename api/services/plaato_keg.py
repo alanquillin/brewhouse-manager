@@ -1,13 +1,15 @@
 """Sensor service with business logic and transformations"""
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Union
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from lib import logging
 from lib.devices.plaato_keg import service_handler
 from services.base import transform_dict_to_camel_case
 
 LOGGER = logging.getLogger(__name__)
+
 
 def to_int(val: Union[str, int]) -> int:
     if isinstance(val, int):
@@ -17,6 +19,7 @@ def to_int(val: Union[str, int]) -> int:
         return None
     return int(val)
 
+
 def to_float(val: Union[str, float]) -> float:
     if isinstance(val, float):
         return val
@@ -24,6 +27,7 @@ def to_float(val: Union[str, float]) -> float:
     if not val:
         return None
     return float(val)
+
 
 def to_bool(val: Union[str, bool]) -> bool:
     if isinstance(val, bool):
@@ -34,6 +38,7 @@ def to_bool(val: Union[str, bool]) -> bool:
     val = val.lower()
     return val == "true" or val == "1"
 
+
 def clean_str(val: str) -> str:
     if not val:
         return None
@@ -41,6 +46,7 @@ def clean_str(val: str) -> str:
     if val == "":
         return None
     return val
+
 
 CONVERSIONS = {
     "percent_of_beer_left": to_float,
@@ -59,11 +65,12 @@ CONVERSIONS = {
     "max_temperature": to_float,
     "unit": to_int,
     "measure_unit": to_int,
-    "calculated_abv": to_float
+    "calculated_abv": to_float,
 }
 
+
 class PlaatoKegService:
-    
+
     @staticmethod
     async def transform_response(plaato_keg, db_session: AsyncSession, **kwargs):
         if not plaato_keg:
@@ -87,7 +94,6 @@ class PlaatoKegService:
 
             unit = data.get("unit")
             measure_unit = data.get("measure_unit")
-        
 
             if unit == 1 and measure_unit == 1:
                 data["unitMode"] = "weight"

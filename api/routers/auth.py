@@ -13,8 +13,8 @@ from google_auth_oauthlib.flow import Flow
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import get_db_session, require_user, AuthUser
 from db.users import Users as UsersDB
+from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
 from lib.config import Config
 
@@ -24,8 +24,10 @@ LOGGER = logging.getLogger(__name__)
 
 GOOGLE_CALLBACK_URI = "/login/google/callback"
 
+
 def build_google_redir_uri(request: Request):
     return str(request.base_url).rstrip("/") + GOOGLE_CALLBACK_URI
+
 
 class LoginRequest(BaseModel):
     """Request model for password-based login"""
@@ -35,9 +37,7 @@ class LoginRequest(BaseModel):
 
 
 @router.post("/login")
-async def login(
-    request: Request, login_data: LoginRequest, db_session: AsyncSession = Depends(get_db_session)
-):
+async def login(request: Request, login_data: LoginRequest, db_session: AsyncSession = Depends(get_db_session)):
     """
     Password-based login endpoint.
     Sets session cookie on successful authentication.
@@ -74,18 +74,13 @@ async def google_login(request: Request):
     Redirects user to Google for authentication.
     """
     if not CONFIG.get("auth.oidc.google.enabled"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Google authentication is disabled"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Google authentication is disabled")
 
     client_id = CONFIG.get("auth.oidc.google.client_id")
     client_secret = CONFIG.get("auth.oidc.google.client_secret")
 
     if not client_id or not client_secret:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Google OAuth not configured properly"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Google OAuth not configured properly")
 
     redirect_url = build_google_redir_uri(request)
 
@@ -97,18 +92,15 @@ async def google_login(request: Request):
                 "client_secret": client_secret,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [redirect_url]
+                "redirect_uris": [redirect_url],
             }
         },
         scopes=["openid", "https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"],
     )
-    
+
     flow.redirect_uri = redirect_url
 
-    authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        include_granted_scopes='true'
-    )
+    authorization_url, state = flow.authorization_url(access_type="offline", include_granted_scopes="true")
 
     # Store state in session to verify callback
     request.session["oauth_state"] = state
@@ -118,28 +110,18 @@ async def google_login(request: Request):
 
 
 @router.get(GOOGLE_CALLBACK_URI)
-async def google_callback(
-    request: Request,
-    code: str,
-    state: str,
-    db_session: AsyncSession = Depends(get_db_session)
-):
+async def google_callback(request: Request, code: str, state: str, db_session: AsyncSession = Depends(get_db_session)):
     """
     Handle Google OAuth callback.
     Validates user with Google and creates session.
     """
     if not CONFIG.get("auth.oidc.google.enabled"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Google authentication is disabled"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Google authentication is disabled")
 
     # Verify state to prevent CSRF
     stored_state = request.session.get("oauth_state")
     if not stored_state or stored_state != state:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid state parameter"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid state parameter")
 
     client_id = CONFIG.get("auth.oidc.google.client_id")
     client_secret = CONFIG.get("auth.oidc.google.client_secret")
@@ -154,11 +136,11 @@ async def google_callback(
                 "client_secret": client_secret,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [redirect_url]
+                "redirect_uris": [redirect_url],
             }
         },
         scopes=["openid", "https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"],
-        state=state
+        state=state,
     )
 
     flow.redirect_uri = redirect_url
@@ -172,17 +154,10 @@ async def google_callback(
 
     # Verify the token
     try:
-        idinfo = id_token.verify_oauth2_token(
-            id_token_jwt,
-            google_requests.Request(),
-            client_id
-        )
+        idinfo = id_token.verify_oauth2_token(id_token_jwt, google_requests.Request(), client_id)
     except ValueError as e:
         LOGGER.error("Token verification failed: %s", str(e))
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication token"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token")
 
     # Extract user info from verified token
     users_email = idinfo.get("email")
@@ -196,18 +171,14 @@ async def google_callback(
 
     # Verify email
     if not email_verified:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User email not verified by Google."
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User email not verified by Google.")
 
     # Find user in database
     user = await UsersDB.get_by_email(db_session, users_email)
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No user found for the given Google account. User email must match the Google account email."
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="No user found for the given Google account. User email must match the Google account email."
         )
 
     # Update user info from Google if not set

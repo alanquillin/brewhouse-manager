@@ -3,15 +3,7 @@
 import pytest
 
 from lib.devices.plaato_keg.blynk_protocol import BlynkCommand, BlynkMessage
-from lib.devices.plaato_keg.plaato_protocol import (
-    PlaatoPin,
-    PlaatoMessage,
-    decode,
-    decode_list,
-    validate_and_pad_1_and_2,
-    _decode_internal,
-    _decode,
-)
+from lib.devices.plaato_keg.plaato_protocol import PlaatoMessage, PlaatoPin, _decode, _decode_internal, decode, decode_list, validate_and_pad_1_and_2
 
 
 class TestPlaatoPin:
@@ -77,12 +69,7 @@ class TestPlaatoMessage:
 
     def test_init(self):
         """Test PlaatoMessage initialization"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=10,
-            body=b"vw\x0048\x0050"
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=10, body=b"vw\x0048\x0050")
         msg = PlaatoMessage(blynk_msg, kind="vw", id_val="48", data="50")
 
         assert msg.command == BlynkCommand.HARDWARE
@@ -93,11 +80,7 @@ class TestPlaatoMessage:
 
     def test_repr_response(self):
         """Test __repr__ for response message"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.RESPONSE,
-            msg_id=1,
-            status=200
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.RESPONSE, msg_id=1, status=200)
         msg = PlaatoMessage(blynk_msg, data="some data")
 
         repr_str = repr(msg)
@@ -105,11 +88,7 @@ class TestPlaatoMessage:
 
     def test_repr_command(self):
         """Test __repr__ for command message"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=10
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=10)
         msg = PlaatoMessage(blynk_msg, kind="vw", id_val="48", data="50")
 
         repr_str = repr(msg)
@@ -123,12 +102,7 @@ class TestDecodeInternal:
     def test_decode_internal_properties(self):
         """Test decoding internal message with key-value pairs"""
         body = b"ver\x001.0.0\x00dev\x00plaato"
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.INTERNAL,
-            msg_id=1,
-            length=len(body),
-            body=body
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.INTERNAL, msg_id=1, length=len(body), body=body)
 
         result = _decode_internal(blynk_msg)
 
@@ -141,12 +115,7 @@ class TestDecodeInternal:
     def test_decode_internal_odd_parts(self):
         """Test decoding internal message with odd number of parts"""
         body = b"key1\x00value1\x00key2"  # Missing value for key2
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.INTERNAL,
-            msg_id=1,
-            length=len(body),
-            body=body
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.INTERNAL, msg_id=1, length=len(body), body=body)
 
         result = _decode_internal(blynk_msg)
 
@@ -161,12 +130,7 @@ class TestDecodeStandard:
     def test_decode_hardware_three_parts(self):
         """Test decoding hardware message with three parts"""
         body = b"vw\x0048\x0075.5"
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=len(body),
-            body=body
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=len(body), body=body)
 
         result = _decode(blynk_msg)
 
@@ -177,12 +141,7 @@ class TestDecodeStandard:
     def test_decode_single_part(self):
         """Test decoding message with single part"""
         body = b"deviceid123"
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.GET_SHARED_DASH,
-            msg_id=1,
-            length=len(body),
-            body=body
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.GET_SHARED_DASH, msg_id=1, length=len(body), body=body)
 
         result = _decode(blynk_msg)
 
@@ -192,12 +151,7 @@ class TestDecodeStandard:
 
     def test_decode_ping(self):
         """Test decoding PING message returns PlaatoMessage without processing"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.PING,
-            msg_id=1,
-            length=0,
-            body=b""
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.PING, msg_id=1, length=0, body=b"")
 
         result = _decode(blynk_msg)
 
@@ -207,12 +161,7 @@ class TestDecodeStandard:
 
     def test_decode_notify(self):
         """Test decoding NOTIFY message"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.NOTIFY,
-            msg_id=1,
-            length=0,
-            body=b""
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.NOTIFY, msg_id=1, length=0, body=b"")
 
         result = _decode(blynk_msg)
 
@@ -221,12 +170,7 @@ class TestDecodeStandard:
     def test_decode_property(self):
         """Test decoding PROPERTY message"""
         body = b"51\x00max\x00100"
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.PROPERTY,
-            msg_id=1,
-            length=len(body),
-            body=body
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.PROPERTY, msg_id=1, length=len(body), body=body)
 
         result = _decode(blynk_msg)
 
@@ -241,12 +185,7 @@ class TestDecode:
     def test_decode_internal_routes_correctly(self):
         """Test that INTERNAL command routes to _decode_internal"""
         body = b"key\x00value"
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.INTERNAL,
-            msg_id=1,
-            length=len(body),
-            body=body
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.INTERNAL, msg_id=1, length=len(body), body=body)
 
         result = decode(blynk_msg)
 
@@ -255,12 +194,7 @@ class TestDecode:
     def test_decode_hardware_routes_correctly(self):
         """Test that HARDWARE command routes to _decode"""
         body = b"vw\x0048\x0050"
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=len(body),
-            body=body
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=len(body), body=body)
 
         result = decode(blynk_msg)
 
@@ -273,20 +207,10 @@ class TestDecodeList:
     def test_decode_list_multiple_messages(self):
         """Test decoding a list of messages"""
         body1 = b"vw\x0048\x0050"
-        msg1 = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=len(body1),
-            body=body1
-        )
+        msg1 = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=len(body1), body=body1)
 
         body2 = b"vw\x0051\x00100"
-        msg2 = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=2,
-            length=len(body2),
-            body=body2
-        )
+        msg2 = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=2, length=len(body2), body=body2)
 
         results = decode_list([msg1, msg2])
 
@@ -302,20 +226,10 @@ class TestDecodeList:
     def test_decode_list_mixed_types(self):
         """Test decoding list with mixed message types"""
         internal_body = b"ver\x001.0"
-        internal_msg = BlynkMessage(
-            command=BlynkCommand.INTERNAL,
-            msg_id=1,
-            length=len(internal_body),
-            body=internal_body
-        )
+        internal_msg = BlynkMessage(command=BlynkCommand.INTERNAL, msg_id=1, length=len(internal_body), body=internal_body)
 
         hardware_body = b"vw\x0048\x0050"
-        hardware_msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=2,
-            length=len(hardware_body),
-            body=hardware_body
-        )
+        hardware_msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=2, length=len(hardware_body), body=hardware_body)
 
         results = decode_list([internal_msg, hardware_msg])
 

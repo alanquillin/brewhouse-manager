@@ -113,9 +113,7 @@ class BeerService:
                     if ex_details:
                         u_meta = BeerService.store_metadata(meta, ex_details, now=now)
                         LOGGER.debug(f"Updated brew tool metadata: {u_meta}, updating database")
-                        await BeersDB.update(
-                            db_session, beer.id, external_brewing_tool_meta=u_meta
-                        )
+                        await BeersDB.update(db_session, beer.id, external_brewing_tool_meta=u_meta)
                         data["external_brewing_tool_meta"] = u_meta
                     else:
                         LOGGER.warning(
@@ -153,7 +151,7 @@ class BeerService:
                 ret_data.append(await ImageTransitionsDB.create(db_session, **transition_dict))
 
         return ret_data
-    
+
     @staticmethod
     async def verify_and_update_external_brew_tool_recipe(request_data):
         LOGGER.debug("Checking if the beer is associated with an external brew tool and verifying data")
@@ -176,11 +174,10 @@ class BeerService:
                 LOGGER.error(f"{tool_type} returned a 404 for recipe id: {recipe_id}.")
                 raise HTTPException(status_code=400, detail=f"{tool_type} recipe with id '{recipe_id}' not found")
         return request_data
-    
+
     @staticmethod
     def store_metadata(metadata, ex_details, now=None):
         if not now:
             now = utcnow_aware()
         ex_details["_last_refreshed_on"] = now.isoformat()
         return {**metadata, "details": ex_details}
-    

@@ -1,8 +1,9 @@
 """Tests for db/taps.py module - Taps model"""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 
 from db.taps import Taps
 
@@ -33,7 +34,8 @@ class TestTapsModel:
 
     def test_inherits_mixins(self):
         """Test Taps inherits required mixins"""
-        from db import DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin
+        from db import AsyncQueryMethodsMixin, AuditedMixin, DictifiableMixin
+
         assert issubclass(Taps, DictifiableMixin)
         assert issubclass(Taps, AuditedMixin)
         assert issubclass(Taps, AsyncQueryMethodsMixin)
@@ -41,6 +43,7 @@ class TestTapsModel:
     def test_has_relationships(self):
         """Test model has expected relationships"""
         from sqlalchemy.orm import RelationshipProperty
+
         relationships = {name for name, prop in Taps.__mapper__.relationships.items()}
         assert "location" in relationships
         assert "tap_monitor" in relationships
@@ -55,7 +58,7 @@ class TestTapsGetByLocation:
         mock_session = AsyncMock()
         mock_taps = [MagicMock(), MagicMock()]
 
-        with patch.object(Taps.__bases__[3], 'query', new_callable=AsyncMock) as mock_query:
+        with patch.object(Taps.__bases__[3], "query", new_callable=AsyncMock) as mock_query:
             mock_query.return_value = mock_taps
             result = run_async(Taps.get_by_location(mock_session, "location-123"))
 
@@ -74,7 +77,7 @@ class TestTapsGetByBatch:
         mock_session = AsyncMock()
         mock_taps = [MagicMock()]
 
-        with patch.object(Taps.__bases__[3], 'query', new_callable=AsyncMock) as mock_query:
+        with patch.object(Taps.__bases__[3], "query", new_callable=AsyncMock) as mock_query:
             mock_query.return_value = mock_taps
             result = run_async(Taps.get_by_batch(mock_session, "batch-123"))
 

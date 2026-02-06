@@ -6,13 +6,13 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import AuthUser, get_db_session, require_user
-from db.taps import Taps as TapsDB
-from db.on_tap import OnTap as OnTapDB
 from db.batches import Batches as BatchesDB
+from db.on_tap import OnTap as OnTapDB
+from db.taps import Taps as TapsDB
+from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging, util
-from services.taps import TapService
 from schemas.taps import TapCreate, TapUpdate
+from services.taps import TapService
 
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
@@ -44,9 +44,7 @@ async def list_taps(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(
-                status_code=403, detail="Not authorized to access this location"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
         kwargs["locations"] = [location_id]
     elif not current_user.admin:
         kwargs["locations"] = current_user.locations
@@ -69,16 +67,12 @@ async def create_tap(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(
-                status_code=403, detail="Not authorized to create tap in this location"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to create tap in this location")
         data["location_id"] = location_id
 
     # Check authorization for location in body
     if not current_user.admin and data.get("location_id") not in current_user.locations:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to create tap in this location"
-        )
+        raise HTTPException(status_code=403, detail="Not authorized to create tap in this location")
 
     # Handle batch_id and create on_tap entry
     batch_id = data.get("batch_id")
@@ -90,9 +84,7 @@ async def create_tap(
         if not batch:
             raise HTTPException(status_code=404, detail="Batch not found")
 
-        on_tap = await OnTapDB.create(
-            db_session, batch_id=batch_id, tapped_on=datetime.utcnow()
-        )
+        on_tap = await OnTapDB.create(db_session, batch_id=batch_id, tapped_on=datetime.utcnow())
         data["on_tap_id"] = on_tap.id
 
     # Remove batch_id from data as it's not a direct field
@@ -118,9 +110,7 @@ async def get_tap(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(
-                status_code=403, detail="Not authorized to access this location"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
         kwargs["locations"] = [location_id]
 
     taps = await TapsDB.query(db_session, **kwargs)
@@ -150,9 +140,7 @@ async def update_tap(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(
-                status_code=403, detail="Not authorized to access this location"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
         kwargs["locations"] = [location_id]
 
     taps = await TapsDB.query(db_session, **kwargs)
@@ -225,9 +213,7 @@ async def delete_tap(
     if location:
         location_id = await get_location_id(location, db_session)
         if not current_user.admin and location_id not in current_user.locations:
-            raise HTTPException(
-                status_code=403, detail="Not authorized to access this location"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
         kwargs["locations"] = [location_id]
 
     taps = await TapsDB.query(db_session, **kwargs)

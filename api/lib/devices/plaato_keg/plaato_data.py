@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, Optional, Any, List
+from typing import Any, Dict, List, Optional, Tuple
 
 from lib import logging
 from lib.devices.plaato_keg.blynk_protocol import BlynkCommand
@@ -9,9 +9,9 @@ LOGGER = logging.getLogger(__name__)
 USER_OVERRIDEABLE: Dict[str, str] = {
     str(PlaatoPin.UNIT): "user_unit",
     str(PlaatoPin.MEASURE_UNIT): "user_measure_unit",
-    str(PlaatoPin.MODE): "user_keg_mode_c02_beer"
+    str(PlaatoPin.MODE): "user_keg_mode_c02_beer",
 }
-    
+
 PLAATO_DATA_MAP: Dict[Tuple[str, str, str], str] = {
     ("hardware", "vw", str(PlaatoPin.LAST_POUR_STR)): "last_pour_string",
     ("hardware", "vw", str(PlaatoPin.PERCENT_BEER_LEFT)): "percent_of_beer_left",
@@ -47,7 +47,8 @@ PLAATO_DATA_MAP: Dict[Tuple[str, str, str], str] = {
     ("hardware", "vw", str(PlaatoPin.FIRMWARE_VERSION)): "firmware_version",
     ("property", "51", "max"): "max_keg_volume",
 }
-    
+
+
 def decode_list(msgs: List[PlaatoMessage]) -> List[Tuple[str, Any]]:
     """Decode a list of commands"""
     decoded = []
@@ -57,35 +58,39 @@ def decode_list(msgs: List[PlaatoMessage]) -> List[Tuple[str, Any]]:
             decoded.append(result)
     return decoded
 
+
 def decode(msg: PlaatoMessage) -> Optional[Tuple[str, Any]]:
     """Decode a single Plaato data message"""
 
-    LOGGER.debug(f"processing plaato message to plaato data: {msg}.  cmd_type: {msg.command}, msg_id: {msg.msg_id}, status: {msg.status}, length: {msg.length}, kind: {msg.kind}, id_val: {msg.id_val}, dataL {msg.data}")
-        
+    LOGGER.debug(
+        f"processing plaato message to plaato data: {msg}.  cmd_type: {msg.command}, msg_id: {msg.msg_id}, status: {msg.status}, length: {msg.length}, kind: {msg.kind}, id_val: {msg.id_val}, dataL {msg.data}"
+    )
+
     if msg.command == BlynkCommand.GET_SHARED_DASH:
         return ("id", msg.data, msg.id_val)
     elif msg.command == BlynkCommand.INTERNAL:
         return ("internal", msg.data, msg.id_val)
     elif msg.command == BlynkCommand.HARDWARE or msg.command == BlynkCommand.PROPERTY:
         return _decode_hardware_property(msg)
-    
+
     LOGGER.debug(f"Unknown data kind: {msg}")
     return None
+
 
 def _decode_hardware_property(msg: PlaatoMessage, include_unknown_data: bool = False) -> Optional[Tuple[str, Any]]:
     cmd = "hardware"
     if msg.command == BlynkCommand.PROPERTY:
         cmd = "property"
-    
+
     key = (cmd, msg.kind, msg.id_val)
-    
+
     if key in PLAATO_DATA_MAP:
         name = PLAATO_DATA_MAP[key]
         return (name, msg.data, msg.id_val)
     else:
         LOGGER.debug(f"Unknown data type: {msg}")
-        
+
         if include_unknown_data:
             return (f"_{cmd}_{msg.kind}_{msg.id_val}", msg.data, msg.id_val)
-        
+
         return None

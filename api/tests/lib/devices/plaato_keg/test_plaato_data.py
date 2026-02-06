@@ -3,14 +3,8 @@
 import pytest
 
 from lib.devices.plaato_keg.blynk_protocol import BlynkCommand, BlynkMessage
-from lib.devices.plaato_keg.plaato_protocol import PlaatoPin, PlaatoMessage
-from lib.devices.plaato_keg.plaato_data import (
-    PLAATO_DATA_MAP,
-    USER_OVERRIDEABLE,
-    decode,
-    decode_list,
-    _decode_hardware_property,
-)
+from lib.devices.plaato_keg.plaato_data import PLAATO_DATA_MAP, USER_OVERRIDEABLE, _decode_hardware_property, decode, decode_list
+from lib.devices.plaato_keg.plaato_protocol import PlaatoMessage, PlaatoPin
 
 
 class TestUserOverrideable:
@@ -71,18 +65,8 @@ class TestDecodeHardwareProperty:
 
     def test_decode_known_hardware_pin(self):
         """Test decoding a known hardware pin"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=10,
-            body=b"test"
-        )
-        plaato_msg = PlaatoMessage(
-            blynk_msg,
-            kind="vw",
-            id_val=str(PlaatoPin.PERCENT_BEER_LEFT),
-            data="75.5"
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=10, body=b"test")
+        plaato_msg = PlaatoMessage(blynk_msg, kind="vw", id_val=str(PlaatoPin.PERCENT_BEER_LEFT), data="75.5")
 
         result = _decode_hardware_property(plaato_msg)
 
@@ -93,18 +77,8 @@ class TestDecodeHardwareProperty:
 
     def test_decode_known_property_pin(self):
         """Test decoding a known property message"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.PROPERTY,
-            msg_id=1,
-            length=10,
-            body=b"test"
-        )
-        plaato_msg = PlaatoMessage(
-            blynk_msg,
-            kind="51",
-            id_val="max",
-            data="100"
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.PROPERTY, msg_id=1, length=10, body=b"test")
+        plaato_msg = PlaatoMessage(blynk_msg, kind="51", id_val="max", data="100")
 
         result = _decode_hardware_property(plaato_msg)
 
@@ -114,18 +88,8 @@ class TestDecodeHardwareProperty:
 
     def test_decode_unknown_pin_returns_none(self):
         """Test decoding unknown pin returns None"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=10,
-            body=b"test"
-        )
-        plaato_msg = PlaatoMessage(
-            blynk_msg,
-            kind="vw",
-            id_val="999",  # Unknown pin
-            data="value"
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=10, body=b"test")
+        plaato_msg = PlaatoMessage(blynk_msg, kind="vw", id_val="999", data="value")  # Unknown pin
 
         result = _decode_hardware_property(plaato_msg)
 
@@ -133,18 +97,8 @@ class TestDecodeHardwareProperty:
 
     def test_decode_unknown_pin_with_include_flag(self):
         """Test decoding unknown pin with include_unknown_data=True"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=10,
-            body=b"test"
-        )
-        plaato_msg = PlaatoMessage(
-            blynk_msg,
-            kind="vw",
-            id_val="999",
-            data="value"
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=10, body=b"test")
+        plaato_msg = PlaatoMessage(blynk_msg, kind="vw", id_val="999", data="value")
 
         result = _decode_hardware_property(plaato_msg, include_unknown_data=True)
 
@@ -158,12 +112,7 @@ class TestDecode:
 
     def test_decode_get_shared_dash(self):
         """Test decoding GET_SHARED_DASH returns device id"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.GET_SHARED_DASH,
-            msg_id=1,
-            length=10,
-            body=b"device123"
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.GET_SHARED_DASH, msg_id=1, length=10, body=b"device123")
         plaato_msg = PlaatoMessage(blynk_msg, data="device123", id_val="some_id")
 
         result = decode(plaato_msg)
@@ -174,12 +123,7 @@ class TestDecode:
 
     def test_decode_internal(self):
         """Test decoding INTERNAL returns internal data"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.INTERNAL,
-            msg_id=1,
-            length=10,
-            body=b"key\x00value"
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.INTERNAL, msg_id=1, length=10, body=b"key\x00value")
         plaato_msg = PlaatoMessage(blynk_msg, data={"key": "value"}, id_val="some_id")
 
         result = decode(plaato_msg)
@@ -190,18 +134,8 @@ class TestDecode:
 
     def test_decode_hardware(self):
         """Test decoding HARDWARE message"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=10,
-            body=b"test"
-        )
-        plaato_msg = PlaatoMessage(
-            blynk_msg,
-            kind="vw",
-            id_val=str(PlaatoPin.AMOUNT_LEFT),
-            data="50.0"
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=10, body=b"test")
+        plaato_msg = PlaatoMessage(blynk_msg, kind="vw", id_val=str(PlaatoPin.AMOUNT_LEFT), data="50.0")
 
         result = decode(plaato_msg)
 
@@ -211,12 +145,7 @@ class TestDecode:
 
     def test_decode_unknown_command_returns_none(self):
         """Test decoding unknown command returns None"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.PING,
-            msg_id=1,
-            length=0,
-            body=b""
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.PING, msg_id=1, length=0, body=b"")
         plaato_msg = PlaatoMessage(blynk_msg)
 
         result = decode(plaato_msg)
@@ -230,40 +159,15 @@ class TestDecodeList:
     def test_decode_list_filters_none(self):
         """Test that decode_list filters out None results"""
         # Known pin - will decode
-        blynk_msg1 = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=10,
-            body=b"test"
-        )
-        known_msg = PlaatoMessage(
-            blynk_msg1,
-            kind="vw",
-            id_val=str(PlaatoPin.PERCENT_BEER_LEFT),
-            data="75"
-        )
+        blynk_msg1 = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=10, body=b"test")
+        known_msg = PlaatoMessage(blynk_msg1, kind="vw", id_val=str(PlaatoPin.PERCENT_BEER_LEFT), data="75")
 
         # Unknown pin - will return None
-        blynk_msg2 = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=2,
-            length=10,
-            body=b"test"
-        )
-        unknown_msg = PlaatoMessage(
-            blynk_msg2,
-            kind="vw",
-            id_val="999",
-            data="value"
-        )
+        blynk_msg2 = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=2, length=10, body=b"test")
+        unknown_msg = PlaatoMessage(blynk_msg2, kind="vw", id_val="999", data="value")
 
         # PING - will return None
-        blynk_msg3 = BlynkMessage(
-            command=BlynkCommand.PING,
-            msg_id=3,
-            length=0,
-            body=b""
-        )
+        blynk_msg3 = BlynkMessage(command=BlynkCommand.PING, msg_id=3, length=0, body=b"")
         ping_msg = PlaatoMessage(blynk_msg3)
 
         results = decode_list([known_msg, unknown_msg, ping_msg])
@@ -279,31 +183,11 @@ class TestDecodeList:
 
     def test_decode_list_all_known(self):
         """Test decode_list with all known messages"""
-        blynk_msg1 = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=1,
-            length=10,
-            body=b"test"
-        )
-        msg1 = PlaatoMessage(
-            blynk_msg1,
-            kind="vw",
-            id_val=str(PlaatoPin.PERCENT_BEER_LEFT),
-            data="75"
-        )
+        blynk_msg1 = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=1, length=10, body=b"test")
+        msg1 = PlaatoMessage(blynk_msg1, kind="vw", id_val=str(PlaatoPin.PERCENT_BEER_LEFT), data="75")
 
-        blynk_msg2 = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=2,
-            length=10,
-            body=b"test"
-        )
-        msg2 = PlaatoMessage(
-            blynk_msg2,
-            kind="vw",
-            id_val=str(PlaatoPin.AMOUNT_LEFT),
-            data="50"
-        )
+        blynk_msg2 = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=2, length=10, body=b"test")
+        msg2 = PlaatoMessage(blynk_msg2, kind="vw", id_val=str(PlaatoPin.AMOUNT_LEFT), data="50")
 
         results = decode_list([msg1, msg2])
 
@@ -313,26 +197,11 @@ class TestDecodeList:
 
     def test_decode_list_with_device_id(self):
         """Test decode_list with GET_SHARED_DASH containing device id"""
-        blynk_msg = BlynkMessage(
-            command=BlynkCommand.GET_SHARED_DASH,
-            msg_id=1,
-            length=10,
-            body=b"device123"
-        )
+        blynk_msg = BlynkMessage(command=BlynkCommand.GET_SHARED_DASH, msg_id=1, length=10, body=b"device123")
         id_msg = PlaatoMessage(blynk_msg, data="device123", id_val="test")
 
-        blynk_msg2 = BlynkMessage(
-            command=BlynkCommand.HARDWARE,
-            msg_id=2,
-            length=10,
-            body=b"test"
-        )
-        data_msg = PlaatoMessage(
-            blynk_msg2,
-            kind="vw",
-            id_val=str(PlaatoPin.TEMPERATURE),
-            data="4.5"
-        )
+        blynk_msg2 = BlynkMessage(command=BlynkCommand.HARDWARE, msg_id=2, length=10, body=b"test")
+        data_msg = PlaatoMessage(blynk_msg2, kind="vw", id_val=str(PlaatoPin.TEMPERATURE), data="4.5")
 
         results = decode_list([id_msg, data_msg])
 

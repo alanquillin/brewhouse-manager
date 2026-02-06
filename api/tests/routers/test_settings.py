@@ -1,8 +1,9 @@
 """Tests for routers/settings.py module - Settings router"""
 
 import asyncio
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 def run_async(coro):
@@ -15,7 +16,7 @@ class TestGetSettings:
 
     def test_returns_basic_settings(self):
         """Test returns basic application settings"""
-        with patch('routers.settings.CONFIG') as mock_config:
+        with patch("routers.settings.CONFIG") as mock_config:
             mock_config.get.side_effect = lambda key, default=None: {
                 "auth.oidc.google.enabled": True,
                 "taps.refresh.base_sec": 60,
@@ -27,6 +28,7 @@ class TestGetSettings:
             }.get(key, default)
 
             from routers.settings import get_settings
+
             result = run_async(get_settings())
 
             assert result["googleSSOEnabled"] is True
@@ -38,7 +40,7 @@ class TestGetSettings:
 
     def test_plaato_disabled_by_default(self):
         """Test plaato_keg_devices returns enabled=False when disabled"""
-        with patch('routers.settings.CONFIG') as mock_config:
+        with patch("routers.settings.CONFIG") as mock_config:
             mock_config.get.side_effect = lambda key, default=None: {
                 "auth.oidc.google.enabled": False,
                 "taps.refresh.base_sec": 60,
@@ -50,6 +52,7 @@ class TestGetSettings:
             }.get(key, default)
 
             from routers.settings import get_settings
+
             result = run_async(get_settings())
 
             assert result["plaato_keg_devices"]["enabled"] is False
@@ -57,7 +60,7 @@ class TestGetSettings:
 
     def test_plaato_enabled_includes_config(self):
         """Test plaato_keg_devices includes config when enabled"""
-        with patch('routers.settings.CONFIG') as mock_config:
+        with patch("routers.settings.CONFIG") as mock_config:
             mock_config.get.side_effect = lambda key, default=None: {
                 "auth.oidc.google.enabled": False,
                 "taps.refresh.base_sec": 60,
@@ -71,6 +74,7 @@ class TestGetSettings:
             }.get(key, default)
 
             from routers.settings import get_settings
+
             result = run_async(get_settings())
 
             assert result["plaato_keg_devices"]["enabled"] is True
@@ -79,8 +83,9 @@ class TestGetSettings:
 
     def test_no_auth_required(self):
         """Test that get_settings has no auth dependency (checking function signature)"""
-        from routers.settings import get_settings
         import inspect
+
+        from routers.settings import get_settings
 
         sig = inspect.signature(get_settings)
         params = list(sig.parameters.keys())

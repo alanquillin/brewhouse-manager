@@ -13,7 +13,6 @@ class FileAssetManager(AssetManagerBase):
 
     def get(self, image_type, filename):
         return f"/assets/uploads/img/{image_type}/{filename}"
-    
 
     def list(self, image_type):
         parent_path = self.get_parent_dir(image_type)
@@ -33,12 +32,12 @@ class FileAssetManager(AssetManagerBase):
         path = os.path.join(parent_dir, filename)
 
         # Handle both werkzeug FileStorage (Flask) and FastAPI UploadFile
-        if hasattr(file, 'save'):
+        if hasattr(file, "save"):
             # Flask werkzeug FileStorage
             file.save(path)
         else:
             # FastAPI UploadFile - write contents to disk
-            with open(path, 'wb') as f:
+            with open(path, "wb") as f:
                 contents = file.file.read()
                 f.write(contents)
             # Reset file pointer for potential reuse

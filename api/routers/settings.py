@@ -16,30 +16,18 @@ async def get_settings():
     """Get application settings (no auth required)"""
     data = {
         "googleSSOEnabled": CONFIG.get("auth.oidc.google.enabled"),
-        "taps": {
-            "refresh": {
-                "baseSec": CONFIG.get("taps.refresh.base_sec"),
-                "variable": CONFIG.get("taps.refresh.variable")
-            }
-        },
-        "beverages": {
-            "defaultType": CONFIG.get("beverages.default_type"),
-            "supportedTypes": CONFIG.get("beverages.supported_types")
-        },
-        "dashboard": {
-            "refreshSec": CONFIG.get("dashboard.refresh_sec")
-        },
+        "taps": {"refresh": {"baseSec": CONFIG.get("taps.refresh.base_sec"), "variable": CONFIG.get("taps.refresh.variable")}},
+        "beverages": {"defaultType": CONFIG.get("beverages.default_type"), "supportedTypes": CONFIG.get("beverages.supported_types")},
+        "dashboard": {"refreshSec": CONFIG.get("dashboard.refresh_sec")},
     }
     plaato_enabled = CONFIG.get("tap_monitors.plaato_keg.enabled", False)
-    plaato = {
-        "enabled": plaato_enabled
-    }
+    plaato = {"enabled": plaato_enabled}
     if plaato_enabled:
         plaato["config"] = {
             "host": CONFIG.get("tap_monitors.plaato_keg.device_config.host", "localhost"),
-            "port": CONFIG.get("tap_monitors.plaato_keg.device_config.port", 5001)
+            "port": CONFIG.get("tap_monitors.plaato_keg.device_config.port", 5001),
         }
-    
+
     data["plaato_keg_devices"] = plaato
 
     return data

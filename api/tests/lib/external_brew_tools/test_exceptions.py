@@ -2,8 +2,8 @@
 
 import pytest
 
-from lib.external_brew_tools.exceptions import ResourceNotFoundError
 from lib.exceptions import Error
+from lib.external_brew_tools.exceptions import ResourceNotFoundError
 
 
 class TestResourceNotFoundError:
