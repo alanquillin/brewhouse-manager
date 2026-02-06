@@ -1,5 +1,5 @@
 from enum import IntEnum, StrEnum
-from typing import List, Any, Optional, Dict
+from typing import List, Any, Optional, Dict, Union
 
 from lib import logging
 from lib.devices.plaato_keg.blynk_protocol import BlynkCommand, encode_command as encode_blynk_command
@@ -31,6 +31,15 @@ COMMAND_MAPP: Dict[str, Dict[int, Optional[Any]]] = {
     # "set-abv": {"pin": PlaatoPin.ABV},
     
 }
+
+def command_from_pin(pin: Union[int, str]) -> Optional[str]:
+    for cmd, info in COMMAND_MAPP.items():
+        if isinstance(pin, str):
+            pin = int(pin)
+        
+        if info.get("pin") == pin:
+            return cmd
+    return None
 
 def sanitize_command(command: str) -> str:
     return command.lower().replace("_","-")

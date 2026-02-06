@@ -131,10 +131,12 @@ async def set_mode(
         return True
     
     command_writer = service_handler.command_writer
+    cmd_val = "1"
     if val == "co2":
-        return await command_writer.send_command(device_id, Commands.SET_MODE, "02")
+        cmd_val = "2"
     
-    return await command_writer.send_command(device_id, Commands.SET_MODE, "01")
+    await PlaatoDataDB.update(db_session, device_id, user_keg_mode_c02_beer=cmd_val)
+    return await command_writer.send_command(device_id, Commands.SET_MODE, cmd_val)
     
 
 
@@ -164,28 +166,27 @@ async def set_unit_type(
     
     command_writer = service_handler.command_writer
     unit_mode = dev_data.get("unitMode")
+    
+    
+    
     LOGGER.debug(f"Updating unit type to {val}.  Exiting unit type: {dev_data.get("unitType")}, unit mode: {unit_mode}")
+    unit_val = "1"
+    measure_unit_val = "1"
     if val == "us":
         if unit_mode == "volume":
-            LOGGER.debug("Setting (us/volume): Unit = 02, measure_unit = 02")
-            await command_writer.send_command(device_id, Commands.SET_UNIT, "02")
-            await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, "02")
-            return True
-        
-        LOGGER.debug("Setting (us/weight): Unit = 02, measure_unit = 01")
-        await command_writer.send_command(device_id, Commands.SET_UNIT, "02")
-        await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, "01")
-        return True
-    
-    if unit_mode == "volume":
-        LOGGER.debug("Setting (metric/volume): Unit = 01, measure_unit = 02")
-        await command_writer.send_command(device_id, Commands.SET_UNIT, "01")
-        await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, "02")
-        return True
+            unit_val = "2"
+            measure_unit_val = "2"
+        else:
+            unit_val = "2"
+            measure_unit_val = "1"
+    elif unit_mode == "volume":
+        unit_val = "1"
+        measure_unit_val = "2"
     
     LOGGER.debug("Setting: Unit = 01, measure_unit = 01")
-    await command_writer.send_command(device_id, Commands.SET_UNIT, "01")
-    await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, "01")
+    await PlaatoDataDB.update(db_session, device_id, user_unit=unit_val, user_measure_unit=measure_unit_val)
+    await command_writer.send_command(device_id, Commands.SET_UNIT, unit_val)
+    await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, measure_unit_val)
     return True
     
 @router.post("/{device_id}/set/unit_mode", response_model=bool)
@@ -214,28 +215,23 @@ async def set_unit_mode(
     
     command_writer = service_handler.command_writer
     unit_type = dev_data.get("unitType")
-    LOGGER.debug(f"Updating unit mode to {val}.  Exiting unit mode: {dev_data.get("unitMode")}, unit type: {unit_type}")
+    unit_val = "1"
+    measure_unit_val = "1"
     if val == "volume":
         if unit_type == "us":
-            LOGGER.debug("Setting: Unit = 02, measure_unit = 02")
-            await command_writer.send_command(device_id, Commands.SET_UNIT, "02")
-            await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, "02")
-            return True
-        
-        LOGGER.debug("Setting: Unit = 01, measure_unit = 02")
-        await command_writer.send_command(device_id, Commands.SET_UNIT, "01")
-        await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, "02")
-        return True
+            unit_val = "2"
+            measure_unit_val = "2"
+        else:
+            unit_val = "1"
+            measure_unit_val = "2"
     
-    if unit_type == "us":
-        LOGGER.debug("Setting: Unit = 02, measure_unit = 01")
-        await command_writer.send_command(device_id, Commands.SET_UNIT, "02")
-        await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, "01")
-        return True
+    elif unit_type == "us":
+        unit_val = "2"
+        measure_unit_val = "1"
     
-    LOGGER.debug("Setting: Unit = 01, measure_unit = 01")
-    await command_writer.send_command(device_id, Commands.SET_UNIT, "01")
-    await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, "01")
+    await PlaatoDataDB.update(db_session, device_id, user_unit=unit_val, user_measure_unit=measure_unit_val)
+    await command_writer.send_command(device_id, Commands.SET_UNIT, unit_val)
+    await command_writer.send_command(device_id, Commands.SET_MEASURE_UNIT, measure_unit_val)
     return True
 
 @router.post("/{device_id}/set/{key}", response_model=bool)

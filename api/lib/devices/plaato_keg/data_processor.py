@@ -38,18 +38,44 @@ class DataProcessor:
         if not decoded_data:
             LOGGER.debug("no data to process")
             return
-            
-        data_dict = dict(decoded_data)
         
-        if 'id' in data_dict.keys():
-            self.device_id = data_dict.pop('id')
-            await self._save_to_db(self.device_id, data_dict)
-            return
-            
+        #data_dict = dict(decoded_data)
+        data_dict = {}
+        user_overrideable = {}
+        for i in decoded_data:
+            key, data, pin = i
+            if key == "id":
+                self.device_id = data
+            else:
+                if key != "internal":
+                    if pin in plaato_data.USER_OVERRIDEABLE:
+                        user_overrideable[pin] = data
+                    data_dict[key] = data
+        
         if not self.device_id:
             LOGGER.warning(f"No keg ID found for decoded data: {decoded_data}")
             return
-            
+
+        if user_overrideable:
+            commands = {}
+            async with async_session_scope(CONFIG) as db_session:
+                dev = await PlaatoDataDB.get_by_pkey(db_session, self.device_id)
+                if dev:
+                    dev_data = dev.to_dict()
+                    for key, d_val in user_overrideable.items():
+                        u_key = plaato_data.USER_OVERRIDEABLE.get(key)
+                        u_val = dev_data.get(u_key)
+                        if u_val and u_val != d_val:
+                            LOGGER.info(f"Device data for user overrideable value for {key} does not match the override.  Dev value: {d_val}, User val: {u_val}")
+                            commands[key] = u_val
+            if commands:
+                from lib.devices.plaato_keg import service_handler
+                command_writer = service_handler.command_writer
+                LOGGER.info(f"Sending user override commands to keg {self.device_id}: {commands}")
+                for pin, val in commands.items():
+                    cmd = plaato_data.command_from_pin(pin)
+                    await command_writer.send_command(self.device_id, cmd, val)
+
         LOGGER.debug(f"Decoded keg data: {decoded_data}")        
         await self._save_to_db(self.device_id, data_dict)
 
