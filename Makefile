@@ -63,7 +63,8 @@ endif
 	clean-seed-image depends docker-build format-py lint-py lint-ts publish \
 	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends \
 	clean-local-uploads test test-lib test-lib-core test-lib-assets \
-	test-lib-external-brew-tools test-lib-tap-monitors test-plaato-keg
+	test-lib-external-brew-tools test-lib-tap-monitors test-plaato-keg \
+	update-version
 
 # dependency targets
 
@@ -139,8 +140,16 @@ test:
 
 # Migrations
 
-create-migration: 
+create-migration:
 	pushd ./api && ./migrate.sh create $@ && popd
+
+# Version management
+
+update-version:
+ifeq ($(VERSION),)
+	$(error VERSION argument is required. Usage: make update-version VERSION=x.y.z)
+endif
+	./scripts/update-version.sh $(VERSION)
 
 # Clean up targets
 

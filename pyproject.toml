@@ -47,7 +47,7 @@ norecursedirs = ["db_migrations", ".git", ".tox", "node_modules", "__pycache__"]
 
 [tool.poetry]
 name = "brewhouse-manager"
-version = "0.6.0"
+version = "0.7.1"
 authors = ["alanquillin"]
 description = "Brewhouse Manager"
 
