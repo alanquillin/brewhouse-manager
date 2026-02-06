@@ -169,7 +169,7 @@ async def set_unit_type(
     
     
     
-    LOGGER.debug(f"Updating unit type to {val}.  Exiting unit type: {dev_data.get("unitType")}, unit mode: {unit_mode}")
+    LOGGER.debug(f"Updating unit type to {val}.  Exiting unit type: {dev_data.get('unitType')}, unit mode: {unit_mode}")
     unit_val = "1"
     measure_unit_val = "1"
     if val == "us":
