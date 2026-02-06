@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager, contextmanager
 from functools import wraps
 from urllib.parse import quote
 
+import boto3 as aws
 from psycopg2.errors import InvalidTextRepresentation, NotNullViolation, UniqueViolation  # pylint: disable=no-name-in-module
 from psycopg2.extensions import QuotedString, register_adapter
 from sqlalchemy import DDL, Column, DateTime, String, create_engine, delete, event, func, select, text, update
@@ -129,7 +130,6 @@ async def create_async_session(config, **kwargs):
         # For now, require password for async connections
         raise ValueError("Password required for async database connections")
 
-    app_name = config.get("app_id", f"UNKNOWN=>({__name__})")
     # Use postgresql+asyncpg:// driver for async connections
     engine = create_async_engine(
         (
@@ -217,7 +217,7 @@ class DictifiableMixin:
 class DictMethodsMixin:
     def get(self, key, default=None):
         try:
-            return self.__getitem__(key)
+            return self.__getitem__(key)  # pylint: disable=unnecessary-dunder-call
         except AttributeError:
             return default
 
@@ -235,8 +235,8 @@ audit_column_names = ["created_app", "created_user", "created_on", "updated_app"
 
 audit_columns = [
     Column("created_app", String, server_default=func.current_setting("application_name"), nullable=False),
-    Column("created_user", String, server_default=func.current_user(), nullable=False),
-    Column("created_on", DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False),
+    Column("created_user", String, server_default=func.current_user(), nullable=False), # pylint: disable=not-callable
+    Column("created_on", DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False), # pylint: disable=not-callable
     Column(
         "updated_app",
         String,
@@ -244,12 +244,12 @@ audit_columns = [
         onupdate=func.current_setting("application_name"),
         nullable=False,
     ),
-    Column("updated_user", String, server_default=func.current_user(), onupdate=func.current_user(), nullable=False),
+    Column("updated_user", String, server_default=func.current_user(), onupdate=func.current_user(), nullable=False), # pylint: disable=not-callable
     Column(
         "updated_on",
         DateTime(timezone=True),
-        server_default=func.current_timestamp(),
-        onupdate=func.current_timestamp(),
+        server_default=func.current_timestamp(), # pylint: disable=not-callable
+        onupdate=func.current_timestamp(), # pylint: disable=not-callable
         nullable=False,
     ),
 ]
@@ -257,19 +257,19 @@ audit_columns = [
 
 class AuditedMixin:
     created_app = Column(String, server_default=func.current_setting("application_name"), nullable=False)
-    created_user = Column(String, server_default=func.current_user(), nullable=False)
-    created_on = Column(DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False)
+    created_user = Column(String, server_default=func.current_user(), nullable=False) # pylint: disable=not-callable
+    created_on = Column(DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False) # pylint: disable=not-callable
     updated_app = Column(
         String,
         server_default=func.current_setting("application_name"),
         onupdate=func.current_setting("application_name"),
         nullable=False,
     )
-    updated_user = Column(String, server_default=func.current_user(), onupdate=func.current_user(), nullable=False)
+    updated_user = Column(String, server_default=func.current_user(), onupdate=func.current_user(), nullable=False) # pylint: disable=not-callable
     updated_on = Column(
         DateTime(timezone=True),
-        server_default=func.current_timestamp(),
-        onupdate=func.current_timestamp(),
+        server_default=func.current_timestamp(), # pylint: disable=not-callable
+        onupdate=func.current_timestamp(), # pylint: disable=not-callable
         nullable=False,
     )
 

@@ -2,13 +2,13 @@
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.beers import Beers as BeersDB
 from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
-from schemas.beers import BeerCreate, BeerResponse, BeerUpdate
+from schemas.beers import BeerCreate, BeerUpdate
 from services.beers import BeerService
 
 router = APIRouter(prefix="/api/v1/beers", tags=["beers"])
@@ -93,8 +93,8 @@ async def update_beer(
             old_ext_recipe_id = beer.external_brewing_tool_meta.get("recipe_id")
             new_ext_recipe_id = external_brewing_tool_meta.get("recipe_id")
             if new_ext_recipe_id != old_ext_recipe_id:
-                LOGGER.info(f"external brew tool recipe id for beer ({beer_id}) has changed.  Verifying new id.")
-                LOGGER.debug(f"beer ({beer_id}) external brew tool recipe id change details: old = {old_ext_recipe_id}, new = {new_ext_recipe_id}")
+                LOGGER.info("external brew tool recipe id for beer (%s) has changed.  Verifying new id.", beer_id)
+                LOGGER.debug("beer (%s) external brew tool recipe id change details: old = %s, new = %s", beer_id, old_ext_recipe_id, new_ext_recipe_id)
                 data = await BeerService.verify_and_update_external_brew_tool_recipe(data)
                 skip_meta_refresh = True
 

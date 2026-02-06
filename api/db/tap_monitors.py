@@ -1,9 +1,8 @@
 # pylint: disable=wrong-import-position
-_TABLE_NAME = "tap_monitors"
-_PKEY = "id"
+TABLE_NAME = "tap_monitors"
+PKEY = "id"
 
-from psycopg2.errors import UniqueViolation  # pylint: disable=no-name-in-module
-from sqlalchemy import CheckConstraint, Column, ForeignKey, Integer, String, func
+from sqlalchemy import Column, ForeignKey,  String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
@@ -15,11 +14,11 @@ from db.types.nested import NestedMutableDict
 @generate_audit_trail
 class TapMonitors(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
-    __tablename__ = _TABLE_NAME
+    __tablename__ = TABLE_NAME
 
-    id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
+    id = Column(PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
     name = Column(String, nullable=False)
-    location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"), nullable=False)
+    location_id = Column(UUID, ForeignKey(f"{locations.TABLE_NAME}.{locations.PKEY}"), nullable=False)
     monitor_type = Column("monitor_type", String, nullable=False)
     meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
 

@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+# pylint: disable=wrong-import-order
 
 import argparse
 import os
@@ -72,7 +72,7 @@ class Application:
 
         host = CONFIG.get("tap_monitors.plaato_keg.host", "localhost")
         port = CONFIG.get("tap_monitors.plaato_keg.port", 5001)
-        LOGGER.info(f"Starting Plaato TCP server on {host}:{port}")
+        LOGGER.info("Starting Plaato TCP server on %s:%d", host, port)
 
         self.tcp_task = asyncio.create_task(plaato_service_handler.connection_handler.start_server(host=host, port=port))
 
@@ -80,7 +80,7 @@ class Application:
         """Start the HTTP/WebSocket server"""
         host = CONFIG.get("api.host", "localhost")
         port = CONFIG.get("api.port", 5000)
-        LOGGER.info(f"Serving API on {host}:{port}")
+        LOGGER.info("Serving API on %s:%d", host, port)
 
         config = uvicorn.Config(
             app=api,
@@ -154,6 +154,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         LOGGER.info("Received keyboard interrupt, shutting down...")
         app_instance.shutdown()
-    except Exception as e:
-        LOGGER.error(f"Unhandled application error", stack_info=True, exc_info=True)
+    except Exception:
+        LOGGER.error("Unhandled application error", stack_info=True, exc_info=True)
         sys.exit(1)

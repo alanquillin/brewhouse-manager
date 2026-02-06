@@ -70,7 +70,7 @@ class TestBrewfather:
 
     def test_say_hello(self, brewfather):
         """Test _say_hello helper method"""
-        result = brewfather._say_hello()
+        result = brewfather.say_hello()
         assert result == "hello"
 
 

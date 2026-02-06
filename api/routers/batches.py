@@ -6,8 +6,10 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+# isort:off
+from db.batches import Batches as BatchesDB # pylint: disable=wrong-import-position
 from db.batch_locations import BatchLocations as BatchLocationsDB
-from db.batches import Batches as BatchesDB
+# isort:on
 from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
 from schemas.batches import BatchCreate, BatchUpdate
@@ -44,7 +46,7 @@ async def list_batches(
     if not include_archived:
         kwargs["archived_on"] = None
 
-    LOGGER.debug(f"GET BATCHES KWARGS: {kwargs}")
+    LOGGER.debug("GET BATCHES KWARGS: %s", kwargs)
 
     batches = await BatchesDB.query(db_session, **kwargs)
 
@@ -211,8 +213,8 @@ async def update_batch(
             old_ext_batch_id = batch.external_brewing_tool_meta.get("batch_id")
             new_ext_batch_id = external_brewing_tool_meta.get("batch_id")
             if new_ext_batch_id != old_ext_batch_id:
-                LOGGER.info(f"external brew tool batch id for batch ({batch_id}) has changed.  Verifying new id.")
-                LOGGER.debug(f"batch ({batch_id}) external brew tool batch id change details: old = {old_ext_batch_id}, new = {new_ext_batch_id}")
+                LOGGER.info("external brew tool batch id for batch (%s) has changed.  Verifying new id.", batch_id)
+                LOGGER.debug("batch (%s) external brew tool batch id change details: old = %s, new = %s", batch_id, old_ext_batch_id, new_ext_batch_id)
                 data = await BatchService.verify_and_update_external_brew_tool_batch(data)
                 skip_meta_refresh = True
 

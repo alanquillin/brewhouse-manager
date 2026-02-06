@@ -17,7 +17,7 @@ async def list_external_brew_tool_types(
     current_user: AuthUser = Depends(require_user),
 ):
     """List available external brewing tool types"""
-    return [t for t in external_brew_tools.get_types()]
+    return list(external_brew_tools.get_types())
 
 
 @router.get("/{tool_name}/hello", response_model=dict)
@@ -27,7 +27,7 @@ async def get_external_brew_tool_hello(
 ):
     """Get hello/info for a specific external brewing tool"""
     tool = external_brew_tools.get_tool(tool_name)
-    return {"message": tool._say_hello()}
+    return {"message": tool.say_hello()}
 
 
 @router.get("/{tool_name}/search", response_model=List[dict])

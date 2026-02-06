@@ -48,7 +48,7 @@ class TestGetLocationId:
         mock_session = AsyncMock()
         uuid_str = "123e4567-e89b-12d3-a456-426614174000"
 
-        with patch("routers.tap_monitors.util.is_valid_uuid", return_value=True):
+        with patch("routers.util.is_valid_uuid", return_value=True):
             result = run_async(get_location_id(uuid_str, mock_session))
 
         assert result == uuid_str
@@ -61,7 +61,7 @@ class TestGetLocationId:
         mock_session = AsyncMock()
         mock_location = MagicMock(id="loc-abc")
 
-        with patch("routers.tap_monitors.util.is_valid_uuid", return_value=False), patch.object(LocationsDB, "query", new_callable=AsyncMock) as mock_query:
+        with patch("routers.util.is_valid_uuid", return_value=False), patch.object(LocationsDB, "query", new_callable=AsyncMock) as mock_query:
             mock_query.return_value = [mock_location]
 
             result = run_async(get_location_id("Test Location", mock_session))

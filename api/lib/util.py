@@ -57,7 +57,7 @@ def flatten_dict(data, parent_name="", sep=".", key_converter=None, skip_key_che
 
     """
     if not skip_key_check:
-        skip_key_check = lambda *_: False
+        skip_key_check = lambda *_: False # pylint: disable=unnecessary-lambda-assignment
 
     flattened = {}
 

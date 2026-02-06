@@ -3,35 +3,21 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.tap_monitors import TapMonitors as TapMonitorsDB
 from db.taps import Taps as TapsDB
 from dependencies.auth import AuthUser, get_db_session, require_user
-from lib import logging, util
+from lib import logging
 from lib.tap_monitors import InvalidDataType, get_tap_monitor_lib
 from lib.tap_monitors import get_types as get_tap_monitor_types
+from routers import get_location_id
 from schemas.tap_monitors import TapMonitorBase, TapMonitorCreate, TapMonitorUpdate
 from services.base import transform_dict_to_camel_case
 from services.tap_monitors import TapMonitorService, TapMonitorTypeService
 
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
-
-
-async def get_location_id(location_identifier: str, db_session: AsyncSession) -> str:
-    """Get location ID from name or UUID"""
-    if util.is_valid_uuid(location_identifier):
-        return location_identifier
-
-    from db.locations import Locations as LocationsDB
-
-    locations = await LocationsDB.query(db_session, name=location_identifier)
-    if locations:
-        return locations[0].id
-
-    return None
 
 
 @router.get("/types", response_model=List[TapMonitorBase])
@@ -192,9 +178,6 @@ async def delete_tap_monitor(
     current_user: AuthUser = Depends(require_user),
     db_session: AsyncSession = Depends(get_db_session),
 ):
-    """Delete a tap monitor"""
-    kwargs = {"id": tap_monitor_id}
-
     # if location was passed as part of the query, first check that user is associated with location
     location_id = None
     if location:
@@ -246,8 +229,8 @@ async def get_tap_monitor_data(
     tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
     try:
         return await tap_monitor_lib.get_all(monitor=tap_monitor, db_session=db_session)
-    except InvalidDataType as ex:
-        raise HTTPException(status_code=400, detail=str(ex))
+    except InvalidDataType as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @router.get("/{tap_monitor_id}/data/{data_type}")
@@ -275,7 +258,7 @@ async def get_specific_tap_monitor_data(
     try:
         try:
             return await tap_monitor_lib.get(data_type, monitor=tap_monitor, db_session=db_session)
-        except InvalidDataType as ex:
-            raise HTTPException(status_code=400, detail=f"Invalid data type: {data_type}")
-    except InvalidDataType as ex:
-        raise HTTPException(status_code=400, detail=str(ex))
+        except InvalidDataType as e:
+            raise HTTPException(status_code=400, detail=f"Invalid data type: {data_type}") from e
+    except InvalidDataType as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e

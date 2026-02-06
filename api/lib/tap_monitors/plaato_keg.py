@@ -22,7 +22,7 @@ class PlaatoKeg(TapMonitorBase):
         map_key = KEYMAP.get(data_key, None)
 
         if not map_key:
-            self.logger.warning(f"Unknown data key: {data_key}")
+            self.logger.warning("Unknown data key: %s", data_key)
             raise InvalidDataType(data_key)
         return data.get(map_key)
 
@@ -65,7 +65,7 @@ class PlaatoKeg(TapMonitorBase):
 
     async def _get(self, db_session, device_id) -> Dict:
         if not db_session:
-            with async_session_scope(self.config) as dbsession:
+            async with async_session_scope(self.config) as dbsession:
                 return await self._get(dbsession, device_id)
 
         plaato_data = await PlaatoDataDB.get_by_pkey(db_session, device_id)

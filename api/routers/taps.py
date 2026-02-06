@@ -10,26 +10,14 @@ from db.batches import Batches as BatchesDB
 from db.on_tap import OnTap as OnTapDB
 from db.taps import Taps as TapsDB
 from dependencies.auth import AuthUser, get_db_session, require_user
-from lib import logging, util
+from lib import logging
+from routers import get_location_id
 from schemas.taps import TapCreate, TapUpdate
 from services.taps import TapService
 
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
 
-
-async def get_location_id(location_identifier: str, db_session: AsyncSession) -> str:
-    """Get location ID from name or UUID"""
-    if util.is_valid_uuid(location_identifier):
-        return location_identifier
-
-    from db.locations import Locations as LocationsDB
-
-    locations = await LocationsDB.query(db_session, name=location_identifier)
-    if locations:
-        return locations[0].id
-
-    return None
 
 
 @router.get("", response_model=List[dict])

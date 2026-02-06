@@ -26,8 +26,6 @@ class TapMonitorBase:
 
 
 def _init_tap_monitors():
-    global TAP_MONITORS
-
     LOGGER.info("Initializing Tap Monitors")
     if not TAP_MONITORS:
         if CONFIG.get("tap_monitors.plaato_blynk.enabled", False):

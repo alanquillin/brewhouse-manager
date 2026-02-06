@@ -1,6 +1,6 @@
 # pylint: disable=wrong-import-position
-_TABLE_NAME = "taps"
-_PKEY = "id"
+TABLE_NAME = "taps"
+PKEY = "id"
 
 from sqlalchemy import Column, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -12,9 +12,6 @@ from db import (
     AuditedMixin,
     Base,
     DictifiableMixin,
-    beers,
-    beverages,
-    column_as_enum,
     generate_audit_trail,
     locations,
     on_tap,
@@ -25,14 +22,14 @@ from db import (
 @generate_audit_trail
 class Taps(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
-    __tablename__ = _TABLE_NAME
+    __tablename__ = TABLE_NAME
 
-    id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
+    id = Column(PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
     tap_number = Column(Integer, nullable=False)
     description = Column(String)
-    location_id = Column(UUID, ForeignKey(f"{locations._TABLE_NAME}.{locations._PKEY}"), nullable=False)
-    tap_monitor_id = Column(UUID, ForeignKey(f"{tap_monitors._TABLE_NAME}.{tap_monitors._PKEY}"))
-    on_tap_id = Column(UUID, ForeignKey(f"on_tap.id"))
+    location_id = Column(UUID, ForeignKey(f"{locations.TABLE_NAME}.{locations.PKEY}"), nullable=False)
+    tap_monitor_id = Column(UUID, ForeignKey(f"{tap_monitors.TABLE_NAME}.{tap_monitors.PKEY}"))
+    on_tap_id = Column(UUID, ForeignKey("on_tap.id"))
     name_prefix = Column(String)
     name_suffix = Column(String)
 

@@ -14,16 +14,19 @@ use_parentheses = true
 [tool.black]
 line-length = 160
 
-[tool.pylint.'MESSAGES CONTROL']
+[tool.pylint.main]
+init-hook="import sys; import os; sys.path.append(os.path.join(os.getcwd(), 'api'))"
+ignore-paths = ["api/tests", "api/db_migrations"]
+
+[tool.pylint.design]
+max-args = 6
+
+[tool.pylint."messages control"]
 max-line-length = 160
 disable = [
-    "bad-continuation",
-    "bad-whitespace",
-    "fixme",
     "invalid-name",
     "missing-docstring",
     "missing-module-docstring",
-    "no-member",  # disabling until this issue is resolved: https://github.com/PyCQA/pylint/issues/533
     "too-few-public-methods",
     "too-many-ancestors",
     "too-many-branches",
@@ -33,7 +36,14 @@ disable = [
     "too-many-public-methods",
     "too-many-return-statements",
     "too-many-statements",
-    "wrong-import-order"
+    "wrong-import-position",
+    "unused-argument",
+    "import-outside-toplevel",
+    "broad-exception-caught",
+    "broad-exception-raised",
+    "too-many-positional-arguments",
+    "too-many-arguments",
+    "duplicate-code"
 ]
 
 [tool.pylint.'FORMAT']

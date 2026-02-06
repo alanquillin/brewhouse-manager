@@ -85,8 +85,8 @@ async def get_current_user_from_api_key(
     if request:
         api_key = request.query_params.get("api_key")
 
-    LOGGER.debug(f"api_key: {api_key}")
-    LOGGER.debug(f"credentials: {credentials}")
+    LOGGER.debug("api_key: %s", api_key)
+    LOGGER.debug("credentials: %s", credentials)
     # Try Bearer token from Authorization header
     if not api_key and credentials:
         api_key = credentials.credentials

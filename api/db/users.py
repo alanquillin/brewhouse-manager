@@ -1,6 +1,6 @@
 # pylint: disable=wrong-import-position
-_TABLE_NAME = "users"
-_PKEY = "id"
+TABLE_NAME = "users"
+PKEY = "id"
 
 from argon2 import PasswordHasher
 from sqlalchemy import Boolean, Column, String, func
@@ -8,15 +8,15 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import joinedload, relationship
 from sqlalchemy.schema import Index
 
-from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin, generate_audit_trail, locations, user_locations
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, generate_audit_trail, locations, user_locations
 
 
 @generate_audit_trail
 class Users(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
-    __tablename__ = _TABLE_NAME
+    __tablename__ = TABLE_NAME
 
-    id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
+    id = Column(PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
     email = Column(String, nullable=False)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
@@ -35,7 +35,7 @@ class Users(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     )
 
     @classmethod
-    async def query(cls, session, **kwargs):
+    async def query(cls, session, **kwargs):  # pylint: disable=arguments-differ
         def q_fn(q):
             return q.options(joinedload(Users.locations))
 
@@ -57,14 +57,14 @@ class Users(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
         return res[0]
 
     @classmethod
-    async def update(cls, session, pkey, password=None, **kwargs):
+    async def update(cls, session, pkey, password=None, **kwargs): # pylint: disable=arguments-renamed
         if password and not kwargs.get("password_hash"):
             ph = PasswordHasher()
             kwargs["password_hash"] = ph.hash(password)
         return await super().update(session, pkey, **kwargs)
 
     @classmethod
-    async def create(cls, session, password=None, **kwargs):
+    async def create(cls, session, password=None, **kwargs): # pylint: disable=arguments-renamed
         if password and not kwargs.get("password_hash"):
             ph = PasswordHasher()
             kwargs["password_hash"] = ph.hash(password)

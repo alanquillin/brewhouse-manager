@@ -7,12 +7,12 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from db import AuditedMixin, Base, DictifiableMixin, QueryMethodsMixin
 from db.types.nested import NestedMutableDict
 
-_TABLE_NAME = "data_changes"
+TABLE_NAME = "data_changes"
 FUNC_NAME = "audit"
 
 
 class DataChanges(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
-    __tablename__ = _TABLE_NAME
+    __tablename__ = TABLE_NAME
 
     id = Column(UUID, primary_key=True, server_default=func.uuid_generate_v4())
     schema = Column(String)
@@ -29,17 +29,17 @@ CREATE OR REPLACE FUNCTION {FUNC_NAME}() RETURNS trigger AS $$
     BEGIN
         IF TG_OP = 'INSERT'
         THEN
-            INSERT INTO {_TABLE_NAME} (table_name, schema, operation, new)
+            INSERT INTO {TABLE_NAME} (table_name, schema, operation, new)
             VALUES (TG_RELNAME, TG_TABLE_SCHEMA, TG_OP, row_to_json(NEW));
             RETURN NEW;
         ELSIF TG_OP = 'UPDATE'
         THEN
-            INSERT INTO {_TABLE_NAME} (table_name, schema, operation, new, old)
+            INSERT INTO {TABLE_NAME} (table_name, schema, operation, new, old)
             VALUES (TG_RELNAME, TG_TABLE_SCHEMA, TG_OP, row_to_json(NEW), row_to_json(OLD));
             RETURN NEW;
         ELSIF TG_OP = 'DELETE'
         THEN
-            INSERT INTO {_TABLE_NAME} (table_name, schema, operation, old)
+            INSERT INTO {TABLE_NAME} (table_name, schema, operation, old)
             VALUES (TG_RELNAME, TG_TABLE_SCHEMA, TG_OP, row_to_json(OLD));
             RETURN OLD;
         END IF;

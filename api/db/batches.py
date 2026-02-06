@@ -1,10 +1,10 @@
 # pylint: disable=wrong-import-position
-_TABLE_NAME = "batches"
-_PKEY = "id"
+TABLE_NAME = "batches"
+PKEY = "id"
 
-from sqlalchemy import Column, Date, Float, ForeignKey, String, func, or_
+from sqlalchemy import Column, Date, Float, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import backref, joinedload, relationship
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
 from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, batch_locations, beers, beverages, generate_audit_trail, locations
@@ -14,13 +14,13 @@ from db.types.nested import NestedMutableDict
 @generate_audit_trail
 class Batches(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
-    __tablename__ = _TABLE_NAME
+    __tablename__ = TABLE_NAME
 
-    id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
+    id = Column(PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
     name = Column(String, nullable=True)
     batch_number = Column(String, nullable=True)
-    beer_id = Column(UUID, ForeignKey(f"{beers._TABLE_NAME}.{beers._PKEY}"), nullable=True)
-    beverage_id = Column(UUID, ForeignKey(f"{beverages._TABLE_NAME}.{beers._PKEY}"), nullable=True)
+    beer_id = Column(UUID, ForeignKey(f"{beers.TABLE_NAME}.{beers.PKEY}"), nullable=True)
+    beverage_id = Column(UUID, ForeignKey(f"{beverages.TABLE_NAME}.{beers.PKEY}"), nullable=True)
     external_brewing_tool = Column(String, nullable=True)
     external_brewing_tool_meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
     abv = Column(Float, nullable=True)

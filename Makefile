@@ -118,7 +118,7 @@ run-db-migrations:
 
 lint-py:
 	$(ISORT) --check-only api
-	pushd ./api && $(PYLINT) .	 && popd
+	$(PYLINT) api
 	$(BLACK) --check api
 
 lint-ts:

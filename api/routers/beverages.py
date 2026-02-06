@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.beverages import Beverages as BeveragesDB
 from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
-from schemas.beverages import BeverageCreate, BeverageResponse, BeverageUpdate
+from schemas.beverages import BeverageCreate, BeverageUpdate
 from services.beverages import BeverageService
 
 router = APIRouter(prefix="/api/v1/beverages", tags=["beverages"])

@@ -1,7 +1,5 @@
-import base64
 
-import httpx
-from httpx import AsyncClient, BasicAuth
+from httpx import AsyncClient
 
 from db import async_session_scope
 from db.tap_monitors import TapMonitors as TapMonitorsDB
@@ -24,7 +22,7 @@ class OpenPlaatoKeg(TapMonitorBase):
         map_key = KEYMAP.get(data_key, None)
 
         if not map_key:
-            self.logger.warning(f"Unknown data key: {data_key}")
+            self.logger.warning("Unknown data key: %s", data_key)
             raise InvalidDataType(data_key)
         return data.get(map_key)
 
@@ -49,7 +47,7 @@ class OpenPlaatoKeg(TapMonitorBase):
 
         if not meta:
             if not monitor:
-                with async_session_scope(self.config) as session:
+                async with async_session_scope(self.config) as session:
                     monitor = await TapMonitorsDB.get_by_pkey(session, monitor_id)
             meta = monitor.meta
 

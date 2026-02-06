@@ -1,8 +1,4 @@
-import base64
-
 import requests
-from requests import auth
-from requests.auth import HTTPBasicAuth
 
 from db import session_scope
 from db.tap_monitors import TapMonitors as TapMonitorsDB
@@ -30,7 +26,7 @@ class PlaatoBlynk(TapMonitorBase):
 
         if not meta:
             if not monitor:
-                with session_scope as session:
+                with session_scope(self.config) as session:
                     monitor = TapMonitorsDB.get_by_pkey(session, monitor_id)
             meta = monitor.meta
 
@@ -46,7 +42,7 @@ class PlaatoBlynk(TapMonitorBase):
 
         if not meta:
             if not monitor:
-                with session_scope as session:
+                with session_scope(self.config) as session:
                     monitor = TapMonitorsDB.get_by_pkey(session, monitor_id)
             meta = monitor.meta
 
@@ -65,7 +61,7 @@ class PlaatoBlynk(TapMonitorBase):
         base_url = self.config.get("tap_monitors.plaato_blynk.base_url", "http://plaato.blynk.cc")
         url = f"{base_url}/{auth_token}/get/{pin}"
         self.logger.debug("GET Request: %s, params: %s", url, params)
-        resp = requests.get(url, params=params)
+        resp = requests.get(url, params=params, timeout=10)
         self.logger.debug("GET response code: %s", resp.status_code)
         if resp.status_code != 200:
             return {}

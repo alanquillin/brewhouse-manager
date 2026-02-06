@@ -1,6 +1,6 @@
 # pylint: disable=wrong-import-position
-_TABLE_NAME = "batch_overrides"
-_PKEY = "id"
+TABLE_NAME = "batch_overrides"
+PKEY = "id"
 
 from sqlalchemy import Column, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -13,10 +13,10 @@ from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, bat
 @generate_audit_trail
 class BatchOverrides(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
-    __tablename__ = _TABLE_NAME
+    __tablename__ = TABLE_NAME
 
-    id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
-    batch_id = Column(UUID, ForeignKey(f"{batches._TABLE_NAME}.{batches._PKEY}"), nullable=True)
+    id = Column(PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
+    batch_id = Column(UUID, ForeignKey(f"{batches.TABLE_NAME}.{batches.PKEY}"), nullable=True)
     key = Column(String, nullable=False)
     value = Column(String, nullable=False)
 

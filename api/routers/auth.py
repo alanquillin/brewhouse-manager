@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.users import Users as UsersDB
-from dependencies.auth import AuthUser, get_db_session, require_user
+from dependencies.auth import get_db_session
 from lib import logging
 from lib.config import Config
 
@@ -57,8 +57,8 @@ async def login(request: Request, login_data: LoginRequest, db_session: AsyncSes
     try:
         if not ph.verify(user.password_hash, login_data.password):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
-    except VerifyMismatchError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
+    except VerifyMismatchError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized") from e
 
     # Set session cookie (replaces Flask-Login's login_user)
     request.session["user_id"] = str(user.id)
@@ -157,7 +157,7 @@ async def google_callback(request: Request, code: str, state: str, db_session: A
         idinfo = id_token.verify_oauth2_token(id_token_jwt, google_requests.Request(), client_id)
     except ValueError as e:
         LOGGER.error("Token verification failed: %s", str(e))
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token") from e
 
     # Extract user info from verified token
     users_email = idinfo.get("email")

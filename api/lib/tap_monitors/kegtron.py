@@ -1,6 +1,3 @@
-import base64
-
-import httpx
 from httpx import AsyncClient, BasicAuth
 
 from db import async_session_scope
@@ -11,8 +8,7 @@ from lib.units import from_ml
 
 
 class KegtronBase(TapMonitorBase):
-    def __init__(self):
-        super().__init__()
+    pass
 
 
 MONITOR_TYPE = "kegtron-pro"
@@ -55,7 +51,7 @@ class KegtronPro(TapMonitorBase):
 
         if not meta:
             if not monitor:
-                with async_session_scope(self.config) as db_session:
+                async with async_session_scope(self.config) as db_session:
                     monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
             meta = monitor.meta
 
@@ -77,28 +73,28 @@ class KegtronPro(TapMonitorBase):
         return from_ml(remaining, unit)
 
     async def _get_percent_remaining(self, meta, params=None):
-        max, start, disp = await self._get_served_data(meta, params)
+        _max, start, disp = await self._get_served_data(meta, params)
 
         remaining = start - disp
-        return round((remaining / max) * 100, 2)
+        return round((remaining / _max) * 100, 2)
 
     async def _get_vol_unit(self, meta, params=None):
-        self.logger.debug(f"meta: {meta}")
-        self.logger.debug(f"default_vol_unit: {self.default_vol_unit}")
+        self.logger.debug("meta: %s", meta)
+        self.logger.debug("default_vol_unit: %s", self.default_vol_unit)
         return meta.get("unit", self.default_vol_unit).lower()
 
     async def _get_served_data(self, meta, params=None):
         self.logger.debug("retrieving served data.")
         device = await self._get(meta, params)
         port = self._get_port_data(device, meta, params=params)
-        self.logger.debug(f"port data: {port}")
+        self.logger.debug("port data: %s", port)
 
-        max = port.get("volSize", 0)
+        _max = port.get("volSize", 0)
         start = port.get("volStart", 0)
         disp = port.get("volDisp", 0)
 
-        self.logger.debug(f"serve data: max = {max}, start = {start}, dispensed = {disp}")
-        return max, start, disp
+        self.logger.debug("serve data: max = %s, start = %s, dispensed = %s", _max, start, disp)
+        return _max, start, disp
 
     def _get_from_key(self, key, meta, params=None):
         device = self._get(meta, params)
@@ -121,7 +117,7 @@ class KegtronPro(TapMonitorBase):
         access_token = self._get_device_access_token(meta)
         params["access_token"] = access_token
         url = "https://mdash.net/api/v2/m/device"
-        self.logger.debug(f"Retriving devive data for access token {access_token}. GET Request: {url}, params: {params}")
+        self.logger.debug("Retriving devive data for access token %s. GET Request: %s, params: %s", access_token, url, params)
         async with AsyncClient() as client:
             resp = await client.get(url, params=params)
             self.logger.debug("GET response code: %s", resp.status_code)
@@ -131,30 +127,30 @@ class KegtronPro(TapMonitorBase):
                 self.logger.error("Kegtron API returned a 401")
                 raise TapMonitorDependencyError(
                     MONITOR_TYPE,
-                    message=f"Kegtron API returned a 401 unauthorized when retrieving device details.",
+                    message="Kegtron API returned a 401 unauthorized when retrieving device details.",
                 )
 
             return self.parse_resp(j)
 
     def parse_resp(self, j):
-        self.logger.debug(f"parsing kegtron pro response: {j}")
-        id = j.get("id")
-        self.logger.debug(f"id: {id}")
+        self.logger.debug("parsing kegtron pro response: %s", j)
+        _id = j.get("id")
+        self.logger.debug("id: %s", _id)
         shdw = j.get("shadow", {})
-        self.logger.debug(f"shadow: {shdw}")
+        self.logger.debug("shadow: %s", shdw)
         state = shdw.get("state", {})
-        self.logger.debug(f"state: {state}")
+        self.logger.debug("state: %s", state)
         rprtd = state.get("reported", {})
-        self.logger.debug(f"reported: {rprtd}")
+        self.logger.debug("reported: %s", rprtd)
         ota = rprtd.get("ota", {})
-        self.logger.debug(f"ota: {ota}")
+        self.logger.debug("ota: %s", ota)
         cfg = rprtd.get("config", {})
-        self.logger.debug(f"config: {cfg}")
+        self.logger.debug("config: %s", cfg)
         cfg_ro = rprtd.get("config_readonly", {})
-        self.logger.debug(f"config_readonly: {cfg_ro}")
+        self.logger.debug("config_readonly: %s", cfg_ro)
 
         device = {
-            "id": id,
+            "id": _id,
             "ota": ota.get("id"),
             "online": rprtd.get("online", False),
             "port_count": cfg_ro.get("portCount", 0),
@@ -169,20 +165,20 @@ class KegtronPro(TapMonitorBase):
             "beacon_enabled": cfg.get("beaconEna", False),
             "serial_num": cfg_ro.get("serialNum"),
         }
-        self.logger.debug(f"device: {device}")
+        self.logger.debug("device: %s", device)
 
         ports = []
         for i in range(device["port_count"]):
             port_key = f"port{i}"
             port = {"num": i, "key": port_key}
-            self.logger.debug(f"port_num: {i}")
-            self.logger.debug(f"port key: {port_key}")
+            self.logger.debug("port_num: %s", i)
+            self.logger.debug("port key: %s", port_key)
             port_cfg = cfg.get(port_key)
-            self.logger.debug(f"port config: {port_cfg}")
+            self.logger.debug("port config: %s", port_cfg)
             port_cfg_ro = cfg_ro.get(port_key)
-            self.logger.debug(f"port config readonly: {port_cfg_ro}")
+            self.logger.debug("port config readonly: %s", port_cfg_ro)
             port.update(port_cfg_ro | port_cfg)
-            self.logger.debug(f"port: {port}")
+            self.logger.debug("port: %s", port)
             ports.append(port)
 
         device["ports"] = ports
@@ -234,7 +230,7 @@ class KegtronPro(TapMonitorBase):
 
         if not meta:
             if not monitor:
-                with async_session_scope(self.config) as db_session:
+                async with async_session_scope(self.config) as db_session:
                     monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
             meta = monitor.meta
 
@@ -243,7 +239,7 @@ class KegtronPro(TapMonitorBase):
             if k in self.supported_device_keys:
                 d_data[k] = v
             else:
-                self.warn(f"ignoring unsupported kegtron pro device data with key `{k}`")
+                self.logger.warning("ignoring unsupported kegtron pro device data with key `%s`", k)
         data = {"shadow": {"state": {"desired": {"config": d_data}}}}
         return await self._update(data, meta, params)
 
@@ -253,7 +249,7 @@ class KegtronPro(TapMonitorBase):
 
         if not meta:
             if not monitor:
-                with async_session_scope(self.config) as db_session:
+                async with async_session_scope(self.config) as db_session:
                     monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
             meta = monitor.meta
         port_num = meta.get("port_num")
@@ -265,7 +261,7 @@ class KegtronPro(TapMonitorBase):
             if k in self.supported_port_keys:
                 p_data[k] = v
             else:
-                self.warn(f"ignoring unsupported kegtron pro device data with key `{k}`")
+                self.logger.warning("ignoring unsupported kegtron pro device data with key `%s`", k)
 
         data = {"shadow": {"state": {"desired": {"config": {f"port{port_num}": p_data}}}}}
         return await self._update(data, meta, params)

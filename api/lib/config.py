@@ -89,7 +89,7 @@ class Config(metaclass=ThreadSafeSingleton):
     type_conversions = {"int": to_int, "bool": to_bool, "list": to_list, "dict": to_dict}
 
     def __init__(self, **kwargs):
-        self.logger = logging.getLogger("config")
+        self.logger  = logging.getLogger("config")
 
         self.setup(**kwargs)
 
@@ -114,7 +114,7 @@ class Config(metaclass=ThreadSafeSingleton):
     def _load_config_file(self, config_file, base_dir):
         path = os.path.normpath(os.path.join(base_dir, config_file))
         self.logger.debug("Loading config file: %s", path)
-        with open(path, "r") as config:
+        with open(path, "r", encoding="utf-8") as config:
             self._load_conf(json.loads(config.read()))
 
     def _verify_required_keys(self, required_keys):
@@ -124,7 +124,7 @@ class Config(metaclass=ThreadSafeSingleton):
         missing_keys = []
         for key in required_keys:
             _key = self.gen_key(key)
-            if not _key in self.data_flat and _key not in os.environ and _key not in self.explicit_configs:
+            if _key not in self.data_flat and _key not in os.environ and _key not in self.explicit_configs:
                 missing_keys.append(key)
 
         if missing_keys:
@@ -214,10 +214,7 @@ class Config(metaclass=ThreadSafeSingleton):
         if not result:
             children = {k: v for k, v in self.data_flat.items() if k.startswith(f"{_key}_")}
             if children:
-                self.logger.debug(
-                    ("No value found for key '%s', but child values were found.  " "Assuming the caller wanted a dict, so returning a ConfigHelper"),
-                    key,
-                )
+                self.logger.debug("No value found for key '%s', but child values found. Assuming the caller wanted a dict and returning a ConfigHelper", key)
                 return self.get_helper(key)
 
         return result
