@@ -385,7 +385,7 @@ export class ManagePlaatoKegComponent implements OnInit {
     this.dataService.getPlaatoKegDevice(this.setupDevice.id).subscribe({
       next: (_dev: PlaatoKegDevice) => {
         let dev = new PlaatoKegDevice(_dev);
-        if (isNilOrEmpty(dev.lastUpdatedOn)) {
+        if (isNilOrEmpty(dev.connected) || !dev.connected) {
           this.textNewDevCounter = this.textNewDevCounter + 1;
           if(this.textNewDevCounter > 10) {
             this.displayError("Timeout trying to validate if the device was configured and connected correctly.")
