@@ -135,8 +135,10 @@ format: format-py
 # Unit tests
 
 test:
-	pushd ./api && $(PYTHON) -c "import sys; sys.path = [p for p in sys.path if 'pdbpp' not in p]; import pytest; pytest.main(['tests/', '-v'])" && popd
+	$(PYTEST)
 
+test-no-coverage:
+	$(PYTEST) --no-cov
 
 # Migrations
 
