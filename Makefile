@@ -62,7 +62,8 @@ endif
 .PHONY: build build-db-seed build-dev clean clean-all clean-image clean-images \
 	clean-seed-image depends docker-build format-py lint-py lint-ts publish \
 	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends \
-	clean-local-uploads test test-plaato-keg
+	clean-local-uploads test test-lib test-lib-core test-lib-assets \
+	test-lib-external-brew-tools test-lib-tap-monitors test-plaato-keg
 
 # dependency targets
 
@@ -133,10 +134,8 @@ format: format-py
 # Unit tests
 
 test:
-	pushd ./api && $(PYTHON) -c "import sys; sys.path = [p for p in sys.path if 'pdbpp' not in p]; import pytest; pytest.main(['tests/'])" && popd
+	pushd ./api && $(PYTHON) -c "import sys; sys.path = [p for p in sys.path if 'pdbpp' not in p]; import pytest; pytest.main(['tests/', '-v'])" && popd
 
-test-plaato-keg:
-	pushd ./api && $(PYTHON) -c "import sys; sys.path = [p for p in sys.path if 'pdbpp' not in p]; import pytest; pytest.main(['tests/lib/devices/plaato_keg/', '-v'])" && popd
 
 # Migrations
 
