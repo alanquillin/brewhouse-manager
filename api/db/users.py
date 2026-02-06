@@ -57,14 +57,14 @@ class Users(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
         return res[0]
 
     @classmethod
-    async def update(cls, session, pkey, password=None, **kwargs): # pylint: disable=arguments-renamed
+    async def update(cls, session, pkey, password=None, **kwargs):  # pylint: disable=arguments-renamed
         if password and not kwargs.get("password_hash"):
             ph = PasswordHasher()
             kwargs["password_hash"] = ph.hash(password)
         return await super().update(session, pkey, **kwargs)
 
     @classmethod
-    async def create(cls, session, password=None, **kwargs): # pylint: disable=arguments-renamed
+    async def create(cls, session, password=None, **kwargs):  # pylint: disable=arguments-renamed
         if password and not kwargs.get("password_hash"):
             ph = PasswordHasher()
             kwargs["password_hash"] = ph.hash(password)

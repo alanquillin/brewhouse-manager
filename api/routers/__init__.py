@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from lib import util
 
-
 __all__ = [
     "auth",
     "beers",

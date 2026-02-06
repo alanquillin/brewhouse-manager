@@ -7,16 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index
 
-from db import (
-    AsyncQueryMethodsMixin,
-    AuditedMixin,
-    Base,
-    DictifiableMixin,
-    generate_audit_trail,
-    locations,
-    on_tap,
-    tap_monitors,
-)
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, generate_audit_trail, locations, on_tap, tap_monitors
 
 
 @generate_audit_trail

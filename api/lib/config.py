@@ -89,7 +89,7 @@ class Config(metaclass=ThreadSafeSingleton):
     type_conversions = {"int": to_int, "bool": to_bool, "list": to_list, "dict": to_dict}
 
     def __init__(self, **kwargs):
-        self.logger  = logging.getLogger("config")
+        self.logger = logging.getLogger("config")
 
         self.setup(**kwargs)
 

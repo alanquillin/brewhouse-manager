@@ -33,7 +33,7 @@ class Beverages(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     __table_args__ = (Index("beverage_name_lower_ix", func.lower(name), unique=True),)
 
     @classmethod
-    async def create(cls, session, **kwargs): # pylint: disable=arguments-differ
+    async def create(cls, session, **kwargs):  # pylint: disable=arguments-differ
         if not kwargs.get("image_transitions_enabled"):
             kwargs["image_transitions_enabled"] = False
         return await super().create(session, **kwargs)

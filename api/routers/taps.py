@@ -19,7 +19,6 @@ router = APIRouter()
 LOGGER = logging.getLogger(__name__)
 
 
-
 @router.get("", response_model=List[dict])
 async def list_taps(
     location: Optional[str] = None,

@@ -1,4 +1,3 @@
-
 from httpx import AsyncClient
 
 from db import async_session_scope

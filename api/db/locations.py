@@ -3,7 +3,7 @@ TABLE_NAME = "locations"
 PKEY = "id"
 
 import re
- # pylint: disable=no-name-in-module
+
 from sqlalchemy import Column, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import Index

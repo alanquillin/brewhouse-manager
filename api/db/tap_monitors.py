@@ -2,7 +2,7 @@
 TABLE_NAME = "tap_monitors"
 PKEY = "id"
 
-from sqlalchemy import Column, ForeignKey,  String, func
+from sqlalchemy import Column, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Index

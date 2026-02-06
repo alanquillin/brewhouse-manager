@@ -104,7 +104,7 @@ async def delete(
 
     cnt = await PlaatoDataDB.delete(db_session, device_id)
 
-    return True if cnt else False # pylint: disable=simplifiable-if-expression
+    return True if cnt else False  # pylint: disable=simplifiable-if-expression
 
 
 @router.post("/{device_id}/set/mode", response_model=bool)
