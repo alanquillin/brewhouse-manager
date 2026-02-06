@@ -43,6 +43,7 @@ max-statements = 60
 
 [tool.pytest.ini_options]
 addopts = "--cov api --cov-report term-missing --cov-fail-under 80 --log-level DEBUG"
+norecursedirs = ["db_migrations", ".git", ".tox", "node_modules", "__pycache__"]
 
 [tool.poetry]
 name = "brewhouse-manager"
