@@ -42,7 +42,7 @@ max-line-length = 160
 max-statements = 60
 
 [tool.pytest.ini_options]
-addopts = "-v --cov api/ --cov-report term-missing --cov-fail-under 70 --log-level DEBUG"
+addopts = "-v --cov api/ --cov-report term-missing --cov-fail-under 80 --log-level DEBUG"
 norecursedirs = ["api/db_migrations", ".git", ".tox", "node_modules", "__pycache__"]
 testpaths = ["api/tests"]
 pythonpath = ["api"]
