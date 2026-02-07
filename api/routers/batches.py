@@ -6,12 +6,12 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.batch_locations import BatchLocations as BatchLocationsDB
-
 # isort:off
+# fmt: off
 from db.batches import Batches as BatchesDB  # pylint: disable=wrong-import-position
-
+from db.batch_locations import BatchLocations as BatchLocationsDB
 # isort:on
+# fmt: on
 from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
 from schemas.batches import BatchCreate, BatchUpdate
