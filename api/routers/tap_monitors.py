@@ -12,7 +12,7 @@ from lib import logging
 from lib.tap_monitors import InvalidDataType, get_tap_monitor_lib
 from lib.tap_monitors import get_types as get_tap_monitor_types
 from routers import get_location_id
-from schemas.tap_monitors import TapMonitorBase, TapMonitorCreate, TapMonitorTypeBase, TapMonitorUpdate
+from schemas.tap_monitors import TapMonitorCreate, TapMonitorTypeBase, TapMonitorUpdate
 from services.base import transform_dict_to_camel_case
 from services.tap_monitors import TapMonitorService, TapMonitorTypeService
 
@@ -259,8 +259,7 @@ async def get_specific_tap_monitor_data(
         try:
             if data_type == "online":
                 return await tap_monitor_lib.is_online(monitor=tap_monitor, db_session=db_session)
-            else:
-                return await tap_monitor_lib.get(data_type, monitor=tap_monitor, db_session=db_session)
+            return await tap_monitor_lib.get(data_type, monitor=tap_monitor, db_session=db_session)
         except InvalidDataType as e:
             raise HTTPException(status_code=400, detail=f"Invalid data type: {data_type}") from e
     except InvalidDataType as e:
