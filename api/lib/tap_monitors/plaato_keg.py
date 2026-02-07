@@ -27,11 +27,16 @@ class PlaatoKeg(TapMonitorBase):
         if not device_id:
             if not meta:
                 if not monitor:
-                    async with async_session_scope(self.config) as session:
-                        monitor = await TapMonitorsDB.get_by_pkey(session, monitor_id)
+                    if not db_session:
+                        async with async_session_scope(self.config) as session:
+                            return await self.is_online(monitor_id, monitor, meta, device_id, db_session=session, **kwargs)
+                    else:
+                        monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
                 meta = monitor.meta
             device_id = meta.get("device_id")
-        return device_id in service_handler.connection_handler.get_registered_device_ids()
+        registered_devices = service_handler.connection_handler.get_registered_device_ids()
+        self.logger.debug("Checking if device %s is online. Registered devices: %s", device_id, registered_devices)
+        return device_id in registered_devices
 
     async def get(self, data_key, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> Any:
         data, meta = await self._get_data(monitor_id, monitor, meta, db_session)
@@ -50,7 +55,7 @@ class PlaatoKeg(TapMonitorBase):
             "totalVolumeRemaining": data.get("amount_left"),
             "displayVolumeUnit": data.get("beer_left_unit"),
             "firmwareVersion": data.get("firmware_version"),
-            "online": await self.is_online(monitor_id, monitor, meta, db_session),
+            "online": await self.is_online(monitor_id, monitor, meta, db_session=db_session),
         }
 
     async def discover(self, db_session=None, **kwargs) -> List[Dict]:
