@@ -4,7 +4,7 @@ This guide covers how to use the Plaato Keg management interface to set up, conf
 
 ## Prerequisites
 
-- Native Plaato Keg integration must be enabled in your configuration. See [Sensor Configuration](../configs.md#plaato-keg-native-integration) for setup details.
+- Native Plaato Keg integration must be enabled in your configuration. See [Tap Monitor Configuration](../configs.md#plaato-keg-native-integration) for setup details.
 - Admin access is required to manage Plaato Keg devices
 - Access the management interface at: `/manage/plaato_kegs`
 
@@ -26,14 +26,16 @@ The main view displays all registered Plaato Keg devices in a sortable table wit
 |--------|-------------|
 | **Name** | The friendly name assigned to the device |
 | **Device ID** | Unique identifier for the device |
-| **Connected** | Connection status indicator (green checkmark = connected) |
+| **Connected** | Connection status indicator (green checkmark = online, X = offline) |
 | **Beer Remaining** | Current beer level as percentage and volume/weight |
 | **Mode** | Operating mode: Beer or CO2 |
 | **Unit Details** | Unit system (US/Metric) and mode (Volume/Weight) |
 | **Firmware** | Current firmware version |
 | **WiFi Strength** | Signal strength indicator with visual icon |
-| **Last Update** | Timestamp of last data received from device |
+| **Last Update** | Timestamp of last data received from device (corresponds to `lastUpdatedOn` in the API) |
 | **Actions** | Quick action buttons (Configure, Setup, Delete) |
+
+**Note:** The Plaato Keg integration supports online status reporting. The API provides an `online` field indicating real-time connectivity and a `lastUpdatedOn` timestamp showing when data was last received.
 
 ### Device List Actions
 

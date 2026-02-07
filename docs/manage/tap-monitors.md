@@ -59,6 +59,26 @@ Tap monitors report data at regular intervals. The management interface shows:
 - **Connection Status**: Whether the tap monitor is currently reachable
 - **Real-time Values**: Current readings from the tap monitor
 
+### Online Status and Last Updated
+
+Tap monitors that support online status reporting provide real-time connectivity information:
+
+- **Online Status**: Indicates whether the tap monitor is currently connected and communicating
+- **Last Updated On**: Timestamp of when data was last received from the tap monitor
+
+Not all tap monitor types support online status reporting. The API returns a `reportsOnlineStatus` field for each tap monitor type to indicate this capability.
+
+**Tap Monitor Data Fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `percentRemaining` | `float` | Percentage of beer remaining in the keg |
+| `totalVolumeRemaining` | `float` | Total volume remaining (in configured units) |
+| `displayVolumeUnit` | `string` | The unit used for volume display (e.g., "L", "gal") |
+| `firmwareVersion` | `string` | Firmware version of the tap monitor device |
+| `online` | `boolean` | Whether the tap monitor is currently online (if supported) |
+| `lastUpdatedOn` | `float` | Unix timestamp of when data was last updated |
+
 ## Accessing Tap Monitor Management
 
 Tap monitor management interfaces are available through the Brewhouse Manager admin area:
