@@ -494,3 +494,139 @@ class TestGetSpecificTapMonitorData:
                 run_async(get_specific_tap_monitor_data("monitor-1", "invalid", None, mock_session))
 
             assert exc_info.value.status_code == 400
+
+    def test_gets_online_status_calls_is_online(self):
+        """Test getting 'online' data type calls is_online method"""
+        from routers.tap_monitors import get_specific_tap_monitor_data
+
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor(monitor_type="plaato_keg")
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_lib = MagicMock()
+            mock_lib.is_online = AsyncMock(return_value=True)
+            mock_lib.get = AsyncMock()
+            mock_get_lib.return_value = mock_lib
+
+            result = run_async(get_specific_tap_monitor_data("monitor-1", "online", None, mock_session))
+
+            assert result is True
+            mock_lib.is_online.assert_called_once_with(monitor=mock_monitor, db_session=mock_session)
+            mock_lib.get.assert_not_called()
+
+    def test_gets_online_status_returns_false(self):
+        """Test getting 'online' data type when device is offline"""
+        from routers.tap_monitors import get_specific_tap_monitor_data
+
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor(monitor_type="plaato_keg")
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_lib = MagicMock()
+            mock_lib.is_online = AsyncMock(return_value=False)
+            mock_get_lib.return_value = mock_lib
+
+            result = run_async(get_specific_tap_monitor_data("monitor-1", "online", None, mock_session))
+
+            assert result is False
+
+
+class TestGetTapMonitorDataWithOnlineFields:
+    """Tests for get_tap_monitor_data endpoint with online and last_updated_on fields"""
+
+    def test_returns_online_field(self):
+        """Test returns online field in tap monitor data"""
+        from routers.tap_monitors import get_tap_monitor_data
+
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor(monitor_type="plaato_keg")
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_lib = MagicMock()
+            mock_lib.get_all = AsyncMock(return_value={
+                "percentRemaining": 75.5,
+                "online": True,
+            })
+            mock_get_lib.return_value = mock_lib
+
+            result = run_async(get_tap_monitor_data("monitor-1", None, mock_session))
+
+            assert "online" in result
+            assert result["online"] is True
+
+    def test_returns_last_updated_on_field(self):
+        """Test returns last_updated_on field in tap monitor data"""
+        from routers.tap_monitors import get_tap_monitor_data
+
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor(monitor_type="plaato_keg")
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_lib = MagicMock()
+            mock_lib.get_all = AsyncMock(return_value={
+                "percentRemaining": 75.5,
+                "lastUpdatedOn": 1707307200.0,
+            })
+            mock_get_lib.return_value = mock_lib
+
+            result = run_async(get_tap_monitor_data("monitor-1", None, mock_session))
+
+            assert "lastUpdatedOn" in result
+            assert result["lastUpdatedOn"] == 1707307200.0
+
+    def test_returns_both_online_and_last_updated_on(self):
+        """Test returns both online and last_updated_on fields"""
+        from routers.tap_monitors import get_tap_monitor_data
+
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor(monitor_type="plaato_keg")
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_lib = MagicMock()
+            mock_lib.get_all = AsyncMock(return_value={
+                "percentRemaining": 75.5,
+                "totalVolumeRemaining": 10.5,
+                "displayVolumeUnit": "L",
+                "online": True,
+                "lastUpdatedOn": 1707307200.0,
+            })
+            mock_get_lib.return_value = mock_lib
+
+            result = run_async(get_tap_monitor_data("monitor-1", None, mock_session))
+
+            assert result["percentRemaining"] == 75.5
+            assert result["online"] is True
+            assert result["lastUpdatedOn"] == 1707307200.0
+
+
+class TestListMonitorTypesWithOnlineStatus:
+    """Tests for list_monitor_types endpoint with reports_online_status field"""
+
+    def test_includes_reports_online_status(self):
+        """Test includes reports_online_status in monitor type response"""
+        from routers.tap_monitors import list_monitor_types
+
+        mock_auth_user = create_mock_auth_user()
+        mock_types = [
+            {"type": "plaato_keg", "supports_discovery": False, "reports_online_status": True},
+            {"type": "kegtron", "supports_discovery": True, "reports_online_status": False},
+        ]
+
+        with patch("routers.tap_monitors.get_tap_monitor_types", return_value=mock_types), patch("routers.tap_monitors.TapMonitorTypeService") as mock_service:
+            mock_service.transform_response = AsyncMock(
+                side_effect=[
+                    {"type": "plaato_keg", "supportsDiscovery": False, "reportsOnlineStatus": True},
+                    {"type": "kegtron", "supportsDiscovery": True, "reportsOnlineStatus": False},
+                ]
+            )
+
+            result = run_async(list_monitor_types(mock_auth_user))
+
+            assert len(result) == 2
+            assert result[0]["reportsOnlineStatus"] is True
+            assert result[1]["reportsOnlineStatus"] is False
