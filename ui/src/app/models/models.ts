@@ -383,6 +383,7 @@ export class TapMonitor extends EditableBase {
   location: Location | undefined;
   meta!: any;
   tap!: Tap;
+  reportsOnlineStatus!: boolean;
 
   constructor(from?: any) {
     super(["name", "locationId", "monitorType", "meta"], from);
@@ -586,6 +587,15 @@ export class TapMonitorData {
   totalVolumeRemaining!: number;
   displayVolumeUnit!: string;
   firmwareVersion!: string
+  online!: boolean;
+  lastUpdatedOn!: number;
+
+  getLastUpdatedOn(): Date | undefined {
+    if(isNilOrEmpty(this.lastUpdatedOn) || !_.isNumber(this.lastUpdatedOn)) {
+      return undefined
+    }
+    return this.lastUpdatedOn < 9999999999 ? fromUnixTimestamp(this.lastUpdatedOn) : fromJsTimestamp(this.lastUpdatedOn);
+  }
 }
 
 export class TapMonitorDiscoveryData {

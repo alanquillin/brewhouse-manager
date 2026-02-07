@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict, List
 
 from db import async_session_scope
@@ -11,6 +12,7 @@ KEYMAP = {
     "total_beer_remaining": "amount_left",
     "beer_remaining_unit": "beer_left_unit",
     "firmware_version": "firmware_version",
+    "last_updated_on": "last_updated_on",
 }
 
 
@@ -50,11 +52,16 @@ class PlaatoKeg(TapMonitorBase):
     async def get_all(self, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> Dict:
         data, meta = await self._get_data(monitor_id, monitor, meta, db_session)
 
+        last_updated_on = data.get("last_updated_on")
+        if last_updated_on and isinstance(last_updated_on, datetime):
+            data["last_updated_on"] = last_updated_on.timestamp()
+
         return {
             "percentRemaining": data.get("percent_of_beer_left"),
             "totalVolumeRemaining": data.get("amount_left"),
             "displayVolumeUnit": data.get("beer_left_unit"),
             "firmwareVersion": data.get("firmware_version"),
+            "lastUpdatedOn": data.get("last_updated_on"),
             "online": await self.is_online(monitor_id, monitor, meta, db_session=db_session),
         }
 

@@ -1,4 +1,6 @@
+from datetime import datetime
 from typing import Optional
+import uuid
 
 from pydantic import Field
 
@@ -18,10 +20,10 @@ class TapMonitorBase(CamelCaseModel):
 
 
 class TapMonitorResponse(TapMonitorBase):
-    id: str
+    id: uuid.UUID
     name: str
     monitor_type: str
-    location_id: Optional[str] = None
+    location_id: Optional[uuid.UUID] = None
     location: Optional[dict] = None
 
 
@@ -48,8 +50,9 @@ class TapMonitorTypeBase(CamelCaseModel):
 
 
 class TapMonitorData(CamelCaseModel):
-    percent_remaining: float
-    total_volume_remaining: float
-    display_volume_unit: str
-    firmware_version: Optional[str]
-    online: Optional[bool]
+    percent_remaining: Optional[float] = None
+    total_volume_remaining: Optional[float] = None
+    display_volume_unit: Optional[str] = None
+    firmware_version: Optional[str] = None
+    last_updated_on: Optional[float] = None
+    online: Optional[bool] = None

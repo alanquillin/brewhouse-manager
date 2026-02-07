@@ -4,8 +4,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Location, Tap, Beer, TapMonitor, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings, Batch, UserInfo } from './../models/models';
+import { Location, Tap, Beer, TapMonitor, TapMonitorData as TapMonitorDataModel, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings, Batch, UserInfo } from './../models/models';
 import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
+import { fromJsTimestamp, formatDate, fromUnixTimestamp} from '../utils/datetime';
 import { ConfigService } from '../_services/config.service';
 import { DataService, DataError } from '../_services/data.service';
 import { SettingsService } from '../_services/settings.service';
@@ -34,10 +35,18 @@ export class TapDetails extends Tap {
 }
 
 export class TapMonitorData extends TapMonitor {
-  percentBeerRemaining: number = 0;
-  totalBeerRemaining: number = 0;
-  beerRemainingUnit: string = "";
-  online: boolean = false;
+  percentBeerRemaining!: number;
+  totalBeerRemaining!: number;
+  beerRemainingUnit!: string;
+  online!: boolean;
+  lastUpdatedOn!: number;
+
+  getLastUpdatedOn(): Date | undefined {
+    if(isNilOrEmpty(this.lastUpdatedOn) || !_.isNumber(this.lastUpdatedOn)) {
+      return undefined
+    }
+    return this.lastUpdatedOn < 9999999999 ? fromUnixTimestamp(this.lastUpdatedOn) : fromJsTimestamp(this.lastUpdatedOn);
+  }
 }
 
 @Component({
@@ -218,21 +227,36 @@ export class LocationComponent implements OnInit {
 
       if(!_.isEmpty(tap.tapMonitorId)) {
         this.dataService.getDashboardTapMonitor(tap.tapMonitorId).subscribe((tapMonitor: TapMonitor) => {
-          let tapMonitorData = <TapMonitorData>tapMonitor;
+          let oldTapMonitor = <TapMonitorData>tap.tapMonitor;
+          let tapMonitorData = new TapMonitorData(tapMonitor);
+          tapMonitorData.percentBeerRemaining = oldTapMonitor.percentBeerRemaining;
+          tapMonitorData.totalBeerRemaining = oldTapMonitor.totalBeerRemaining;
+          tapMonitorData.beerRemainingUnit = oldTapMonitor.beerRemainingUnit;
+          tapMonitorData.online = oldTapMonitor.online;
+          tapMonitorData.lastUpdatedOn = oldTapMonitor.lastUpdatedOn;
           tap.tapMonitor = tapMonitorData;
 
-          this.dataService.getPercentBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
-            tapMonitorData.percentBeerRemaining = val as number;
+          this.dataService.getAllTapMonitorData(tapMonitorData.id).subscribe((resp: TapMonitorDataModel) => {
+            tapMonitorData.percentBeerRemaining = resp.percentRemaining;
+            tapMonitorData.totalBeerRemaining = resp.totalVolumeRemaining;
+            tapMonitorData.beerRemainingUnit = resp.displayVolumeUnit;
+            tapMonitorData.online = resp.online;
+            tapMonitorData.lastUpdatedOn = resp.lastUpdatedOn;
             tap.isLoading = false;
           });
-          this.dataService.getTotalBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
-            tapMonitorData.totalBeerRemaining = val as number;
-            tap.isLoading = false;
-          });
-          this.dataService.getBeerRemainingUnit(tapMonitorData.id).subscribe((val: string) => {
-            tapMonitorData.beerRemainingUnit = val;
-            tap.isLoading = false;
-          });
+          
+          // this.dataService.getPercentBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
+          //   tapMonitorData.percentBeerRemaining = val as number;
+          //   tap.isLoading = false;
+          // });
+          // this.dataService.getTotalBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
+          //   tapMonitorData.totalBeerRemaining = val as number;
+          //   tap.isLoading = false;
+          // });
+          // this.dataService.getBeerRemainingUnit(tapMonitorData.id).subscribe((val: string) => {
+          //   tapMonitorData.beerRemainingUnit = val;
+          //   tap.isLoading = false;
+          // });
         })
       } else {
         tap.isLoading = false;
@@ -376,5 +400,18 @@ export class LocationComponent implements OnInit {
       return false;
     }
     return true;
+  }
+
+  displayDate(date: Date | undefined): string {
+    if (isNilOrEmpty(date)) {
+      return "";
+    }
+
+    const usFormatter = new Intl.DateTimeFormat('en-US', {
+      dateStyle: 'full',
+      timeStyle: 'short'
+      });
+
+      return usFormatter.format(date);
   }
 }

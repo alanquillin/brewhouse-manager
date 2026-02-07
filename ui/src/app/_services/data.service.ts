@@ -223,6 +223,11 @@ export class DataService {
     return this.http.get<TapMonitorType[]>(url).pipe(catchError((err) => {return this.getError(err)}));
   }
 
+  getAllTapMonitorData(tapMonitorId: string): Observable<TapMonitorData> {
+    const url = `${this.apiBaseUrl}/tap_monitors/${tapMonitorId}/data`;
+    return this.http.get<TapMonitorData>(url).pipe(catchError((err) => {return this.getError(err)}));
+  }
+
   getTapMonitorData(tapMonitorId: string, dataType: string): Observable<any> {
     const url = `${this.apiBaseUrl}/tap_monitors/${tapMonitorId}/data/${dataType}`;
     return this.http.get<any>(url).pipe(catchError((err) => {return this.getError(err)}));

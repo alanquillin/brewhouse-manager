@@ -79,6 +79,23 @@
                       @if (tap.showTotalBeerRemaining) {
                         <p>Total Remaining: {{_.round(tap.tapMonitor.totalBeerRemaining, 2)}} {{tap.tapMonitor.beerRemainingUnit}} ({{getRemainingBeerValue(tap)}}%)</p>
                       }
+                      @if (!isNilOrEmpty(tap.tapMonitor) && tap.tapMonitor.reportsOnlineStatus) {
+                        @if(!isNilOrEmpty(tap.tapMonitor.online) ) {
+                          @if(!tap.tapMonitor.online) {
+                            <div class="alert alert-danger offline-status" role="alert">
+                              <mat-icon>wifi_off</mat-icon> <span>Offline!@if(!isNilOrEmpty(tap.tapMonitor.lastUpdatedOn)) {
+                                &nbsp;(Last updated on {{displayDate(tap.tapMonitor.getLastUpdatedOn())}})
+                              }</span>
+                            </div>
+                          } @else {
+                            <div class="online-status">
+                              <mat-icon>wifi</mat-icon> <span>Online!@if(!isNilOrEmpty(tap.tapMonitor.lastUpdatedOn)) {
+                                &nbsp;(Last updated on {{displayDate(tap.tapMonitor.getLastUpdatedOn())}})
+                              }</span>
+                            </div>
+                          }
+                        }
+                      }
                     </div>
                     <div class="tap-qrcode">
                       @if (!isNilOrEmpty(tap.beer.untappdId)) {

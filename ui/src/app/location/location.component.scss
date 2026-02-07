@@ -212,3 +212,26 @@ div.tap-logo img {
     cursor:pointer;
     z-index: 1000;
 }
+
+.online-status {
+    color: green;
+    display: flex;
+    flex-direction: row;
+    vertical-align: middle;
+
+    .mat-icon {
+        margin-right: 6px;
+    }
+}
+
+.offline-status {
+    padding: 6px 12px;
+    margin: 0px;
+    display: flex;
+    flex-direction: row;
+    vertical-align: middle;
+
+    .mat-icon {
+        margin-right: 6px;
+    }
+}
