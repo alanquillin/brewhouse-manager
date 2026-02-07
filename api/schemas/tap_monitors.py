@@ -33,6 +33,7 @@ class TapMonitorUpdate(TapMonitorBase):
     location_id: Optional[str] = None
 
 
-class TapMonitorBase(CamelCaseModel):
+class TapMonitorTypeBase(CamelCaseModel):
     type: str
     supports_discovery: bool
+    reports_online_status: bool

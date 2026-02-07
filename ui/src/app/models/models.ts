@@ -572,6 +572,7 @@ export class Dashboard {
 export class TapMonitorType {
   type!: string;
   supportsDiscovery!: boolean;
+  reportsOnlineStatus!: boolean;
 
   constructor(from?: any) {
     if(!isNilOrEmpty(from)) {

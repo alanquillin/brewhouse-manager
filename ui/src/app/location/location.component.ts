@@ -37,6 +37,7 @@ export class TapMonitorData extends TapMonitor {
   percentBeerRemaining: number = 0;
   totalBeerRemaining: number = 0;
   beerRemainingUnit: string = "";
+  online: boolean = false;
 }
 
 @Component({

@@ -13,8 +13,17 @@ KEYMAP = {
 
 
 class OpenPlaatoKeg(TapMonitorBase):
-    def supports_discovery(self):
+    @staticmethod
+    def supports_discovery():
         return True
+    
+    @staticmethod
+    def reports_online_status():
+        return False
+    
+    async def is_online(self, **kwargs):
+        raise NotImplementedError("open-plaato-keg does not support reporting online")
+
 
     async def get(self, data_key, monitor_id=None, monitor=None, meta=None, **kwargs):
         data = await self._get_data(monitor_id, monitor, meta)

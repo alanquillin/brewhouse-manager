@@ -84,7 +84,7 @@ def _init_tap_monitors():
 def get_types() -> List[Dict]:
     res = []
     for k, v in TAP_MONITORS.items():
-        res.append({"type": k, "supports_discovery": v.supports_discovery()})
+        res.append({"type": k, "supports_discovery": v.supports_discovery(), "reports_online_status": v.reports_online_status()})
     return res
 
 

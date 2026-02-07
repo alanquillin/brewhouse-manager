@@ -17,10 +17,18 @@ class PlaatoBlynk(TapMonitorBase):
         "firmware_version": "v93",
     }
 
-    def supports_discovery(self):
+    @staticmethod
+    def supports_discovery():
+        return True
+    
+    @staticmethod
+    def reports_online_status():
         return False
+    
+    async def is_online(self, **kwargs):
+        raise NotImplementedError("Plaato Blynk does not support reporting online")
 
-    def get(self, data_type, monitor_id=None, monitor=None, meta=None, **kwargs):
+    async def get(self, data_type, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
@@ -36,7 +44,7 @@ class PlaatoBlynk(TapMonitorBase):
 
         return self._get(pin, meta)
 
-    def get_all(self, monitor_id=None, monitor=None, meta=None, **kwargs):
+    async def get_all(self, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
             raise Exception("WTH!!")
 
@@ -53,10 +61,10 @@ class PlaatoBlynk(TapMonitorBase):
             "firmwareVersion": self._get(self._data_type_to_pin["firmware_version"], meta),
         }
 
-    def discover(self, **kwargs):
+    async def discover(self, **kwargs):
         raise NotImplementedError("Plaato Blynk does not support discovery")
 
-    def _get(self, pin, meta, params=None):
+    async def _get(self, pin, meta, params=None):
         auth_token = meta.get("auth_token")
         base_url = self.config.get("tap_monitors.plaato_blynk.base_url", "http://plaato.blynk.cc")
         url = f"{base_url}/{auth_token}/get/{pin}"

@@ -42,8 +42,16 @@ class KegtronPro(TapMonitorBase):
         self.kegtron_username = self.config.get("tap_monitors.kegtron.pro.auth.username")
         self.kegtron_password = self.config.get("tap_monitors.kegtron.pro.auth.password")
 
-    def supports_discovery(self):
+    @staticmethod
+    def supports_discovery():
         return True
+    
+    @staticmethod
+    def reports_online_status():
+        return False
+
+    async def is_online(self, **kwargs):
+        raise NotImplementedError("Kegtron does not support reporting online")
 
     async def get(self, data_type, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:

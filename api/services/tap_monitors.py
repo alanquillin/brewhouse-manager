@@ -38,6 +38,14 @@ class TapMonitorService:
                 tap = taps[0]  # Only one tap can be associated with a tap monitor
                 data["tap"] = await TapService.transform_response(tap, db_session, include_location=False)
 
+        data["reports_online_status"] = False
+        monitor_type = data.get("monitor_type")
+        if monitor_type:
+            from lib.tap_monitors import get_tap_monitor_lib
+
+            tap_monitor_lib = get_tap_monitor_lib(monitor_type)
+            data["reports_online_status"] = tap_monitor_lib.reports_online_status()
+
         return transform_dict_to_camel_case(data)
 
 

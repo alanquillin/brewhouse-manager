@@ -16,8 +16,16 @@ KEYMAP = {
 
 
 class KegVolumeMonitor(TapMonitorBase):
-    def supports_discovery(self):
+    @staticmethod
+    def supports_discovery():
         return True
+    
+    @staticmethod
+    def reports_online_status():
+        return False
+
+    async def is_online(self, **kwargs):
+        raise NotImplementedError("Keg Volume Monitor does not support reporting online")
 
     async def get(self, key, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
@@ -49,7 +57,7 @@ class KegVolumeMonitor(TapMonitorBase):
             "percentRemaining": data.get("percentRemaining"),
             "totalVolumeRemaining": data.get("totalVolumeRemaining"),
             "displayVolumeUnit": data.get("displayVolumeUnit"),
-            "firmwareVersion": data.get("firmwareVersion"),
+            "firmwareVersion": data.get("firmwareVersion")
         }
 
     async def discover(self, **kwargs):
