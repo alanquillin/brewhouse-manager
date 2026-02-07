@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import Field
 
@@ -16,7 +16,13 @@ class TapMonitorBase(CamelCaseModel):
             data["meta"] = meta
         return data
 
-
+class TapMonitorResponse(TapMonitorBase):
+    id: str
+    name: str
+    monitor_type: str
+    location_id: Optional[str ]= None
+    location: Optional[dict] = None
+                  
 class TapMonitorCreate(TapMonitorBase):
     """Schema for creating a tap monitor"""
 
@@ -37,3 +43,10 @@ class TapMonitorTypeBase(CamelCaseModel):
     type: str
     supports_discovery: bool
     reports_online_status: bool
+
+class TapMonitorData(CamelCaseModel):
+    percent_remaining: float
+    total_volume_remaining: float
+    display_volume_unit: str
+    firmware_version: Optional[str]
+    online: Optional[bool]
