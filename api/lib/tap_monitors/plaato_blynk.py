@@ -19,7 +19,7 @@ class PlaatoBlynk(TapMonitorBase):
 
     @staticmethod
     def supports_discovery():
-        return True
+        return False
     
     @staticmethod
     def reports_online_status():
@@ -42,7 +42,7 @@ class PlaatoBlynk(TapMonitorBase):
         if not pin:
             raise InvalidDataType(data_type)
 
-        return self._get(pin, meta)
+        return await self._get(pin, meta)
 
     async def get_all(self, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
@@ -55,10 +55,10 @@ class PlaatoBlynk(TapMonitorBase):
             meta = monitor.meta
 
         return {
-            "percentRemaining": self._get(self._data_type_to_pin["percent_beer_remaining"], meta),
-            "totalVolumeRemaining": self._get(self._data_type_to_pin["total_beer_remaining"], meta),
-            "displayVolumeUnit": self._get(self._data_type_to_pin["beer_remaining_unit"], meta),
-            "firmwareVersion": self._get(self._data_type_to_pin["firmware_version"], meta),
+            "percentRemaining": await self._get(self._data_type_to_pin["percent_beer_remaining"], meta),
+            "totalVolumeRemaining": await self._get(self._data_type_to_pin["total_beer_remaining"], meta),
+            "displayVolumeUnit": await self._get(self._data_type_to_pin["beer_remaining_unit"], meta),
+            "firmwareVersion": await self._get(self._data_type_to_pin["firmware_version"], meta),
         }
 
     async def discover(self, **kwargs):

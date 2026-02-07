@@ -1,11 +1,17 @@
 """Tests for lib/tap_monitors/plaato_blynk.py module"""
 
+import asyncio
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from lib.tap_monitors import InvalidDataType
 from lib.tap_monitors.plaato_blynk import PlaatoBlynk
+
+
+def run_async(coro):
+    """Helper to run async functions in sync tests"""
+    return asyncio.get_event_loop().run_until_complete(coro)
 
 
 class TestPlaatoBlynk:
@@ -37,7 +43,7 @@ class TestPlaatoBlynk:
     def test_discover_raises(self, monitor):
         """Test discover raises NotImplementedError"""
         with pytest.raises(NotImplementedError):
-            monitor.discover()
+            run_async(monitor.discover())
 
     def test_data_type_to_pin_mapping(self, monitor):
         """Test _data_type_to_pin has expected mappings"""
@@ -55,7 +61,7 @@ class TestPlaatoBlynk:
         mock_requests.get.return_value = mock_response
 
         meta = {"auth_token": "test_token"}
-        result = monitor.get("percent_beer_remaining", meta=meta)
+        result = run_async(monitor.get("percent_beer_remaining", meta=meta))
 
         assert result == ["75.5"]
         mock_requests.get.assert_called_once()
@@ -66,7 +72,7 @@ class TestPlaatoBlynk:
         meta = {"auth_token": "test_token"}
 
         with pytest.raises(InvalidDataType):
-            monitor.get("unknown_data_type", meta=meta)
+            run_async(monitor.get("unknown_data_type", meta=meta))
 
     @patch("lib.tap_monitors.plaato_blynk.requests")
     def test_get_non_200_returns_empty_dict(self, mock_requests, monitor):
@@ -76,7 +82,7 @@ class TestPlaatoBlynk:
         mock_requests.get.return_value = mock_response
 
         meta = {"auth_token": "test_token"}
-        result = monitor._get("v48", meta)
+        result = run_async(monitor._get("v48", meta))
 
         assert result == {}
 
@@ -92,7 +98,7 @@ class TestPlaatoBlynk:
         mock_requests.get.side_effect = responses
 
         meta = {"auth_token": "test_token"}
-        result = monitor.get_all(meta=meta)
+        result = run_async(monitor.get_all(meta=meta))
 
         assert "percentRemaining" in result
         assert "totalVolumeRemaining" in result
@@ -102,12 +108,12 @@ class TestPlaatoBlynk:
     def test_get_no_args_raises(self, monitor):
         """Test get with no args raises exception"""
         with pytest.raises(Exception):
-            monitor.get("percent_beer_remaining")
+            run_async(monitor.get("percent_beer_remaining"))
 
     def test_get_all_no_args_raises(self, monitor):
         """Test get_all with no args raises exception"""
         with pytest.raises(Exception):
-            monitor.get_all()
+            run_async(monitor.get_all())
 
     @patch("lib.tap_monitors.plaato_blynk.requests")
     def test_get_url_construction(self, mock_requests, monitor):
@@ -118,7 +124,7 @@ class TestPlaatoBlynk:
         mock_requests.get.return_value = mock_response
 
         meta = {"auth_token": "my_auth_token"}
-        monitor._get("v48", meta)
+        run_async(monitor._get("v48", meta))
 
         called_url = mock_requests.get.call_args[0][0]
         assert "my_auth_token" in called_url
