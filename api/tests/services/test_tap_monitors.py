@@ -74,8 +74,9 @@ class TestTapMonitorServiceTransformResponse:
         mock_tap_monitor_lib = MagicMock()
         mock_tap_monitor_lib.reports_online_status.return_value = False
 
-        with patch("services.locations.LocationService.transform_response", new_callable=AsyncMock) as mock_loc, \
-             patch("lib.tap_monitors.get_tap_monitor_lib", return_value=mock_tap_monitor_lib):
+        with patch("services.locations.LocationService.transform_response", new_callable=AsyncMock) as mock_loc, patch(
+            "lib.tap_monitors.get_tap_monitor_lib", return_value=mock_tap_monitor_lib
+        ):
             mock_loc.return_value = {"id": "loc-1", "name": "Test Location"}
 
             result = run_async(TapMonitorService.transform_response(mock_monitor, mock_session, include_location=True))
@@ -106,9 +107,9 @@ class TestTapMonitorServiceTransformResponse:
         mock_tap_monitor_lib = MagicMock()
         mock_tap_monitor_lib.reports_online_status.return_value = False
 
-        with patch("db.taps.Taps.query", new_callable=AsyncMock) as mock_taps_query, \
-             patch("services.taps.TapService.transform_response", new_callable=AsyncMock) as mock_tap_transform, \
-             patch("lib.tap_monitors.get_tap_monitor_lib", return_value=mock_tap_monitor_lib):
+        with patch("db.taps.Taps.query", new_callable=AsyncMock) as mock_taps_query, patch(
+            "services.taps.TapService.transform_response", new_callable=AsyncMock
+        ) as mock_tap_transform, patch("lib.tap_monitors.get_tap_monitor_lib", return_value=mock_tap_monitor_lib):
             mock_taps_query.return_value = [mock_tap]
             mock_tap_transform.return_value = {"id": "tap-1", "tapNumber": 1}
 
@@ -125,8 +126,9 @@ class TestTapMonitorServiceTransformResponse:
         mock_tap_monitor_lib = MagicMock()
         mock_tap_monitor_lib.reports_online_status.return_value = False
 
-        with patch("db.taps.Taps.query", new_callable=AsyncMock) as mock_taps_query, \
-             patch("lib.tap_monitors.get_tap_monitor_lib", return_value=mock_tap_monitor_lib):
+        with patch("db.taps.Taps.query", new_callable=AsyncMock) as mock_taps_query, patch(
+            "lib.tap_monitors.get_tap_monitor_lib", return_value=mock_tap_monitor_lib
+        ):
             mock_taps_query.return_value = []
 
             result = run_async(TapMonitorService.transform_response(mock_monitor, mock_session, include_location=False, include_tap=True))

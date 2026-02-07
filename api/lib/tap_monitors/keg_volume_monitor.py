@@ -19,7 +19,7 @@ class KegVolumeMonitor(TapMonitorBase):
     @staticmethod
     def supports_discovery():
         return True
-    
+
     @staticmethod
     def reports_online_status():
         return False
@@ -57,7 +57,7 @@ class KegVolumeMonitor(TapMonitorBase):
             "percentRemaining": data.get("percentRemaining"),
             "totalVolumeRemaining": data.get("totalVolumeRemaining"),
             "displayVolumeUnit": data.get("displayVolumeUnit"),
-            "firmwareVersion": data.get("firmwareVersion")
+            "firmwareVersion": data.get("firmwareVersion"),
         }
 
     async def discover(self, **kwargs):

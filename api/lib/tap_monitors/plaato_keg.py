@@ -18,11 +18,11 @@ class PlaatoKeg(TapMonitorBase):
     @staticmethod
     def supports_discovery():
         return True
-    
+
     @staticmethod
     def reports_online_status():
         return True
-    
+
     async def is_online(self, monitor_id=None, monitor=None, meta=None, device_id=None, db_session=None, **kwargs):
         if not device_id:
             if not meta:
@@ -32,7 +32,6 @@ class PlaatoKeg(TapMonitorBase):
                 meta = monitor.meta
             device_id = meta.get("device_id")
         return device_id in service_handler.connection_handler.get_registered_device_ids()
-        
 
     async def get(self, data_key, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> Any:
         data, meta = await self._get_data(monitor_id, monitor, meta, db_session)

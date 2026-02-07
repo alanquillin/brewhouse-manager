@@ -12,7 +12,7 @@ from lib import logging
 from lib.tap_monitors import InvalidDataType, get_tap_monitor_lib
 from lib.tap_monitors import get_types as get_tap_monitor_types
 from routers import get_location_id
-from schemas.tap_monitors import TapMonitorBase, TapMonitorCreate, TapMonitorUpdate, TapMonitorTypeBase
+from schemas.tap_monitors import TapMonitorBase, TapMonitorCreate, TapMonitorTypeBase, TapMonitorUpdate
 from services.base import transform_dict_to_camel_case
 from services.tap_monitors import TapMonitorService, TapMonitorTypeService
 

@@ -45,7 +45,7 @@ class KegtronPro(TapMonitorBase):
     @staticmethod
     def supports_discovery():
         return True
-    
+
     @staticmethod
     def reports_online_status():
         return False

@@ -20,11 +20,11 @@ class PlaatoBlynk(TapMonitorBase):
     @staticmethod
     def supports_discovery():
         return False
-    
+
     @staticmethod
     def reports_online_status():
         return False
-    
+
     async def is_online(self, **kwargs):
         raise NotImplementedError("Plaato Blynk does not support reporting online")
 
