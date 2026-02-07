@@ -5,11 +5,13 @@ import sys
 
 # Set CONFIG_BASE_DIR before any imports that might trigger Config loading.
 # The default.json config file is at the project root's config/ directory.
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Path: api/tests/unit/conftest.py -> api/tests/unit -> api/tests -> api -> project_root
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 os.environ.setdefault("CONFIG_BASE_DIR", os.path.join(_PROJECT_ROOT, "config"))
 
 # Add the api directory to the path so imports work correctly
-api_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Path: api/tests/unit/conftest.py -> api/tests/unit -> api/tests -> api
+api_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if api_path not in sys.path:
     sys.path.insert(0, api_path)
 

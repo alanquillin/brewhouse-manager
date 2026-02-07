@@ -52,10 +52,13 @@ max-line-length = 160
 max-statements = 60
 
 [tool.pytest.ini_options]
-addopts = "-v --cov api/ --cov-report term-missing --cov-fail-under 80 --log-level DEBUG"
-norecursedirs = ["api/db_migrations", ".git", ".tox", "node_modules", "__pycache__"]
-testpaths = ["api/tests"]
+addopts = "-v --cov api/ --cov-report term-missing --cov-fail-under 80 --log-level DEBUG --ignore=api/tests/api --import-mode=importlib"
+norecursedirs = ["api/db_migrations", ".git", ".tox", "node_modules", "__pycache__", "api/tests/api"]
+testpaths = ["api/tests/unit"]
 pythonpath = ["api"]
+markers = [
+    "functional: marks tests as functional tests requiring Docker (deselect with '-m \"not functional\"')"
+]
 
 [tool.poetry]
 name = "brewhouse-manager"

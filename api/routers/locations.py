@@ -45,7 +45,7 @@ async def list_locations(
     return [await LocationService.transform_response(l, db_session=db_session) for l in locations]
 
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, status_code=201)
 async def create_location(
     location_data: LocationCreate,
     current_user: AuthUser = Depends(require_admin),
@@ -109,7 +109,7 @@ async def update_location(
     return await LocationService.transform_response(loc, db_session=db_session)
 
 
-@router.delete("/{location}")
+@router.delete("/{location}", status_code=204)
 async def delete_location(
     location: str,
     current_user: AuthUser = Depends(require_admin),
@@ -128,4 +128,4 @@ async def delete_location(
     await BatchLocationsDB.delete_by(db_session, location_id=location_id)
     await UserLocationsDB.delete_by(db_session, location_id=location_id)
     await LocationsDB.delete(db_session, location_id)
-    return True
+    return

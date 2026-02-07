@@ -116,11 +116,17 @@ async def http_exception_handler(request, exc: StarletteHTTPException):
     return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
 
 
-# Health check endpoint
+# Health check endpoints
 @api.get("/health")
 async def health_check():
     """Health check endpoint for load balancers"""
     return {"healthy": True}
+
+
+@api.get("/api/v1/healthz")
+async def healthz():
+    """Health check endpoint for Kubernetes/Docker health checks"""
+    return {"status": "ok"}
 
 
 # Register routers

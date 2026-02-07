@@ -206,7 +206,6 @@ class TestDeleteBeverage:
 
             result = run_async(delete_beverage("bev-1", mock_auth_user, mock_session))
 
-            assert result is True
             mock_db.delete.assert_called_once()
 
     def test_raises_404_when_not_found(self):

@@ -290,7 +290,6 @@ class TestDeleteLocation:
 
             result = run_async(delete_location("loc-1", mock_user, mock_session))
 
-            assert result is True
             mock_taps_db.delete_by.assert_called_once()
             mock_batch_loc_db.delete_by.assert_called_once()
             mock_user_loc_db.delete_by.assert_called_once()

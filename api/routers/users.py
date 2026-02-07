@@ -35,7 +35,7 @@ async def list_users(current_user: AuthUser = Depends(require_admin), db_session
     return [await UserService.transform_response(u, current_user) for u in users]
 
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, status_code=201)
 async def create_user(
     user_data: UserCreate,
     current_user: AuthUser = Depends(require_admin),
@@ -95,7 +95,7 @@ async def update_user(
     return await UserService.transform_response(user, current_user)
 
 
-@router.delete("/{user_id}")
+@router.delete("/{user_id}", status_code=204)
 async def delete_user(
     user_id: str,
     current_user: AuthUser = Depends(require_admin),
@@ -107,7 +107,7 @@ async def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     await UsersDB.delete(db_session, user.id)
-    return True
+    return
 
 
 @router.get("/{user_id}/api_key", response_model=dict)

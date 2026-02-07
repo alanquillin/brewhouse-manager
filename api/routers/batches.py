@@ -72,7 +72,7 @@ async def list_batches(
     ]
 
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, status_code=201)
 async def create_batch(
     batch_data: BatchCreate,
     current_user: AuthUser = Depends(require_user),
@@ -237,7 +237,7 @@ async def update_batch(
     return await BatchService.transform_response(batch, db_session=db_session, skip_meta_refresh=skip_meta_refresh)
 
 
-@router.delete("/{batch_id}")
+@router.delete("/{batch_id}", status_code=204)
 async def delete_batch(
     batch_id: str,
     beer_id: Optional[str] = None,
@@ -263,4 +263,4 @@ async def delete_batch(
         raise HTTPException(status_code=403, detail="Not authorized to delete this batch")
 
     await BatchesDB.delete(db_session, batch.id)
-    return True
+    return

@@ -33,7 +33,7 @@ async def get_all(
     return [await PlaatoKegService.transform_response(dev, db_session) for dev in devices]
 
 
-@router.post("", response_model=PlaatoKegBase)
+@router.post("", response_model=PlaatoKegBase, status_code=201)
 async def create_device(
     device_data: PlaatoKegCreate,
     current_user: AuthUser = Depends(require_admin),
@@ -91,7 +91,7 @@ async def update_device(
     return await PlaatoKegService.transform_response(dev, db_session=db_session)
 
 
-@router.delete("/{device_id}", response_model=bool)
+@router.delete("/{device_id}", status_code=204)
 async def delete(
     device_id: str,
     current_user: AuthUser = Depends(require_admin),
@@ -104,7 +104,10 @@ async def delete(
 
     cnt = await PlaatoDataDB.delete(db_session, device_id)
 
-    return True if cnt else False  # pylint: disable=simplifiable-if-expression
+    if cnt == 0:
+        raise HTTPException(status_code=500, detail="Plaato keg device not deleted")
+
+    return
 
 
 @router.post("/{device_id}/set/mode", response_model=bool)

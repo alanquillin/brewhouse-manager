@@ -62,9 +62,8 @@ endif
 .PHONY: build build-db-seed build-dev clean clean-all clean-image clean-images \
 	clean-seed-image depends docker-build format-py lint-py lint-ts publish \
 	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends \
-	clean-local-uploads test test-lib test-lib-core test-lib-assets \
-	test-lib-external-brew-tools test-lib-tap-monitors test-plaato-keg \
-	update-version
+	clean-local-uploads test test_unit test-unit-no-coverage test-api test-api-verbose \
+	test-api-clean update-version
 
 # dependency targets
 
@@ -134,11 +133,24 @@ format: format-py
 
 # Unit tests
 
-test:
+test: test-unit test-api-verbose
+
+test-unit:
 	$(PYTEST)
 
 test-no-coverage:
 	$(PYTEST) --no-cov
+
+# Functional API tests (requires Docker)
+
+test-api: build-dev
+	cd api/tests/api && $(PYTEST) -v
+
+test-api-verbose: build-dev
+	cd api/tests/api && $(PYTEST) -v -s --log-cli-level=INFO
+
+test-api-clean:
+	$(DOCKER) compose -f api/tests/api/docker-compose.yml down -v --remove-orphans
 
 # Migrations
 

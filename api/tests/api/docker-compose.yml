@@ -1,0 +1,84 @@
+version: "3"
+services:
+  web:
+    image: brewhouse-manager:dev
+    expose:
+      - 5000
+    ports:
+      - "5050:5000"
+      - "5051:5001/tcp"
+    environment:
+      - ENV=test
+      - LOG_LEVEL=DEBUG
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=brewhouse_test
+      - DB_USERNAME=brewhouse_test
+      - DB_PASSWORD=brewhouse_test
+      - API_HOST=0.0.0.0
+      - TAP_MONITORS_PLAATO_KEG_ENABLED=false
+      - TAP_MONITORS_OPEN_PLAATO_KEG_ENABLED=true
+      - TAP_MONITORS_KEG_VOLUME_MONITORS_ENABLED=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+    networks:
+      - functional-test-net
+    healthcheck:
+      test: ["CMD-SHELL", "/.venv/bin/python -c \"import urllib.request; urllib.request.urlopen('http://localhost:5000/api/v1/healthz')\" || exit 1"]
+      interval: 2s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
+
+  postgres:
+    image: postgres:17-alpine
+    expose:
+      - 5432
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=brewhouse_test
+      - POSTGRES_PASSWORD=brewhouse_test
+      - POSTGRES_DB=brewhouse_test
+    networks:
+      - functional-test-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brewhouse_test -d brewhouse_test"]
+      interval: 2s
+      timeout: 30s
+      retries: 15
+      start_period: 5s
+    # Use tmpfs for faster tests and automatic cleanup
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  db-init:
+    image: brewhouse-manager:dev
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Running database migrations..."
+        /.venv/bin/alembic -c db_migrations/alembic.ini upgrade head
+        echo "Seeding database..."
+        /.venv/bin/python seed_data.py
+    working_dir: /brewhouse-manager/api
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=brewhouse_test
+      - DB_USERNAME=brewhouse_test
+      - DB_PASSWORD=brewhouse_test
+      - LOG_LEVEL=DEBUG
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - functional-test-net
+    volumes:
+      - ./seed_data.py:/brewhouse-manager/api/seed_data.py:ro
+
+networks:
+  functional-test-net:

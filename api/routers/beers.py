@@ -28,7 +28,7 @@ async def list_beers(
     return [await BeerService.transform_response(b, db_session=db_session, force_refresh=force_refresh) for b in beers]
 
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, status_code=201)
 async def create_beer(
     beer_data: BeerCreate,
     current_user: AuthUser = Depends(require_user),
@@ -114,7 +114,7 @@ async def update_beer(
     return await BeerService.transform_response(beer, db_session=db_session, image_transitions=image_transitions, skip_meta_refresh=skip_meta_refresh)
 
 
-@router.delete("/{beer_id}")
+@router.delete("/{beer_id}", status_code=204)
 async def delete_beer(
     beer_id: str,
     current_user: AuthUser = Depends(require_user),
@@ -127,4 +127,4 @@ async def delete_beer(
         raise HTTPException(status_code=404, detail="Beer not found")
 
     await BeersDB.delete(db_session, beer.id)
-    return True
+    return

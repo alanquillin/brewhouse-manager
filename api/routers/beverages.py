@@ -25,7 +25,7 @@ async def list_beverages(
     return [await BeverageService.transform_response(b, db_session=db_session) for b in beverages]
 
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, status_code=201)
 async def create_beverage(
     beverage_data: BeverageCreate,
     current_user: AuthUser = Depends(require_user),
@@ -94,7 +94,7 @@ async def update_beverage(
     return await BeverageService.transform_response(beverage, db_session=db_session, image_transitions=image_transitions)
 
 
-@router.delete("/{beverage_id}")
+@router.delete("/{beverage_id}", status_code=204)
 async def delete_beverage(
     beverage_id: str,
     current_user: AuthUser = Depends(require_user),
@@ -107,4 +107,4 @@ async def delete_beverage(
         raise HTTPException(status_code=404, detail="Beverage not found")
 
     await BeveragesDB.delete(db_session, beverage.id)
-    return True
+    return

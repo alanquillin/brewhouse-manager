@@ -40,7 +40,7 @@ async def list_taps(
     return [await TapService.transform_response(t, db_session=db_session) for t in taps]
 
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, status_code=201)
 async def create_tap(
     tap_data: TapCreate,
     location: Optional[str] = None,
@@ -187,7 +187,7 @@ async def update_tap(
     return await TapService.transform_response(tap, db_session=db_session)
 
 
-@router.delete("/{tap_id}")
+@router.delete("/{tap_id}", status_code=204)
 async def delete_tap(
     tap_id: str,
     location: Optional[str] = None,
@@ -218,4 +218,4 @@ async def delete_tap(
         await OnTapDB.delete(db_session, tap.on_tap_id)
 
     await TapsDB.delete(db_session, tap.id)
-    return True
+    return

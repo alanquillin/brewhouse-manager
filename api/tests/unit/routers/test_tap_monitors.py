@@ -368,7 +368,6 @@ class TestDeleteTapMonitor:
 
             result = run_async(delete_tap_monitor("monitor-1", None, mock_auth_user, mock_session))
 
-            assert result is True
             mock_monitor_db.delete.assert_called_once()
 
     def test_deletes_tap_monitor_updates_taps(self):
@@ -388,7 +387,6 @@ class TestDeleteTapMonitor:
 
             result = run_async(delete_tap_monitor("monitor-1", None, mock_auth_user, mock_session))
 
-            assert result is True
             mock_taps_db.update.assert_called_once_with(mock_session, "tap-1", tap_monitor_id=None)
 
     def test_raises_404_when_not_found(self):

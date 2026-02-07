@@ -310,7 +310,6 @@ class TestDeleteTap:
 
             result = run_async(delete_tap("tap-1", None, mock_auth_user, mock_session))
 
-            assert result is True
             mock_taps_db.delete.assert_called_once()
 
     def test_deletes_tap_with_on_tap(self):
@@ -328,7 +327,6 @@ class TestDeleteTap:
 
             result = run_async(delete_tap("tap-1", None, mock_auth_user, mock_session))
 
-            assert result is True
             mock_on_tap_db.delete.assert_called_once_with(mock_session, "on-tap-1")
 
     def test_raises_404_when_not_found(self):

@@ -77,7 +77,7 @@ async def list_tap_monitors(
     return [await TapMonitorService.transform_response(s, db_session=db_session, include_tap=include_tap_details) for s in tap_monitors]
 
 
-@router.post("", response_model=TapMonitorResponse)
+@router.post("", response_model=TapMonitorResponse, status_code=201)
 async def create_tap_monitor(
     tap_monitor_data: TapMonitorCreate,
     location: Optional[str] = None,
@@ -171,7 +171,7 @@ async def update_tap_monitor(
     return await TapMonitorService.transform_response(tap_monitor, db_session=db_session)
 
 
-@router.delete("/{tap_monitor_id}", response_model=bool)
+@router.delete("/{tap_monitor_id}", status_code=204)
 async def delete_tap_monitor(
     tap_monitor_id: str,
     location: Optional[str] = None,
@@ -203,7 +203,7 @@ async def delete_tap_monitor(
             await TapsDB.update(db_session, tap.id, tap_monitor_id=None)
 
     await TapMonitorsDB.delete(db_session, tap_monitor.id)
-    return True
+    return
 
 
 @router.get("/{tap_monitor_id}/data", response_model=TapMonitorData)
