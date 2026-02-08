@@ -73,7 +73,7 @@
   },
   "logging": {
     "levels": {
-      "sqlalchemy.engine": "WARNING"
+      "sqlalchemy.engine": "INFO"
     }
   },
   "taps": {

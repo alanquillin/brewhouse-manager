@@ -38,17 +38,32 @@ class TestGetTapMonitors:
         assert TAP_MONITOR_3_ID in monitor_ids
         assert TAP_MONITOR_SECONDARY_ID in monitor_ids
 
-    def test_filters_by_location(self, api_client: requests.Session, api_base_url: str):
+    def test_filters_by_query_string_location(self, api_client: requests.Session, api_base_url: str):
         """Test filtering tap monitors by location."""
         response = api_client.get(
             f"{api_base_url}/tap_monitors",
-            params={"location_id": LOCATION_MAIN_ID}
+            params={"location": LOCATION_MAIN_ID}
         )
 
         assert response.status_code == 200
-        data = response.json()
+        monitors = response.json()
 
-        monitors = data["tapMonitors"]
+        # Main location has 3 tap monitors
+        assert len(monitors) == 3
+
+        # All returned monitors should be from the main location
+        for monitor in monitors:
+            assert monitor["locationId"] == LOCATION_MAIN_ID
+
+    def test_filters_by_path_location(self, api_client: requests.Session, api_base_url: str):
+        """Test filtering tap monitors by location."""
+        response = api_client.get(
+            f"{api_base_url}/locations/{LOCATION_MAIN_ID}/tap_monitors",
+        )
+
+        assert response.status_code == 200
+        monitors = response.json()
+
         # Main location has 3 tap monitors
         assert len(monitors) == 3
 

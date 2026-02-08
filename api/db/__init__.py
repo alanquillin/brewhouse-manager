@@ -140,7 +140,7 @@ async def create_async_session(config, **kwargs):
         **engine_kwargs,
     )
 
-    return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)()
+    return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=True)()
 
 
 @asynccontextmanager
@@ -583,11 +583,12 @@ class AsyncQueryMethodsMixin:
 
         if autocommit:
             try:
+                LOGGER.debug("Committing update for %s with id %s and data %s", cls.__name__, pkey, kwargs)
                 await session.commit()
             except:
                 await session.rollback()
                 raise
-
+        LOGGER.debug("Rows affected for update: %s. (%s with id %s and data %s)", rowcnt, cls.__name__, pkey, kwargs)
         return rowcnt
 
     @classmethod

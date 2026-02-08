@@ -8,6 +8,7 @@ instance in Docker containers. The database starts from a consistent known state
 import os
 import subprocess
 import sys
+import threading
 import time
 from typing import Generator
 
@@ -73,20 +74,60 @@ class DockerComposeManager:
         if not self._started:
             return
 
+        # Stop log streaming first
+        self.stop_log_streaming()
+
         print("Stopping Docker Compose services...")
         self._run_compose("down", "-v", "--remove-orphans", check=False)
         self._started = False
         print("Docker Compose services stopped")
 
-    def logs(self, service: str = None):
+    def logs(self, service: str = None, tail: int = 100):
         """Print logs from services."""
-        args = ["logs", "--tail=100"]
+        args = ["logs", f"--tail={tail}"]
         if service:
             args.append(service)
         result = self._run_compose(*args, check=False)
         print(result.stdout)
         if result.stderr:
             print(result.stderr)
+
+    def start_log_streaming(self, service: str = "web"):
+        """Start streaming logs from a service in the background."""
+        if hasattr(self, '_log_process') and self._log_process is not None:
+            return  # Already streaming
+
+        cmd = ["docker", "compose", "-f", self.compose_file, "logs", "-f", "--tail=0", service]
+        self._log_process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1
+        )
+
+        def stream_output():
+            try:
+                for line in self._log_process.stdout:
+                    # Print with a prefix to distinguish from test output
+                    print(f"[SERVER] {line}", end="", flush=True)
+            except Exception:
+                pass
+
+        self._log_thread = threading.Thread(target=stream_output, daemon=True)
+        self._log_thread.start()
+        print(f"Started streaming logs from {service} service")
+
+    def stop_log_streaming(self):
+        """Stop streaming logs."""
+        if hasattr(self, '_log_process') and self._log_process is not None:
+            self._log_process.terminate()
+            try:
+                self._log_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self._log_process.kill()
+            self._log_process = None
+            print("Stopped log streaming")
 
     def restart_db_init(self):
         """Restart the db-init service to reset the database."""
@@ -241,3 +282,73 @@ def user_api_client(docker_services: DockerComposeManager) -> requests.Session:
         "X-API-Key": "test-user-api-key-67890",  # From seed_data.py
     })
     return session
+
+
+@pytest.fixture(scope="session")
+def stream_server_logs(docker_services: DockerComposeManager) -> Generator[None, None, None]:
+    """
+    Session-scoped fixture that streams server logs to stdout during tests.
+
+    Use this fixture when you want to see real-time server logs.
+    Add it to your test or use it via command line with --capture=no (-s).
+    """
+    docker_services.start_log_streaming("web")
+    yield
+    docker_services.stop_log_streaming()
+
+
+# Store test outcomes for log printing
+_test_outcomes = {}
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Hook to capture test outcomes for printing logs on failure."""
+    outcome = yield
+    report = outcome.get_result()
+
+    # Store the outcome for each phase
+    if report.when == "call":
+        _test_outcomes[item.nodeid] = report.outcome
+
+
+def pytest_runtest_teardown(item, nextitem):
+    """Print server logs after each test if there was a failure."""
+    nodeid = item.nodeid
+    outcome = _test_outcomes.get(nodeid)
+
+    if outcome == "failed":
+        # Get docker manager and print recent logs
+        manager = get_docker_manager()
+        if manager._started:
+            print("\n" + "=" * 60)
+            print("SERVER LOGS (last 100 lines from web service):")
+            print("=" * 60)
+            manager.logs(service="web", tail=100)
+            print("=" * 60 + "\n")
+
+    # Clean up the stored outcome
+    _test_outcomes.pop(nodeid, None)
+
+
+def pytest_addoption(parser):
+    """Add custom command line options."""
+    parser.addoption(
+        "--stream-logs",
+        action="store_true",
+        default=False,
+        help="Stream server logs to stdout during test execution"
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def auto_stream_logs(request, docker_services: DockerComposeManager) -> Generator[None, None, None]:
+    """
+    Automatically stream server logs if --stream-logs option is provided.
+    """
+    if request.config.getoption("--stream-logs"):
+        docker_services.start_log_streaming("web")
+        yield
+        docker_services.stop_log_streaming()
+    else:
+        yield

@@ -35,17 +35,30 @@ class TestGetTaps:
         # Should have at least the seeded taps
         assert len(taps) >= len(TAPS)
 
-    def test_filters_taps_by_location(self, api_client: requests.Session, api_base_url: str):
+    def test_filters_taps_by_query_string_location(self, api_client: requests.Session, api_base_url: str):
         """Test filtering taps by location."""
         response = api_client.get(
             f"{api_base_url}/taps",
-            params={"location_id": LOCATION_MAIN_ID}
+            params={"location": LOCATION_MAIN_ID}
         )
 
         assert response.status_code == 200
-        data = response.json()
+        taps = response.json()
+        # Main location has 3 taps
+        assert len(taps) == 3
 
-        taps = data["taps"]
+        # All returned taps should be from the main location
+        for tap in taps:
+            assert tap["locationId"] == LOCATION_MAIN_ID
+
+    def test_filters_taps_by_path_location(self, api_client: requests.Session, api_base_url: str):
+        """Test filtering taps by location."""
+        response = api_client.get(
+            f"{api_base_url}/locations/{LOCATION_MAIN_ID}/taps",
+        )
+
+        assert response.status_code == 200
+        taps = response.json()
         # Main location has 3 taps
         assert len(taps) == 3
 

@@ -105,7 +105,7 @@ async def update_location(
     if data:
         await LocationsDB.update(db_session, location_id, **data)
 
-    loc = LocationsDB.get_by_pkey(db_session, location_id)
+    loc = await LocationsDB.get_by_pkey(db_session, location_id)
     return await LocationService.transform_response(loc, db_session=db_session)
 
 
