@@ -1,18 +1,33 @@
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { Component, OnInit, Inject } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
-import { Location, Tap, Beer, TapMonitor, TapMonitorData as TapMonitorDataModel, Settings, TapRefreshSettings, Beverage, ColdBrew, ImageTransitionalBase, Dashboard, DashboardSettings, Batch, UserInfo } from './../models/models';
-import { isNilOrEmpty, openFullscreen, closeFullscreen } from '../utils/helpers';
-import { fromJsTimestamp, formatDate, fromUnixTimestamp} from '../utils/datetime';
 import { ConfigService } from '../_services/config.service';
-import { DataService, DataError } from '../_services/data.service';
+import { DataError, DataService } from '../_services/data.service';
 import { SettingsService } from '../_services/settings.service';
+import { fromJsTimestamp, fromUnixTimestamp } from '../utils/datetime';
+import { closeFullscreen, isNilOrEmpty, openFullscreen } from '../utils/helpers';
+import {
+  Batch,
+  Beer,
+  Beverage,
+  ColdBrew,
+  Dashboard,
+  DashboardSettings,
+  ImageTransitionalBase,
+  Location,
+  Settings,
+  Tap,
+  TapMonitor,
+  TapMonitorData as TapMonitorDataModel,
+  TapRefreshSettings,
+  UserInfo,
+} from './../models/models';
 
-import { LocationImageDialog } from '../_dialogs/image-preview-dialog/image-preview-dialog.component'
-import { LocationQRCodeDialog } from '../_dialogs/qrcode-dialog/qrcode-dialog.component'
+import { LocationImageDialog } from '../_dialogs/image-preview-dialog/image-preview-dialog.component';
+import { LocationQRCodeDialog } from '../_dialogs/qrcode-dialog/qrcode-dialog.component';
 
 import * as _ from 'lodash';
 
@@ -26,7 +41,7 @@ export class TapDetails extends Tap {
   }
 
   get showTotalBeerRemaining(): boolean {
-    if(isNilOrEmpty(this.tapMonitor)){
+    if (isNilOrEmpty(this.tapMonitor)) {
       return false;
     }
 
@@ -42,18 +57,20 @@ export class TapMonitorData extends TapMonitor {
   lastUpdatedOn!: number;
 
   getLastUpdatedOn(): Date | undefined {
-    if(isNilOrEmpty(this.lastUpdatedOn) || !_.isNumber(this.lastUpdatedOn)) {
-      return undefined
+    if (isNilOrEmpty(this.lastUpdatedOn) || !_.isNumber(this.lastUpdatedOn)) {
+      return undefined;
     }
-    return this.lastUpdatedOn < 9999999999 ? fromUnixTimestamp(this.lastUpdatedOn) : fromJsTimestamp(this.lastUpdatedOn);
+    return this.lastUpdatedOn < 9999999999
+      ? fromUnixTimestamp(this.lastUpdatedOn)
+      : fromJsTimestamp(this.lastUpdatedOn);
   }
 }
 
 @Component({
-    selector: 'app-location',
-    templateUrl: './location.component.html',
-    styleUrls: ['./location.component.scss'],
-    standalone: false
+  selector: 'app-location',
+  templateUrl: './location.component.html',
+  styleUrls: ['./location.component.scss'],
+  standalone: false,
 })
 export class LocationComponent implements OnInit {
   title = 'Location';
@@ -66,9 +83,9 @@ export class LocationComponent implements OnInit {
   isNilOrEmpty: Function = isNilOrEmpty;
   tapRefreshSettings: TapRefreshSettings = new TapRefreshSettings();
   dashboardSettings: DashboardSettings = new DashboardSettings();
-  isFullscreen: boolean = false;
-  enableFullscreen: boolean = false;
-  serviceAvailable: boolean = true;
+  isFullscreen = false;
+  enableFullscreen = false;
+  serviceAvailable = true;
   lastServiceAvailDT: Date = new Date(Date.now());
   userInfo!: UserInfo;
 
@@ -83,11 +100,13 @@ export class LocationComponent implements OnInit {
     public dialog: MatDialog,
     private configService: ConfigService
   ) {
-    this.route.params.subscribe( (params: any) => this.location_identifier = params['location'] );
+    this.route.params.subscribe((params: any) => (this.location_identifier = params['location']));
   }
 
   scheduleHealthCheck(): void {
-    setTimeout(() => {this.checkHealth()}, 30000);
+    setTimeout(() => {
+      this.checkHealth();
+    }, 30000);
   }
 
   checkHealth(next?: Function): void {
@@ -96,39 +115,38 @@ export class LocationComponent implements OnInit {
         this.serviceAvailable = true;
         this.lastServiceAvailDT = new Date(Date.now());
         this.scheduleHealthCheck();
-        if(next) {
+        if (next) {
           next();
         }
       },
       error: (err: DataError) => {
         this.serviceAvailable = false;
         this.scheduleHealthCheck();
-      }
-    })
+      },
+    });
   }
 
   displayError(errMsg: string) {
-    this._snackBar.open("Error: " + errMsg, "Close");
+    this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
   refresh(next?: Function, always?: Function) {
     this.isLoading = true;
     this.taps = [];
-    
+
     this.dataService.getCurrentUser().subscribe({
       next: (userInfo: UserInfo) => {
         this.userInfo = userInfo;
         this._refresh(next, always);
       },
       error: (err: DataError) => {
-        if(err.statusCode === 401) {
+        if (err.statusCode === 401) {
           this._refresh(next, always);
         } else {
           this.displayError(err.message);
         }
       },
-      complete: () => {
-      }
+      complete: () => {},
     });
   }
 
@@ -141,47 +159,57 @@ export class LocationComponent implements OnInit {
           next: (dashboard: Dashboard) => {
             this.location = new Location(dashboard.location);
             this.locations = [];
-            for(let location of _.sortBy(dashboard.locations, (l) => {return l.description})) {
+            for (const location of _.sortBy(dashboard.locations, l => {
+              return l.description;
+            })) {
               this.locations.push(new Location(location));
             }
             this.taps = [];
-            for(let tap of _.sortBy(dashboard.taps, (t) => {return t.tapNumber})) {
-              let _tap = this.setTapDetails(new TapDetails(tap));
+            for (const tap of _.sortBy(dashboard.taps, t => {
+              return t.tapNumber;
+            })) {
+              const _tap = this.setTapDetails(new TapDetails(tap));
               this.taps.push(_tap);
               this.scheduleTapRefresh(_tap);
             }
-            if(!_.isNil(next)) {
+            if (!_.isNil(next)) {
               next();
             }
             this.isLoading = false;
-          }, error: (err: DataError) => {
+          },
+          error: (err: DataError) => {
             if (err.statusCode === 404) {
-              this.router.navigate(["/"]);
+              this.router.navigate(['/']);
             }
-    
+
             this.displayError(err.message);
-            if(!_.isNil(always)) {
+            if (!_.isNil(always)) {
               always();
             }
-          }
+          },
         });
       },
       error: (err: DataError) => {
         this.displayError(err.message);
-        if(!_.isNil(always)) {
+        if (!_.isNil(always)) {
           always();
         }
-      }
+      },
     });
   }
 
   scheduleTapRefresh(tap: TapDetails): void {
-    const refreshInMs = (this.tapRefreshSettings.baseSec + _.random(this.tapRefreshSettings.variable * -1, this.tapRefreshSettings.variable))*1000;
-    setTimeout(() => {this.refreshTap(tap)}, refreshInMs);
+    const refreshInMs =
+      (this.tapRefreshSettings.baseSec +
+        _.random(this.tapRefreshSettings.variable * -1, this.tapRefreshSettings.variable)) *
+      1000;
+    setTimeout(() => {
+      this.refreshTap(tap);
+    }, refreshInMs);
   }
 
   refreshTap(tap: TapDetails) {
-    if(this.serviceAvailable) {
+    if (this.serviceAvailable) {
       this.dataService.getDashboardTap(tap.id).subscribe({
         next: (_tap: Tap) => {
           tap.from(_tap);
@@ -190,7 +218,7 @@ export class LocationComponent implements OnInit {
         },
         error: (err: DataError) => {
           this.scheduleTapRefresh(tap);
-        }
+        },
       });
     } else {
       this.scheduleTapRefresh(tap);
@@ -200,64 +228,68 @@ export class LocationComponent implements OnInit {
   setTapDetails(tap: TapDetails): TapDetails {
     tap.isEmpty = this.isTapEmpty(tap);
 
-    if(!tap.isEmpty) {
-      tap.isLoading = true
+    if (!tap.isEmpty) {
+      tap.isLoading = true;
       tap.beer = new Beer();
       tap.beverage = new Beverage();
 
-      if(!isNilOrEmpty(tap.batch)){
-        tap.batch = new Batch(tap.batch)
+      if (!isNilOrEmpty(tap.batch)) {
+        tap.batch = new Batch(tap.batch);
       }
 
-      if(tap.tapType === "beer"){
+      if (tap.tapType === 'beer') {
         this.dataService.getDashboardBeer(tap.beerId).subscribe((beer: Beer) => {
-          const _beer = new Beer(beer)
+          const _beer = new Beer(beer);
           tap.beer = _beer;
-        })
+        });
       }
-      
-      if(tap.tapType === "beverage") {
+
+      if (tap.tapType === 'beverage') {
         this.dataService.getDashboardBeverage(tap.beverageId).subscribe((beverage: Beverage) => {
           tap.beverage = new Beverage(beverage);
-          if(beverage.type === "cold-brew") {
+          if (beverage.type === 'cold-brew') {
             tap.coldBrew = new ColdBrew(beverage);
           }
-        })
+        });
       }
 
-      if(!_.isEmpty(tap.tapMonitorId)) {
-        this.dataService.getDashboardTapMonitor(tap.tapMonitorId).subscribe((tapMonitor: TapMonitor) => {
-          let oldTapMonitor = <TapMonitorData>tap.tapMonitor;
-          let tapMonitorData = new TapMonitorData(tapMonitor);
-          tapMonitorData.percentBeerRemaining = oldTapMonitor.percentBeerRemaining;
-          tapMonitorData.totalBeerRemaining = oldTapMonitor.totalBeerRemaining;
-          tapMonitorData.beerRemainingUnit = oldTapMonitor.beerRemainingUnit;
-          tapMonitorData.online = oldTapMonitor.online;
-          tapMonitorData.lastUpdatedOn = oldTapMonitor.lastUpdatedOn;
-          tap.tapMonitor = tapMonitorData;
+      if (!_.isEmpty(tap.tapMonitorId)) {
+        this.dataService
+          .getDashboardTapMonitor(tap.tapMonitorId)
+          .subscribe((tapMonitor: TapMonitor) => {
+            const oldTapMonitor = tap.tapMonitor as TapMonitorData;
+            const tapMonitorData = new TapMonitorData(tapMonitor);
+            tapMonitorData.percentBeerRemaining = oldTapMonitor.percentBeerRemaining;
+            tapMonitorData.totalBeerRemaining = oldTapMonitor.totalBeerRemaining;
+            tapMonitorData.beerRemainingUnit = oldTapMonitor.beerRemainingUnit;
+            tapMonitorData.online = oldTapMonitor.online;
+            tapMonitorData.lastUpdatedOn = oldTapMonitor.lastUpdatedOn;
+            tap.tapMonitor = tapMonitorData;
 
-          this.dataService.getAllTapMonitorData(tapMonitorData.id).subscribe((resp: TapMonitorDataModel) => {
-            tapMonitorData.percentBeerRemaining = resp.percentRemaining;
-            tapMonitorData.totalBeerRemaining = resp.totalVolumeRemaining;
-            tapMonitorData.beerRemainingUnit = resp.displayVolumeUnit;
-            tapMonitorData.online = resp.online;
-            tapMonitorData.lastUpdatedOn = resp.lastUpdatedOn;
-            tap.isLoading = false;
+            this.dataService
+              .getAllTapMonitorData(tapMonitorData.id)
+              .subscribe((resp: TapMonitorDataModel) => {
+                tapMonitorData.percentBeerRemaining = resp.percentRemaining;
+                tapMonitorData.totalBeerRemaining = resp.totalVolumeRemaining;
+                tapMonitorData.beerRemainingUnit = resp.displayVolumeUnit;
+                tapMonitorData.online = resp.online;
+                tapMonitorData.lastUpdatedOn = resp.lastUpdatedOn;
+                tap.isLoading = false;
+              });
+
+            // this.dataService.getPercentBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
+            //   tapMonitorData.percentBeerRemaining = val as number;
+            //   tap.isLoading = false;
+            // });
+            // this.dataService.getTotalBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
+            //   tapMonitorData.totalBeerRemaining = val as number;
+            //   tap.isLoading = false;
+            // });
+            // this.dataService.getBeerRemainingUnit(tapMonitorData.id).subscribe((val: string) => {
+            //   tapMonitorData.beerRemainingUnit = val;
+            //   tap.isLoading = false;
+            // });
           });
-          
-          // this.dataService.getPercentBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
-          //   tapMonitorData.percentBeerRemaining = val as number;
-          //   tap.isLoading = false;
-          // });
-          // this.dataService.getTotalBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
-          //   tapMonitorData.totalBeerRemaining = val as number;
-          //   tap.isLoading = false;
-          // });
-          // this.dataService.getBeerRemainingUnit(tapMonitorData.id).subscribe((val: string) => {
-          //   tapMonitorData.beerRemainingUnit = val;
-          //   tap.isLoading = false;
-          // });
-        })
       } else {
         tap.isLoading = false;
       }
@@ -266,33 +298,33 @@ export class LocationComponent implements OnInit {
   }
 
   isTapEmpty(tap: TapDetails): boolean {
-    if(isNilOrEmpty(tap.beerId) && isNilOrEmpty(tap.beverageId) && isNilOrEmpty(tap.batchId)){
+    if (isNilOrEmpty(tap.beerId) && isNilOrEmpty(tap.beverageId) && isNilOrEmpty(tap.batchId)) {
       return true;
     }
-    
+
     return false;
   }
 
   getSrm(tap: Tap): string {
-    var srm = 1
-    if(!_.isNil(tap) && !_.isNil(tap.beer)){
+    let srm = 1;
+    if (!_.isNil(tap) && !_.isNil(tap.beer)) {
       srm = tap.beer.getSrm(tap.batch);
     }
-    
-    return srm > 40 ? "40plus" : _.toString(_.round(srm))
+
+    return srm > 40 ? '40plus' : _.toString(_.round(srm));
   }
 
-  ngOnInit() { 
+  ngOnInit() {
     // const isIOS = /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     // const isSafari = navigator.userAgent.indexOf("Safari") !== -1 && navigator.userAgent.indexOf("CriOS") === -1 && navigator.userAgent.indexOf("FxiOS") === -1
 
     // this.enableFullscreen = isIOS && isSafari;
     this.enableFullscreen = true;
 
-    this.checkHealth(()=>{
-      this.refresh(()=>{
-        this.configService.update({title: `On Tap: ${this.location.description}`})
-      })
+    this.checkHealth(() => {
+      this.refresh(() => {
+        this.configService.update({ title: `On Tap: ${this.location.description}` });
+      });
     });
   }
 
@@ -308,14 +340,14 @@ export class LocationComponent implements OnInit {
     this.dialog.open(LocationQRCodeDialog, {
       data: {
         url: url,
-        title: "Check-in on Untappd"
+        title: 'Check-in on Untappd',
       },
     });
   }
 
   getUntappdUrl(beer: Beer): string {
-    if(isNilOrEmpty(beer) || isNilOrEmpty(beer.untappdId)){
-      return "";
+    if (isNilOrEmpty(beer) || isNilOrEmpty(beer.untappdId)) {
+      return '';
     }
 
     return `https://untappd.com/qr/beer/${beer.untappdId}`;
@@ -330,35 +362,35 @@ export class LocationComponent implements OnInit {
   }
 
   getImageUrl(tap: TapDetails): string {
-    if(tap.isLoading) {
-      return "";
+    if (tap.isLoading) {
+      return '';
     }
-    
-    let b: ImageTransitionalBase | undefined = tap.tapType === "beer" ? tap.beer : tap.beverage;
+
+    const b: ImageTransitionalBase | undefined = tap.tapType === 'beer' ? tap.beer : tap.beverage;
 
     if (!b) {
-      return "";
+      return '';
     }
 
     let imageUrl = b.getImgUrl(tap.batch);
-    if(!tap.tapMonitor) {
+    if (!tap.tapMonitor) {
       return imageUrl;
     }
 
-    if(b.imageTransitionsEnabled) {
-      let percentBeerRemaining = tap.tapMonitor.percentBeerRemaining;
+    if (b.imageTransitionsEnabled) {
+      const percentBeerRemaining = tap.tapMonitor.percentBeerRemaining;
 
-      if(isNilOrEmpty(percentBeerRemaining)) {
+      if (isNilOrEmpty(percentBeerRemaining)) {
         return imageUrl;
-      };
+      }
 
-      if(percentBeerRemaining <= 0) {
+      if (percentBeerRemaining <= 0) {
         return b.emptyImgUrl;
       }
-      
-      if(b.imageTransitions && !isNilOrEmpty(b.imageTransitions)) {
-        for(let i of b.imageTransitions) {
-          if(percentBeerRemaining > i.changePercent) {
+
+      if (b.imageTransitions && !isNilOrEmpty(b.imageTransitions)) {
+        for (const i of b.imageTransitions) {
+          if (percentBeerRemaining > i.changePercent) {
             break;
           }
           imageUrl = i.imgUrl;
@@ -372,30 +404,27 @@ export class LocationComponent implements OnInit {
   }
 
   toggleFullscreen() {
-    if(this.isFullscreen)
-      closeFullscreen(document);
-    else
-      openFullscreen(document);
-      
+    if (this.isFullscreen) closeFullscreen(document);
+    else openFullscreen(document);
 
     this.isFullscreen = !this.isFullscreen;
   }
 
   goto(path: string): void {
-    if(path === 'home') {
-      path = "";
+    if (path === 'home') {
+      path = '';
     }
     window.location.href = `/${path}`;
   }
 
-  get showHomeBtn() : boolean {
+  get showHomeBtn(): boolean {
     if (this.locations.length > 1) {
       return true;
     }
     return false;
   }
 
-  get loggedIn() : Boolean {
+  get loggedIn(): boolean {
     if (this.isNilOrEmpty(this.userInfo)) {
       return false;
     }
@@ -404,14 +433,14 @@ export class LocationComponent implements OnInit {
 
   displayDate(date: Date | undefined): string {
     if (isNilOrEmpty(date)) {
-      return "";
+      return '';
     }
 
     const usFormatter = new Intl.DateTimeFormat('en-US', {
       dateStyle: 'full',
-      timeStyle: 'short'
-      });
+      timeStyle: 'short',
+    });
 
-      return usFormatter.format(date);
+    return usFormatter.format(date);
   }
 }

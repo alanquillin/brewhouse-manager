@@ -1,19 +1,18 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { DataService, DataError } from '../../_services/data.service';
-import { SettingsService } from '../../_services/settings.service';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { PlaatoKegDevice, UserInfo, PlaatoDeviceResponse } from '../../models/models';
-import { forkJoin, Observable } from 'rxjs';
 import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
+import { DataError, DataService } from '../../_services/data.service';
+import { SettingsService } from '../../_services/settings.service';
+import { PlaatoKegDevice, UserInfo } from '../../models/models';
 
 @Component({
   selector: 'app-plaato-keg',
   templateUrl: './plaato-keg.component.html',
   styleUrls: ['./plaato-keg.component.scss'],
-  standalone: false
+  standalone: false,
 })
 export class ManagePlaatoKegComponent implements OnInit {
   loading = false;
@@ -27,19 +26,19 @@ export class ManagePlaatoKegComponent implements OnInit {
   processingSetMaxKegVolume = false;
   processingNewDevice = false;
   processingDeviceConfig = false;
-  deviceConnectionVerified = false
+  deviceConnectionVerified = false;
   editing = false;
   modifyDevice: PlaatoKegDevice = new PlaatoKegDevice();
   userInfo!: UserInfo;
   textNewDevCounter = 0;
-  iframeUrl = "";
+  iframeUrl = '';
   _ = _;
   isNilOrEmpty = isNilOrEmpty;
 
   // Setup new device state
   setupMode = false;
   setupDevice: PlaatoKegDevice = new PlaatoKegDevice();
-  deviceConfig: any = {}
+  deviceConfig: any = {};
   showWifiPassword = false;
 
   modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
@@ -52,13 +51,24 @@ export class ManagePlaatoKegComponent implements OnInit {
 
   configureDeviceFormGroup: UntypedFormGroup = new UntypedFormGroup({
     wifiSsid: new UntypedFormControl('', []),
-    wifiPassword: new UntypedFormControl('', [])
+    wifiPassword: new UntypedFormControl('', []),
   });
 
   @ViewChild(MatSort) sort!: MatSort;
 
   get displayedColumns(): string[] {
-    return ['name', 'id', 'connected', 'beerLeft', 'mode', 'unitDetails', 'firmware', 'wifiStrength', 'lastUpdatedOn', 'actions'];
+    return [
+      'name',
+      'id',
+      'connected',
+      'beerLeft',
+      'mode',
+      'unitDetails',
+      'firmware',
+      'wifiStrength',
+      'lastUpdatedOn',
+      'actions',
+    ];
   }
 
   constructor(
@@ -76,14 +86,16 @@ export class ManagePlaatoKegComponent implements OnInit {
           this._snackBar.open('Admin access required', 'Close');
           return;
         }
-        this.refreshAll(() => { this.loading = false; });
+        this.refreshAll(() => {
+          this.loading = false;
+        });
       },
       error: (err: DataError) => {
         if (err.statusCode !== 401) {
           this.displayError(err.message);
         }
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -97,24 +109,26 @@ export class ManagePlaatoKegComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         if (always) always();
-      }
+      },
     });
   }
 
   refresh(): void {
     this.loading = true;
-    this.refreshAll(() => { this.loading = false; });
+    this.refreshAll(() => {
+      this.loading = false;
+    });
   }
 
   refreshModifyDevice(): void {
     this.loading = true;
     this._refreshModifyDevice(() => {
       this.loading = false;
-    })
+    });
   }
 
   _refreshModifyDevice(next?: Function): void {
-    if(isNilOrEmpty(this.modifyDevice)){
+    if (isNilOrEmpty(this.modifyDevice)) {
       return;
     }
 
@@ -127,7 +141,7 @@ export class ManagePlaatoKegComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         if (next) next();
-      }
+      },
     });
   }
 
@@ -143,33 +157,37 @@ export class ManagePlaatoKegComponent implements OnInit {
 
   save(): void {
     this.processing = true;
-    this.dataService.updatePlaatoKegDevice(this.modifyDevice.id, {name: this.modifyDevice.editValues.name}).subscribe({
-      next: (resp: any) => {
-        this._refreshModifyDevice(() => {
+    this.dataService
+      .updatePlaatoKegDevice(this.modifyDevice.id, { name: this.modifyDevice.editValues.name })
+      .subscribe({
+        next: (resp: any) => {
+          this._refreshModifyDevice(() => {
+            this.processing = false;
+          });
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
           this.processing = false;
-        });
-      },
-      error: (err: DataError) => {
-        this.displayError(err.message);
-        this.processing = false;
-      }
-    })
+        },
+      });
   }
 
   delete(device: PlaatoKegDevice) {
-    if(confirm(`Are you sure you want to delete plaato device ${device.id} (${device.name})?`)) {
+    if (confirm(`Are you sure you want to delete plaato device ${device.id} (${device.name})?`)) {
       this.processing = true;
       this.dataService.deletePlaatoKegDevice(device.id).subscribe({
         next: (resp: any) => {
           this.loading = true;
           this.processing = false;
-          this.refreshAll(()=>{this.loading = false});
+          this.refreshAll(() => {
+            this.loading = false;
+          });
         },
         error: (err: DataError) => {
           this.displayError(err.message);
           this.processing = false;
-        }
-      }); 
+        },
+      });
     }
   }
 
@@ -191,7 +209,7 @@ export class ManagePlaatoKegComponent implements OnInit {
       asc = this.sort.direction === 'asc';
     }
 
-    let filtered = _.sortBy(this.devices, [sortBy]);
+    const filtered = _.sortBy(this.devices, [sortBy]);
     if (!asc) _.reverse(filtered);
 
     this.filteredDevices = filtered;
@@ -205,7 +223,14 @@ export class ManagePlaatoKegComponent implements OnInit {
   }
 
   disableDeviceConfigButtons() {
-    return this.processing || this.processingModeChange || this.processingSetEmptyKegWeight || this.processingSetMaxKegVolume || this.processingUnitModeChange || this.processingUnitTypeChange;
+    return (
+      this.processing ||
+      this.processingModeChange ||
+      this.processingSetEmptyKegWeight ||
+      this.processingSetMaxKegVolume ||
+      this.processingUnitModeChange ||
+      this.processingUnitTypeChange
+    );
   }
 
   setMode(dev: PlaatoKegDevice): void {
@@ -214,14 +239,14 @@ export class ManagePlaatoKegComponent implements OnInit {
       next: (_: any) => {
         setTimeout(() => {
           this._refreshModifyDevice(() => {
-            this.processingModeChange = false
-          })
+            this.processingModeChange = false;
+          });
         }, 3000);
       },
-        error: (err: DataError) => {
-          this.displayError(err.message);
-          this.processingModeChange = false
-        }
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processingModeChange = false;
+      },
     });
   }
 
@@ -231,14 +256,14 @@ export class ManagePlaatoKegComponent implements OnInit {
       next: (_: any) => {
         setTimeout(() => {
           this._refreshModifyDevice(() => {
-            this.processingUnitTypeChange = false
-          })
+            this.processingUnitTypeChange = false;
+          });
         }, 3000);
       },
-        error: (err: DataError) => {
-          this.displayError(err.message);
-          this.processingUnitTypeChange = false
-        }
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processingUnitTypeChange = false;
+      },
     });
   }
 
@@ -248,53 +273,57 @@ export class ManagePlaatoKegComponent implements OnInit {
       next: (_: any) => {
         setTimeout(() => {
           this._refreshModifyDevice(() => {
-            this.processingUnitModeChange = false
-          })
+            this.processingUnitModeChange = false;
+          });
         }, 3000);
       },
-        error: (err: DataError) => {
-          this.displayError(err.message);
-          this.processingUnitModeChange = false
-        }
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processingUnitModeChange = false;
+      },
     });
   }
 
   setEmptyKegWeight(dev: PlaatoKegDevice): void {
     this.processingSetEmptyKegWeight = true;
-    this.dataService.setPlaatoKegValue(dev.id, "empty_keg_weight", dev.editValues.emptyKegWeight).subscribe({
-      next: (_: any) => {
-        setTimeout(() => {
-          this._refreshModifyDevice(() => {
-            this.processingSetEmptyKegWeight = false
-          })
-        }, 3000);
-      },
+    this.dataService
+      .setPlaatoKegValue(dev.id, 'empty_keg_weight', dev.editValues.emptyKegWeight)
+      .subscribe({
+        next: (_: any) => {
+          setTimeout(() => {
+            this._refreshModifyDevice(() => {
+              this.processingSetEmptyKegWeight = false;
+            });
+          }, 3000);
+        },
         error: (err: DataError) => {
           this.displayError(err.message);
-          this.processingSetEmptyKegWeight = false
-        }
-    });
+          this.processingSetEmptyKegWeight = false;
+        },
+      });
   }
 
   setMaxKegVolume(dev: PlaatoKegDevice): void {
     this.processingSetMaxKegVolume = true;
-    this.dataService.setPlaatoKegValue(dev.id, "max_keg_volume", dev.editValues.maxKegVolume).subscribe({
-      next: (_: any) => {
-        setTimeout(() => {
-          this._refreshModifyDevice(() => {
-            this.processingSetMaxKegVolume = false
-          })
-        }, 3000);
-      },
+    this.dataService
+      .setPlaatoKegValue(dev.id, 'max_keg_volume', dev.editValues.maxKegVolume)
+      .subscribe({
+        next: (_: any) => {
+          setTimeout(() => {
+            this._refreshModifyDevice(() => {
+              this.processingSetMaxKegVolume = false;
+            });
+          }, 3000);
+        },
         error: (err: DataError) => {
           this.displayError(err.message);
-          this.processingSetMaxKegVolume = false
-        }
-    });
+          this.processingSetMaxKegVolume = false;
+        },
+      });
   }
 
   startSetup(): void {
-    this.startDeviceSetup(new PlaatoKegDevice);
+    this.startDeviceSetup(new PlaatoKegDevice());
   }
 
   startDeviceSetup(dev: PlaatoKegDevice): void {
@@ -302,9 +331,9 @@ export class ManagePlaatoKegComponent implements OnInit {
     this.setupDevice = dev;
     this.processingNewDevice = false;
     this.processingDeviceConfig = false;
-    this.deviceConnectionVerified = false
+    this.deviceConnectionVerified = false;
     this.setupFormGroup.reset();
-    this.deviceConfig = {ssid: '', pass: ''};
+    this.deviceConfig = { ssid: '', pass: '' };
     this.configureDeviceFormGroup.reset();
     this.showWifiPassword = false;
   }
@@ -317,7 +346,7 @@ export class ManagePlaatoKegComponent implements OnInit {
 
   resetSetup(): void {
     this.setupDevice = new PlaatoKegDevice();
-    this.deviceConfig = {}
+    this.deviceConfig = {};
     this.setupFormGroup.reset();
     this.configureDeviceFormGroup.reset();
   }
@@ -334,23 +363,19 @@ export class ManagePlaatoKegComponent implements OnInit {
 
     this.processingNewDevice = true;
     const deviceData = {
-      name: this.setupFormGroup.value.name
+      name: this.setupFormGroup.value.name,
     };
 
     this.dataService.createPlaatoKegDevice(deviceData).subscribe({
       next: (dev: PlaatoKegDevice) => {
-        this._snackBar.open(
-          'Device created successfully.',
-          'Close',
-          { duration: 5000 }
-        );
+        this._snackBar.open('Device created successfully.', 'Close', { duration: 5000 });
         this.setupDevice = new PlaatoKegDevice(dev);
         this.processingNewDevice = false;
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processingNewDevice = false;
-      }
+      },
     });
   }
 
@@ -369,32 +394,34 @@ export class ManagePlaatoKegComponent implements OnInit {
     );
     const port = this.settingsService.getSetting<number>('plaato_keg_devices.config.port') || 5001;
 
-    var ssid = encodeURIComponent(this.deviceConfig.ssid);
-    var pass = encodeURIComponent(this.deviceConfig.pass);
-    var id = encodeURIComponent(this.setupDevice.id);
-    const url = `http://192.168.4.1/config?ssid=${ssid}&pass=${pass}&blynk=${id}&host=${host}&port=${port}`
+    const ssid = encodeURIComponent(this.deviceConfig.ssid);
+    const pass = encodeURIComponent(this.deviceConfig.pass);
+    const id = encodeURIComponent(this.setupDevice.id);
+    const url = `http://192.168.4.1/config?ssid=${ssid}&pass=${pass}&blynk=${id}&host=${host}&port=${port}`;
     console.log(url);
     console.log(encodeURI(url));
-    var popupRef = window.open(url);
+    const popupRef = window.open(url);
     setTimeout(() => {
-        this.checkNewDev(popupRef);
-        }, 500);
+      this.checkNewDev(popupRef);
+    }, 500);
   }
 
   checkNewDev(popupRef: Window | null) {
     this.dataService.getPlaatoKegDevice(this.setupDevice.id).subscribe({
       next: (_dev: PlaatoKegDevice) => {
-        let dev = new PlaatoKegDevice(_dev);
+        const dev = new PlaatoKegDevice(_dev);
         if (isNilOrEmpty(dev.connected) || !dev.connected) {
           this.textNewDevCounter = this.textNewDevCounter + 1;
-          if(this.textNewDevCounter > 10) {
-            this.displayError("Timeout trying to validate if the device was configured and connected correctly.")
+          if (this.textNewDevCounter > 10) {
+            this.displayError(
+              'Timeout trying to validate if the device was configured and connected correctly.'
+            );
             popupRef?.close();
             this.processingDeviceConfig = false;
           } else {
             setTimeout(() => {
               this.checkNewDev(popupRef);
-            }, 2000)
+            }, 2000);
           }
         } else {
           this._snackBar.open('Device configured successfully.', 'Close', { duration: 5000 });
@@ -408,7 +435,7 @@ export class ManagePlaatoKegComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processingDeviceConfig = false;
-      }
-    })
+      },
+    });
   }
 }

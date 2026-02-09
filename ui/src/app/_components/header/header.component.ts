@@ -1,22 +1,21 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Component, Input, OnInit } from '@angular/core';
-import { DataService, DataError } from '../../_services/data.service';
-import { SettingsService } from '../../_services/settings.service';
 import { Router } from '@angular/router';
+import { DataError, DataService } from '../../_services/data.service';
+import { SettingsService } from '../../_services/settings.service';
 import { UserInfo } from '../../models/models';
 
 import * as _ from 'lodash';
 import { isNilOrEmpty } from '../../utils/helpers';
 
 @Component({
-    selector: 'app-header',
-    templateUrl: './header.component.html',
-    styleUrls: ['./header.component.scss'],
-    standalone: false
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.scss'],
+  standalone: false,
 })
 export class HeaderComponent implements OnInit {
-
   userInfo!: UserInfo;
 
   constructor(
@@ -25,10 +24,10 @@ export class HeaderComponent implements OnInit {
     private router: Router,
     private _snackBar: MatSnackBar
   ) {}
-  @Input() title: string = "";
+  @Input() title = '';
 
   displayError(errMsg: string) {
-    this._snackBar.open("Error: " + errMsg, "Close");
+    this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
   ngOnInit() {
@@ -37,10 +36,10 @@ export class HeaderComponent implements OnInit {
         this.userInfo = userInfo;
       },
       error: (err: DataError) => {
-        if(err.statusCode !== 401) {
+        if (err.statusCode !== 401) {
           this.displayError(err.message);
         }
-      }
+      },
     });
   }
 
@@ -51,17 +50,17 @@ export class HeaderComponent implements OnInit {
   goto(path: string): void {
     window.location.href = `/${path}`;
   }
-  
+
   get name(): string {
-    if(_.isNil(this.userInfo)){
-      return "UNKNOWN";
+    if (_.isNil(this.userInfo)) {
+      return 'UNKNOWN';
     }
     return `${this.userInfo.firstName} ${this.userInfo.lastName}`;
   }
 
   get admin(): boolean {
-    if(isNilOrEmpty(this.userInfo)) {
-      return false
+    if (isNilOrEmpty(this.userInfo)) {
+      return false;
     }
 
     return this.userInfo.admin;

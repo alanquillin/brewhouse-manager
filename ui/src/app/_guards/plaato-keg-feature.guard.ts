@@ -4,10 +4,9 @@ import { Observable } from 'rxjs';
 import { SettingsService } from '../_services/settings.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PlaatoKegFeatureGuard implements CanActivate {
-
   constructor(
     private settingsService: SettingsService,
     private router: Router

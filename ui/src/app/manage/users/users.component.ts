@@ -1,9 +1,9 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { DataService, DataError } from '../../_services/data.service';
-import { Router } from '@angular/router';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSort, Sort} from '@angular/material/sort';
-import { UntypedFormControl, AbstractControl, Validators, UntypedFormGroup } from '@angular/forms';
+import { MatSort, Sort } from '@angular/material/sort';
+import { Router } from '@angular/router';
+import { DataError, DataService } from '../../_services/data.service';
 import { Validation } from '../../utils/form-validators';
 
 import { Location, UserInfo } from '../../models/models';
@@ -12,18 +12,26 @@ import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
 
 @Component({
-    selector: 'app-users',
-    templateUrl: './users.component.html',
-    styleUrls: ['./users.component.scss'],
-    standalone: false
+  selector: 'app-users',
+  templateUrl: './users.component.html',
+  styleUrls: ['./users.component.scss'],
+  standalone: false,
 })
 export class ManageUsersComponent implements OnInit {
-  
   loading = false;
   me: UserInfo = new UserInfo();
   users: UserInfo[] = [];
   filteredUsers: UserInfo[] = [];
-  displayedColumns: string[] = ['email', 'firstName', 'lastName', "admin", "locationCount", "isPasswordEnabled", "profilePic", "actions"];
+  displayedColumns: string[] = [
+    'email',
+    'firstName',
+    'lastName',
+    'admin',
+    'locationCount',
+    'isPasswordEnabled',
+    'profilePic',
+    'actions',
+  ];
   processing = false;
   adding = false;
   editing = false;
@@ -32,8 +40,8 @@ export class ManageUsersComponent implements OnInit {
   hidePassword = true;
   locations: Location[] = [];
   selectedLocations: any = {};
-  newPassword = "";
-  confirmNewPassword = "";
+  newPassword = '';
+  confirmNewPassword = '';
 
   isNilOrEmpty = isNilOrEmpty;
   _ = _;
@@ -44,76 +52,90 @@ export class ManageUsersComponent implements OnInit {
     lastName: new UntypedFormControl(''),
     profilePic: new UntypedFormControl(''),
     password: new UntypedFormControl(''),
-    admin: new UntypedFormControl('')
+    admin: new UntypedFormControl(''),
   });
 
-  changePasswordFormGroup: UntypedFormGroup = new UntypedFormGroup({
-    password: new UntypedFormControl('', [Validators.required, Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&]).{8,}')]),
-    confirmPassword: new UntypedFormControl('', [Validators.required])
-  }, { validators: [Validation.match('password', 'confirmPassword')] });
+  changePasswordFormGroup: UntypedFormGroup = new UntypedFormGroup(
+    {
+      password: new UntypedFormControl('', [
+        Validators.required,
+        Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&]).{8,}'),
+      ]),
+      confirmPassword: new UntypedFormControl('', [Validators.required]),
+    },
+    { validators: [Validation.match('password', 'confirmPassword')] }
+  );
 
-  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
+  constructor(
+    private dataService: DataService,
+    private router: Router,
+    private _snackBar: MatSnackBar
+  ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
 
   displayError(errMsg: string) {
-    this._snackBar.open("Error: " + errMsg, "Close");
+    this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  _refresh(always?:Function, next?: Function, error?: Function) {
+  _refresh(always?: Function, next?: Function, error?: Function) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = [];
-        for(let l of _.sortBy(locations, [(l:Location) => {return l.description}])) {
+        for (const l of _.sortBy(locations, [
+          (l: Location) => {
+            return l.description;
+          },
+        ])) {
           this.selectedLocations[l.id] = false;
           this.locations.push(new Location(l));
         }
         this.dataService.getUsers().subscribe({
           next: (users: UserInfo[]) => {
             this.users = [];
-            _.forEach(users, (user) => {
-              var _user = new UserInfo()
+            _.forEach(users, user => {
+              const _user = new UserInfo();
               Object.assign(_user, user);
-              this.users.push(_user)
-            })
+              this.users.push(_user);
+            });
             this.filter();
-          }, 
+          },
           error: (err: DataError) => {
             this.displayError(err.message);
-            if(!_.isNil(error)){
+            if (!_.isNil(error)) {
               error();
             }
-            if(!_.isNil(always)){
+            if (!_.isNil(always)) {
               always();
             }
           },
           complete: () => {
-            if(!_.isNil(next)){
+            if (!_.isNil(next)) {
               next();
             }
-            if(!_.isNil(always)){
+            if (!_.isNil(always)) {
               always();
             }
-          }
+          },
         });
       },
       error: (err: DataError) => {
         this.displayError(err.message);
-        if(!_.isNil(error)){
+        if (!_.isNil(error)) {
           error();
         }
-        if(!_.isNil(always)){
+        if (!_.isNil(always)) {
           always();
         }
       },
       complete: () => {
-        if(!_.isNil(next)){
+        if (!_.isNil(next)) {
           next();
         }
-        if(!_.isNil(always)){
+        if (!_.isNil(always)) {
           always();
         }
-      }
+      },
     });
   }
 
@@ -122,21 +144,21 @@ export class ManageUsersComponent implements OnInit {
     this.dataService.getCurrentUser().subscribe({
       next: (me: UserInfo) => {
         this.me = me;
-        this._refresh(undefined, ()=> {
+        this._refresh(undefined, () => {
           this.loading = false;
-        })
+        });
       },
       error: (err: DataError) => {
         this.displayError(err.message);
-      }
-    })
+      },
+    });
   }
 
   refresh(): void {
     this.loading = true;
-    this._refresh(undefined, ()=> {
+    this._refresh(undefined, () => {
       this.loading = false;
-    })
+    });
   }
 
   add(): void {
@@ -147,33 +169,40 @@ export class ManageUsersComponent implements OnInit {
   }
 
   create(): void {
-    var data: any = {
+    const data: any = {
       email: this.modifyUser.editValues.email,
-    }
-    const keys = ["firstName", "lastName", "profilePic"];
-    _.forEach(keys, (k) => {
+    };
+    const keys = ['firstName', 'lastName', 'profilePic'];
+    _.forEach(keys, k => {
       const val = _.get(this.modifyUser.editValues, k);
       if (!isNilOrEmpty(val)) {
         data[k] = val;
       }
-    })
-    const password = this.modifyForm["password"].value;
+    });
+    const password = this.modifyForm['password'].value;
     if (!isNilOrEmpty(password)) {
-      data["password"] = password;
+      data['password'] = password;
     }
 
     this.processing = true;
     this.dataService.createUser(data).subscribe({
       next: (user: UserInfo) => {
         this.saveLocations(new UserInfo(user), () => {
-          this._refresh(() => {this.processing = false;}, () => {this.adding = false;});
+          this._refresh(
+            () => {
+              this.processing = false;
+            },
+            () => {
+              this.adding = false;
+            }
+          );
         });
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-      }
-    })
+      },
+    });
   }
 
   cancelAdd(): void {
@@ -186,20 +215,25 @@ export class ManageUsersComponent implements OnInit {
     this.editing = true;
     this.modifyFormGroup.reset();
     this.resetSelectedLocations();
-    if(user.locations) {
-      for(let l of user.locations) {
+    if (user.locations) {
+      for (const l of user.locations) {
         this.selectedLocations[l.id] = true;
       }
     }
   }
 
   save(): void {
-    if(!this.modifyUser.hasChanges) {
+    if (!this.modifyUser.hasChanges) {
       return this.saveLocations(this.modifyUser, () => {
         this.modifyUser.disableEditing();
-        this._refresh(()=> {this.processing = false;}, () => {
-          this.editing = false;
-        })
+        this._refresh(
+          () => {
+            this.processing = false;
+          },
+          () => {
+            this.editing = false;
+          }
+        );
       });
     }
 
@@ -208,40 +242,45 @@ export class ManageUsersComponent implements OnInit {
       next: (user: UserInfo) => {
         return this.saveLocations(this.modifyUser, () => {
           this.modifyUser.disableEditing();
-          this._refresh(()=> {this.processing = false;}, () => {
-            this.editing = false;
-          });
+          this._refresh(
+            () => {
+              this.processing = false;
+            },
+            () => {
+              this.editing = false;
+            }
+          );
         });
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-      }
-    })
+      },
+    });
   }
 
-  saveLocations(user: UserInfo, next:Function): void {
-    if(!this.selectedLocationChanges()) {
+  saveLocations(user: UserInfo, next: Function): void {
+    if (!this.selectedLocationChanges()) {
       next();
       return;
     }
     this.processing = true;
-    let locations: string[] = [];
+    const locations: string[] = [];
     _.each(this.selectedLocations, (value, key) => {
-      if(value === true) {
-        locations.push(key)
+      if (value === true) {
+        locations.push(key);
       }
-    }); 
+    });
 
-    this.dataService.updateUserLocations(user.id, {"locationIds": locations}).subscribe({
+    this.dataService.updateUserLocations(user.id, { locationIds: locations }).subscribe({
       next: (res: any) => {
         next();
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-      }
-    })
+      },
+    });
   }
 
   cancelEdit(): void {
@@ -250,75 +289,81 @@ export class ManageUsersComponent implements OnInit {
   }
 
   delete(user: UserInfo): void {
-    if(confirm(`Are you sure you want to delete user '${user.email}'?`)) {
+    if (confirm(`Are you sure you want to delete user '${user.email}'?`)) {
       this.processing = true;
       this.dataService.deleteUser(user.id).subscribe({
         next: (resp: any) => {
           this.processing = false;
           this.loading = true;
-          this._refresh(()=>{ this.loading = false; });
+          this._refresh(() => {
+            this.loading = false;
+          });
         },
         error: (err: DataError) => {
           this.displayError(err.message);
           this.processing = false;
-        }
-      })
+        },
+      });
     }
   }
 
   filter(sort?: Sort) {
-    var sortBy:string = "description";
-    var asc: boolean = true;
+    let sortBy = 'description';
+    let asc = true;
 
-    if(!_.isNil(sort) && !_.isEmpty(this.sort.active) && !_.isEmpty(this.sort.direction)) {
+    if (!_.isNil(sort) && !_.isEmpty(this.sort.active) && !_.isEmpty(this.sort.direction)) {
       sortBy = this.sort.active;
       asc = this.sort.direction == 'asc';
     }
 
-    var filteredData: UserInfo[] = this.users;
-    filteredData = _.sortBy(filteredData, [(d: UserInfo) => { return _.get(d, sortBy)}]);
-    if(!asc){
+    let filteredData: UserInfo[] = this.users;
+    filteredData = _.sortBy(filteredData, [
+      (d: UserInfo) => {
+        return _.get(d, sortBy);
+      },
+    ]);
+    if (!asc) {
       _.reverse(filteredData);
     }
     this.filteredUsers = filteredData;
   }
 
   addMissingMeta() {
-    switch(this.modifyUser.editValues.userType) {
-      case "plaato-keg":
-        if(!_.has(this.modifyUser.editValues.meta, "authToken")){
+    switch (this.modifyUser.editValues.userType) {
+      case 'plaato-keg':
+        if (!_.has(this.modifyUser.editValues.meta, 'authToken')) {
           _.set(this.modifyUser.editValues, 'meta.authToken', '');
         }
-        break
+        break;
     }
   }
 
-  get modifyForm(): { [key: string]: AbstractControl } {
+  get modifyForm(): Record<string, AbstractControl> {
     return this.modifyFormGroup.controls;
-  } 
+  }
 
   reRunValidation(): void {
-    _.forEach(this.modifyForm, (ctrl) => {
+    _.forEach(this.modifyForm, ctrl => {
       ctrl.updateValueAndValidity();
     });
   }
 
-  changeLocationsSelection(selected: boolean, location: Location) : void {
+  changeLocationsSelection(selected: boolean, location: Location): void {
     this.selectedLocations[location.id] = selected;
   }
 
   selectedLocationChanges(): boolean {
-    let expected: string[] = [];
-    if(this.modifyUser.locations) {
-      for(let l of this.modifyUser.locations) {
-        expected.push(l.id)
+    const expected: string[] = [];
+    if (this.modifyUser.locations) {
+      for (const l of this.modifyUser.locations) {
+        expected.push(l.id);
       }
     }
     expected.sort();
 
-    let actual: string[] = [];
+    const actual: string[] = [];
     _.each(this.selectedLocations, (value, key) => {
-      if(value === true) {
+      if (value === true) {
         actual.push(key);
       }
     });
@@ -328,7 +373,7 @@ export class ManageUsersComponent implements OnInit {
   }
 
   resetSelectedLocations(): void {
-    for(let l of this.locations) {
+    for (const l of this.locations) {
       this.selectedLocations[l.id] = false;
     }
   }
@@ -342,8 +387,8 @@ export class ManageUsersComponent implements OnInit {
   }
 
   startChangePassword(): void {
-    this.newPassword = "";
-    this.confirmNewPassword = "";
+    this.newPassword = '';
+    this.confirmNewPassword = '';
     this.changePassword = true;
   }
 
@@ -351,9 +396,9 @@ export class ManageUsersComponent implements OnInit {
     if (this.changePasswordFormGroup.invalid) {
       return;
     }
-    
+
     this.processing = true;
-    this.dataService.updateUser(this.modifyUser.id, {password: this.newPassword}).subscribe({
+    this.dataService.updateUser(this.modifyUser.id, { password: this.newPassword }).subscribe({
       next: (data: UserInfo) => {
         this.edit(new UserInfo(data));
         this.changePassword = false;
@@ -361,14 +406,18 @@ export class ManageUsersComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-      }
+      },
     });
   }
 
   disablePassword(): void {
-    if(confirm("Are you sure you want to disable the user's password?  Doing so will prevent them from logging in with username and password.  You will need to log in via Google instead.")) {
+    if (
+      confirm(
+        "Are you sure you want to disable the user's password?  Doing so will prevent them from logging in with username and password.  You will need to log in via Google instead."
+      )
+    ) {
       this.processing = true;
-      this.dataService.updateUser(this.modifyUser.id, {password: null}).subscribe({
+      this.dataService.updateUser(this.modifyUser.id, { password: null }).subscribe({
         next: (data: UserInfo) => {
           this.edit(new UserInfo(data));
           this.processing = false;
@@ -376,12 +425,12 @@ export class ManageUsersComponent implements OnInit {
         error: (err: DataError) => {
           this.displayError(err.message);
           this.processing = false;
-        }
+        },
       });
     }
   }
 
-  get changePasswordForm(): { [key: string]: AbstractControl } {
+  get changePasswordForm(): Record<string, AbstractControl> {
     return this.changePasswordFormGroup.controls;
   }
 }

@@ -1,237 +1,237 @@
 div.tap-list {
-    padding-left: 12px;
-    padding-top: 4px;
-    padding-bottom: 4px;
+  padding-left: 12px;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 div.tap-volume {
-    order: 1;
-    display: inline-block;
-    vertical-align: top;
-    width: 106px;
-    min-width: 106px !important;
+  order: 1;
+  display: inline-block;
+  vertical-align: top;
+  width: 106px;
+  min-width: 106px !important;
 }
 
 div.tap-image {
-    order: 1;
-    display: inline-block;
-    vertical-align: top;
-    min-width: 106px !important;
+  order: 1;
+  display: inline-block;
+  vertical-align: top;
+  min-width: 106px !important;
 }
 
 .tap-count-1,
 .tap-count-2 {
-    .tap-card {
-        min-height: 240px;
-    }
+  .tap-card {
+    min-height: 240px;
+  }
 
-    div.tap-volume {
-        height: 212px;
-        width: 200px
-    }
+  div.tap-volume {
+    height: 212px;
+    width: 200px;
+  }
 
-    div.tap-logo,
-    div.tap-image {
-        img {
-            width: auto;
-            max-height: 200px;
-        }
+  div.tap-logo,
+  div.tap-image {
+    img {
+      width: auto;
+      max-height: 200px;
     }
+  }
 
-    .tap-gauge {
-        height: 200px;
-        width: 200px;
-    }
+  .tap-gauge {
+    height: 200px;
+    width: 200px;
+  }
 
-    div.tap-details p {
-        line-height: 1.6em;
-        font-size: 140%;
-    }
+  div.tap-details p {
+    line-height: 1.6em;
+    font-size: 140%;
+  }
 
-    div.tap-details p.title {
-        font-size: 180%;
-    }
+  div.tap-details p.title {
+    font-size: 180%;
+  }
 }
 
 .tap-count-3 {
-    .tap-card {
-        min-height: 180px;
+  .tap-card {
+    min-height: 180px;
+  }
+  div.tap-volume {
+    height: 159px;
+    width: 150px;
+  }
+  div.tap-logo,
+  div.tap-image {
+    img {
+      width: auto;
+      max-height: 150px;
     }
-    div.tap-volume {
-        height: 159px;
-        width: 150px
-    }
-    div.tap-logo,
-    div.tap-image {
-        img {
-            width: auto;
-            max-height: 150px;
-        }
-    }
-    .tap-gauge {
-        height: 150px;
-        width: 150px;
-    }
+  }
+  .tap-gauge {
+    height: 150px;
+    width: 150px;
+  }
 
-    div.tap-details p {
-        line-height: 1.4em;
-        font-size: 120%;
-    }
+  div.tap-details p {
+    line-height: 1.4em;
+    font-size: 120%;
+  }
 
-    div.tap-details p.title {
-        font-size: 160%;
-    }
+  div.tap-details p.title {
+    font-size: 160%;
+  }
 }
 
 .tap-count-4plus {
-    .tap-card {
-        min-height: 120px;
+  .tap-card {
+    min-height: 120px;
+  }
+  div.tap-volume {
+    height: 106px;
+    width: 100px;
+  }
+  div.tap-logo,
+  div.tap-image {
+    img {
+      width: auto;
+      max-height: 100px;
     }
-    div.tap-volume {
-        height: 106px;
-        width: 100px
-    }
-    div.tap-logo,
-    div.tap-image {
-        img {
-            width: auto;
-            max-height: 100px;
-        }
-    }
-    .tap-gauge {
-        height: 100px;
-        width: 100px;
-    }
+  }
+  .tap-gauge {
+    height: 100px;
+    width: 100px;
+  }
 
-    div.tap-details p {
-        line-height: 1.2em;
-    }
+  div.tap-details p {
+    line-height: 1.2em;
+  }
 
-    div.tap-details p.title {
-        font-size: 120%;
-    }
+  div.tap-details p.title {
+    font-size: 120%;
+  }
 }
 
 .tap-display {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
 
-.tap-display-empty{
-    padding-bottom: 12px;
+.tap-display-empty {
+  padding-bottom: 12px;
 }
 
 div.tap-details {
-    order: 2;
-    display: inline-block;
-    vertical-align: top;
-    padding-left: 12px;
+  order: 2;
+  display: inline-block;
+  vertical-align: top;
+  padding-left: 12px;
 }
 
 div.tap-details p {
-    margin: 6px 0px;
+  margin: 6px 0px;
 }
 
 div.tap-details p.title {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 div.tap-logo {
-    order: 4;
+  order: 4;
 }
 
 div.tap-logo-cold-brew {
-    order: 3 !important;
-    margin-left: auto;
-    margin-right: 12px;
+  order: 3 !important;
+  margin-left: auto;
+  margin-right: 12px;
 }
 
 div.tap-logo,
 div.tap-image {
-    img {
-        width: auto;
-    }
+  img {
+    width: auto;
+  }
 }
 
 div.tap-logo img {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .tap-gauge {
-    display: block;
-    border-radius: 3px;
-    background-size: contain;
+  display: block;
+  border-radius: 3px;
+  background-size: contain;
 }
 
 .tap-gauge-beer {
-    background-image: url("/assets/img/generic_beer_gauge.png");
+  background-image: url('/assets/img/generic_beer_gauge.png');
 }
 
 .tap-gauge-cold-brew {
-    background-image: url("/assets/img/generic_cold_brew_guage.png");
+  background-image: url('/assets/img/generic_cold_brew_guage.png');
 }
 
 .tap-qrcode {
-    order: 3;
-    margin-left: auto;
-    margin-right: 12px;
+  order: 3;
+  margin-left: auto;
+  margin-right: 12px;
 }
 
 .tap-qrcode-container {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 
-    border: none;
-    padding: 0px;
+  border: none;
+  padding: 0px;
 
-    .tap-qrcode-header {
-        order: 1;
-        font-size: 12px;
-        text-align: center;
-        padding-bottom: 4px;
+  .tap-qrcode-header {
+    order: 1;
+    font-size: 12px;
+    text-align: center;
+    padding-bottom: 4px;
+  }
+
+  .tap-qrcode-content {
+    order: 2;
+    align-content: center;
+
+    a {
+      cursor: pointer;
     }
-
-    .tap-qrcode-content {
-        order: 2;
-        align-content: center;
-
-        a {
-            cursor: pointer;
-        }
-    }
+  }
 }
 
 .footer {
-    display: none !important;
+  display: none !important;
 }
 
 .fab-container {
-    position:fixed;
-    bottom:24px;
-    right:24px;
-    cursor:pointer;
-    z-index: 1000;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  cursor: pointer;
+  z-index: 1000;
 }
 
 .online-status {
-    color: green;
-    display: flex;
-    flex-direction: row;
-    vertical-align: middle;
+  color: green;
+  display: flex;
+  flex-direction: row;
+  vertical-align: middle;
 
-    .mat-icon {
-        margin-right: 6px;
-    }
+  .mat-icon {
+    margin-right: 6px;
+  }
 }
 
 .offline-status {
-    padding: 6px 12px;
-    margin: 0px;
-    display: flex;
-    flex-direction: row;
-    vertical-align: middle;
+  padding: 6px 12px;
+  margin: 0px;
+  display: flex;
+  flex-direction: row;
+  vertical-align: middle;
 
-    .mat-icon {
-        margin-right: 6px;
-    }
+  .mat-icon {
+    margin-right: 6px;
+  }
 }

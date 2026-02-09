@@ -1,107 +1,106 @@
 .users-view {
+  display: flex;
+  flex-direction: column;
+
+  .heading {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
 
-    .heading {
+    p {
+      margin: 0;
+    }
+
+    .heading-actions {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  .user-view-filters {
+    padding: 0px 0px 12px;
+    display: flex;
+    flex-direction: row;
+
+    * {
+      margin-right: 12px;
+    }
+
+    .user-view-actions {
+      height: fit-content;
+    }
+  }
+
+  .users-list {
+    table {
+      .mat-mdc-header-cell,
+      .mat-mdc-cell {
+        padding: 2px 8px;
+      }
+
+      .actions {
+        width: 100%;
         display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 12px;
-
-        p {
-            margin: 0;
-        }
-
-        .heading-actions {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 8px;
-        }
+        justify-content: left;
+      }
     }
-
-    .user-view-filters {
-        padding: 0px 0px 12px;
-        display: flex;
-        flex-direction: row;
-
-        * {
-            margin-right: 12px;
-        }
-
-        .user-view-actions {
-            height: fit-content;
-        }
-    }
-    
-    .users-list {
-        table {
-            .mat-mdc-header-cell,
-            .mat-mdc-cell {
-                padding: 2px 8px;
-            }
-        
-            .actions {
-                width: 100%;
-                display: flex;
-                justify-content: left;
-            }
-        }
-
-    }
+  }
 }
 
 .users-modify {
+  display: flex;
+  flex-direction: column;
+
+  .heading {
+    order: 1;
+  }
+
+  .modify-form {
+    order: 2;
+  }
+
+  .user-location-list {
+    order: 3;
     display: flex;
     flex-direction: column;
 
-    .heading {
-        order: 1;
+    .user-location {
+      display: flex;
+      flex-direction: row;
     }
+  }
 
-    .modify-form {
-        order: 2;
+  .modify-actions {
+    order: 4;
+
+    button {
+      margin: 2px 6px;
     }
-
-    .user-location-list {
-        order: 3;
-        display: flex;
-        flex-direction: column;
-
-        .user-location {
-            display: flex;
-            flex-direction: row;
-        }
-    }
-
-    .modify-actions {
-        order: 4;
-        
-        button {
-            margin: 2px 6px
-        }    
-    } 
+  }
 }
 
 .users-modify fieldset {
-    display: flex;
-    flex-direction: column;
-    border: none;
-    width: 400px;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  width: 400px;
 }
 
 .user-image-preview {
-    max-width: 200px;
-    height: auto;
+  max-width: 200px;
+  height: auto;
 }
 
 button.refresh {
-    min-width: 24px;
-    padding-left: 12px;
-    padding-right: 12px;
+  min-width: 24px;
+  padding-left: 12px;
+  padding-right: 12px;
 
-    .mat-icon {
-        margin: 0px !important;
-    }
+  .mat-icon {
+    margin: 0px !important;
+  }
 }

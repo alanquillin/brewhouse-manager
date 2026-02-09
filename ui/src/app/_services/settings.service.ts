@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
-import { tap, map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { Settings } from '../models/models';
 import { DataService } from './data.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SettingsService {
   private settingsSubject = new BehaviorSubject<Settings>(new Settings());

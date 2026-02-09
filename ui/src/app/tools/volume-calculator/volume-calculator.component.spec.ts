@@ -8,9 +8,8 @@ describe('VolumeCalculatorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ VolumeCalculatorComponent ]
-    })
-    .compileComponents();
+      declarations: [VolumeCalculatorComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

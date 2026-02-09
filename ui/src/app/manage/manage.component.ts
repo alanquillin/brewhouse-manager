@@ -1,19 +1,18 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Component, OnInit } from '@angular/core';
-import { DataService, DataError } from '../_services/data.service';
-import { SettingsService } from '../_services/settings.service';
 import { Router } from '@angular/router';
+import { DataError, DataService } from '../_services/data.service';
+import { SettingsService } from '../_services/settings.service';
 import { UserInfo } from '../models/models';
-
 
 import { isNilOrEmpty } from '../utils/helpers';
 
 @Component({
-    selector: 'manage',
-    templateUrl: './manage.component.html',
-    styleUrls: ['./manage.component.scss'],
-    standalone: false
+  selector: 'manage',
+  templateUrl: './manage.component.html',
+  styleUrls: ['./manage.component.scss'],
+  standalone: false,
 })
 export class ManageComponent implements OnInit {
   title = 'Manage Brewhouse';
@@ -30,7 +29,7 @@ export class ManageComponent implements OnInit {
   ) {}
 
   displayError(errMsg: string) {
-    this._snackBar.open("Error: " + errMsg, "Close");
+    this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
   ngOnInit() {
@@ -39,10 +38,10 @@ export class ManageComponent implements OnInit {
         this.userInfo = userInfo;
       },
       error: (err: DataError) => {
-        if(err.statusCode !== 401) {
+        if (err.statusCode !== 401) {
           this.displayError(err.message);
         }
-      }
+      },
     });
   }
 
@@ -51,8 +50,8 @@ export class ManageComponent implements OnInit {
   }
 
   get admin(): boolean {
-    if(isNilOrEmpty(this.userInfo)) {
-      return false
+    if (isNilOrEmpty(this.userInfo)) {
+      return false;
     }
 
     return this.userInfo.admin;
@@ -62,4 +61,3 @@ export class ManageComponent implements OnInit {
     return this.settingsService.getSetting<boolean>('plaato_keg_devices.enabled') || false;
   }
 }
-

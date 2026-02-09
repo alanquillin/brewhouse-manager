@@ -4,8 +4,13 @@
       <p>Edit Locations</p>
       @if (!loading) {
         <div class="heading-actions">
-          <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add Location</button>
-          <button matButton="elevated" class="refresh" (click)="refresh()" aria-label="Refresh"><mat-icon>refresh</mat-icon></button>
+          <button mat-raised-button color="primary" (click)="add()">
+            <mat-icon>add</mat-icon>
+            Add Location
+          </button>
+          <button matButton="elevated" class="refresh" (click)="refresh()" aria-label="Refresh">
+            <mat-icon>refresh</mat-icon>
+          </button>
         </div>
       }
     </div>
@@ -18,19 +23,25 @@
       <div class="locations-list">
         <table mat-table [dataSource]="locations" class="mat-elevation-z8">
           <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef> Id </th>
-            <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+            <th mat-header-cell *matHeaderCellDef>Id</th>
+            <td mat-cell *matCellDef="let element">{{ element.id }}</td>
           </ng-container>
           <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef> Name </th>
+            <th mat-header-cell *matHeaderCellDef>Name</th>
             <td mat-cell *matCellDef="let element">
               @if (!element.isEditing) {
-                <div>{{element.name}}</div>
+                <div>{{ element.name }}</div>
               }
               @if (element.isEditing) {
                 <div>
                   <mat-form-field>
-                    <input matInput [formControl]="nameFormControl" placeholder="Name" [value]="element.name" [(ngModel)]="element.editValues.name">
+                    <input
+                      matInput
+                      [formControl]="nameFormControl"
+                      placeholder="Name"
+                      [value]="element.name"
+                      [(ngModel)]="element.editValues.name"
+                    />
                     @if (nameFormControl.hasError('pattern')) {
                       <mat-error>
                         Name can only contain lowercase letters, number and dashes
@@ -42,39 +53,66 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="description">
-            <th mat-header-cell *matHeaderCellDef> Description </th>
+            <th mat-header-cell *matHeaderCellDef>Description</th>
             <td mat-cell *matCellDef="let element">
               @if (!element.isEditing) {
-                <div>{{element.description}}</div>
+                <div>{{ element.description }}</div>
               }
               @if (element.isEditing) {
                 <div>
                   <mat-form-field>
-                    <input matInput [formControl]="descriptionFormControl" placeholder="Description" [value]="element.description" [(ngModel)]="element.editValues.description">
+                    <input
+                      matInput
+                      [formControl]="descriptionFormControl"
+                      placeholder="Description"
+                      [value]="element.description"
+                      [(ngModel)]="element.editValues.description"
+                    />
                   </mat-form-field>
                 </div>
               }
             </td>
           </ng-container>
           <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef> </th>
+            <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let element">
               @if (!element.isEditing) {
                 <div class="actions">
-                  <button mat-icon-button color="primary" aria-label="Edit location" (click)="edit(element)">
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    aria-label="Edit location"
+                    (click)="edit(element)"
+                  >
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" aria-label="Delete location" (click)="delete(element)">
+                  <button
+                    mat-icon-button
+                    color="warn"
+                    aria-label="Delete location"
+                    (click)="delete(element)"
+                  >
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>
               }
               @if (element.isEditing) {
                 <div class="actions">
-                  <button mat-icon-button color="primary" aria-label="Delete location" (click)="save(element)" [disabled]="!element.hasChanges">
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    aria-label="Delete location"
+                    (click)="save(element)"
+                    [disabled]="!element.hasChanges"
+                  >
                     <mat-icon>save</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" aria-label="Delete location" (click)="cancel(element)">
+                  <button
+                    mat-icon-button
+                    color="warn"
+                    aria-label="Delete location"
+                    (click)="cancel(element)"
+                  >
                     <mat-icon>cancel</mat-icon>
                   </button>
                 </div>
@@ -82,7 +120,7 @@
             </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
       </div>
     }
@@ -95,34 +133,47 @@
       <form [formGroup]="addFormGroup">
         <fieldset>
           <mat-form-field appearance="fill" class="add-field">
-            <input id="add_name_input"
+            <input
+              id="add_name_input"
               class="dp-textfield--input"
               formControlName="name"
               [(ngModel)]="addLocation.name"
               matInput
-              required />
+              required
+            />
             <mat-label>Name</mat-label>
             @if (addForm['name'].errors && addForm['name'].errors['pattern']) {
-              <mat-error>
-                Name can only contain lowercase letters, number and dashes
-              </mat-error>
+              <mat-error>Name can only contain lowercase letters, number and dashes</mat-error>
             }
           </mat-form-field>
           <mat-form-field appearance="fill" class="add-field">
-            <input id="add_description_input"
+            <input
+              id="add_description_input"
               class="dp-textfield--input"
               formControlName="description"
               [(ngModel)]="addLocation.description"
               matInput
-              required />
+              required
+            />
             <mat-label>Description</mat-label>
           </mat-form-field>
         </fieldset>
       </form>
     </div>
     <div class="add-actions">
-      <button mat-raised-button color="primary" (click)="create()" [disabled]="!addFormGroup.valid || processing"><mat-icon>save</mat-icon> Create</button>
-      <button mat-raised-button color="warn" (click)="cancelAdd()"><mat-icon>cancel</mat-icon> Cancel</button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="create()"
+        [disabled]="!addFormGroup.valid || processing"
+      >
+        <mat-icon>save</mat-icon>
+        Create
+      </button>
+      <button mat-raised-button color="warn" (click)="cancelAdd()">
+        <mat-icon>cancel</mat-icon>
+        Cancel
+      </button>
     </div>
   </div>
 }

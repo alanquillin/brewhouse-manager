@@ -18,8 +18,13 @@
           </div>
         }
         @if (!loading) {
-          <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add tap</button>
-          <button matButton="elevated" class="refresh" (click)="refreshAll()" aria-label="Refresh"><mat-icon>refresh</mat-icon></button>
+          <button mat-raised-button color="primary" (click)="add()">
+            <mat-icon>add</mat-icon>
+            Add tap
+          </button>
+          <button matButton="elevated" class="refresh" (click)="refreshAll()" aria-label="Refresh">
+            <mat-icon>refresh</mat-icon>
+          </button>
         }
       </div>
     </div>
@@ -30,15 +35,21 @@
     }
     @if (!loading) {
       <div class="taps-list">
-        <table mat-table matSort [dataSource]="filteredTaps" class="mat-elevation-z8" (matSortChange)="filter($event)">
+        <table
+          mat-table
+          matSort
+          [dataSource]="filteredTaps"
+          class="mat-elevation-z8"
+          (matSortChange)="filter($event)"
+        >
           <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef> Id </th>
-            <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+            <th mat-header-cell *matHeaderCellDef>Id</th>
+            <td mat-cell *matCellDef="let element">{{ element.id }}</td>
           </ng-container>
           <ng-container matColumnDef="displayName">
-            <th mat-header-cell *matHeaderCellDef> Display Name </th>
+            <th mat-header-cell *matHeaderCellDef>Display Name</th>
             <td mat-cell *matCellDef="let element">
-              {{element.getDisplayName()}}
+              {{ element.getDisplayName() }}
               @if (showDisplayNameToolTip(element)) {
                 <span>
                   <ng-template #popupNameDetails>
@@ -47,55 +58,123 @@
                       <p>Suffix: {{ element.nameSuffix }}</p>
                     </div>
                   </ng-template>
-                  <mat-icon [ngbPopover]="popupNameDetails" popoverTitle="Display name details" triggers="mouseenter:mouseleave" placement="right">info</mat-icon>
+                  <mat-icon
+                    [ngbPopover]="popupNameDetails"
+                    popoverTitle="Display name details"
+                    triggers="mouseenter:mouseleave"
+                    placement="right"
+                  >
+                    info
+                  </mat-icon>
                 </span>
               }
             </td>
           </ng-container>
           <ng-container matColumnDef="description">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="description" sortActionDescription="Sort by description"> Description </th>
-            <td mat-cell *matCellDef="let element">{{element.description}}</td>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="description"
+              sortActionDescription="Sort by description"
+            >
+              Description
+            </th>
+            <td mat-cell *matCellDef="let element">{{ element.description }}</td>
           </ng-container>
           <ng-container matColumnDef="tapNumber">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="tapNumber" sortActionDescription="Sort by tap number"> Tap Number </th>
-            <td mat-cell *matCellDef="let element">{{element.tapNumber}}</td>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="tapNumber"
+              sortActionDescription="Sort by tap number"
+            >
+              Tap Number
+            </th>
+            <td mat-cell *matCellDef="let element">{{ element.tapNumber }}</td>
           </ng-container>
           <ng-container matColumnDef="beer">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="beer" sortActionDescription="Sort by beer"> Beer </th>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="beer"
+              sortActionDescription="Sort by beer"
+            >
+              Beer
+            </th>
             <td mat-cell *matCellDef="let element">{{ getBeerBatchName(element.batch) }}</td>
           </ng-container>
           <ng-container matColumnDef="beverage">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="beverage" sortActionDescription="Sort by beverage"> Beverage </th>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="beverage"
+              sortActionDescription="Sort by beverage"
+            >
+              Beverage
+            </th>
             <td mat-cell *matCellDef="let element">{{ getBeverageBatchName(element.batch) }}</td>
           </ng-container>
           <ng-container matColumnDef="location">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="locationName" sortActionDescription="Sort by location"> Location </th>
-            <td mat-cell *matCellDef="let element">{{ _.isNil(element.location) ? '' : element.location.name}}</td>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="locationName"
+              sortActionDescription="Sort by location"
+            >
+              Location
+            </th>
+            <td mat-cell *matCellDef="let element">
+              {{ _.isNil(element.location) ? '' : element.location.name }}
+            </td>
           </ng-container>
           <ng-container matColumnDef="tapMonitor">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="tapMonitor" sortActionDescription="Sort by tap monitor"> Tap Monitor </th>
-            <td mat-cell *matCellDef="let element">{{ getTapMonitorName(element.tapMonitor, element.tapMonitorId) }}</td>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="tapMonitor"
+              sortActionDescription="Sort by tap monitor"
+            >
+              Tap Monitor
+            </th>
+            <td mat-cell *matCellDef="let element">
+              {{ getTapMonitorName(element.tapMonitor, element.tapMonitorId) }}
+            </td>
           </ng-container>
           <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef> </th>
+            <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let element">
               <div class="actions">
                 @if (!isNilOrEmpty(element.beerId) || !isNilOrEmpty(element.beverageId)) {
-                  <button mat-icon-button color="accent" aria-label="Clear Tap" (click)="clear(element)">
+                  <button
+                    mat-icon-button
+                    color="accent"
+                    aria-label="Clear Tap"
+                    (click)="clear(element)"
+                  >
                     <mat-icon>remove_circle_outline</mat-icon>
                   </button>
                 }
-                <button mat-icon-button color="primary" aria-label="Edit tap" (click)="edit(element)">
+                <button
+                  mat-icon-button
+                  color="primary"
+                  aria-label="Edit tap"
+                  (click)="edit(element)"
+                >
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" aria-label="Delete tap" (click)="delete(element)">
+                <button
+                  mat-icon-button
+                  color="warn"
+                  aria-label="Delete tap"
+                  (click)="delete(element)"
+                >
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
             </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
       </div>
     }
@@ -103,84 +182,120 @@
 }
 @if (editing || adding) {
   <div class="taps-modify">
-    <div class="heading"><p> {{ adding ? "Add" : "Edit" }} Tap</p></div>
+    <div class="heading">
+      <p>{{ adding ? 'Add' : 'Edit' }} Tap</p>
+    </div>
     <div class="modify-form">
       <form [formGroup]="modifyFormGroup">
         <fieldset>
           <mat-form-field appearance="fill" class="modify-field">
-            <input id="modify_description_input"
+            <input
+              id="modify_description_input"
               class="dp-textfield--input"
               formControlName="description"
               [(ngModel)]="modifyTap.editValues.description"
               matInput
-              required />
+              required
+            />
             <mat-label>Description</mat-label>
           </mat-form-field>
           <mat-form-field appearance="fill" class="modify-field">
-            <input id="modify_tap_number_input"
+            <input
+              id="modify_tap_number_input"
               class="dp-textfield--input"
               formControlName="tapNumber"
               [(ngModel)]="modifyTap.editValues.tapNumber"
               matInput
               required
-              type="number" />
+              type="number"
+            />
             <mat-label>Tap Number</mat-label>
           </mat-form-field>
           <mat-form-field appearance="fill" [hidden]="locations.length <= 1">
             <mat-label>Location</mat-label>
-            <mat-select formControlName="locationId" name="locationId" [(ngModel)]="modifyTap.editValues.locationId">
+            <mat-select
+              formControlName="locationId"
+              name="locationId"
+              [(ngModel)]="modifyTap.editValues.locationId"
+            >
               @for (location of locations; track location) {
                 <mat-option [value]="location.id">
-                  {{location.name}}
+                  {{ location.name }}
                 </mat-option>
               }
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="fill" class="modify-field">
-            <input id="modify_name_prefix_input"
+            <input
+              id="modify_name_prefix_input"
               class="dp-textfield--input"
               formControlName="namePrefix"
               [(ngModel)]="modifyTap.editValues.namePrefix"
-              matInput />
+              matInput
+            />
             <mat-label>Display Name Prefix</mat-label>
           </mat-form-field>
           <mat-form-field appearance="fill" class="modify-field">
-            <input id="modify_name_suffix_input"
+            <input
+              id="modify_name_suffix_input"
               class="dp-textfield--input"
               formControlName="nameSuffix"
               [(ngModel)]="modifyTap.editValues.nameSuffix"
-              matInput />
+              matInput
+            />
             <mat-label>Display Name Suffix</mat-label>
           </mat-form-field>
           <mat-form-field appearance="fill">
             <mat-label>Beer</mat-label>
-            <mat-select formControlName="beerBatchId" name="beerBatchId" [(ngModel)]="modifyTap.editValues.batchId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
+            <mat-select
+              formControlName="beerBatchId"
+              name="beerBatchId"
+              [(ngModel)]="modifyTap.editValues.batchId"
+              [disabled]="_.isNil(modifyTap.editValues.locationId)"
+            >
               <mat-option value="-1">-- None --</mat-option>
               @for (batch of getBeerBatches(modifyTap.editValues.locationId); track batch) {
                 <mat-option [value]="batch.id">
-                  <div title="{{ getBatchDisplayName(batch) }}">{{ getBatchDisplayName(batch) }}</div>
+                  <div title="{{ getBatchDisplayName(batch) }}">
+                    {{ getBatchDisplayName(batch) }}
+                  </div>
                 </mat-option>
               }
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="fill">
             <mat-label>Beverage</mat-label>
-            <mat-select formControlName="beverageBatchId" name="beverageBatchId" [(ngModel)]="modifyTap.editValues.batchId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
+            <mat-select
+              formControlName="beverageBatchId"
+              name="beverageBatchId"
+              [(ngModel)]="modifyTap.editValues.batchId"
+              [disabled]="_.isNil(modifyTap.editValues.locationId)"
+            >
               <mat-option value="-1">-- None --</mat-option>
               @for (batch of getBeverageBatches(modifyTap.editValues.locationId); track batch) {
                 <mat-option [value]="batch.id">
-                  <div title="{{ getBatchDisplayName(batch) }}">{{ getBatchDisplayName(batch) }}</div>
+                  <div title="{{ getBatchDisplayName(batch) }}">
+                    {{ getBatchDisplayName(batch) }}
+                  </div>
                 </mat-option>
               }
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="fill">
             <mat-label>Tap Monitor</mat-label>
-            <mat-select formControlName="tapMonitorId" name="tapMonitorId" [(ngModel)]="modifyTap.editValues.tapMonitorId" [disabled]="_.isNil(modifyTap.editValues.locationId)">
+            <mat-select
+              formControlName="tapMonitorId"
+              name="tapMonitorId"
+              [(ngModel)]="modifyTap.editValues.tapMonitorId"
+              [disabled]="_.isNil(modifyTap.editValues.locationId)"
+            >
               <mat-option value="-1">-- None --</mat-option>
-              @for (tapMonitor of getTapMonitorsForLocation(modifyTap.editValues.locationId); track tapMonitor) {
+              @for (
+                tapMonitor of getTapMonitorsForLocation(modifyTap.editValues.locationId);
+                track tapMonitor
+              ) {
                 <mat-option [value]="tapMonitor.id">
-                  {{getTapMonitorName(tapMonitor)}}
+                  {{ getTapMonitorName(tapMonitor) }}
                 </mat-option>
               }
             </mat-select>
@@ -190,14 +305,36 @@
     </div>
     @if (adding) {
       <div class="modify-actions">
-        <button mat-raised-button color="primary" (click)="create()" [disabled]="!modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Create</button>
-        <button mat-raised-button color="warn" (click)="cancelAdd()"><mat-icon>cancel</mat-icon> Cancel</button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="create()"
+          [disabled]="!modifyFormGroup.valid || processing"
+        >
+          <mat-icon>save</mat-icon>
+          Create
+        </button>
+        <button mat-raised-button color="warn" (click)="cancelAdd()">
+          <mat-icon>cancel</mat-icon>
+          Cancel
+        </button>
       </div>
     }
     @if (editing) {
       <div class="modify-actions">
-        <button mat-raised-button color="primary" (click)="save()" [disabled]="!modifyTap.hasChanges || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
-        <button mat-raised-button color="warn" (click)="cancelEdit()"><mat-icon>cancel</mat-icon> Cancel</button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="save()"
+          [disabled]="!modifyTap.hasChanges || !modifyFormGroup.valid || processing"
+        >
+          <mat-icon>save</mat-icon>
+          Save
+        </button>
+        <button mat-raised-button color="warn" (click)="cancelEdit()">
+          <mat-icon>cancel</mat-icon>
+          Cancel
+        </button>
       </div>
     }
   </div>

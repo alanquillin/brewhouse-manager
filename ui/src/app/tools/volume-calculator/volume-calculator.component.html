@@ -12,7 +12,7 @@
 <div class="vol-calc-form">
   <form [formGroup]="volCalcFormGroup">
     <fieldset>
-      @if (calType === "byWeight") {
+      @if (calType === 'byWeight') {
         <mat-form-field appearance="fill" class="modify-field">
           <input
             id="total_weight_input"
@@ -21,19 +21,14 @@
             matInput
           />
           <mat-label>Total Weight</mat-label>
-          <mat-select
-            matSuffix
-            formControlName="totalWeightUnit"
-            name="totalWeightUnit"
-            required
-          >
+          <mat-select matSuffix formControlName="totalWeightUnit" name="totalWeightUnit" required>
             <mat-option value="kg">kg</mat-option>
             <mat-option value="lbs">lbs</mat-option>
           </mat-select>
         </mat-form-field>
       }
 
-      @if (calType === "byVolume") {
+      @if (calType === 'byVolume') {
         <mat-form-field appearance="fill" class="modify-field">
           <input
             id="target_volume_input"
@@ -42,12 +37,7 @@
             matInput
           />
           <mat-label>Target Volume</mat-label>
-          <mat-select
-            matSuffix
-            formControlName="targetVolumeUnit"
-            name="targetVolumeUnit"
-            required
-          >
+          <mat-select matSuffix formControlName="targetVolumeUnit" name="targetVolumeUnit" required>
             <mat-option value="gal">gal</mat-option>
             <mat-option value="liters">liters</mat-option>
           </mat-select>
@@ -83,12 +73,7 @@
           required
         />
         <mat-label>Gravity</mat-label>
-        <mat-select
-          matSuffix
-          formControlName="gravityUnit"
-          name="gravityUnit"
-          required
-        >
+        <mat-select matSuffix formControlName="gravityUnit" name="gravityUnit" required>
           <mat-option value="sg">SG</mat-option>
           <mat-option value="plato">&deg;P</mat-option>
         </mat-select>
@@ -97,24 +82,21 @@
   </form>
 </div>
 
-@if (resultsL !== undefined && calType === "byWeight") {
+@if (resultsL !== undefined && calType === 'byWeight') {
   <div class="results">
-    <span class="results-desc">Results:</span
-    ><span class="results-value"
-      >{{ _.round(resultsG, 2) }} gallons ({{
-        _.round(resultsL, 2)
-      }}
-      Liters)</span
-    >
+    <span class="results-desc">Results:</span>
+    <span class="results-value">
+      {{ _.round(resultsG, 2) }} gallons ({{ _.round(resultsL, 2) }} Liters)
+    </span>
   </div>
 }
 
-@if (resultsKgs !== undefined && calType === "byVolume") {
+@if (resultsKgs !== undefined && calType === 'byVolume') {
   <div class="results">
-    <span class="results-desc">Results:</span
-    ><span class="results-value"
-      >{{ _.round(resultsLbs, 2) }} lbs ({{ _.round(resultsKgs, 2) }} kgs)</span
-    >
+    <span class="results-desc">Results:</span>
+    <span class="results-value">
+      {{ _.round(resultsLbs, 2) }} lbs ({{ _.round(resultsKgs, 2) }} kgs)
+    </span>
   </div>
 }
 
@@ -125,9 +107,11 @@
     (click)="calculate()"
     [disabled]="!volCalcFormGroup.valid"
   >
-    <mat-icon>save</mat-icon> Calculate
+    <mat-icon>save</mat-icon>
+    Calculate
   </button>
   <button mat-raised-button color="warn" (click)="reset()">
-    <mat-icon>cancel</mat-icon> Reset
+    <mat-icon>cancel</mat-icon>
+    Reset
   </button>
 </div>

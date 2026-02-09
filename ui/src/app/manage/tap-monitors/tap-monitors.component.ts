@@ -1,32 +1,26 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from "@angular/core";
-import { DataService, DataError } from "../../_services/data.service";
-import { Router } from "@angular/router";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { MatSort, Sort } from "@angular/material/sort";
-import {
-  UntypedFormControl,
-  AbstractControl,
-  Validators,
-  UntypedFormGroup,
-} from "@angular/forms";
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSort, Sort } from '@angular/material/sort';
+import { Router } from '@angular/router';
+import { DataError, DataService } from '../../_services/data.service';
 
 import {
-  TapMonitor,
-  TapMonitorType,
   Location,
-  UserInfo,
+  TapMonitor,
   TapMonitorDiscoveryData,
-  TapMonitorData,
-} from "../../models/models";
+  TapMonitorType,
+  UserInfo,
+} from '../../models/models';
 
-import { isNilOrEmpty } from "../../utils/helpers";
+import { isNilOrEmpty } from '../../utils/helpers';
 
-import * as _ from "lodash";
+import * as _ from 'lodash';
 
 @Component({
-  selector: "app-tap-monitors",
-  templateUrl: "./tap-monitors.component.html",
-  styleUrls: ["./tap-monitors.component.scss"],
+  selector: 'app-tap-monitors',
+  templateUrl: './tap-monitors.component.html',
+  styleUrls: ['./tap-monitors.component.scss'],
   standalone: false,
 })
 export class ManageTapMonitorsComponent implements OnInit {
@@ -48,45 +42,45 @@ export class ManageTapMonitorsComponent implements OnInit {
   userInfo!: UserInfo;
 
   modifyFormGroup: UntypedFormGroup = new UntypedFormGroup({
-    name: new UntypedFormControl("", [Validators.required]),
-    monitorType: new UntypedFormControl("", [Validators.required]),
-    locationId: new UntypedFormControl("", [Validators.required]),
-    metaAuthToken: new UntypedFormControl("", []),
-    kvmDevice: new UntypedFormControl("", []),
-    opkDevice: new UntypedFormControl("", [])
+    name: new UntypedFormControl('', [Validators.required]),
+    monitorType: new UntypedFormControl('', [Validators.required]),
+    locationId: new UntypedFormControl('', [Validators.required]),
+    metaAuthToken: new UntypedFormControl('', []),
+    kvmDevice: new UntypedFormControl('', []),
+    opkDevice: new UntypedFormControl('', []),
   });
 
-  allowedMassUnits = ["g", "kg", "oz", "lb"];
-  allowedLiquidUnits = ["ml", "l", "gal"];
+  allowedMassUnits = ['g', 'kg', 'oz', 'lb'];
+  allowedLiquidUnits = ['ml', 'l', 'gal'];
 
   get displayedColumns(): string[] {
-    var cols = ["name", "type"];
+    const cols = ['name', 'type'];
 
     if (this.locations.length > 1) {
-      cols.push("location");
+      cols.push('location');
     }
 
-    return _.concat(cols, ["tap", "actions"]);
+    return _.concat(cols, ['tap', 'actions']);
   }
 
   constructor(
     private dataService: DataService,
     private router: Router,
-    private _snackBar: MatSnackBar,
+    private _snackBar: MatSnackBar
   ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
 
   displayError(errMsg: string) {
-    this._snackBar.open("Error: " + errMsg, "Close");
+    this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
   _refresh(always?: Function, next?: Function, error?: Function) {
     this.dataService.getTapMonitors(undefined, true).subscribe({
       next: (tapMonitors: TapMonitor[]) => {
         this.tapMonitors = [];
-        _.forEach(tapMonitors, (tapMonitor) => {
-          var _tapMonitor = new TapMonitor(tapMonitor);
+        _.forEach(tapMonitors, tapMonitor => {
+          const _tapMonitor = new TapMonitor(tapMonitor);
           this.tapMonitors.push(_tapMonitor);
         });
         this.filter();
@@ -121,7 +115,7 @@ export class ManageTapMonitorsComponent implements OnInit {
         ]);
         this.dataService.getMonitorTypes().subscribe({
           next: (monitorTypes: TapMonitorType[]) => {
-            this.monitorTypes = _.orderBy(monitorTypes, ["type"]);
+            this.monitorTypes = _.orderBy(monitorTypes, ['type']);
             this._refresh(always, next, error);
           },
           error: (err: DataError) => {
@@ -154,7 +148,7 @@ export class ManageTapMonitorsComponent implements OnInit {
         this.userInfo = userInfo;
 
         if (this.userInfo.locations && this.userInfo.admin) {
-          for (let l of this.userInfo.locations) {
+          for (const l of this.userInfo.locations) {
             this.selectedLocationFilters.push(l.id);
           }
         }
@@ -179,12 +173,12 @@ export class ManageTapMonitorsComponent implements OnInit {
 
   add(): void {
     this.modifyFormGroup.reset();
-    var data: any = { meta: {} };
+    const data: any = { meta: {} };
     if (this.locations.length === 1) {
-      data["locationId"] = this.locations[0].id;
+      data['locationId'] = this.locations[0].id;
     }
     if (this.monitorTypes.length === 1) {
-      data["monitorType"] = this.monitorTypes[0].type;
+      data['monitorType'] = this.monitorTypes[0].type;
     }
 
     this.modifyTapMonitor = new TapMonitor(data);
@@ -194,18 +188,26 @@ export class ManageTapMonitorsComponent implements OnInit {
 
   create(): void {
     this.processing = true;
-    var meta: any = {};
-    if (this.modifyTapMonitor.editValues.monitorType == "plaato-blynk") {
+    const meta: any = {};
+    if (this.modifyTapMonitor.editValues.monitorType == 'plaato-blynk') {
       meta.authToken = this.modifyTapMonitor.editValues.meta.authToken;
-    } else if (['keg-volume-monitor-weight', 'keg-volume-monitor-flow', 'kegtron-pro', 'open-plaato-keg', 'plaato-keg'].includes(this.modifyTapMonitor.editValues.monitorType)) {
+    } else if (
+      [
+        'keg-volume-monitor-weight',
+        'keg-volume-monitor-flow',
+        'kegtron-pro',
+        'open-plaato-keg',
+        'plaato-keg',
+      ].includes(this.modifyTapMonitor.editValues.monitorType)
+    ) {
       meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
-    } else if (this.modifyTapMonitor.editValues.monitorType == "kegtron-pro") {
+    } else if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-pro') {
       meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
       meta.portNum = _.toInteger(this.modifyTapMonitor.editValues.meta.portNum);
       meta.accessToken = this.modifyTapMonitor.editValues.meta.accessToken;
     }
 
-    var data: any = {
+    const data: any = {
       name: this.modifyTapMonitor.editValues.name,
       monitorType: this.modifyTapMonitor.editValues.monitorType,
       locationId: this.modifyTapMonitor.editValues.locationId,
@@ -219,7 +221,7 @@ export class ManageTapMonitorsComponent implements OnInit {
           },
           () => {
             this.adding = false;
-          },
+          }
         );
       },
       error: (err: DataError) => {
@@ -242,24 +244,21 @@ export class ManageTapMonitorsComponent implements OnInit {
       this.discoverTapMonitors(() => {
         if (!isNilOrEmpty(this.modifyTapMonitor.editValues.meta)) {
           if (
-            this.modifyTapMonitor.editValues.monitorType ==
-              "keg-volume-monitor-weight" ||
-            this.modifyTapMonitor.editValues.monitorType == "keg-volume-monitor-flow"
+            this.modifyTapMonitor.editValues.monitorType == 'keg-volume-monitor-weight' ||
+            this.modifyTapMonitor.editValues.monitorType == 'keg-volume-monitor-flow'
           ) {
             this.selectedDiscoveredTapMonitorId = _.get(
               this.modifyTapMonitor.editValues.meta,
-              "deviceId",
+              'deviceId'
             );
-          } else if (this.modifyTapMonitor.editValues.monitorType == "kegtron-pro") {
-            let deviceId = _.get(this.modifyTapMonitor.editValues.meta, "deviceId");
-            let portNum = _.get(this.modifyTapMonitor.editValues.meta, "portNum");
-            this.selectedDiscoveredTapMonitorId = deviceId + "|" + portNum;
-          } else if (
-            this.modifyTapMonitor.editValues.monitorType == "open-plaato-keg"
-          ) {
+          } else if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-pro') {
+            const deviceId = _.get(this.modifyTapMonitor.editValues.meta, 'deviceId');
+            const portNum = _.get(this.modifyTapMonitor.editValues.meta, 'portNum');
+            this.selectedDiscoveredTapMonitorId = deviceId + '|' + portNum;
+          } else if (this.modifyTapMonitor.editValues.monitorType == 'open-plaato-keg') {
             this.selectedDiscoveredTapMonitorId = _.get(
               this.modifyTapMonitor.editValues.meta,
-              "deviceId",
+              'deviceId'
             );
           }
         }
@@ -280,7 +279,7 @@ export class ManageTapMonitorsComponent implements OnInit {
             },
             () => {
               this.editing = false;
-            },
+            }
           );
         },
         error: (err: DataError) => {
@@ -315,41 +314,37 @@ export class ManageTapMonitorsComponent implements OnInit {
   }
 
   getLocationName(tapMonitor: TapMonitor): string {
-    var loc = _.find(this.locations, (l) => {
+    const loc = _.find(this.locations, l => {
       return l.id === tapMonitor.locationId;
     });
 
     if (_.isNil(loc) || _.isEmpty(loc)) {
-      return "UNKNOWN";
+      return 'UNKNOWN';
     }
 
     return (loc as Location).name;
   }
 
   filter(sort?: Sort) {
-    var sortBy: string = "description";
-    var asc: boolean = true;
+    let sortBy = 'description';
+    let asc = true;
 
-    if (
-      !_.isNil(sort) &&
-      !_.isEmpty(this.sort.active) &&
-      !_.isEmpty(this.sort.direction)
-    ) {
+    if (!_.isNil(sort) && !_.isEmpty(this.sort.active) && !_.isEmpty(this.sort.direction)) {
       sortBy = this.sort.active;
-      asc = this.sort.direction == "asc";
+      asc = this.sort.direction == 'asc';
     }
 
-    var filteredData: TapMonitor[] = this.tapMonitors;
+    let filteredData: TapMonitor[] = this.tapMonitors;
     if (!_.isEmpty(this.selectedLocationFilters)) {
-      filteredData = <TapMonitor[]>_.filter(this.tapMonitors, (s) => {
+      filteredData = _.filter(this.tapMonitors, s => {
         return this.selectedLocationFilters.includes(s.locationId);
-      });
+      }) as TapMonitor[];
     }
 
     filteredData = _.sortBy(filteredData, [
       (d: TapMonitor) => {
-        if (sortBy === "location") {
-          return _.isNil(d.location) ? "" : d.location.name;
+        if (sortBy === 'location') {
+          return _.isNil(d.location) ? '' : d.location.name;
         }
         return _.get(d, sortBy);
       },
@@ -361,7 +356,7 @@ export class ManageTapMonitorsComponent implements OnInit {
   }
 
   getMonitorType(type: string): TapMonitorType | undefined {
-    return _.find(this.monitorTypes, (mt) => mt.type === type);
+    return _.find(this.monitorTypes, mt => mt.type === type);
   }
 
   currentTypeSupportsDiscovery(): boolean {
@@ -379,32 +374,37 @@ export class ManageTapMonitorsComponent implements OnInit {
   discoverTapMonitors(next?: Function) {
     this.tapMonitorDiscoveryData = [];
     this.tapMonitorDiscoveryProcessing = true;
-    this.dataService
-      .discoverTapMonitors(this.modifyTapMonitor.editValues.monitorType)
-      .subscribe({
-        next: (data: TapMonitorDiscoveryData[]) => {
-          this.tapMonitorDiscoveryData = data;
-          if (!_.isNil(next)) {
-            next();
-          }
-          this.tapMonitorDiscoveryProcessing = false;
-        },
-        error: (err: DataError) => {
-          this.displayError(err.message);
-          this.tapMonitorDiscoveryProcessing = false;
-        },
-      });
+    this.dataService.discoverTapMonitors(this.modifyTapMonitor.editValues.monitorType).subscribe({
+      next: (data: TapMonitorDiscoveryData[]) => {
+        this.tapMonitorDiscoveryData = data;
+        if (!_.isNil(next)) {
+          next();
+        }
+        this.tapMonitorDiscoveryProcessing = false;
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.tapMonitorDiscoveryProcessing = false;
+      },
+    });
   }
 
   selectedDiscoveredTapMonitorChange() {
-    if (['keg-volume-monitor-weight', 'keg-volume-monitor-flow', 'kegtron-pro', 'open-plaato-keg', 'plaato-keg'].includes(this.modifyTapMonitor.editValues.monitorType)) {
-      this.modifyTapMonitor.editValues.meta.deviceId =
-        this.selectedDiscoveredTapMonitorId;
-    } else if (this.modifyTapMonitor.editValues.monitorType == "kegtron-pro") {
-      let parts = _.split(this.selectedDiscoveredTapMonitorId, "|");
+    if (
+      [
+        'keg-volume-monitor-weight',
+        'keg-volume-monitor-flow',
+        'kegtron-pro',
+        'open-plaato-keg',
+        'plaato-keg',
+      ].includes(this.modifyTapMonitor.editValues.monitorType)
+    ) {
+      this.modifyTapMonitor.editValues.meta.deviceId = this.selectedDiscoveredTapMonitorId;
+    } else if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-pro') {
+      const parts = _.split(this.selectedDiscoveredTapMonitorId, '|');
       this.modifyTapMonitor.editValues.meta.deviceId = parts[0];
       this.modifyTapMonitor.editValues.meta.portNum = _.toInteger(parts[1]);
-      _.forEach(this.tapMonitorDiscoveryData, (dev) => {
+      _.forEach(this.tapMonitorDiscoveryData, dev => {
         if (
           dev.id === this.modifyTapMonitor.editValues.meta.deviceId &&
           dev.portNum === this.modifyTapMonitor.editValues.meta.portNum
@@ -416,7 +416,7 @@ export class ManageTapMonitorsComponent implements OnInit {
     console.log(this.modifyTapMonitor.editValues);
   }
 
-  get modifyForm(): { [key: string]: AbstractControl } {
+  get modifyForm(): Record<string, AbstractControl> {
     return this.modifyFormGroup.controls;
   }
 

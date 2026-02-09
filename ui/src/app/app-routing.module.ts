@@ -1,29 +1,29 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { LocationComponent } from './location/location.component'
-import { LocationSelectorComponent } from './location-selector/location-selector.component'
+import { PlaatoKegFeatureGuard } from './_guards/plaato-keg-feature.guard';
+import { ErrorsComponent } from './errors/errors.component';
+import { LocationSelectorComponent } from './location-selector/location-selector.component';
+import { LocationComponent } from './location/location.component';
 import { LoginComponent } from './login/login.component';
 import { ManageBeerComponent } from './manage/beer/beer.component';
 import { ManageBeverageComponent } from './manage/beverage/beverage.component';
-import { ManageComponent } from './manage/manage.component'
 import { ManageLocationsComponent } from './manage/locations/locations.component';
-import { ManageTapMonitorsComponent } from './manage/tap-monitors/tap-monitors.component';
+import { ManageComponent } from './manage/manage.component';
 import { ManagePlaatoKegComponent } from './manage/plaato-keg/plaato-keg.component';
+import { ManageTapMonitorsComponent } from './manage/tap-monitors/tap-monitors.component';
 import { ManageTapsComponent } from './manage/taps/taps.component';
 import { ManageUsersComponent } from './manage/users/users.component';
 import { ProfileComponent } from './profile/profile.component';
-import { ErrorsComponent } from './errors/errors.component';
 import { VolumeCalculatorComponent } from './tools/volume-calculator/volume-calculator.component';
-import { PlaatoKegFeatureGuard } from './_guards/plaato-keg-feature.guard';
 
 const routes: Routes = [
   {
     path: '',
     component: LocationSelectorComponent,
     data: {
-      access: { restricted: false }
-    }
+      access: { restricted: false },
+    },
   },
   {
     path: 'view/:location',
@@ -31,106 +31,106 @@ const routes: Routes = [
     data: {
       hideHeader: true,
       hideFooter: true,
-      access: { restricted: false }
-    }
+      access: { restricted: false },
+    },
   },
   {
     path: 'login',
     component: LoginComponent,
     data: {
       emptyHeader: true,
-      access: { restricted: false }
-    }
+      access: { restricted: false },
+    },
   },
   {
     path: 'me',
-    component: ProfileComponent
+    component: ProfileComponent,
   },
   {
     path: 'manage',
-    component: ManageComponent
+    component: ManageComponent,
   },
   {
     path: 'manage/locations',
-    component: ManageLocationsComponent
+    component: ManageLocationsComponent,
   },
   {
     path: 'manage/tap-monitors',
-    component: ManageTapMonitorsComponent
+    component: ManageTapMonitorsComponent,
   },
   {
     path: 'manage/plaato_kegs',
     component: ManagePlaatoKegComponent,
-    canActivate: [PlaatoKegFeatureGuard]
+    canActivate: [PlaatoKegFeatureGuard],
   },
   {
     path: 'manage/taps',
-    component: ManageTapsComponent
+    component: ManageTapsComponent,
   },
   {
     path: 'manage/beers',
-    component: ManageBeerComponent
+    component: ManageBeerComponent,
   },
   {
     path: 'manage/beverages',
-    component: ManageBeverageComponent
+    component: ManageBeverageComponent,
   },
   {
     path: 'manage/users',
-    component: ManageUsersComponent
+    component: ManageUsersComponent,
   },
   {
     path: 'tools/volume_calculator',
     component: VolumeCalculatorComponent,
     data: {
-      access: { restricted: false }
-    }
+      access: { restricted: false },
+    },
   },
   {
     path: 'unauthorized',
     component: ErrorsComponent,
     data: {
-      error: "unauthorized",
-      access: { restricted: false }
-    }
+      error: 'unauthorized',
+      access: { restricted: false },
+    },
   },
   {
     path: 'forbidden',
     component: ErrorsComponent,
     data: {
-      error: "forbidden",
-      access: { restricted: false }
-    }
+      error: 'forbidden',
+      access: { restricted: false },
+    },
   },
   {
     path: 'error',
     component: ErrorsComponent,
     data: {
-      error: "unknown",
-      access: { restricted: false }
-    }
+      error: 'unknown',
+      access: { restricted: false },
+    },
   },
   {
     path: 'not-found',
     component: ErrorsComponent,
     data: {
-      error: "notFound",
-      access: { restricted: false }
-    }
+      error: 'notFound',
+      access: { restricted: false },
+    },
   },
   {
     path: '404',
     component: ErrorsComponent,
     data: {
-      error: "notFound",
-      access: { restricted: false }
-    }
+      error: 'notFound',
+      access: { restricted: false },
+    },
   },
-  {path: '**', redirectTo: '/404'}
+  { path: '**', redirectTo: '/404' },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

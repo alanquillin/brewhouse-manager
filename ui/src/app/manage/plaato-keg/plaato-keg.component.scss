@@ -1,12 +1,11 @@
 .plaato-keg-view {
-
   .heading {
     justify-content: space-between;
   }
 }
 
-.plaato-keg-view, .plaato-keg-edit {
-
+.plaato-keg-view,
+.plaato-keg-edit {
   .heading {
     display: flex;
     flex-direction: row;
@@ -143,17 +142,16 @@
 }
 
 button.refresh {
-    min-width: 24px;
-    padding-left: 12px;
-    padding-right: 12px;
+  min-width: 24px;
+  padding-left: 12px;
+  padding-right: 12px;
 
-    .mat-icon {
-        margin: 0px !important;
-    }
+  .mat-icon {
+    margin: 0px !important;
+  }
 }
 
 .plaato-keg-setup {
-
   .heading {
     display: flex;
     flex-direction: row;

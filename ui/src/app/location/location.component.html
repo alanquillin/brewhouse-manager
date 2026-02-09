@@ -4,10 +4,11 @@
   </div>
 }
 @if (!isLoading) {
-  <div >
+  <div>
     @if (!serviceAvailable) {
       <div class="connection-error alert alert-danger" role="alert">
-        There was an error connecting to the backend service.  Last successful connection on <strong>{{ lastServiceAvailDT.toLocaleString("en-US") }}</strong>
+        There was an error connecting to the backend service. Last successful connection on
+        <strong>{{ lastServiceAvailDT.toLocaleString('en-US') }}</strong>
       </div>
     }
     @if (enableFullscreen) {
@@ -15,7 +16,9 @@
         @if (!isFullscreen && showHomeBtn) {
           <button mat-icon-button (click)="goto('home')"><mat-icon>home</mat-icon></button>
         }
-        <button mat-icon-button (click)="toggleFullscreen()"><mat-icon>fullscreen{{ isFullscreen ? "_exit" : "" }}</mat-icon></button>
+        <button mat-icon-button (click)="toggleFullscreen()">
+          <mat-icon>fullscreen{{ isFullscreen ? '_exit' : '' }}</mat-icon>
+        </button>
         @if (!isFullscreen) {
           @if (loggedIn) {
             <button mat-icon-button (click)="goto('manage')"><mat-icon>settings</mat-icon></button>
@@ -28,9 +31,9 @@
     }
     @for (tap of taps; track tap) {
       <div class="tap-list" class="tap-count-{{ taps.length < 4 ? taps.length : '4plus' }}">
-        <mat-card class=tap-card>
+        <mat-card class="tap-card">
           <mat-card-header>
-            <mat-card-subtitle>Tap {{tap.tapNumber}}: {{ tap.description }}</mat-card-subtitle>
+            <mat-card-subtitle>Tap {{ tap.tapNumber }}: {{ tap.description }}</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             @if (tap.isEmpty) {
@@ -39,7 +42,7 @@
                   <div class="tap-image">
                     <img src="assets/img/empty_tap.png" />
                   </div>
-                  <div class=tap-details>
+                  <div class="tap-details">
                     <p class="title">Sorry, currently nothing assigned to the tap :(</p>
                     <p>Please check back often as we should have something tapped soon!</p>
                   </div>
@@ -50,7 +53,9 @@
               <div>
                 @if (!_.isNil(tap.batch) && !_.isNil(tap.beer) && tap.tapType === 'beer') {
                   <div class="tap-display">
-                    @if (!_.isNil(tap.tapMonitor) && !_.isNaN(tap.tapMonitor.percentBeerRemaining)) {
+                    @if (
+                      !_.isNil(tap.tapMonitor) && !_.isNaN(tap.tapMonitor.percentBeerRemaining)
+                    ) {
                       <div class="tap-volume">
                         <mwl-gauge
                           [max]="100"
@@ -59,16 +64,16 @@
                           [value]="getRemainingBeerValue(tap)"
                           [animated]="true"
                           [animationDuration]="1"
-                          class="srm-{{getSrm(tap)}}-gauge tap-gauge tap-gauge-beer">
-                        </mwl-gauge>
+                          class="srm-{{ getSrm(tap) }}-gauge tap-gauge tap-gauge-beer"
+                        ></mwl-gauge>
                       </div>
                     }
                     @if (_.isNil(tap.tapMonitor)) {
                       <div class="tap-image">
-                        <img src="assets/img/generic_beer.png" class="srm-{{getSrm(tap)}}" />
+                        <img src="assets/img/generic_beer.png" class="srm-{{ getSrm(tap) }}" />
                       </div>
                     }
-                    <div class=tap-details>
+                    <div class="tap-details">
                       <p class="title">{{ tap.getDisplayName(tap.beer.getName(tap.batch)) }}</p>
                       @if (!isNilOrEmpty(tap.beer.getDescription(tap.batch))) {
                         <p>{{ tap.beer.getDescription(tap.batch) }}</p>
@@ -77,21 +82,34 @@
                       <p>{{ tap.beer.getAbv(tap.batch) }}% alc./vol.</p>
                       <p>IBU: {{ tap.beer.getIbu(tap.batch) }}</p>
                       @if (tap.showTotalBeerRemaining) {
-                        <p>Total Remaining: {{_.round(tap.tapMonitor.totalBeerRemaining, 2)}} {{tap.tapMonitor.beerRemainingUnit}} ({{getRemainingBeerValue(tap)}}%)</p>
+                        <p>
+                          Total Remaining: {{ _.round(tap.tapMonitor.totalBeerRemaining, 2) }}
+                          {{ tap.tapMonitor.beerRemainingUnit }} ({{ getRemainingBeerValue(tap) }}%)
+                        </p>
                       }
                       @if (!isNilOrEmpty(tap.tapMonitor) && tap.tapMonitor.reportsOnlineStatus) {
-                        @if(!isNilOrEmpty(tap.tapMonitor.online) ) {
-                          @if(!tap.tapMonitor.online) {
+                        @if (!isNilOrEmpty(tap.tapMonitor.online)) {
+                          @if (!tap.tapMonitor.online) {
                             <div class="alert alert-danger offline-status" role="alert">
-                              <mat-icon>wifi_off</mat-icon> <span>Offline!@if(!isNilOrEmpty(tap.tapMonitor.lastUpdatedOn)) {
-                                &nbsp;(Last updated on {{displayDate(tap.tapMonitor.getLastUpdatedOn())}})
-                              }</span>
+                              <mat-icon>wifi_off</mat-icon>
+                              <span>
+                                Offline!
+                                @if (!isNilOrEmpty(tap.tapMonitor.lastUpdatedOn)) {
+                                  &nbsp;(Last updated on
+                                  {{ displayDate(tap.tapMonitor.getLastUpdatedOn()) }})
+                                }
+                              </span>
                             </div>
                           } @else {
                             <div class="online-status">
-                              <mat-icon>wifi</mat-icon> <span>Online!@if(!isNilOrEmpty(tap.tapMonitor.lastUpdatedOn)) {
-                                &nbsp;(Last updated on {{displayDate(tap.tapMonitor.getLastUpdatedOn())}})
-                              }</span>
+                              <mat-icon>wifi</mat-icon>
+                              <span>
+                                Online!
+                                @if (!isNilOrEmpty(tap.tapMonitor.lastUpdatedOn)) {
+                                  &nbsp;(Last updated on
+                                  {{ displayDate(tap.tapMonitor.getLastUpdatedOn()) }})
+                                }
+                              </span>
                             </div>
                           }
                         }
@@ -100,12 +118,14 @@
                     <div class="tap-qrcode">
                       @if (!isNilOrEmpty(tap.beer.untappdId)) {
                         <div class="tap-qrcode-container">
-                          <div class="tap-qrcode-header">
-                            Untappd
-                          </div>
+                          <div class="tap-qrcode-header">Untappd</div>
                           <div class="tap-qrcode-content">
                             <a (click)="openQRCodeDialog(getUntappdUrl(tap.beer))">
-                              <qrcode [qrdata]="getUntappdUrl(tap.beer)" [width]="76" [margin]="0"></qrcode>
+                              <qrcode
+                                [qrdata]="getUntappdUrl(tap.beer)"
+                                [width]="76"
+                                [margin]="0"
+                              ></qrcode>
                             </a>
                           </div>
                         </div>
@@ -114,7 +134,7 @@
                     @if (!isNilOrEmpty(getImageUrl(tap))) {
                       <div class="tap-logo">
                         <a (click)="openImageDialog(getImageUrl(tap))">
-                          <img src="{{getImageUrl(tap)}}" />
+                          <img src="{{ getImageUrl(tap) }}" />
                         </a>
                       </div>
                     }
@@ -124,7 +144,9 @@
                   <div>
                     @if (!_.isNil(tap.coldBrew) && tap.beverage.type === 'cold-brew') {
                       <div class="tap-display">
-                        @if (!_.isNil(tap.tapMonitor) && !_.isNaN(tap.tapMonitor.percentBeerRemaining)) {
+                        @if (
+                          !_.isNil(tap.tapMonitor) && !_.isNaN(tap.tapMonitor.percentBeerRemaining)
+                        ) {
                           <div class="tap-volume">
                             <mwl-gauge
                               [max]="100"
@@ -133,8 +155,8 @@
                               [value]="getRemainingBeerValue(tap)"
                               [animated]="true"
                               [animationDuration]="1"
-                              class="srm-40-gauge tap-gauge tap-gauge-cold-brew">
-                            </mwl-gauge>
+                              class="srm-40-gauge tap-gauge tap-gauge-cold-brew"
+                            ></mwl-gauge>
                           </div>
                         }
                         @if (_.isNil(tap.tapMonitor)) {
@@ -142,38 +164,53 @@
                             <img src="assets/img/generic_cold_brew.png" />
                           </div>
                         }
-                        <div class=tap-details>
+                        <div class="tap-details">
                           <p class="title">{{ tap.getDisplayName(tap.beverage.name) }}</p>
                           @if (!isNilOrEmpty(tap.beverage.description)) {
                             <p>{{ tap.beverage.description }}</p>
                           }
-                          @if (!isNilOrEmpty(tap.beverage.brewery) && isNilOrEmpty(tap.coldBrew.roastery)) {
-                            <p>Brewed and roasted by:
+                          @if (
+                            !isNilOrEmpty(tap.beverage.brewery) &&
+                            isNilOrEmpty(tap.coldBrew.roastery)
+                          ) {
+                            <p>
+                              Brewed and roasted by:
                               @if (isNilOrEmpty(tap.beverage.breweryLink)) {
                                 <span>{{ tap.beverage.brewery }}</span>
                               }
                               @if (!isNilOrEmpty(tap.beverage.breweryLink)) {
-                                <a href="{{tap.beverage.breweryLink}}" target="_blank">{{ tap.beverage.brewery }}</a>
+                                <a href="{{ tap.beverage.breweryLink }}" target="_blank">
+                                  {{ tap.beverage.brewery }}
+                                </a>
                               }
                             </p>
                           }
-                          @if (!isNilOrEmpty(tap.beverage.brewery) && !isNilOrEmpty(tap.coldBrew.roastery)) {
-                            <p>Brewed by:
+                          @if (
+                            !isNilOrEmpty(tap.beverage.brewery) &&
+                            !isNilOrEmpty(tap.coldBrew.roastery)
+                          ) {
+                            <p>
+                              Brewed by:
                               @if (isNilOrEmpty(tap.beverage.breweryLink)) {
                                 <span>{{ tap.beverage.brewery }}</span>
                               }
                               @if (!isNilOrEmpty(tap.beverage.breweryLink)) {
-                                <a href="{{tap.beverage.breweryLink}}" target="_blank">{{ tap.beverage.brewery }}</a>
+                                <a href="{{ tap.beverage.breweryLink }}" target="_blank">
+                                  {{ tap.beverage.brewery }}
+                                </a>
                               }
                             </p>
                           }
                           @if (!isNilOrEmpty(tap.coldBrew.roastery)) {
-                            <p>Roasted by:
+                            <p>
+                              Roasted by:
                               @if (isNilOrEmpty(tap.coldBrew.roasteryLink)) {
                                 <span>{{ tap.coldBrew.roastery }}</span>
                               }
                               @if (!isNilOrEmpty(tap.coldBrew.roasteryLink)) {
-                                <a href="{{ tap.coldBrew.roasteryLink }}" target="_blank">{{ tap.coldBrew.roastery }}</a>
+                                <a href="{{ tap.coldBrew.roasteryLink }}" target="_blank">
+                                  {{ tap.coldBrew.roastery }}
+                                </a>
                               }
                             </p>
                           }
@@ -187,7 +224,12 @@
                             <p>Kegged On: {{ tap.batch.getKegDate() }}</p>
                           }
                           @if (tap.showTotalBeerRemaining) {
-                            <p>Total Remaining: {{_.round(tap.tapMonitor.totalBeerRemaining, 2)}} {{tap.tapMonitor.beerRemainingUnit}} ({{getRemainingBeerValue(tap)}}%)</p>
+                            <p>
+                              Total Remaining: {{ _.round(tap.tapMonitor.totalBeerRemaining, 2) }}
+                              {{ tap.tapMonitor.beerRemainingUnit }} ({{
+                                getRemainingBeerValue(tap)
+                              }}%)
+                            </p>
                           }
                         </div>
                         @if (!isNilOrEmpty(getImageUrl(tap))) {
