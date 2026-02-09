@@ -87,6 +87,7 @@ async def update_device(
     await PlaatoDataDB.update(db_session, device_id, **data)
 
     dev = await PlaatoDataDB.get_by_pkey(db_session, device_id)
+    await db_session.refresh(dev)
 
     return await PlaatoKegService.transform_response(dev, db_session=db_session)
 

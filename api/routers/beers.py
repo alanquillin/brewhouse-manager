@@ -110,6 +110,7 @@ async def update_beer(
 
     # Fetch updated beer
     beer = await BeersDB.get_by_pkey(db_session, beer_id)
+    await db_session.refresh(beer)
 
     return await BeerService.transform_response(beer, db_session=db_session, image_transitions=image_transitions, skip_meta_refresh=skip_meta_refresh)
 

@@ -91,7 +91,8 @@ async def update_user(
     if data:
         await UsersDB.update(db_session, user_id, **data)
 
-    user = UsersDB.get_by_pkey(db_session, user_id)
+    user = await UsersDB.get_by_pkey(db_session, user_id)
+    await db_session.refresh(user)
     return await UserService.transform_response(user, current_user)
 
 

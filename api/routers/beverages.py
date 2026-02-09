@@ -90,6 +90,7 @@ async def update_beverage(
 
     # Fetch updated beverage
     beverage = await BeveragesDB.get_by_pkey(db_session, beverage_id)
+    await db_session.refresh(beverage)
 
     return await BeverageService.transform_response(beverage, db_session=db_session, image_transitions=image_transitions)
 

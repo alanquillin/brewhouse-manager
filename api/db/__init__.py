@@ -140,7 +140,7 @@ async def create_async_session(config, **kwargs):
         **engine_kwargs,
     )
 
-    return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=True)()
+    return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)()
 
 
 @asynccontextmanager

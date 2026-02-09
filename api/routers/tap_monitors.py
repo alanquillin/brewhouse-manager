@@ -168,6 +168,7 @@ async def update_tap_monitor(
         await TapMonitorsDB.update(db_session, tap_monitor.id, **data)
 
     tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
+    await db_session.refresh(tap_monitor)
     return await TapMonitorService.transform_response(tap_monitor, db_session=db_session)
 
 

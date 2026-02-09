@@ -233,6 +233,7 @@ async def update_batch(
 
     # Refresh batch to get updated data
     batch = await BatchesDB.get_by_pkey(db_session, batch_id)
+    await db_session.refresh(batch)
 
     return await BatchService.transform_response(batch, db_session=db_session, skip_meta_refresh=skip_meta_refresh)
 

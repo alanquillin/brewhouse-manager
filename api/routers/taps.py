@@ -183,6 +183,7 @@ async def update_tap(
 
     # Refresh tap to get updated relationships
     tap = await TapsDB.get_by_pkey(db_session, tap_id)
+    await db_session.refresh(tap)
 
     return await TapService.transform_response(tap, db_session=db_session)
 
