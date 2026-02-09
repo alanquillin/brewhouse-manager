@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { ManageTapsComponent } from './taps.component';
 
@@ -9,6 +10,7 @@ describe('TapsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ManageTapsComponent],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
