@@ -1,4 +1,4 @@
-@import '../../../styles/variables.scss';
+@use '../../../styles/variables' as *;
 
 .image-list-item {
   padding: 6px;

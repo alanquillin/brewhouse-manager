@@ -1,5 +1,6 @@
-@import './variables';
-@import './app';
+@forward './variables';
+@use './variables' as *;
+@use './app';
 
-@import './components/button';
-@import './components/initials';
+@use './components/button';
+@use './components/initials';

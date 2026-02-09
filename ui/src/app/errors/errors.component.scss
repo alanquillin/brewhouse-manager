@@ -1,3 +1,4 @@
+@use 'sass:color';
 @import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
@@ -448,12 +449,12 @@ $black: #000;
 $semi-black: #1a2130;
 $white: #fff;
 $dress: #ededed;
-$dress-dark: darken($dress, 10%);
+$dress-dark: color.adjust($dress, $lightness: -10%);
 $sword: #e6e6e6;
 $staff: #bf5507;
 $skin: #ffd8ad;
 $hair: #c2beb5;
-$hair-dark: darken($hair, 10%);
+$hair-dark: color.adjust($hair, $lightness: -10%);
 $lips: pink;
 $fire: black, #6c1305, #de8531, #efac41;
 $fire-reverse: #efac41, #de8531, #6c1305, black;
