@@ -7,12 +7,7 @@ import requests
 
 pytestmark = pytest.mark.functional
 
-from .seed_data import (
-    LOCATION_MAIN_ID,
-    LOCATION_SECONDARY_ID,
-    LOCATION_EMPTY_ID,
-    LOCATIONS,
-)
+from .seed_data import LOCATION_EMPTY_ID, LOCATION_MAIN_ID, LOCATION_SECONDARY_ID, LOCATIONS
 
 
 class TestGetLocations:
@@ -79,10 +74,7 @@ class TestCreateLocation:
 
     def test_creates_new_location(self, api_client: requests.Session, api_base_url: str):
         """Test creating a new location."""
-        new_location = {
-            "name": "test-new-location",
-            "description": "A new test location"
-        }
+        new_location = {"name": "test-new-location", "description": "A new test location"}
 
         response = api_client.post(f"{api_base_url}/locations", json=new_location)
 
@@ -103,9 +95,7 @@ class TestCreateLocation:
 
     def test_create_location_requires_name(self, api_client: requests.Session, api_base_url: str):
         """Test that name is required when creating a location."""
-        invalid_location = {
-            "description": "Missing name field"
-        }
+        invalid_location = {"description": "Missing name field"}
 
         response = api_client.post(f"{api_base_url}/locations", json=invalid_location)
 
@@ -118,14 +108,9 @@ class TestUpdateLocation:
 
     def test_updates_location(self, api_client: requests.Session, api_base_url: str):
         """Test updating a location's fields."""
-        update_data = {
-            "description": "Updated description"
-        }
+        update_data = {"description": "Updated description"}
 
-        response = api_client.patch(
-            f"{api_base_url}/locations/{LOCATION_MAIN_ID}",
-            json=update_data
-        )
+        response = api_client.patch(f"{api_base_url}/locations/{LOCATION_MAIN_ID}", json=update_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -141,10 +126,7 @@ class TestDeleteLocation:
     def test_deletes_location(self, api_client: requests.Session, api_base_url: str):
         """Test deleting a location."""
         # First create a location to delete
-        new_location = {
-            "name": "location-to-delete",
-            "description": "This will be deleted"
-        }
+        new_location = {"name": "location-to-delete", "description": "This will be deleted"}
         create_response = api_client.post(f"{api_base_url}/locations", json=new_location)
         assert create_response.status_code == 201
         location_id = create_response.json()["id"]

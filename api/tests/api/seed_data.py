@@ -20,6 +20,9 @@ if __name__ == "__main__":
 
 from sqlalchemy.exc import IntegrityError
 
+# import order is important here, do not change
+# isort: off
+# fmt: off
 from db import (
     async_session_scope,
     batches,
@@ -33,6 +36,8 @@ from db import (
     users,
     user_locations,
 )
+# isort: on
+# fmt: on
 from lib.config import Config
 
 logger = logging.getLogger(__name__)
@@ -48,21 +53,9 @@ LOCATION_SECONDARY_ID = "b6b23426-a7c2-4b34-900a-f2166df12de1"
 LOCATION_EMPTY_ID = "6ae6fc3b-b337-4f9b-8206-8c684918d305"
 
 LOCATIONS = [
-    {
-        "id": LOCATION_MAIN_ID,
-        "name": "main-taproom",
-        "description": "Main Taproom - 3 Taps"
-    },
-    {
-        "id": LOCATION_SECONDARY_ID,
-        "name": "secondary-taproom",
-        "description": "Secondary Taproom - 2 Taps"
-    },
-    {
-        "id": LOCATION_EMPTY_ID,
-        "name": "empty-taproom",
-        "description": "Empty Taproom - No Taps"
-    }
+    {"id": LOCATION_MAIN_ID, "name": "main-taproom", "description": "Main Taproom - 3 Taps"},
+    {"id": LOCATION_SECONDARY_ID, "name": "secondary-taproom", "description": "Secondary Taproom - 2 Taps"},
+    {"id": LOCATION_EMPTY_ID, "name": "empty-taproom", "description": "Empty Taproom - No Taps"},
 ]
 
 # Beers
@@ -72,42 +65,10 @@ BEER_LAGER_ID = "c2bd2265-5def-4563-9534-498627df4328"
 BEER_WHEAT_ID = "677ac863-d1c8-4411-96e4-f5bba28006f2"
 
 BEERS = [
-    {
-        "id": BEER_IPA_ID,
-        "name": "Test IPA",
-        "description": "A hoppy test IPA",
-        "style": "IPA",
-        "abv": 6.5,
-        "ibu": 65,
-        "srm": 8.0
-    },
-    {
-        "id": BEER_STOUT_ID,
-        "name": "Test Stout",
-        "description": "A rich test stout",
-        "style": "Stout",
-        "abv": 5.8,
-        "ibu": 35,
-        "srm": 40.0
-    },
-    {
-        "id": BEER_LAGER_ID,
-        "name": "Test Lager",
-        "description": "A crisp test lager",
-        "style": "Lager",
-        "abv": 4.5,
-        "ibu": 18,
-        "srm": 4.0
-    },
-    {
-        "id": BEER_WHEAT_ID,
-        "name": "Test Wheat",
-        "description": "A refreshing test wheat beer",
-        "style": "Wheat",
-        "abv": 5.0,
-        "ibu": 12,
-        "srm": 5.0
-    }
+    {"id": BEER_IPA_ID, "name": "Test IPA", "description": "A hoppy test IPA", "style": "IPA", "abv": 6.5, "ibu": 65, "srm": 8.0},
+    {"id": BEER_STOUT_ID, "name": "Test Stout", "description": "A rich test stout", "style": "Stout", "abv": 5.8, "ibu": 35, "srm": 40.0},
+    {"id": BEER_LAGER_ID, "name": "Test Lager", "description": "A crisp test lager", "style": "Lager", "abv": 4.5, "ibu": 18, "srm": 4.0},
+    {"id": BEER_WHEAT_ID, "name": "Test Wheat", "description": "A refreshing test wheat beer", "style": "Wheat", "abv": 5.0, "ibu": 12, "srm": 5.0},
 ]
 
 # Beverages (non-beer)
@@ -121,16 +82,9 @@ BEVERAGES = [
         "description": "A smooth cold brew coffee",
         "brewery": "Test Coffee Co.",
         "type": "cold-brew",
-        "flavor": "Medium Roast"
+        "flavor": "Medium Roast",
     },
-    {
-        "id": BEVERAGE_SODA_ID,
-        "name": "Test Soda",
-        "description": "A refreshing test soda",
-        "brewery": "Test Soda Co.",
-        "type": "soda",
-        "flavor": "Cola"
-    }
+    {"id": BEVERAGE_SODA_ID, "name": "Test Soda", "description": "A refreshing test soda", "brewery": "Test Soda Co.", "type": "soda", "flavor": "Cola"},
 ]
 
 # Tap Monitors
@@ -145,49 +99,29 @@ TAP_MONITORS = [
         "name": "Monitor 1",
         "location_id": LOCATION_MAIN_ID,
         "monitor_type": "open-plaato-keg",
-        "meta": {
-            "device_id": "test-device-001",
-            "empty_keg_weight": 4400,
-            "empty_keg_weight_unit": "g",
-            "max_keg_volume": 5,
-            "max_keg_volume_unit": "gal"
-        }
+        "meta": {"device_id": "test-device-001", "empty_keg_weight": 4400, "empty_keg_weight_unit": "g", "max_keg_volume": 5, "max_keg_volume_unit": "gal"},
     },
     {
         "id": TAP_MONITOR_2_ID,
         "name": "Monitor 2",
         "location_id": LOCATION_MAIN_ID,
         "monitor_type": "open-plaato-keg",
-        "meta": {
-            "device_id": "test-device-002",
-            "empty_keg_weight": 4400,
-            "empty_keg_weight_unit": "g",
-            "max_keg_volume": 5,
-            "max_keg_volume_unit": "gal"
-        }
+        "meta": {"device_id": "test-device-002", "empty_keg_weight": 4400, "empty_keg_weight_unit": "g", "max_keg_volume": 5, "max_keg_volume_unit": "gal"},
     },
     {
         "id": TAP_MONITOR_3_ID,
         "name": "Monitor 3",
         "location_id": LOCATION_MAIN_ID,
         "monitor_type": "keg-volume-monitor-weight",
-        "meta": {
-            "device_id": "test-device-003"
-        }
+        "meta": {"device_id": "test-device-003"},
     },
     {
         "id": TAP_MONITOR_SECONDARY_ID,
         "name": "Secondary Monitor",
         "location_id": LOCATION_SECONDARY_ID,
         "monitor_type": "open-plaato-keg",
-        "meta": {
-            "device_id": "test-device-004",
-            "empty_keg_weight": 4400,
-            "empty_keg_weight_unit": "g",
-            "max_keg_volume": 5,
-            "max_keg_volume_unit": "gal"
-        }
-    }
+        "meta": {"device_id": "test-device-004", "empty_keg_weight": 4400, "empty_keg_weight_unit": "g", "max_keg_volume": 5, "max_keg_volume_unit": "gal"},
+    },
 ]
 
 # Batches
@@ -235,7 +169,7 @@ BATCHES = [
         "keg_date": datetime(2025, 2, 24),
         "abv": 5.1,
         "ibu": 13,
-    }
+    },
 ]
 
 # Batch Locations - which batches are available at which locations
@@ -275,7 +209,7 @@ TAPS = [
         "description": "Tap 1 - IPA",
         "location_id": LOCATION_MAIN_ID,
         "on_tap_id": ON_TAP_1_ID,
-        "tap_monitor_id": TAP_MONITOR_1_ID
+        "tap_monitor_id": TAP_MONITOR_1_ID,
     },
     {
         "id": TAP_2_ID,
@@ -283,7 +217,7 @@ TAPS = [
         "description": "Tap 2 - Stout",
         "location_id": LOCATION_MAIN_ID,
         "on_tap_id": ON_TAP_2_ID,
-        "tap_monitor_id": TAP_MONITOR_2_ID
+        "tap_monitor_id": TAP_MONITOR_2_ID,
     },
     {
         "id": TAP_3_ID,
@@ -291,7 +225,7 @@ TAPS = [
         "description": "Tap 3 - Lager",
         "location_id": LOCATION_MAIN_ID,
         "on_tap_id": ON_TAP_3_ID,
-        "tap_monitor_id": TAP_MONITOR_3_ID
+        "tap_monitor_id": TAP_MONITOR_3_ID,
     },
     {
         "id": TAP_SECONDARY_1_ID,
@@ -299,14 +233,14 @@ TAPS = [
         "description": "Tap 1 - Wheat",
         "location_id": LOCATION_SECONDARY_ID,
         "on_tap_id": ON_TAP_SECONDARY_ID,
-        "tap_monitor_id": TAP_MONITOR_SECONDARY_ID
+        "tap_monitor_id": TAP_MONITOR_SECONDARY_ID,
     },
     {
         "id": TAP_SECONDARY_2_ID,
         "tap_number": 2,
         "description": "Tap 2 - Empty",
         "location_id": LOCATION_SECONDARY_ID,
-    }
+    },
 ]
 
 # Users
@@ -321,7 +255,7 @@ USERS = [
         "last_name": "Admin",
         "admin": True,
         "api_key": "test-admin-api-key-12345",
-        "password": "testpassword123"
+        "password": "testpassword123",
     },
     {
         "id": USER_REGULAR_ID,
@@ -330,8 +264,8 @@ USERS = [
         "last_name": "User",
         "admin": False,
         "api_key": "test-user-api-key-67890",
-        "password": "testpassword456"
-    }
+        "password": "testpassword456",
+    },
 ]
 
 # User Locations - which locations users have access to
@@ -346,6 +280,7 @@ USER_LOCATIONS = [
 # ============================================================================
 # Seeding Functions
 # ============================================================================
+
 
 async def seed_table(config: Config, db_class, items: List[Dict[str, Any]], pk: str = "id", q_keys: Optional[List[str]] = None):
     """Seed a single table with items."""
@@ -450,10 +385,7 @@ __all__ = [
 
 # Allow running as a standalone script
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper()),
-        format="%(levelname)-8s: %(asctime)-15s [%(name)s]: %(message)s"
-    )
+    logging.basicConfig(level=getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper()), format="%(levelname)-8s: %(asctime)-15s [%(name)s]: %(message)s")
 
     config = Config()
     config.setup(config_files=["default.json"])

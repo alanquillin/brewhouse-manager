@@ -7,15 +7,7 @@ import requests
 
 pytestmark = pytest.mark.functional
 
-from .seed_data import (
-    LOCATION_MAIN_ID,
-    LOCATION_SECONDARY_ID,
-    TAP_MONITOR_1_ID,
-    TAP_MONITOR_2_ID,
-    TAP_MONITOR_3_ID,
-    TAP_MONITOR_SECONDARY_ID,
-    TAP_MONITORS,
-)
+from .seed_data import LOCATION_MAIN_ID, LOCATION_SECONDARY_ID, TAP_MONITOR_1_ID, TAP_MONITOR_2_ID, TAP_MONITOR_3_ID, TAP_MONITOR_SECONDARY_ID, TAP_MONITORS
 
 
 class TestGetTapMonitors:
@@ -40,10 +32,7 @@ class TestGetTapMonitors:
 
     def test_filters_by_query_string_location(self, api_client: requests.Session, api_base_url: str):
         """Test filtering tap monitors by location."""
-        response = api_client.get(
-            f"{api_base_url}/tap_monitors",
-            params={"location": LOCATION_MAIN_ID}
-        )
+        response = api_client.get(f"{api_base_url}/tap_monitors", params={"location": LOCATION_MAIN_ID})
 
         assert response.status_code == 200
         monitors = response.json()
@@ -156,13 +145,7 @@ class TestCreateTapMonitor:
             "name": "Test New Monitor",
             "monitorType": "open-plaato-keg",
             "locationId": LOCATION_MAIN_ID,
-            "meta": {
-                "deviceId": "test-new-device-999",
-                "emptyKegWeight": 5000,
-                "emptyKegWeightUnit": "g",
-                "maxKegVolume": 5,
-                "maxKegVolumeUnit": "gal"
-            }
+            "meta": {"deviceId": "test-new-device-999", "emptyKegWeight": 5000, "emptyKegWeightUnit": "g", "maxKegVolume": 5, "maxKegVolumeUnit": "gal"},
         }
 
         response = api_client.post(f"{api_base_url}/tap_monitors", json=new_monitor)
@@ -185,14 +168,9 @@ class TestUpdateTapMonitor:
 
     def test_updates_tap_monitor_name(self, api_client: requests.Session, api_base_url: str):
         """Test updating a tap monitor's name."""
-        update_data = {
-            "name": "Updated Monitor Name"
-        }
+        update_data = {"name": "Updated Monitor Name"}
 
-        response = api_client.patch(
-            f"{api_base_url}/tap_monitors/{TAP_MONITOR_3_ID}",
-            json=update_data
-        )
+        response = api_client.patch(f"{api_base_url}/tap_monitors/{TAP_MONITOR_3_ID}", json=update_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -209,14 +187,11 @@ class TestUpdateTapMonitor:
                 "emptyKegWeight": 4500,  # Changed from 4400
                 "emptyKegWeightUnit": "g",
                 "maxKegVolume": 5,
-                "maxKegVolumeUnit": "gal"
+                "maxKegVolumeUnit": "gal",
             }
         }
 
-        response = api_client.patch(
-            f"{api_base_url}/tap_monitors/{TAP_MONITOR_1_ID}",
-            json=update_data
-        )
+        response = api_client.patch(f"{api_base_url}/tap_monitors/{TAP_MONITOR_1_ID}", json=update_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -234,9 +209,7 @@ class TestDeleteTapMonitor:
             "name": "Monitor To Delete",
             "monitorType": "open-plaato-keg",
             "locationId": LOCATION_SECONDARY_ID,
-            "meta": {
-                "deviceId": "delete-me-device"
-            }
+            "meta": {"deviceId": "delete-me-device"},
         }
         create_response = api_client.post(f"{api_base_url}/tap_monitors", json=new_monitor)
         assert create_response.status_code == 201

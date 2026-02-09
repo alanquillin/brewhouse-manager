@@ -29,6 +29,9 @@ def import_all_models():
     This is done inside a function to avoid circular import issues.
     """
     # These imports register the models with SQLAlchemy's Base.metadata
+    # import order is important here, do not change
+    # isort: off
+    # fmt: off
     from db import (  # noqa: F401
         audit,
         batches,
@@ -46,10 +49,10 @@ def import_all_models():
         users,
     )
 
-logging.basicConfig(
-    level=getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper()),
-    format="%(levelname)-8s: %(asctime)-15s [%(name)s]: %(message)s"
-)
+
+# isort: on
+# fmt: on
+logging.basicConfig(level=getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper()), format="%(levelname)-8s: %(asctime)-15s [%(name)s]: %(message)s")
 logger = logging.getLogger(__name__)
 
 

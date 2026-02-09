@@ -544,10 +544,12 @@ class TestGetTapMonitorDataWithOnlineFields:
         with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_lib = MagicMock()
-            mock_lib.get_all = AsyncMock(return_value={
-                "percentRemaining": 75.5,
-                "online": True,
-            })
+            mock_lib.get_all = AsyncMock(
+                return_value={
+                    "percentRemaining": 75.5,
+                    "online": True,
+                }
+            )
             mock_get_lib.return_value = mock_lib
 
             result = run_async(get_tap_monitor_data("monitor-1", None, mock_session))
@@ -565,10 +567,12 @@ class TestGetTapMonitorDataWithOnlineFields:
         with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_lib = MagicMock()
-            mock_lib.get_all = AsyncMock(return_value={
-                "percentRemaining": 75.5,
-                "lastUpdatedOn": 1707307200.0,
-            })
+            mock_lib.get_all = AsyncMock(
+                return_value={
+                    "percentRemaining": 75.5,
+                    "lastUpdatedOn": 1707307200.0,
+                }
+            )
             mock_get_lib.return_value = mock_lib
 
             result = run_async(get_tap_monitor_data("monitor-1", None, mock_session))
@@ -586,13 +590,15 @@ class TestGetTapMonitorDataWithOnlineFields:
         with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_lib = MagicMock()
-            mock_lib.get_all = AsyncMock(return_value={
-                "percentRemaining": 75.5,
-                "totalVolumeRemaining": 10.5,
-                "displayVolumeUnit": "L",
-                "online": True,
-                "lastUpdatedOn": 1707307200.0,
-            })
+            mock_lib.get_all = AsyncMock(
+                return_value={
+                    "percentRemaining": 75.5,
+                    "totalVolumeRemaining": 10.5,
+                    "displayVolumeUnit": "L",
+                    "online": True,
+                    "lastUpdatedOn": 1707307200.0,
+                }
+            )
             mock_get_lib.return_value = mock_lib
 
             result = run_async(get_tap_monitor_data("monitor-1", None, mock_session))

@@ -41,7 +41,8 @@ class TapMonitorService:
         data["reports_online_status"] = False
         monitor_type = data.get("monitor_type")
         if monitor_type:
-            from lib.tap_monitors import get_tap_monitor_lib, get_types as get_tap_monitor_types
+            from lib.tap_monitors import get_tap_monitor_lib
+            from lib.tap_monitors import get_types as get_tap_monitor_types
 
             tap_monitor_lib = get_tap_monitor_lib(monitor_type)
             if not tap_monitor_lib:

@@ -7,13 +7,7 @@ import requests
 
 pytestmark = pytest.mark.functional
 
-from .seed_data import (
-    BEER_IPA_ID,
-    BEER_STOUT_ID,
-    BEER_LAGER_ID,
-    BEER_WHEAT_ID,
-    BEERS,
-)
+from .seed_data import BEER_IPA_ID, BEER_LAGER_ID, BEER_STOUT_ID, BEER_WHEAT_ID, BEERS
 
 
 class TestGetBeers:
@@ -79,14 +73,7 @@ class TestCreateBeer:
 
     def test_creates_new_beer(self, api_client: requests.Session, api_base_url: str):
         """Test creating a new beer."""
-        new_beer = {
-            "name": "Test New Pale Ale",
-            "description": "A new test pale ale",
-            "style": "Pale Ale",
-            "abv": 5.5,
-            "ibu": 40,
-            "srm": 10.0
-        }
+        new_beer = {"name": "Test New Pale Ale", "description": "A new test pale ale", "style": "Pale Ale", "abv": 5.5, "ibu": 40, "srm": 10.0}
 
         response = api_client.post(f"{api_base_url}/beers", json=new_beer)
 
@@ -104,9 +91,7 @@ class TestCreateBeer:
 
     def test_creates_beer_with_minimal_fields(self, api_client: requests.Session, api_base_url: str):
         """Test creating a beer with only required fields."""
-        new_beer = {
-            "name": "Minimal Beer"
-        }
+        new_beer = {"name": "Minimal Beer"}
 
         response = api_client.post(f"{api_base_url}/beers", json=new_beer)
 
@@ -121,15 +106,9 @@ class TestUpdateBeer:
 
     def test_updates_beer(self, api_client: requests.Session, api_base_url: str):
         """Test updating a beer's fields."""
-        update_data = {
-            "description": "Updated IPA description",
-            "abv": 7.0
-        }
+        update_data = {"description": "Updated IPA description", "abv": 7.0}
 
-        response = api_client.patch(
-            f"{api_base_url}/beers/{BEER_IPA_ID}",
-            json=update_data
-        )
+        response = api_client.patch(f"{api_base_url}/beers/{BEER_IPA_ID}", json=update_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -146,10 +125,7 @@ class TestDeleteBeer:
     def test_deletes_beer(self, api_client: requests.Session, api_base_url: str):
         """Test deleting a beer."""
         # First create a beer to delete
-        new_beer = {
-            "name": "Beer To Delete",
-            "style": "Delete Me"
-        }
+        new_beer = {"name": "Beer To Delete", "style": "Delete Me"}
         create_response = api_client.post(f"{api_base_url}/beers", json=new_beer)
         assert create_response.status_code == 201
         beer_id = create_response.json()["id"]

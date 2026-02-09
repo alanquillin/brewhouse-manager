@@ -33,21 +33,12 @@ class DockerComposeManager:
     def _run_compose(self, *args, check: bool = True) -> subprocess.CompletedProcess:
         """Run a docker-compose command."""
         cmd = ["docker", "compose", "-f", self.compose_file] + list(args)
-        return subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            check=check
-        )
+        return subprocess.run(cmd, capture_output=True, text=True, check=check)
 
     def build(self):
         """Build the docker images if needed."""
         print("Checking if brewhouse-manager:dev image exists...")
-        result = subprocess.run(
-            ["docker", "images", "-q", "brewhouse-manager:dev"],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["docker", "images", "-q", "brewhouse-manager:dev"], capture_output=True, text=True)
         if not result.stdout.strip():
             print("Image not found. Please build the image first:")
             print("  docker build -t brewhouse-manager:dev --build-arg build_for=dev .")
@@ -94,17 +85,11 @@ class DockerComposeManager:
 
     def start_log_streaming(self, service: str = "web"):
         """Start streaming logs from a service in the background."""
-        if hasattr(self, '_log_process') and self._log_process is not None:
+        if hasattr(self, "_log_process") and self._log_process is not None:
             return  # Already streaming
 
         cmd = ["docker", "compose", "-f", self.compose_file, "logs", "-f", "--tail=0", service]
-        self._log_process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1
-        )
+        self._log_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
 
         def stream_output():
             try:
@@ -120,7 +105,7 @@ class DockerComposeManager:
 
     def stop_log_streaming(self):
         """Stop streaming logs."""
-        if hasattr(self, '_log_process') and self._log_process is not None:
+        if hasattr(self, "_log_process") and self._log_process is not None:
             self._log_process.terminate()
             try:
                 self._log_process.wait(timeout=5)
@@ -248,11 +233,13 @@ def api_client(docker_services: DockerComposeManager) -> requests.Session:
     by default for convenience.
     """
     session = requests.Session()
-    session.headers.update({
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": f"Bearer test-admin-api-key-12345",  # From seed_data.py
-    })
+    session.headers.update(
+        {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer test-admin-api-key-12345",  # From seed_data.py
+        }
+    )
     return session
 
 
@@ -262,11 +249,13 @@ def admin_api_client(docker_services: DockerComposeManager) -> requests.Session:
     Session-scoped fixture that provides an authenticated admin API client.
     """
     session = requests.Session()
-    session.headers.update({
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "X-API-Key": "test-admin-api-key-12345",  # From seed_data.py
-    })
+    session.headers.update(
+        {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-API-Key": "test-admin-api-key-12345",  # From seed_data.py
+        }
+    )
     return session
 
 
@@ -276,11 +265,13 @@ def user_api_client(docker_services: DockerComposeManager) -> requests.Session:
     Session-scoped fixture that provides an authenticated regular user API client.
     """
     session = requests.Session()
-    session.headers.update({
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "X-API-Key": "test-user-api-key-67890",  # From seed_data.py
-    })
+    session.headers.update(
+        {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-API-Key": "test-user-api-key-67890",  # From seed_data.py
+        }
+    )
     return session
 
 
@@ -333,12 +324,7 @@ def pytest_runtest_teardown(item, nextitem):
 
 def pytest_addoption(parser):
     """Add custom command line options."""
-    parser.addoption(
-        "--stream-logs",
-        action="store_true",
-        default=False,
-        help="Stream server logs to stdout during test execution"
-    )
+    parser.addoption("--stream-logs", action="store_true", default=False, help="Stream server logs to stdout during test execution")
 
 
 @pytest.fixture(scope="session", autouse=True)
