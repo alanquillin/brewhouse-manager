@@ -60,10 +60,10 @@ endif
 
 
 .PHONY: build build-db-seed build-dev clean clean-all clean-image clean-images \
-	clean-seed-image depends docker-build format-py lint-py lint-ts publish \
+	clean-seed-image depends docker-build format-py format-ui lint-py lint-ui publish \
 	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends \
 	clean-local-uploads test test_unit test-unit-no-coverage test-api test-api-verbose \
-	test-api-clean update-version
+	test-api-clean update-version ui-depends
 
 # dependency targets
 
@@ -120,16 +120,22 @@ lint-py:
 	$(PYLINT) api
 	$(BLACK) --check api
 
-lint-ts:
-	yarn run lint
+lint-ui:
+	cd ui && npm run lint && npm run format:check
 
-lint: lint-py lint-ts
+lint: lint-py lint-ui
 
 format-py:
 	$(ISORT) api
 	$(BLACK) api
 
-format: format-py
+format-ui:
+	cd ui && npm run format && npm run lint:fix
+
+format: format-py format-ui
+
+ui-depends:
+	cd ui && yarn install
 
 # Unit tests
 
