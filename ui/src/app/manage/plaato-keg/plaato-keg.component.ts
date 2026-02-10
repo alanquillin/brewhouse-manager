@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
 import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
+import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
 import { PlaatoKegDevice, UserInfo } from '../../models/models';
@@ -72,6 +73,7 @@ export class ManagePlaatoKegComponent implements OnInit {
   }
 
   constructor(
+    private currentUserService: CurrentUserService,
     private dataService: DataService,
     private settingsService: SettingsService,
     private _snackBar: MatSnackBar
@@ -79,10 +81,10 @@ export class ManagePlaatoKegComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.dataService.getCurrentUser().subscribe({
-      next: (userInfo: UserInfo) => {
-        this.userInfo = userInfo;
-        if (!this.userInfo.admin) {
+    this.currentUserService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo | null) => {
+        this.userInfo = userInfo!;
+        if (!this.userInfo?.admin) {
           this._snackBar.open('Admin access required', 'Close');
           return;
         }

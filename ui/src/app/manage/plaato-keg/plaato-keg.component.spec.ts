@@ -5,6 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
 
 import { ManagePlaatoKegComponent } from './plaato-keg.component';
+import { CurrentUserService } from '../../_services/current-user.service';
 import { DataService, DataError } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
 import { PlaatoKegDevice, UserInfo } from '../../models/models';
@@ -12,6 +13,7 @@ import { PlaatoKegDevice, UserInfo } from '../../models/models';
 describe('ManagePlaatoKegComponent', () => {
   let component: ManagePlaatoKegComponent;
   let fixture: ComponentFixture<ManagePlaatoKegComponent>;
+  let mockCurrentUserService: jasmine.SpyObj<CurrentUserService>;
   let mockDataService: jasmine.SpyObj<DataService>;
   let mockSettingsService: jasmine.SpyObj<SettingsService>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
@@ -56,8 +58,8 @@ describe('ManagePlaatoKegComponent', () => {
   ];
 
   beforeEach(async () => {
+    mockCurrentUserService = jasmine.createSpyObj('CurrentUserService', ['getCurrentUser']);
     mockDataService = jasmine.createSpyObj('DataService', [
-      'getCurrentUser',
       'getPlaatoKegDevices',
       'getPlaatoKegDevice',
       'createPlaatoKegDevice',
@@ -71,7 +73,7 @@ describe('ManagePlaatoKegComponent', () => {
     mockSettingsService = jasmine.createSpyObj('SettingsService', ['getSetting']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
-    mockDataService.getCurrentUser.and.returnValue(of(mockAdminUser as any));
+    mockCurrentUserService.getCurrentUser.and.returnValue(of(mockAdminUser as any));
     mockDataService.getPlaatoKegDevices.and.returnValue(of(mockDevices));
     mockSettingsService.getSetting.and.returnValue('localhost');
 
@@ -79,6 +81,7 @@ describe('ManagePlaatoKegComponent', () => {
       imports: [ReactiveFormsModule],
       declarations: [ManagePlaatoKegComponent],
       providers: [
+        { provide: CurrentUserService, useValue: mockCurrentUserService },
         { provide: DataService, useValue: mockDataService },
         { provide: SettingsService, useValue: mockSettingsService },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -131,12 +134,12 @@ describe('ManagePlaatoKegComponent', () => {
     it('should set loading to true initially', () => {
       component.ngOnInit();
       // Loading will be set back to false after async completes
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should call getCurrentUser', () => {
       fixture.detectChanges();
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should set userInfo on success', () => {
@@ -150,20 +153,20 @@ describe('ManagePlaatoKegComponent', () => {
     });
 
     it('should show error for non-admin user', () => {
-      mockDataService.getCurrentUser.and.returnValue(of(mockNonAdminUser as any));
+      mockCurrentUserService.getCurrentUser.and.returnValue(of(mockNonAdminUser as any));
       fixture.detectChanges();
       expect(mockSnackBar.open).toHaveBeenCalledWith('Admin access required', 'Close');
     });
 
     it('should not call refreshAll for non-admin user', () => {
-      mockDataService.getCurrentUser.and.returnValue(of(mockNonAdminUser as any));
+      mockCurrentUserService.getCurrentUser.and.returnValue(of(mockNonAdminUser as any));
       fixture.detectChanges();
       expect(mockDataService.getPlaatoKegDevices).not.toHaveBeenCalled();
     });
 
     it('should display error on failure (non-401)', () => {
       const error: DataError = { message: 'Failed', statusCode: 500 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 
@@ -172,7 +175,7 @@ describe('ManagePlaatoKegComponent', () => {
 
     it('should not display error on 401 status', () => {
       const error: DataError = { message: 'Unauthorized', statusCode: 401 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 

@@ -10,6 +10,7 @@ import {
   TapDetails,
   TapMonitorData,
 } from './location.component';
+import { CurrentUserService } from '../_services/current-user.service';
 import { DataService, DataError } from '../_services/data.service';
 import { SettingsService } from '../_services/settings.service';
 import { ConfigService } from '../_services/config.service';
@@ -18,6 +19,7 @@ import { Beer, Batch, Settings } from '../models/models';
 describe('LocationComponent', () => {
   let component: LocationComponent;
   let fixture: ComponentFixture<LocationComponent>;
+  let mockCurrentUserService: jasmine.SpyObj<CurrentUserService>;
   let mockDataService: jasmine.SpyObj<DataService>;
   let mockSettingsService: jasmine.SpyObj<SettingsService>;
   let mockConfigService: jasmine.SpyObj<ConfigService>;
@@ -45,9 +47,9 @@ describe('LocationComponent', () => {
   });
 
   beforeEach(async () => {
+    mockCurrentUserService = jasmine.createSpyObj('CurrentUserService', ['getCurrentUser']);
     mockDataService = jasmine.createSpyObj('DataService', [
       'isAvailable',
-      'getCurrentUser',
       'getDashboard',
       'getDashboardTap',
       'getDashboardBeer',
@@ -73,7 +75,7 @@ describe('LocationComponent', () => {
     };
 
     mockDataService.isAvailable.and.returnValue(of({ status: 'ok' }));
-    mockDataService.getCurrentUser.and.returnValue(of({ id: 'user-1', firstName: 'Test' } as any));
+    mockCurrentUserService.getCurrentUser.and.returnValue(of({ id: 'user-1', firstName: 'Test' } as any));
     mockDataService.getDashboard.and.returnValue(of(mockDashboard as any));
     mockDataService.getDashboardBeer.and.returnValue(of({ id: 'beer-1', name: 'Test Beer' } as any));
     mockDataService.getDashboardBeverage.and.returnValue(of({ id: 'bev-1', name: 'Test Beverage' } as any));
@@ -81,6 +83,7 @@ describe('LocationComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [LocationComponent],
       providers: [
+        { provide: CurrentUserService, useValue: mockCurrentUserService },
         { provide: DataService, useValue: mockDataService },
         { provide: SettingsService, useValue: mockSettingsService },
         { provide: ConfigService, useValue: mockConfigService },
@@ -181,7 +184,7 @@ describe('LocationComponent', () => {
     it('should set isLoading to true', () => {
       component.refresh();
       // isLoading goes true then false after sync observables complete
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should clear taps array', () => {
@@ -193,12 +196,12 @@ describe('LocationComponent', () => {
 
     it('should call getCurrentUser', () => {
       component.refresh();
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should continue refresh even if getCurrentUser returns 401', () => {
       const error: DataError = { statusCode: 401, message: 'Unauthorized' } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
       spyOn(component, '_refresh');
 
       component.refresh();
@@ -208,7 +211,7 @@ describe('LocationComponent', () => {
 
     it('should display error for non-401 errors', () => {
       const error: DataError = { statusCode: 500, message: 'Server error' } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       component.refresh();
 

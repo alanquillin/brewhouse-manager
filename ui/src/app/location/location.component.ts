@@ -5,6 +5,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { ConfigService } from '../_services/config.service';
+import { CurrentUserService } from '../_services/current-user.service';
 import { DataError, DataService } from '../_services/data.service';
 import { SettingsService } from '../_services/settings.service';
 import { fromJsTimestamp, fromUnixTimestamp } from '../utils/datetime';
@@ -87,11 +88,12 @@ export class LocationComponent implements OnInit {
   enableFullscreen = false;
   serviceAvailable = true;
   lastServiceAvailDT: Date = new Date(Date.now());
-  userInfo!: UserInfo;
+  userInfo!: UserInfo | null;
 
   _ = _; //allow the html template to access lodash
 
   constructor(
+    private currentUserService: CurrentUserService,
     private dataService: DataService,
     private settingsService: SettingsService,
     private router: Router,
@@ -134,8 +136,8 @@ export class LocationComponent implements OnInit {
     this.isLoading = true;
     this.taps = [];
 
-    this.dataService.getCurrentUser().subscribe({
-      next: (userInfo: UserInfo) => {
+    this.currentUserService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo | null) => {
         this.userInfo = userInfo;
         this._refresh(next, always);
       },
@@ -146,7 +148,6 @@ export class LocationComponent implements OnInit {
           this.displayError(err.message);
         }
       },
-      complete: () => {},
     });
   }
 

@@ -3,6 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CurrentUserService } from '../_services/current-user.service';
 import { DataError, DataService } from '../_services/data.service';
 
 import { UserInfo } from '../models/models';
@@ -48,6 +49,7 @@ export class ProfileComponent implements OnInit {
   );
 
   constructor(
+    private currentUserService: CurrentUserService,
     private dataService: DataService,
     private router: Router,
     private _snackBar: MatSnackBar
@@ -59,8 +61,8 @@ export class ProfileComponent implements OnInit {
 
   refresh(always?: Function, next?: Function, error?: Function) {
     this.processing = true;
-    this.dataService.getCurrentUser().subscribe({
-      next: (userInfo: UserInfo) => {
+    this.currentUserService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo | null) => {
         this.userInfo = new UserInfo(userInfo);
         this.processing = false;
         if (!_.isNil(next)) {

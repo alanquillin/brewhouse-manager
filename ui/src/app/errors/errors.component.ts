@@ -4,7 +4,8 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { gsap } from 'gsap';
-import { DataError, DataService } from '../_services/data.service';
+import { CurrentUserService } from '../_services/current-user.service';
+import { DataError } from '../_services/data.service';
 import { UserInfo } from '../models/models';
 
 import { isNilOrEmpty } from '../utils/helpers';
@@ -17,13 +18,13 @@ import { isNilOrEmpty } from '../utils/helpers';
 })
 export class ErrorsComponent implements OnInit, AfterViewInit {
   errorType: string | undefined;
-  userInfo!: UserInfo;
+  userInfo!: UserInfo | null;
   loading = false;
 
   isNilOrEmpty = isNilOrEmpty;
 
   constructor(
-    private dataService: DataService,
+    private currentUserService: CurrentUserService,
     private router: Router,
     private route: ActivatedRoute,
     private _snackBar: MatSnackBar
@@ -37,8 +38,8 @@ export class ErrorsComponent implements OnInit, AfterViewInit {
     this.loading = true;
     this.errorType = this.route.snapshot.data['error'];
 
-    this.dataService.getCurrentUser().subscribe({
-      next: (userInfo: UserInfo) => {
+    this.currentUserService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo | null) => {
         if (this.errorType === 'unauthorized' && isNilOrEmpty(userInfo)) {
           return this.goto('login');
         }
@@ -47,9 +48,7 @@ export class ErrorsComponent implements OnInit, AfterViewInit {
         this.loading = false;
       },
       error: (err: DataError) => {
-        if (err.statusCode !== 401) {
-          return this.goto('login');
-        }
+        this.displayError(err.message);
         this.loading = false;
       },
     });

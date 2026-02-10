@@ -7,6 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError, BehaviorSubject } from 'rxjs';
 
 import { ManageBeverageComponent } from './beverage.component';
+import { CurrentUserService } from '../../_services/current-user.service';
 import { DataService, DataError } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
 import { Batch, Beverage, ImageTransition, Location, Settings, UserInfo } from '../../models/models';
@@ -14,6 +15,7 @@ import { Batch, Beverage, ImageTransition, Location, Settings, UserInfo } from '
 describe('ManageBeverageComponent', () => {
   let component: ManageBeverageComponent;
   let fixture: ComponentFixture<ManageBeverageComponent>;
+  let mockCurrentUserService: jasmine.SpyObj<CurrentUserService>;
   let mockDataService: jasmine.SpyObj<DataService>;
   let mockSettingsService: jasmine.SpyObj<SettingsService>;
   let mockRouter: jasmine.SpyObj<Router>;
@@ -65,8 +67,8 @@ describe('ManageBeverageComponent', () => {
   ];
 
   beforeEach(async () => {
+    mockCurrentUserService = jasmine.createSpyObj('CurrentUserService', ['getCurrentUser']);
     mockDataService = jasmine.createSpyObj('DataService', [
-      'getCurrentUser',
       'getLocations',
       'getBeverages',
       'getBeverageBatches',
@@ -88,7 +90,7 @@ describe('ManageBeverageComponent', () => {
 
     settingsSubject = mockSettingsService.settings$ as BehaviorSubject<any>;
 
-    mockDataService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
+    mockCurrentUserService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
     mockDataService.getLocations.and.returnValue(of(mockLocations as any));
     mockDataService.getBeverages.and.returnValue(of(mockBeverages as any));
     mockDataService.getBeverageBatches.and.returnValue(of(mockBatches as any));
@@ -97,6 +99,7 @@ describe('ManageBeverageComponent', () => {
       imports: [ReactiveFormsModule],
       declarations: [ManageBeverageComponent],
       providers: [
+        { provide: CurrentUserService, useValue: mockCurrentUserService },
         { provide: DataService, useValue: mockDataService },
         { provide: SettingsService, useValue: mockSettingsService },
         { provide: Router, useValue: mockRouter },
@@ -162,7 +165,7 @@ describe('ManageBeverageComponent', () => {
   describe('ngOnInit', () => {
     it('should call getCurrentUser', () => {
       fixture.detectChanges();
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should set userInfo on success', () => {
@@ -182,7 +185,7 @@ describe('ManageBeverageComponent', () => {
 
     it('should display error on failure (non-401)', () => {
       const error: DataError = { message: 'Failed', statusCode: 500 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 
@@ -191,7 +194,7 @@ describe('ManageBeverageComponent', () => {
 
     it('should not display error on 401 status', () => {
       const error: DataError = { message: 'Unauthorized', statusCode: 401 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 

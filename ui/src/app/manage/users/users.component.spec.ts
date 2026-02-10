@@ -6,12 +6,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
 
 import { ManageUsersComponent } from './users.component';
+import { CurrentUserService } from '../../_services/current-user.service';
 import { DataService, DataError } from '../../_services/data.service';
 import { Location, UserInfo } from '../../models/models';
 
 describe('ManageUsersComponent', () => {
   let component: ManageUsersComponent;
   let fixture: ComponentFixture<ManageUsersComponent>;
+  let mockCurrentUserService: jasmine.SpyObj<CurrentUserService>;
   let mockDataService: jasmine.SpyObj<DataService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
@@ -51,8 +53,8 @@ describe('ManageUsersComponent', () => {
   ];
 
   beforeEach(async () => {
+    mockCurrentUserService = jasmine.createSpyObj('CurrentUserService', ['getCurrentUser']);
     mockDataService = jasmine.createSpyObj('DataService', [
-      'getCurrentUser',
       'getLocations',
       'getUsers',
       'createUser',
@@ -63,7 +65,7 @@ describe('ManageUsersComponent', () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
-    mockDataService.getCurrentUser.and.returnValue(of(mockCurrentUser as any));
+    mockCurrentUserService.getCurrentUser.and.returnValue(of(mockCurrentUser as any));
     mockDataService.getLocations.and.returnValue(of(mockLocations as any));
     mockDataService.getUsers.and.returnValue(of(mockUsers as any));
 
@@ -71,6 +73,7 @@ describe('ManageUsersComponent', () => {
       imports: [ReactiveFormsModule],
       declarations: [ManageUsersComponent],
       providers: [
+        { provide: CurrentUserService, useValue: mockCurrentUserService },
         { provide: DataService, useValue: mockDataService },
         { provide: Router, useValue: mockRouter },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -138,7 +141,7 @@ describe('ManageUsersComponent', () => {
   describe('ngOnInit', () => {
     it('should call getCurrentUser', () => {
       fixture.detectChanges();
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should set me on success', () => {
@@ -153,7 +156,7 @@ describe('ManageUsersComponent', () => {
 
     it('should display error on failure', () => {
       const error: DataError = { message: 'Failed', statusCode: 500 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 

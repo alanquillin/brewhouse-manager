@@ -3,6 +3,7 @@ import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } fro
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
+import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 import { Validation } from '../../utils/form-validators';
 
@@ -67,6 +68,7 @@ export class ManageUsersComponent implements OnInit {
   );
 
   constructor(
+    private currentUserService: CurrentUserService,
     private dataService: DataService,
     private router: Router,
     private _snackBar: MatSnackBar
@@ -141,9 +143,9 @@ export class ManageUsersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.dataService.getCurrentUser().subscribe({
-      next: (me: UserInfo) => {
-        this.me = me;
+    this.currentUserService.getCurrentUser().subscribe({
+      next: (me: UserInfo | null) => {
+        this.me = me ? new UserInfo(me) : new UserInfo();
         this._refresh(undefined, () => {
           this.loading = false;
         });

@@ -3,6 +3,7 @@ import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } fro
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
+import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
 
@@ -59,6 +60,7 @@ export class ManageTapsComponent implements OnInit {
   }
 
   constructor(
+    private currentUserService: CurrentUserService,
     private dataService: DataService,
     private settingsService: SettingsService,
     private router: Router,
@@ -220,11 +222,11 @@ export class ManageTapsComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
 
-    this.dataService.getCurrentUser().subscribe({
-      next: (userInfo: UserInfo) => {
-        this.userInfo = userInfo;
+    this.currentUserService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo | null) => {
+        this.userInfo = userInfo!;
 
-        if (this.userInfo.locations && this.userInfo.admin) {
+        if (this.userInfo?.locations && this.userInfo?.admin) {
           for (const l of this.userInfo.locations) {
             this.selectedLocationFilters.push(l.id);
           }

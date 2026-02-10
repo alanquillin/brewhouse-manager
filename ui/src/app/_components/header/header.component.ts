@@ -2,7 +2,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { DataError, DataService } from '../../_services/data.service';
+import { CurrentUserService } from '../../_services/current-user.service';
+import { DataError } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
 import { UserInfo } from '../../models/models';
 
@@ -16,10 +17,10 @@ import { isNilOrEmpty } from '../../utils/helpers';
   standalone: false,
 })
 export class HeaderComponent implements OnInit {
-  userInfo!: UserInfo;
+  userInfo!: UserInfo | null;
 
   constructor(
-    private dataService: DataService,
+    private currentUserService: CurrentUserService,
     private settingsService: SettingsService,
     private router: Router,
     private _snackBar: MatSnackBar
@@ -31,14 +32,12 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.dataService.getCurrentUser().subscribe({
-      next: (userInfo: UserInfo) => {
+    this.currentUserService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo | null) => {
         this.userInfo = userInfo;
       },
       error: (err: DataError) => {
-        if (err.statusCode !== 401) {
-          this.displayError(err.message);
-        }
+        this.displayError(err.message);
       },
     });
   }
@@ -63,7 +62,7 @@ export class HeaderComponent implements OnInit {
       return false;
     }
 
-    return this.userInfo.admin;
+    return this.userInfo!.admin;
   }
 
   get plaatoKegEnabled(): boolean {

@@ -6,12 +6,14 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 
 import { ProfileComponent } from './profile.component';
+import { CurrentUserService } from '../_services/current-user.service';
 import { DataService, DataError } from '../_services/data.service';
 import { UserInfo } from '../models/models';
 
 describe('ProfileComponent', () => {
   let component: ProfileComponent;
   let fixture: ComponentFixture<ProfileComponent>;
+  let mockCurrentUserService: jasmine.SpyObj<CurrentUserService>;
   let mockDataService: jasmine.SpyObj<DataService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
@@ -27,8 +29,8 @@ describe('ProfileComponent', () => {
   };
 
   beforeEach(async () => {
+    mockCurrentUserService = jasmine.createSpyObj('CurrentUserService', ['getCurrentUser']);
     mockDataService = jasmine.createSpyObj('DataService', [
-      'getCurrentUser',
       'updateUser',
       'generateUserAPIKey',
       'deleteUserAPIKey',
@@ -36,12 +38,13 @@ describe('ProfileComponent', () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
-    mockDataService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
+    mockCurrentUserService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
 
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule],
       declarations: [ProfileComponent],
       providers: [
+        { provide: CurrentUserService, useValue: mockCurrentUserService },
         { provide: DataService, useValue: mockDataService },
         { provide: Router, useValue: mockRouter },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -102,12 +105,12 @@ describe('ProfileComponent', () => {
     it('should set processing to true while loading', () => {
       component.refresh();
       // After sync observable completes, processing is false
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should call getCurrentUser', () => {
       component.refresh();
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should set userInfo on success', () => {
@@ -134,7 +137,7 @@ describe('ProfileComponent', () => {
 
     it('should display error on failure', () => {
       const error: DataError = { message: 'Failed to load' } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       component.refresh();
 
@@ -143,7 +146,7 @@ describe('ProfileComponent', () => {
 
     it('should call error callback on failure', () => {
       const error: DataError = { message: 'Failed' } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
       const errorCallback = jasmine.createSpy('error');
 
       component.refresh(undefined, undefined, errorCallback);

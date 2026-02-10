@@ -6,14 +6,15 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { HeaderComponent } from './header.component';
-import { DataService, DataError } from '../../_services/data.service';
+import { CurrentUserService } from '../../_services/current-user.service';
+import { DataError } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
 import { UserInfo } from '../../models/models';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
-  let mockDataService: jasmine.SpyObj<DataService>;
+  let mockCurrentUserService: jasmine.SpyObj<CurrentUserService>;
   let mockSettingsService: jasmine.SpyObj<SettingsService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
@@ -25,8 +26,8 @@ describe('HeaderComponent', () => {
   });
 
   beforeEach(async () => {
-    mockDataService = jasmine.createSpyObj('DataService', ['getCurrentUser']);
-    mockDataService.getCurrentUser.and.returnValue(of(mockUserInfo));
+    mockCurrentUserService = jasmine.createSpyObj('CurrentUserService', ['getCurrentUser']);
+    mockCurrentUserService.getCurrentUser.and.returnValue(of(mockUserInfo));
 
     mockSettingsService = jasmine.createSpyObj('SettingsService', ['getSetting']);
     mockSettingsService.getSetting.and.returnValue(false);
@@ -38,7 +39,7 @@ describe('HeaderComponent', () => {
       imports: [MatMenuModule],
       declarations: [HeaderComponent],
       providers: [
-        { provide: DataService, useValue: mockDataService },
+        { provide: CurrentUserService, useValue: mockCurrentUserService },
         { provide: SettingsService, useValue: mockSettingsService },
         { provide: Router, useValue: mockRouter },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -61,7 +62,7 @@ describe('HeaderComponent', () => {
     it('should fetch current user on init', () => {
       fixture.detectChanges();
 
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should set userInfo on successful response', () => {
@@ -70,22 +71,21 @@ describe('HeaderComponent', () => {
       expect(component.userInfo).toEqual(mockUserInfo);
     });
 
-    it('should display error on non-401 error', () => {
+    it('should set userInfo to null when not logged in', () => {
+      mockCurrentUserService.getCurrentUser.and.returnValue(of(null));
+
+      fixture.detectChanges();
+
+      expect(component.userInfo).toBeNull();
+    });
+
+    it('should display error on error', () => {
       const error: DataError = { statusCode: 500, message: 'Server error' } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 
       expect(mockSnackBar.open).toHaveBeenCalledWith('Error: Server error', 'Close');
-    });
-
-    it('should not display error on 401 error', () => {
-      const error: DataError = { statusCode: 401, message: 'Unauthorized' } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
-
-      fixture.detectChanges();
-
-      expect(mockSnackBar.open).not.toHaveBeenCalled();
     });
   });
 
@@ -110,7 +110,7 @@ describe('HeaderComponent', () => {
     });
 
     it('should return UNKNOWN when userInfo is null', () => {
-      mockDataService.getCurrentUser.and.returnValue(of(null as unknown as UserInfo));
+      mockCurrentUserService.getCurrentUser.and.returnValue(of(null as unknown as UserInfo));
       fixture.detectChanges();
 
       // Need to explicitly set to null after init
@@ -120,7 +120,7 @@ describe('HeaderComponent', () => {
     });
 
     it('should return UNKNOWN when userInfo is undefined', () => {
-      mockDataService.getCurrentUser.and.returnValue(of(undefined as unknown as UserInfo));
+      mockCurrentUserService.getCurrentUser.and.returnValue(of(undefined as unknown as UserInfo));
       fixture.detectChanges();
 
       component.userInfo = undefined as unknown as UserInfo;
@@ -138,14 +138,14 @@ describe('HeaderComponent', () => {
 
     it('should return false when user is not admin', () => {
       const nonAdminUser = new UserInfo({ firstName: 'Jane', lastName: 'Doe', admin: false });
-      mockDataService.getCurrentUser.and.returnValue(of(nonAdminUser));
+      mockCurrentUserService.getCurrentUser.and.returnValue(of(nonAdminUser));
       fixture.detectChanges();
 
       expect(component.admin).toBe(false);
     });
 
     it('should return false when userInfo is null', () => {
-      mockDataService.getCurrentUser.and.returnValue(of(null as unknown as UserInfo));
+      mockCurrentUserService.getCurrentUser.and.returnValue(of(null as unknown as UserInfo));
       fixture.detectChanges();
 
       component.userInfo = null as unknown as UserInfo;

@@ -6,12 +6,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
 
 import { ManageTapMonitorsComponent } from './tap-monitors.component';
+import { CurrentUserService } from '../../_services/current-user.service';
 import { DataService, DataError } from '../../_services/data.service';
 import { Location, TapMonitor, TapMonitorType, UserInfo } from '../../models/models';
 
 describe('ManageTapMonitorsComponent', () => {
   let component: ManageTapMonitorsComponent;
   let fixture: ComponentFixture<ManageTapMonitorsComponent>;
+  let mockCurrentUserService: jasmine.SpyObj<CurrentUserService>;
   let mockDataService: jasmine.SpyObj<DataService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
@@ -54,8 +56,8 @@ describe('ManageTapMonitorsComponent', () => {
   ];
 
   beforeEach(async () => {
+    mockCurrentUserService = jasmine.createSpyObj('CurrentUserService', ['getCurrentUser']);
     mockDataService = jasmine.createSpyObj('DataService', [
-      'getCurrentUser',
       'getLocations',
       'getMonitorTypes',
       'getTapMonitors',
@@ -67,7 +69,7 @@ describe('ManageTapMonitorsComponent', () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
-    mockDataService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
+    mockCurrentUserService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
     mockDataService.getLocations.and.returnValue(of(mockLocations as any));
     mockDataService.getMonitorTypes.and.returnValue(of(mockMonitorTypes));
     mockDataService.getTapMonitors.and.returnValue(of(mockTapMonitors as any));
@@ -76,6 +78,7 @@ describe('ManageTapMonitorsComponent', () => {
       imports: [ReactiveFormsModule],
       declarations: [ManageTapMonitorsComponent],
       providers: [
+        { provide: CurrentUserService, useValue: mockCurrentUserService },
         { provide: DataService, useValue: mockDataService },
         { provide: Router, useValue: mockRouter },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -135,12 +138,12 @@ describe('ManageTapMonitorsComponent', () => {
   describe('ngOnInit', () => {
     it('should set loading to true', () => {
       component.ngOnInit();
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should call getCurrentUser', () => {
       fixture.detectChanges();
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should set userInfo on success', () => {
@@ -160,7 +163,7 @@ describe('ManageTapMonitorsComponent', () => {
 
     it('should display error on failure (non-401)', () => {
       const error: DataError = { message: 'Failed', statusCode: 500 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 
@@ -169,7 +172,7 @@ describe('ManageTapMonitorsComponent', () => {
 
     it('should not display error on 401 status', () => {
       const error: DataError = { message: 'Unauthorized', statusCode: 401 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 

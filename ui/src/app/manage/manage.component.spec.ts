@@ -5,14 +5,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
 
 import { ManageComponent } from './manage.component';
-import { DataService, DataError } from '../_services/data.service';
+import { CurrentUserService } from '../_services/current-user.service';
+import { DataError } from '../_services/data.service';
 import { SettingsService } from '../_services/settings.service';
 import { UserInfo } from '../models/models';
 
 describe('ManageComponent', () => {
   let component: ManageComponent;
   let fixture: ComponentFixture<ManageComponent>;
-  let mockDataService: jasmine.SpyObj<DataService>;
+  let mockCurrentUserService: jasmine.SpyObj<CurrentUserService>;
   let mockSettingsService: jasmine.SpyObj<SettingsService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
@@ -28,18 +29,18 @@ describe('ManageComponent', () => {
   };
 
   beforeEach(async () => {
-    mockDataService = jasmine.createSpyObj('DataService', ['getCurrentUser']);
+    mockCurrentUserService = jasmine.createSpyObj('CurrentUserService', ['getCurrentUser']);
     mockSettingsService = jasmine.createSpyObj('SettingsService', ['getSetting']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
-    mockDataService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
+    mockCurrentUserService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
     mockSettingsService.getSetting.and.returnValue(false);
 
     await TestBed.configureTestingModule({
       declarations: [ManageComponent],
       providers: [
-        { provide: DataService, useValue: mockDataService },
+        { provide: CurrentUserService, useValue: mockCurrentUserService },
         { provide: SettingsService, useValue: mockSettingsService },
         { provide: Router, useValue: mockRouter },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -71,30 +72,27 @@ describe('ManageComponent', () => {
   describe('ngOnInit', () => {
     it('should call getCurrentUser', () => {
       fixture.detectChanges();
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should set userInfo on success', () => {
       fixture.detectChanges();
-      expect(component.userInfo.email).toBe('test@example.com');
+      expect(component.userInfo?.email).toBe('test@example.com');
     });
 
-    it('should display error on failure (non-401)', () => {
+    it('should set userInfo to null when not logged in', () => {
+      mockCurrentUserService.getCurrentUser.and.returnValue(of(null));
+      fixture.detectChanges();
+      expect(component.userInfo).toBeNull();
+    });
+
+    it('should display error on failure', () => {
       const error: DataError = { message: 'Failed to load', statusCode: 500 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 
       expect(mockSnackBar.open).toHaveBeenCalledWith('Error: Failed to load', 'Close');
-    });
-
-    it('should not display error on 401 status', () => {
-      const error: DataError = { message: 'Unauthorized', statusCode: 401 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
-
-      fixture.detectChanges();
-
-      expect(mockSnackBar.open).not.toHaveBeenCalled();
     });
   });
 
@@ -124,7 +122,7 @@ describe('ManageComponent', () => {
 
     it('should return false when user is not admin', () => {
       const nonAdminUser = { ...mockUserInfo, admin: false };
-      mockDataService.getCurrentUser.and.returnValue(of(nonAdminUser as any));
+      mockCurrentUserService.getCurrentUser.and.returnValue(of(nonAdminUser as any));
       fixture.detectChanges();
       expect(component.admin).toBe(false);
     });

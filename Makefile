@@ -139,7 +139,7 @@ ui-depends:
 
 # Unit tests
 
-test: test-unit test-api-verbose
+test: test-unit test-api test-ui
 
 test-unit:
 	$(PYTEST)

@@ -7,12 +7,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
 
 import { ManageBeerComponent } from './beer.component';
+import { CurrentUserService } from '../../_services/current-user.service';
 import { DataService, DataError } from '../../_services/data.service';
 import { Batch, Beer, ImageTransition, Location, UserInfo } from '../../models/models';
 
 describe('ManageBeerComponent', () => {
   let component: ManageBeerComponent;
   let fixture: ComponentFixture<ManageBeerComponent>;
+  let mockCurrentUserService: jasmine.SpyObj<CurrentUserService>;
   let mockDataService: jasmine.SpyObj<DataService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
@@ -59,8 +61,8 @@ describe('ManageBeerComponent', () => {
   ];
 
   beforeEach(async () => {
+    mockCurrentUserService = jasmine.createSpyObj('CurrentUserService', ['getCurrentUser']);
     mockDataService = jasmine.createSpyObj('DataService', [
-      'getCurrentUser',
       'getLocations',
       'getBeers',
       'getBeerBatches',
@@ -77,7 +79,7 @@ describe('ManageBeerComponent', () => {
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
     mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
 
-    mockDataService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
+    mockCurrentUserService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
     mockDataService.getLocations.and.returnValue(of(mockLocations as any));
     mockDataService.getBeers.and.returnValue(of(mockBeers as any));
     mockDataService.getBeerBatches.and.returnValue(of(mockBatches as any));
@@ -86,6 +88,7 @@ describe('ManageBeerComponent', () => {
       imports: [ReactiveFormsModule],
       declarations: [ManageBeerComponent],
       providers: [
+        { provide: CurrentUserService, useValue: mockCurrentUserService },
         { provide: DataService, useValue: mockDataService },
         { provide: Router, useValue: mockRouter },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -158,7 +161,7 @@ describe('ManageBeerComponent', () => {
   describe('ngOnInit', () => {
     it('should call getCurrentUser', () => {
       fixture.detectChanges();
-      expect(mockDataService.getCurrentUser).toHaveBeenCalled();
+      expect(mockCurrentUserService.getCurrentUser).toHaveBeenCalled();
     });
 
     it('should set userInfo on success', () => {
@@ -178,7 +181,7 @@ describe('ManageBeerComponent', () => {
 
     it('should display error on failure (non-401)', () => {
       const error: DataError = { message: 'Failed', statusCode: 500 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 
@@ -187,7 +190,7 @@ describe('ManageBeerComponent', () => {
 
     it('should not display error on 401 status', () => {
       const error: DataError = { message: 'Unauthorized', statusCode: 401 } as DataError;
-      mockDataService.getCurrentUser.and.returnValue(throwError(() => error));
+      mockCurrentUserService.getCurrentUser.and.returnValue(throwError(() => error));
 
       fixture.detectChanges();
 
