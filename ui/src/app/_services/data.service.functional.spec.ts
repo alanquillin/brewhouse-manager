@@ -18,17 +18,6 @@ import { firstValueFrom } from 'rxjs';
 
 import { WINDOW } from '../window.provider';
 import { DataService } from './data.service';
-import {
-  Batch,
-  Beer,
-  Beverage,
-  Dashboard,
-  Location,
-  Tap,
-  TapMonitor,
-  TapMonitorType,
-  UserInfo,
-} from '../models/models';
 
 // ============================================================================
 // Test Configuration
@@ -542,9 +531,7 @@ describe('DataService Functional Tests', () => {
       expect(newBatch.beerId).toBe(BEER_WHEAT_ID);
 
       // Update
-      const updatedBatch = await firstValueFrom(
-        service.updateBatch(newBatch.id, { abv: 5.3 })
-      );
+      const updatedBatch = await firstValueFrom(service.updateBatch(newBatch.id, { abv: 5.3 }));
       expect(Number(updatedBatch.abv)).toBe(5.3);
 
       // Delete
