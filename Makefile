@@ -63,7 +63,8 @@ endif
 	clean-seed-image depends docker-build format-py format-ui lint-py lint-ui publish \
 	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends \
 	clean-local-uploads test test-unit test-unit-no-coverage test-api test-api-verbose \
-	test-api-clean test-ui update-version ui-depends
+	test-api-clean test-api-up test-api-down test-ui test-ui-functional test-ui-functional-only \
+	update-version ui-depends
 
 # dependency targets
 
@@ -151,6 +152,15 @@ test-no-coverage:
 
 test-ui:
 	cd ui && npm run test:ci
+
+test-ui-functional: build-dev
+	$(DOCKER) compose -f api/tests/api/docker-compose.yml up -d --wait
+	-cd ui && npm run test:functional
+	$(DOCKER) compose -f api/tests/api/docker-compose.yml down -v --remove-orphans
+
+test-ui-functional-only:
+	cd ui && npm run test:functional
+
 
 # Functional API tests (requires Docker)
 

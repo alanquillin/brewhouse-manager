@@ -10,6 +10,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --no-watch --no-progress --browsers=ChromeHeadless --code-coverage",
+    "test:functional": "ng run brewhouse-manager:test-functional --no-watch",
+    "test:functional:watch": "ng run brewhouse-manager:test-functional --browsers=ChromeNoSecurity",
     "lint": "ng lint",
     "lint:fix": "ng lint --fix",
     "format": "prettier --write \"src/**/*.{ts,html,scss,css,json}\"",

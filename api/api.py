@@ -48,8 +48,8 @@ api.add_middleware(
 )
 
 # CORS middleware
-if CONFIG.get("ENV") == "development":
-    LOGGER.debug("Setting up development environment with full CORS")
+if CONFIG.get("ENV") in ("development", "test"):
+    LOGGER.debug("Setting up development/test environment with full CORS")
     api.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
