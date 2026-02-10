@@ -62,8 +62,8 @@ endif
 .PHONY: build build-db-seed build-dev clean clean-all clean-image clean-images \
 	clean-seed-image depends docker-build format-py format-ui lint-py lint-ui publish \
 	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends \
-	clean-local-uploads test test-unit test-unit-no-coverage test-api test-api-verbose \
-	test-api-clean test-api-up test-api-down test-ui test-ui-functional test-ui-functional-only \
+	clean-local-uploads test test-py test-unit test-unit-no-coverage test-api test-api-verbose \
+	test-api-clean test-ui test-ui-unit test-ui-functional test-ui-functional-only \
 	update-version ui-depends
 
 # dependency targets
@@ -140,7 +140,9 @@ ui-depends:
 
 # Unit tests
 
-test: test-unit test-api test-ui
+test: test-py test-ui
+
+test-py: test-unit test-api
 
 test-unit:
 	$(PYTEST)
@@ -149,8 +151,9 @@ test-no-coverage:
 	$(PYTEST) --no-cov
 
 # UI tests (Angular/Karma)
+test-ui: test-ui-unit test-ui-functional
 
-test-ui:
+test-ui-unit:
 	cd ui && npm run test:ci
 
 test-ui-functional: build-dev
