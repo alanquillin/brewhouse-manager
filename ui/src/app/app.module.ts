@@ -44,9 +44,9 @@ import { FileUploaderComponent } from './_components/file-uploader/file-uploader
 import { FooterComponent } from './_components/footer/footer.component';
 import { HeaderComponent } from './_components/header/header.component';
 import { FileUploadDialogComponent } from './_dialogs/file-upload-dialog/file-upload-dialog.component';
-import { LocationImageDialog } from './_dialogs/image-preview-dialog/image-preview-dialog.component';
+import { LocationImageDialogComponent } from './_dialogs/image-preview-dialog/image-preview-dialog.component';
 import { ImageSelectorDialogComponent } from './_dialogs/image-selector-dialog/image-selector-dialog.component';
-import { LocationQRCodeDialog } from './_dialogs/qrcode-dialog/qrcode-dialog.component';
+import { LocationQRCodeDialogComponent } from './_dialogs/qrcode-dialog/qrcode-dialog.component';
 import { LocationSelectorComponent } from './location-selector/location-selector.component';
 import { LocationComponent } from './location/location.component';
 import { LoginComponent } from './login/login.component';
@@ -83,8 +83,8 @@ export function initializeSettings(settingsService: SettingsService) {
     FooterComponent,
     ImageSelectorDialogComponent,
     LocationComponent,
-    LocationImageDialog,
-    LocationQRCodeDialog,
+    LocationImageDialogComponent,
+    LocationQRCodeDialogComponent,
     LocationSelectorComponent,
     LoginComponent,
     ManageBeerComponent,

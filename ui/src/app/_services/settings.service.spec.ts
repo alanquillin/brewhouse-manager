@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
-import { SettingsService } from './settings.service';
-import { DataService } from './data.service';
 import { Settings } from '../models/models';
+import { DataService } from './data.service';
+import { SettingsService } from './settings.service';
 
 describe('SettingsService', () => {
   let service: SettingsService;

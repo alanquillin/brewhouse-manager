@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, UrlTree } from '@angular/router';
 
-import { PlaatoKegFeatureGuard } from './plaato-keg-feature.guard';
 import { SettingsService } from '../_services/settings.service';
+import { PlaatoKegFeatureGuard } from './plaato-keg-feature.guard';
 
 describe('PlaatoKegFeatureGuard', () => {
   let guard: PlaatoKegFeatureGuard;

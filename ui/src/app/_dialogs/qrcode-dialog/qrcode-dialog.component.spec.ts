@@ -1,13 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { LocationQRCodeDialog } from './qrcode-dialog.component';
+import { LocationQRCodeDialogComponent } from './qrcode-dialog.component';
 
 describe('LocationQRCodeDialog', () => {
-  let component: LocationQRCodeDialog;
-  let fixture: ComponentFixture<LocationQRCodeDialog>;
-  let mockDialogRef: jasmine.SpyObj<MatDialogRef<LocationQRCodeDialog>>;
+  let component: LocationQRCodeDialogComponent;
+  let fixture: ComponentFixture<LocationQRCodeDialogComponent>;
+  let mockDialogRef: jasmine.SpyObj<MatDialogRef<LocationQRCodeDialogComponent>>;
 
   const defaultDialogData = {
     url: 'https://example.com/location/123',
@@ -19,7 +19,7 @@ describe('LocationQRCodeDialog', () => {
     mockDialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
 
     await TestBed.configureTestingModule({
-      declarations: [LocationQRCodeDialog],
+      declarations: [LocationQRCodeDialogComponent],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: defaultDialogData },
@@ -29,7 +29,7 @@ describe('LocationQRCodeDialog', () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(LocationQRCodeDialog);
+    fixture = TestBed.createComponent(LocationQRCodeDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -56,7 +56,7 @@ describe('LocationQRCodeDialog', () => {
     it('should default title to empty string when not provided', async () => {
       await TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
-        declarations: [LocationQRCodeDialog],
+        declarations: [LocationQRCodeDialogComponent],
         providers: [
           { provide: MatDialogRef, useValue: mockDialogRef },
           { provide: MAT_DIALOG_DATA, useValue: { url: 'https://test.com' } },
@@ -64,7 +64,7 @@ describe('LocationQRCodeDialog', () => {
         schemas: [NO_ERRORS_SCHEMA],
       }).compileComponents();
 
-      const newFixture = TestBed.createComponent(LocationQRCodeDialog);
+      const newFixture = TestBed.createComponent(LocationQRCodeDialogComponent);
       const newComponent = newFixture.componentInstance;
       newFixture.detectChanges();
 
@@ -74,7 +74,7 @@ describe('LocationQRCodeDialog', () => {
     it('should default width to 600 when not provided', async () => {
       await TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
-        declarations: [LocationQRCodeDialog],
+        declarations: [LocationQRCodeDialogComponent],
         providers: [
           { provide: MatDialogRef, useValue: mockDialogRef },
           { provide: MAT_DIALOG_DATA, useValue: { url: 'https://test.com' } },
@@ -82,7 +82,7 @@ describe('LocationQRCodeDialog', () => {
         schemas: [NO_ERRORS_SCHEMA],
       }).compileComponents();
 
-      const newFixture = TestBed.createComponent(LocationQRCodeDialog);
+      const newFixture = TestBed.createComponent(LocationQRCodeDialogComponent);
       const newComponent = newFixture.componentInstance;
       newFixture.detectChanges();
 
@@ -92,7 +92,7 @@ describe('LocationQRCodeDialog', () => {
     it('should convert string width to integer', async () => {
       await TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
-        declarations: [LocationQRCodeDialog],
+        declarations: [LocationQRCodeDialogComponent],
         providers: [
           { provide: MatDialogRef, useValue: mockDialogRef },
           { provide: MAT_DIALOG_DATA, useValue: { url: 'https://test.com', width: '350' } },
@@ -100,7 +100,7 @@ describe('LocationQRCodeDialog', () => {
         schemas: [NO_ERRORS_SCHEMA],
       }).compileComponents();
 
-      const newFixture = TestBed.createComponent(LocationQRCodeDialog);
+      const newFixture = TestBed.createComponent(LocationQRCodeDialogComponent);
       const newComponent = newFixture.componentInstance;
       newFixture.detectChanges();
 

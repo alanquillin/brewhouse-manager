@@ -10,7 +10,7 @@ import { UserInfo } from '../models/models';
 import { isNilOrEmpty } from '../utils/helpers';
 
 @Component({
-  selector: 'manage',
+  selector: 'app-manage',
   templateUrl: './manage.component.html',
   styleUrls: ['./manage.component.scss'],
   standalone: false,

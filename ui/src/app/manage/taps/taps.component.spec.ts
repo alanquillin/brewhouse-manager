@@ -1,15 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { ManageTapsComponent } from './taps.component';
 import { CurrentUserService } from '../../_services/current-user.service';
-import { DataService, DataError } from '../../_services/data.service';
+import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
-import { Batch, Beer, Beverage, Location, Tap, TapMonitor, UserInfo } from '../../models/models';
+import { Batch, Beer, Beverage, Location, Tap, TapMonitor } from '../../models/models';
+import { ManageTapsComponent } from './taps.component';
 
 describe('ManageTapsComponent', () => {
   let component: ManageTapsComponent;

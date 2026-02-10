@@ -18,7 +18,7 @@ export class ImageSelectorDialogComponent implements OnInit {
   images: string[] = [];
   processing = false;
 
-  isNilOrEmpty: Function = isNilOrEmpty;
+  isNilOrEmpty = isNilOrEmpty;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,

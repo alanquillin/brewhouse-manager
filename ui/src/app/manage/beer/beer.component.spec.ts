@@ -1,15 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { ManageBeerComponent } from './beer.component';
 import { CurrentUserService } from '../../_services/current-user.service';
-import { DataService, DataError } from '../../_services/data.service';
-import { Batch, Beer, ImageTransition, Location, UserInfo } from '../../models/models';
+import { DataError, DataService } from '../../_services/data.service';
+import { Batch, Beer, ImageTransition, Location } from '../../models/models';
+import { ManageBeerComponent } from './beer.component';
 
 describe('ManageBeerComponent', () => {
   let component: ManageBeerComponent;
@@ -748,7 +748,8 @@ describe('ManageBeerComponent', () => {
 
     it('should truncate long descriptions', () => {
       const beer = new Beer({
-        description: 'This is a very long description that should be truncated because it exceeds 48 characters',
+        description:
+          'This is a very long description that should be truncated because it exceeds 48 characters',
       } as any);
       const result = component.getDescriptionDisplay(beer);
       expect(result.length).toBeLessThanOrEqual(51); // 48 + "..."

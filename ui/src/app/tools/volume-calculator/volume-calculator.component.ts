@@ -60,7 +60,7 @@ export class VolumeCalculatorComponent implements OnInit {
   resultsLbs = 0;
   resultsKgs: number | undefined;
 
-  isNilOrEmpty: Function = isNilOrEmpty;
+  isNilOrEmpty = isNilOrEmpty;
   _ = _;
 
   constructor() {}

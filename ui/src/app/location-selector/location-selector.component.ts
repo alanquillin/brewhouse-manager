@@ -8,7 +8,7 @@ import { Location } from './../models/models';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'location-selector',
+  selector: 'app-location-selector',
   templateUrl: './location-selector.component.html',
   styleUrls: ['./location-selector.component.scss'],
   standalone: false,

@@ -1,11 +1,11 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpEventType } from '@angular/common/http';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
-import { HttpEventType, HttpResponse } from '@angular/common/http';
 
-import { FileUploaderComponent, ExtendedFile } from './file-uploader.component';
-import { DataService, DataError } from '../../_services/data.service';
+import { DataError, DataService } from '../../_services/data.service';
+import { ExtendedFile, FileUploaderComponent } from './file-uploader.component';
 
 describe('FileUploaderComponent', () => {
   let component: FileUploaderComponent;
@@ -79,7 +79,10 @@ describe('FileUploaderComponent', () => {
 
       component.onFileDropped(files);
 
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Error: Mutli-file uploads are disabled.', 'Close');
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Error: Mutli-file uploads are disabled.',
+        'Close'
+      );
     });
 
     it('should call uploadFiles when single file dropped', () => {
@@ -118,7 +121,9 @@ describe('FileUploaderComponent', () => {
     });
 
     it('should upload files from file input', () => {
-      mockDataService.uploadImage.and.returnValue(of({ type: HttpEventType.Response, destinationPath: '/path' }));
+      mockDataService.uploadImage.and.returnValue(
+        of({ type: HttpEventType.Response, destinationPath: '/path' })
+      );
 
       component.fileBrowseHandler({ target: { files: [createMockFile('test.png')] } });
 
@@ -247,7 +252,9 @@ describe('FileUploaderComponent', () => {
 
   describe('uploadFiles', () => {
     it('should set uploading to true', () => {
-      mockDataService.uploadImage.and.returnValue(of({ type: HttpEventType.Response, destinationPath: '/path' }));
+      mockDataService.uploadImage.and.returnValue(
+        of({ type: HttpEventType.Response, destinationPath: '/path' })
+      );
       const files = [createMockFile('test.png')];
 
       component.uploadFiles(files);
@@ -257,7 +264,9 @@ describe('FileUploaderComponent', () => {
 
     it('should clear existing files', () => {
       component.files = { 'old.png': createExtendedFile('old.png', 100) };
-      mockDataService.uploadImage.and.returnValue(of({ type: HttpEventType.Response, destinationPath: '/path' }));
+      mockDataService.uploadImage.and.returnValue(
+        of({ type: HttpEventType.Response, destinationPath: '/path' })
+      );
       const files = [createMockFile('new.png')];
 
       component.uploadFiles(files);
@@ -266,7 +275,9 @@ describe('FileUploaderComponent', () => {
     });
 
     it('should skip duplicate file names', () => {
-      mockDataService.uploadImage.and.returnValue(of({ type: HttpEventType.Response, destinationPath: '/path' }));
+      mockDataService.uploadImage.and.returnValue(
+        of({ type: HttpEventType.Response, destinationPath: '/path' })
+      );
       const files = [createMockFile('test.png'), createMockFile('test.png')];
 
       component.uploadFiles(files);
@@ -275,7 +286,9 @@ describe('FileUploaderComponent', () => {
     });
 
     it('should add files to the files object', () => {
-      mockDataService.uploadImage.and.returnValue(of({ type: HttpEventType.Response, destinationPath: '/path' }));
+      mockDataService.uploadImage.and.returnValue(
+        of({ type: HttpEventType.Response, destinationPath: '/path' })
+      );
       const files = [createMockFile('test.png')];
 
       component.uploadFiles(files);

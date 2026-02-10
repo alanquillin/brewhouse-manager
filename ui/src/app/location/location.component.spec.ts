@@ -1,20 +1,17 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
-import { of, throwError, BehaviorSubject } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 
-import {
-  LocationComponent,
-  TapDetails,
-  TapMonitorData,
-} from './location.component';
-import { CurrentUserService } from '../_services/current-user.service';
-import { DataService, DataError } from '../_services/data.service';
-import { SettingsService } from '../_services/settings.service';
 import { ConfigService } from '../_services/config.service';
-import { Beer, Batch, Settings } from '../models/models';
+import { CurrentUserService } from '../_services/current-user.service';
+import { DataError, DataService } from '../_services/data.service';
+import { SettingsService } from '../_services/settings.service';
+import { Beer, Settings } from '../models/models';
+import { LocationComponent, TapDetails, TapMonitorData } from './location.component';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;
@@ -75,10 +72,16 @@ describe('LocationComponent', () => {
     };
 
     mockDataService.isAvailable.and.returnValue(of({ status: 'ok' }));
-    mockCurrentUserService.getCurrentUser.and.returnValue(of({ id: 'user-1', firstName: 'Test' } as any));
+    mockCurrentUserService.getCurrentUser.and.returnValue(
+      of({ id: 'user-1', firstName: 'Test' } as any)
+    );
     mockDataService.getDashboard.and.returnValue(of(mockDashboard as any));
-    mockDataService.getDashboardBeer.and.returnValue(of({ id: 'beer-1', name: 'Test Beer' } as any));
-    mockDataService.getDashboardBeverage.and.returnValue(of({ id: 'bev-1', name: 'Test Beverage' } as any));
+    mockDataService.getDashboardBeer.and.returnValue(
+      of({ id: 'beer-1', name: 'Test Beer' } as any)
+    );
+    mockDataService.getDashboardBeverage.and.returnValue(
+      of({ id: 'bev-1', name: 'Test Beverage' } as any)
+    );
 
     await TestBed.configureTestingModule({
       declarations: [LocationComponent],

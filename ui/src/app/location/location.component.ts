@@ -27,8 +27,8 @@ import {
   UserInfo,
 } from './../models/models';
 
-import { LocationImageDialog } from '../_dialogs/image-preview-dialog/image-preview-dialog.component';
-import { LocationQRCodeDialog } from '../_dialogs/qrcode-dialog/qrcode-dialog.component';
+import { LocationImageDialogComponent } from '../_dialogs/image-preview-dialog/image-preview-dialog.component';
+import { LocationQRCodeDialogComponent } from '../_dialogs/qrcode-dialog/qrcode-dialog.component';
 
 import * as _ from 'lodash';
 
@@ -81,7 +81,7 @@ export class LocationComponent implements OnInit {
   locations: Location[] = [];
   location!: Location;
   taps: TapDetails[] = [];
-  isNilOrEmpty: Function = isNilOrEmpty;
+  isNilOrEmpty = isNilOrEmpty;
   tapRefreshSettings: TapRefreshSettings = new TapRefreshSettings();
   dashboardSettings: DashboardSettings = new DashboardSettings();
   isFullscreen = false;
@@ -111,9 +111,9 @@ export class LocationComponent implements OnInit {
     }, 30000);
   }
 
-  checkHealth(next?: Function): void {
+  checkHealth(next?: () => void): void {
     this.dataService.isAvailable().subscribe({
-      next: (res: any) => {
+      next: (_: any) => {
         this.serviceAvailable = true;
         this.lastServiceAvailDT = new Date(Date.now());
         this.scheduleHealthCheck();
@@ -121,7 +121,7 @@ export class LocationComponent implements OnInit {
           next();
         }
       },
-      error: (err: DataError) => {
+      error: (_: DataError) => {
         this.serviceAvailable = false;
         this.scheduleHealthCheck();
       },
@@ -132,7 +132,7 @@ export class LocationComponent implements OnInit {
     this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  refresh(next?: Function, always?: Function) {
+  refresh(next?: () => void, always?: () => void) {
     this.isLoading = true;
     this.taps = [];
 
@@ -151,7 +151,7 @@ export class LocationComponent implements OnInit {
     });
   }
 
-  _refresh(next?: Function, always?: Function) {
+  _refresh(next?: () => void, always?: () => void) {
     this.settingsService.settings$.subscribe({
       next: (data: Settings) => {
         this.tapRefreshSettings = new TapRefreshSettings(data.taps.refresh);
@@ -217,7 +217,7 @@ export class LocationComponent implements OnInit {
           tap = this.setTapDetails(tap);
           this.scheduleTapRefresh(tap);
         },
-        error: (err: DataError) => {
+        error: (_: DataError) => {
           this.scheduleTapRefresh(tap);
         },
       });
@@ -330,7 +330,7 @@ export class LocationComponent implements OnInit {
   }
 
   openImageDialog(imgUrl: string) {
-    this.dialog.open(LocationImageDialog, {
+    this.dialog.open(LocationImageDialogComponent, {
       data: {
         imgUrl: imgUrl,
       },
@@ -338,7 +338,7 @@ export class LocationComponent implements OnInit {
   }
 
   openQRCodeDialog(url: string) {
-    this.dialog.open(LocationQRCodeDialog, {
+    this.dialog.open(LocationQRCodeDialogComponent, {
       data: {
         url: url,
         title: 'Check-in on Untappd',

@@ -1,16 +1,16 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { of, throwError, BehaviorSubject } from 'rxjs';
+import { MatIconRegistry } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { DomSanitizer } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
-import { LoginComponent } from './login.component';
-import { DataService, DataError } from '../_services/data.service';
+import { DataError, DataService } from '../_services/data.service';
 import { SettingsService } from '../_services/settings.service';
+import { LoginComponent } from './login.component';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -196,7 +196,10 @@ describe('LoginComponent', () => {
 
       component.submit();
 
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Error: Invalid username or password', 'Close');
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Error: Invalid username or password',
+        'Close'
+      );
     });
 
     it('should display unknown error for other status codes', () => {
@@ -254,7 +257,7 @@ describe('LoginComponent', () => {
     });
 
     it('should call getSetting with googleSSOEnabled', () => {
-      component.googleSSOEnabled;
+      component.googleSSOEnabled; /* eslint-disable-line @typescript-eslint/no-unused-expressions */
       expect(mockSettingsService.getSetting).toHaveBeenCalledWith('googleSSOEnabled');
     });
   });

@@ -16,7 +16,7 @@ import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
 
 import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/file-upload-dialog.component';
-import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component';
+import { LocationImageDialogComponent } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component';
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component';
 
 import {
@@ -53,7 +53,7 @@ export class ManageBeverageComponent implements OnInit {
   modifyBeverage: Beverage = new Beverage();
   selectedBatchBeverage: Beverage = new Beverage();
   modifyBatch: Batch = new Batch();
-  isNilOrEmpty: Function = isNilOrEmpty;
+  isNilOrEmpty = isNilOrEmpty;
   defaultType!: string;
   supportedTypes: string[] = [];
   locations: Location[] = [];
@@ -144,7 +144,7 @@ export class ManageBeverageComponent implements OnInit {
     this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  _refresh(always?: Function, next?: Function, error?: Function) {
+  _refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.settingsService.settings$.subscribe({
       next: (data: Settings) => {
         this.defaultType = data.beverages.defaultType;
@@ -180,7 +180,7 @@ export class ManageBeverageComponent implements OnInit {
                       error: (err: DataError) => {
                         this.displayError(err.message);
                         if (!_.isNil(error)) {
-                          error();
+                          error(err);
                         }
                         if (!_.isNil(always)) {
                           always();
@@ -201,7 +201,7 @@ export class ManageBeverageComponent implements OnInit {
               error: (err: DataError) => {
                 this.displayError(err.message);
                 if (!_.isNil(error)) {
-                  error();
+                  error(err);
                 }
                 if (!_.isNil(always)) {
                   always();
@@ -220,7 +220,7 @@ export class ManageBeverageComponent implements OnInit {
           error: (err: DataError) => {
             this.displayError(err.message);
             if (!_.isNil(error)) {
-              error();
+              error(err);
             }
             if (!_.isNil(always)) {
               always();
@@ -231,7 +231,7 @@ export class ManageBeverageComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         if (!_.isNil(error)) {
-          error();
+          error(err);
         }
         if (!_.isNil(always)) {
           always();
@@ -311,7 +311,7 @@ export class ManageBeverageComponent implements OnInit {
     }
 
     this.dataService.createBeverage(data).subscribe({
-      next: (beverage: Beverage) => {
+      next: (_: Beverage) => {
         this._refresh(
           () => {
             this.processing = false;
@@ -379,7 +379,7 @@ export class ManageBeverageComponent implements OnInit {
       );
     } else {
       this.dataService.updateBeverage(this.modifyBeverage.id, this.beverageChanges).subscribe({
-        next: (beverage: Beverage) => {
+        next: (_: Beverage) => {
           this.modifyBeverage.disableEditing();
           this._refresh(
             () => {
@@ -447,7 +447,7 @@ export class ManageBeverageComponent implements OnInit {
     return tapIds;
   }
 
-  clearNextTap(tapIds: string[], next: Function, error: Function): void {
+  clearNextTap(tapIds: string[], next: () => void, error: (err: DataError) => void): void {
     if (isNilOrEmpty(tapIds)) return next();
 
     const tapId = tapIds.pop();
@@ -462,9 +462,9 @@ export class ManageBeverageComponent implements OnInit {
     );
   }
 
-  clearTap(tapId: string, next: Function, error: Function): void {
+  clearTap(tapId: string, next: () => void, error: (err: DataError) => void): void {
     this.dataService.clearTap(tapId).subscribe({
-      next: (resp: any) => {
+      next: (_: any) => {
         next();
       },
       error: (err: DataError) => {
@@ -475,7 +475,7 @@ export class ManageBeverageComponent implements OnInit {
 
   _deleteBeverage(beverage: Beverage) {
     this.dataService.deleteBeverage(beverage.id).subscribe({
-      next: (resp: any) => {
+      next: (_: any) => {
         this.processing = false;
         this.loading = true;
         this._refresh(() => {
@@ -576,7 +576,7 @@ export class ManageBeverageComponent implements OnInit {
   }
 
   openImagePreviewDialog(imgUrl: string): void {
-    this.dialog.open(LocationImageDialog, {
+    this.dialog.open(LocationImageDialogComponent, {
       data: {
         imgUrl: imgUrl,
       },
@@ -766,7 +766,7 @@ export class ManageBeverageComponent implements OnInit {
     };
 
     this.dataService.createBatch(data).subscribe({
-      next: (batch: Batch) => {
+      next: (_: Batch) => {
         this._refresh(
           () => {
             this.processing = false;
@@ -809,7 +809,7 @@ export class ManageBeverageComponent implements OnInit {
       );
     } else {
       this.dataService.updateBatch(this.modifyBatch.id, this.batchChanges).subscribe({
-        next: (batch: Batch) => {
+        next: (_: Batch) => {
           this._refresh(
             () => {
               this.processing = false;

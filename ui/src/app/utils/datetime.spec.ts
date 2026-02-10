@@ -1,10 +1,10 @@
 import {
-  formatDate,
-  fromUnixTimestamp,
-  fromJsTimestamp,
-  toUnixTimestamp,
   convertUnixTimestamp,
+  formatDate,
+  fromJsTimestamp,
+  fromUnixTimestamp,
   toJsTimestamp,
+  toUnixTimestamp,
 } from './datetime';
 
 describe('datetime', () => {

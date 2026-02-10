@@ -1,13 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { LocationImageDialog } from './image-preview-dialog.component';
+import { LocationImageDialogComponent } from './image-preview-dialog.component';
 
 describe('LocationImageDialog', () => {
-  let component: LocationImageDialog;
-  let fixture: ComponentFixture<LocationImageDialog>;
-  let mockDialogRef: jasmine.SpyObj<MatDialogRef<LocationImageDialog>>;
+  let component: LocationImageDialogComponent;
+  let fixture: ComponentFixture<LocationImageDialogComponent>;
+  let mockDialogRef: jasmine.SpyObj<MatDialogRef<LocationImageDialogComponent>>;
 
   const defaultDialogData = {
     imageUrl: 'https://example.com/image.png',
@@ -18,7 +18,7 @@ describe('LocationImageDialog', () => {
     mockDialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
 
     await TestBed.configureTestingModule({
-      declarations: [LocationImageDialog],
+      declarations: [LocationImageDialogComponent],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: defaultDialogData },
@@ -28,7 +28,7 @@ describe('LocationImageDialog', () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(LocationImageDialog);
+    fixture = TestBed.createComponent(LocationImageDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -65,7 +65,7 @@ describe('LocationImageDialog', () => {
     it('should handle empty data', async () => {
       await TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
-        declarations: [LocationImageDialog],
+        declarations: [LocationImageDialogComponent],
         providers: [
           { provide: MatDialogRef, useValue: mockDialogRef },
           { provide: MAT_DIALOG_DATA, useValue: {} },
@@ -73,7 +73,7 @@ describe('LocationImageDialog', () => {
         schemas: [NO_ERRORS_SCHEMA],
       }).compileComponents();
 
-      const newFixture = TestBed.createComponent(LocationImageDialog);
+      const newFixture = TestBed.createComponent(LocationImageDialogComponent);
       const newComponent = newFixture.componentInstance;
       newFixture.detectChanges();
 
@@ -84,7 +84,7 @@ describe('LocationImageDialog', () => {
     it('should handle minimal data', async () => {
       await TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
-        declarations: [LocationImageDialog],
+        declarations: [LocationImageDialogComponent],
         providers: [
           { provide: MatDialogRef, useValue: mockDialogRef },
           { provide: MAT_DIALOG_DATA, useValue: { imgUrl: '' } },
@@ -92,7 +92,7 @@ describe('LocationImageDialog', () => {
         schemas: [NO_ERRORS_SCHEMA],
       }).compileComponents();
 
-      const newFixture = TestBed.createComponent(LocationImageDialog);
+      const newFixture = TestBed.createComponent(LocationImageDialogComponent);
       const newComponent = newFixture.componentInstance;
       newFixture.detectChanges();
 

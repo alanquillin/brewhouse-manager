@@ -1,13 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { ManageLocationsComponent } from './locations.component';
-import { DataService, DataError } from '../../_services/data.service';
+import { DataError, DataService } from '../../_services/data.service';
 import { Location } from '../../models/models';
+import { ManageLocationsComponent } from './locations.component';
 
 describe('ManageLocationsComponent', () => {
   let component: ManageLocationsComponent;
@@ -204,7 +204,9 @@ describe('ManageLocationsComponent', () => {
 
     it('should call updateLocation with changes', () => {
       component.save(location);
-      expect(mockDataService.updateLocation).toHaveBeenCalledWith('loc-1', { description: 'Updated Description' });
+      expect(mockDataService.updateLocation).toHaveBeenCalledWith('loc-1', {
+        description: 'Updated Description',
+      });
     });
 
     it('should disable editing on success', () => {

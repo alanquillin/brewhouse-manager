@@ -1,14 +1,14 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { ManageTapMonitorsComponent } from './tap-monitors.component';
 import { CurrentUserService } from '../../_services/current-user.service';
-import { DataService, DataError } from '../../_services/data.service';
-import { Location, TapMonitor, TapMonitorType, UserInfo } from '../../models/models';
+import { DataError, DataService } from '../../_services/data.service';
+import { Location, TapMonitor, TapMonitorType } from '../../models/models';
+import { ManageTapMonitorsComponent } from './tap-monitors.component';
 
 describe('ManageTapMonitorsComponent', () => {
   let component: ManageTapMonitorsComponent;
@@ -34,7 +34,11 @@ describe('ManageTapMonitorsComponent', () => {
 
   const mockMonitorTypes: TapMonitorType[] = [
     { type: 'plaato-blynk', description: 'Plaato Blynk', supportsDiscovery: false } as any,
-    { type: 'keg-volume-monitor-weight', description: 'KVM Weight', supportsDiscovery: true } as any,
+    {
+      type: 'keg-volume-monitor-weight',
+      description: 'KVM Weight',
+      supportsDiscovery: true,
+    } as any,
     { type: 'kegtron-pro', description: 'Kegtron Pro', supportsDiscovery: true } as any,
   ];
 
@@ -444,10 +448,9 @@ describe('ManageTapMonitorsComponent', () => {
 
     it('should call updateTapMonitor', () => {
       component.save();
-      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith(
-        'tm-1',
-        { name: 'Updated Name' }
-      );
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        name: 'Updated Name',
+      });
     });
 
     it('should disable editing on success', () => {
@@ -603,7 +606,17 @@ describe('ManageTapMonitorsComponent', () => {
       component.modifyTapMonitor = new TapMonitor({ meta: {} } as any);
       component.modifyTapMonitor.enableEditing();
       component.modifyTapMonitor.editValues.monitorType = 'keg-volume-monitor-weight';
-      mockDataService.discoverTapMonitors.and.returnValue(of([{ id: 'disc-1', name: 'Discovered', model: 'test-model', portNum: 1, token: 'test-token' }]));
+      mockDataService.discoverTapMonitors.and.returnValue(
+        of([
+          {
+            id: 'disc-1',
+            name: 'Discovered',
+            model: 'test-model',
+            portNum: 1,
+            token: 'test-token',
+          },
+        ])
+      );
     });
 
     it('should set tapMonitorDiscoveryProcessing to true', () => {

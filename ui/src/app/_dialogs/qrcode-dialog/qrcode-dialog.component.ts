@@ -6,22 +6,22 @@ import { isNilOrEmpty } from 'src/app/utils/helpers';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'qrcode-dialog',
+  selector: 'app-qrcode-dialog',
   templateUrl: 'qrcode-dialog.component.html',
   styleUrls: ['qrcode-dialog.component.scss'],
   standalone: false,
 })
-export class LocationQRCodeDialog {
+export class LocationQRCodeDialogComponent {
   url: string;
   title: string;
   width: number;
 
-  isNilOrEmpty: Function = isNilOrEmpty;
+  isNilOrEmpty = isNilOrEmpty;
   _ = _;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
-    public dialogRef: MatDialogRef<LocationQRCodeDialog>
+    public dialogRef: MatDialogRef<LocationQRCodeDialogComponent>
   ) {
     this.url = data.url;
     this.title = _.get(data, 'title', '');

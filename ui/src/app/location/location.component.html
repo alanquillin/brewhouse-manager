@@ -40,7 +40,7 @@
               <div>
                 <div class="tap-display tap-display-empty">
                   <div class="tap-image">
-                    <img src="assets/img/empty_tap.png" />
+                    <img src="assets/img/empty_tap.png" alt="Empty Tap" />
                   </div>
                   <div class="tap-details">
                     <p class="title">Sorry, currently nothing assigned to the tap :(</p>
@@ -70,7 +70,11 @@
                     }
                     @if (_.isNil(tap.tapMonitor)) {
                       <div class="tap-image">
-                        <img src="assets/img/generic_beer.png" class="srm-{{ getSrm(tap) }}" />
+                        <img
+                          src="assets/img/generic_beer.png"
+                          class="srm-{{ getSrm(tap) }}"
+                          alt="Generic Beer"
+                        />
                       </div>
                     }
                     <div class="tap-details">
@@ -134,7 +138,7 @@
                     @if (!isNilOrEmpty(getImageUrl(tap))) {
                       <div class="tap-logo">
                         <a (click)="openImageDialog(getImageUrl(tap))">
-                          <img src="{{ getImageUrl(tap) }}" />
+                          <img src="{{ getImageUrl(tap) }}" alt="Tap Logo" />
                         </a>
                       </div>
                     }
@@ -161,7 +165,7 @@
                         }
                         @if (_.isNil(tap.tapMonitor)) {
                           <div class="tap-image">
-                            <img src="assets/img/generic_cold_brew.png" />
+                            <img src="assets/img/generic_cold_brew.png" alt="Generic Cold Brew" />
                           </div>
                         }
                         <div class="tap-details">
@@ -235,7 +239,7 @@
                         @if (!isNilOrEmpty(getImageUrl(tap))) {
                           <div class="tap-logo tap-logo-cold-brew">
                             <a (click)="openImageDialog(getImageUrl(tap))">
-                              <img src="{{ getImageUrl(tap) }}" />
+                              <img src="{{ getImageUrl(tap) }}" alt="Tap Logo" />
                             </a>
                           </div>
                         }

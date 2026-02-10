@@ -1,11 +1,11 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
 
+import { DataError, DataService } from '../../_services/data.service';
 import { ImageSelectorDialogComponent } from './image-selector-dialog.component';
-import { DataService, DataError } from '../../_services/data.service';
 
 describe('ImageSelectorDialogComponent', () => {
   let component: ImageSelectorDialogComponent;
@@ -16,9 +16,12 @@ describe('ImageSelectorDialogComponent', () => {
 
   // Use data URIs to avoid 404 warnings from karma web server
   // Each URI is slightly different to avoid NG0955 duplicate key warnings
-  const mockImageDataUri1 = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-  const mockImageDataUri2 = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAAA///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-  const mockImageDataUri3 = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAP////yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  const mockImageDataUri1 =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  const mockImageDataUri2 =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAAA///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  const mockImageDataUri3 =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAP////yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
   const defaultDialogData = {
     currentImage: mockImageDataUri1,

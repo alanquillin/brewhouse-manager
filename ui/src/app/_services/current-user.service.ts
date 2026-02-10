@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable, Subscription, of } from 'rxjs';
 import { catchError, filter, switchMap, take, tap } from 'rxjs/operators';
 
 import { UserInfo } from '../models/models';
-import { DataService, DataError } from './data.service';
+import { DataError, DataService } from './data.service';
 
 /**
  * Service that caches the current user data.

@@ -1,4 +1,11 @@
-import { deepEqual, isObject, isNilOrEmpty, toBoolean, openFullscreen, closeFullscreen } from './helpers';
+import {
+  closeFullscreen,
+  deepEqual,
+  isNilOrEmpty,
+  isObject,
+  openFullscreen,
+  toBoolean,
+} from './helpers';
 
 describe('helpers', () => {
   describe('isObject', () => {

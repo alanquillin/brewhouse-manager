@@ -1,16 +1,16 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of, throwError, BehaviorSubject } from 'rxjs';
+import { Router } from '@angular/router';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 
-import { ManageBeverageComponent } from './beverage.component';
 import { CurrentUserService } from '../../_services/current-user.service';
-import { DataService, DataError } from '../../_services/data.service';
+import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
-import { Batch, Beverage, ImageTransition, Location, Settings, UserInfo } from '../../models/models';
+import { Batch, Beverage, ImageTransition, Location } from '../../models/models';
+import { ManageBeverageComponent } from './beverage.component';
 
 describe('ManageBeverageComponent', () => {
   let component: ManageBeverageComponent;
@@ -765,7 +765,8 @@ describe('ManageBeverageComponent', () => {
 
     it('should truncate long descriptions', () => {
       const beverage = new Beverage({
-        description: 'This is a very long description that should be truncated because it exceeds 48 characters',
+        description:
+          'This is a very long description that should be truncated because it exceeds 48 characters',
       } as any);
       const result = component.getDescriptionDisplay(beverage);
       expect(result.length).toBeLessThanOrEqual(51); // 48 + "..."

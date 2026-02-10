@@ -1,14 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { Router } from '@angular/router';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { ManageComponent } from './manage.component';
 import { CurrentUserService } from '../_services/current-user.service';
 import { DataError } from '../_services/data.service';
 import { SettingsService } from '../_services/settings.service';
-import { UserInfo } from '../models/models';
+import { ManageComponent } from './manage.component';
 
 describe('ManageComponent', () => {
   let component: ManageComponent;
@@ -145,7 +144,7 @@ describe('ManageComponent', () => {
     });
 
     it('should call getSetting with correct key', () => {
-      component.plaatoKegEnabled;
+      component.plaatoKegEnabled; /* eslint-disable-line @typescript-eslint/no-unused-expressions */
       expect(mockSettingsService.getSetting).toHaveBeenCalledWith('plaato_keg_devices.enabled');
     });
   });

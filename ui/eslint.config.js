@@ -39,7 +39,7 @@ module.exports = tseslint.config(
         {
           type: "attribute",
           prefix: "app",
-          style: "camelCase",
+          style: "kebab-case",
         },
       ],
       "@angular-eslint/component-selector": [
@@ -62,6 +62,7 @@ module.exports = tseslint.config(
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "@typescript-eslint/no-empty-function": "warn",
+      "@angular-eslint/no-empty-lifecycle-method": "warn",
       // Prettier integration
       "prettier/prettier": "warn",
     },

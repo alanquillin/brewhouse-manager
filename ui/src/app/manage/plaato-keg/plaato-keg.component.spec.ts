@@ -1,14 +1,14 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
 
-import { ManagePlaatoKegComponent } from './plaato-keg.component';
 import { CurrentUserService } from '../../_services/current-user.service';
-import { DataService, DataError } from '../../_services/data.service';
+import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
-import { PlaatoKegDevice, UserInfo } from '../../models/models';
+import { PlaatoKegDevice } from '../../models/models';
+import { ManagePlaatoKegComponent } from './plaato-keg.component';
 
 describe('ManagePlaatoKegComponent', () => {
   let component: ManagePlaatoKegComponent;

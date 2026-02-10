@@ -51,7 +51,7 @@ export class ManageLocationsComponent implements OnInit {
     this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  _refresh(always?: Function, next?: Function, error?: Function) {
+  _refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = [];
@@ -72,7 +72,7 @@ export class ManageLocationsComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         if (!_.isNil(error)) {
-          error();
+          error(err);
         }
         if (!_.isNil(always)) {
           always();
@@ -159,7 +159,7 @@ export class ManageLocationsComponent implements OnInit {
     this.dataService
       .createLocation({ name: this.addLocation.name, description: this.addLocation.description })
       .subscribe({
-        next: (data: Location) => {
+        next: (_: Location) => {
           this._refresh(
             () => {
               this.processing = false;

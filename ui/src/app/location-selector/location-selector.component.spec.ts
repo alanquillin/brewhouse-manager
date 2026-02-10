@@ -1,12 +1,12 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { Router } from '@angular/router';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { LocationSelectorComponent } from './location-selector.component';
-import { DataService, DataError } from '../_services/data.service';
+import { DataError, DataService } from '../_services/data.service';
 import { Location } from '../models/models';
+import { LocationSelectorComponent } from './location-selector.component';
 
 describe('LocationSelectorComponent', () => {
   let component: LocationSelectorComponent;

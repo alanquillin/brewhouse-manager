@@ -80,7 +80,7 @@ export class ManageUsersComponent implements OnInit {
     this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  _refresh(always?: Function, next?: Function, error?: Function) {
+  _refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = [];
@@ -105,7 +105,7 @@ export class ManageUsersComponent implements OnInit {
           error: (err: DataError) => {
             this.displayError(err.message);
             if (!_.isNil(error)) {
-              error();
+              error(err);
             }
             if (!_.isNil(always)) {
               always();
@@ -124,7 +124,7 @@ export class ManageUsersComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         if (!_.isNil(error)) {
-          error();
+          error(err);
         }
         if (!_.isNil(always)) {
           always();
@@ -241,7 +241,7 @@ export class ManageUsersComponent implements OnInit {
 
     this.processing = true;
     this.dataService.updateUser(this.modifyUser.id, this.modifyUser.changes).subscribe({
-      next: (user: UserInfo) => {
+      next: (_: UserInfo) => {
         return this.saveLocations(this.modifyUser, () => {
           this.modifyUser.disableEditing();
           this._refresh(
@@ -261,7 +261,7 @@ export class ManageUsersComponent implements OnInit {
     });
   }
 
-  saveLocations(user: UserInfo, next: Function): void {
+  saveLocations(user: UserInfo, next: () => void): void {
     if (!this.selectedLocationChanges()) {
       next();
       return;
@@ -275,7 +275,7 @@ export class ManageUsersComponent implements OnInit {
     });
 
     this.dataService.updateUserLocations(user.id, { locationIds: locations }).subscribe({
-      next: (res: any) => {
+      next: (_: any) => {
         next();
       },
       error: (err: DataError) => {
@@ -294,7 +294,7 @@ export class ManageUsersComponent implements OnInit {
     if (confirm(`Are you sure you want to delete user '${user.email}'?`)) {
       this.processing = true;
       this.dataService.deleteUser(user.id).subscribe({
-        next: (resp: any) => {
+        next: (_: any) => {
           this.processing = false;
           this.loading = true;
           this._refresh(() => {

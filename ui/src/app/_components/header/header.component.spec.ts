@@ -1,15 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { HeaderComponent } from './header.component';
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
 import { UserInfo } from '../../models/models';
+import { HeaderComponent } from './header.component';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;

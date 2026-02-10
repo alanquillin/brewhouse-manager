@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { FileUploadDialogComponent } from './file-upload-dialog.component';
 import { ExtendedFile } from '../../_components/file-uploader/file-uploader.component';
+import { FileUploadDialogComponent } from './file-upload-dialog.component';
 
 describe('FileUploadDialogComponent', () => {
   let component: FileUploadDialogComponent;

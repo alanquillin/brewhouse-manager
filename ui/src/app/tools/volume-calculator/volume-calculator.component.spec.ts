@@ -1,10 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatSelectModule } from '@angular/material/select';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { VolumeCalculatorComponent } from './volume-calculator.component';
 
@@ -226,7 +226,7 @@ describe('VolumeCalculatorComponent', () => {
     });
 
     it('should account for specific gravity', () => {
-      component.calcVolume(25, 5, 1.050);
+      component.calcVolume(25, 5, 1.05);
       // liquidWeight = 25 - 5 = 20kg
       // specificWeight = 20 / 1.050 = 19.047619...
       expect(component.resultsL).toBeCloseTo(19.047619, 4);
@@ -252,7 +252,7 @@ describe('VolumeCalculatorComponent', () => {
     });
 
     it('should account for specific gravity', () => {
-      component.calcWeight(19, 5, 1.050);
+      component.calcWeight(19, 5, 1.05);
       // liquidWeight = 1.050 * 19 = 19.95
       // weight = 19.95 + 5 = 24.95
       expect(component.resultsKgs).toBeCloseTo(24.95, 5);

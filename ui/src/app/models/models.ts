@@ -260,7 +260,7 @@ export class ExtToolBase extends ImageTransitionalBase {
   getVal(
     key: string,
     batch?: Batch | undefined,
-    transformFn?: Function,
+    transformFn?: (v: any) => any,
     brewToolTransformFn?: any
   ): any {
     if (batch !== undefined) {

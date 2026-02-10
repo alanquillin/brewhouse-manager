@@ -100,7 +100,13 @@
               @if (!_.isEmpty(element.profilePic)) {
                 <span>
                   <ng-template #popupContent>
-                    <div><img class="user-image-preview" src="{{ element.profilePic }}" /></div>
+                    <div>
+                      <img
+                        class="user-image-preview"
+                        src="{{ element.profilePic }}"
+                        alt="Profile Pic"
+                      />
+                    </div>
                   </ng-template>
                   <button
                     mat-icon-button

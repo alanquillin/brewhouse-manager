@@ -15,7 +15,7 @@ import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 
 import { FileUploadDialogComponent } from '../../_dialogs/file-upload-dialog/file-upload-dialog.component';
-import { LocationImageDialog } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component';
+import { LocationImageDialogComponent } from '../../_dialogs/image-preview-dialog/image-preview-dialog.component';
 import { ImageSelectorDialogComponent } from '../../_dialogs/image-selector-dialog/image-selector-dialog.component';
 
 import {
@@ -53,7 +53,7 @@ export class ManageBeerComponent implements OnInit {
   modifyBeer: Beer = new Beer();
   selectedBatchBeer: Beer = new Beer();
   modifyBatch: Batch = new Batch();
-  isNilOrEmpty: Function = isNilOrEmpty;
+  isNilOrEmpty = isNilOrEmpty;
   imageTransitionsToDelete: string[] = [];
   locations: Location[] = [];
   selectedLocationFilters: string[] = [];
@@ -227,7 +227,7 @@ export class ManageBeerComponent implements OnInit {
     this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  _refresh(always?: Function, next?: Function, error?: Function) {
+  _refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = [];
@@ -255,7 +255,7 @@ export class ManageBeerComponent implements OnInit {
                 error: (err: DataError) => {
                   this.displayError(err.message);
                   if (!_.isNil(error)) {
-                    error();
+                    error(err);
                   }
                   if (!_.isNil(always)) {
                     always();
@@ -276,7 +276,7 @@ export class ManageBeerComponent implements OnInit {
           error: (err: DataError) => {
             this.displayError(err.message);
             if (!_.isNil(error)) {
-              error();
+              error(err);
             }
             if (!_.isNil(always)) {
               always();
@@ -295,7 +295,7 @@ export class ManageBeerComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         if (!_.isNil(error)) {
-          error();
+          error(err);
         }
         if (!_.isNil(always)) {
           always();
@@ -535,13 +535,13 @@ export class ManageBeerComponent implements OnInit {
     }
   }
 
-  beerBatchesAssocTaps(beer: Beer): string[] {
+  beerBatchesAssocTaps(_: Beer): string[] {
     const tapIds: string[] = [];
 
     return tapIds;
   }
 
-  clearNextTap(tapIds: string[], next: Function, error: Function): void {
+  clearNextTap(tapIds: string[], next: () => void, error: (err: DataError) => void): void {
     if (isNilOrEmpty(tapIds)) return next();
 
     const tapId = tapIds.pop();
@@ -556,9 +556,9 @@ export class ManageBeerComponent implements OnInit {
     );
   }
 
-  clearTap(tapId: string, next: Function, error: Function): void {
+  clearTap(tapId: string, next: () => void, error: (err: DataError) => void): void {
     this.dataService.clearTap(tapId).subscribe({
-      next: (resp: any) => {
+      next: (_: any) => {
         next();
       },
       error: (err: DataError) => {
@@ -570,7 +570,7 @@ export class ManageBeerComponent implements OnInit {
   _deleteBeer(beer: Beer): void {
     this.processing = true;
     this.dataService.deleteBeer(beer.id).subscribe({
-      next: (resp: any) => {
+      next: (_: any) => {
         this.processing = false;
         this.loading = true;
         this._refresh(() => {
@@ -629,7 +629,7 @@ export class ManageBeerComponent implements OnInit {
     this.filteredBeers = filteredData;
   }
 
-  beerBrewToolChanges(event?: any) {
+  beerBrewToolChanges(_?: any) {
     this.addMissingBeerMeta();
     this.reRunBeerValidation();
   }
@@ -732,7 +732,7 @@ export class ManageBeerComponent implements OnInit {
   }
 
   openImagePreviewDialog(imgUrl: string): void {
-    this.dialog.open(LocationImageDialog, {
+    this.dialog.open(LocationImageDialogComponent, {
       data: {
         imgUrl: imgUrl,
       },
@@ -902,7 +902,7 @@ export class ManageBeerComponent implements OnInit {
     return false;
   }
 
-  batchBrewToolChanges(event?: any) {
+  batchBrewToolChanges(_?: any) {
     this.addMissingBatchMeta();
     this.reRunBatchValidation();
   }
@@ -1029,7 +1029,7 @@ export class ManageBeerComponent implements OnInit {
 
     this.processing = true;
     this.dataService.createBatch(data).subscribe({
-      next: (batch: Batch) => {
+      next: (_: Batch) => {
         this._refresh(
           () => {
             this.processing = false;
@@ -1072,7 +1072,7 @@ export class ManageBeerComponent implements OnInit {
       );
     } else {
       this.dataService.updateBatch(this.modifyBatch.id, this.batchChanges).subscribe({
-        next: (batch: Batch) => {
+        next: (_: Batch) => {
           this._refresh(
             () => {
               this.processing = false;
@@ -1140,7 +1140,7 @@ export class ManageBeerComponent implements OnInit {
     this.dataService
       .updateBatch(batch.id, { archivedOn: convertUnixTimestamp(Date.now()) })
       .subscribe({
-        next: (resp: any) => {
+        next: (_: any) => {
           this.processing = false;
           this.loading = true;
           this._refresh(() => {
@@ -1161,7 +1161,7 @@ export class ManageBeerComponent implements OnInit {
       this.processing = true;
       this.loadingBatches = true;
       this.dataService.updateBatch(batch.id, { archivedOn: null }).subscribe({
-        next: (resp: any) => {
+        next: (_: any) => {
           this.processing = false;
           this.loading = true;
           this._refresh(() => {

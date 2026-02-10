@@ -73,7 +73,7 @@ export class ManageTapsComponent implements OnInit {
     this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  refresh(always?: Function, next?: Function, error?: Function) {
+  refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.dataService.getTaps().subscribe({
       next: (taps: Tap[]) => {
         this.taps = [];
@@ -104,7 +104,7 @@ export class ManageTapsComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         if (!_.isNil(error)) {
-          error();
+          error(err);
         }
         if (!_.isNil(always)) {
           always();
@@ -121,7 +121,7 @@ export class ManageTapsComponent implements OnInit {
     });
   }
 
-  _refreshAll(always?: Function, next?: Function, error?: Function) {
+  _refreshAll(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = _.sortBy(locations, [
@@ -166,7 +166,7 @@ export class ManageTapsComponent implements OnInit {
                       error: (err: DataError) => {
                         this.displayError(err.message);
                         if (!_.isNil(error)) {
-                          error();
+                          error(err);
                         }
                         if (!_.isNil(always)) {
                           always();
@@ -177,7 +177,7 @@ export class ManageTapsComponent implements OnInit {
                   error: (err: DataError) => {
                     this.displayError(err.message);
                     if (!_.isNil(error)) {
-                      error();
+                      error(err);
                     }
                     if (!_.isNil(always)) {
                       always();
@@ -188,7 +188,7 @@ export class ManageTapsComponent implements OnInit {
               error: (err: DataError) => {
                 this.displayError(err.message);
                 if (!_.isNil(error)) {
-                  error();
+                  error(err);
                 }
                 if (!_.isNil(always)) {
                   always();
@@ -199,7 +199,7 @@ export class ManageTapsComponent implements OnInit {
           error: (err: DataError) => {
             this.displayError(err.message);
             if (!_.isNil(error)) {
-              error();
+              error(err);
             }
             if (!_.isNil(always)) {
               always();
@@ -210,7 +210,7 @@ export class ManageTapsComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         if (!_.isNil(error)) {
-          error();
+          error(err);
         }
         if (!_.isNil(always)) {
           always();
@@ -290,7 +290,7 @@ export class ManageTapsComponent implements OnInit {
 
     this.processing = true;
     this.dataService.createTap(data).subscribe({
-      next: (tap: Tap) => {
+      next: (_: Tap) => {
         this.refresh(
           () => {
             this.processing = false;
@@ -337,7 +337,7 @@ export class ManageTapsComponent implements OnInit {
 
     this.processing = true;
     this.dataService.updateTap(this.modifyTap.id, updateData).subscribe({
-      next: (tap: Tap) => {
+      next: (_: Tap) => {
         this.modifyTap.disableEditing();
         this.refresh(
           () => {
@@ -368,7 +368,7 @@ export class ManageTapsComponent implements OnInit {
     ) {
       this.processing = true;
       this.dataService.deleteTap(tap.id).subscribe({
-        next: (resp: any) => {
+        next: (_: any) => {
           this.processing = false;
           this.loading = true;
           this.refresh(() => {
@@ -478,7 +478,7 @@ export class ManageTapsComponent implements OnInit {
     if (confirm(`Are you sure you want to clear the tap?`)) {
       this.processing = true;
       this.dataService.clearTap(tap.id).subscribe({
-        next: (resp: any) => {
+        next: (_: any) => {
           this.processing = false;
           this.loading = true;
           this.refresh(() => {

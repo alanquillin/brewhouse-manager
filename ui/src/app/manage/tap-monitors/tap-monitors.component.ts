@@ -77,7 +77,7 @@ export class ManageTapMonitorsComponent implements OnInit {
     this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  _refresh(always?: Function, next?: Function, error?: Function) {
+  _refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.dataService.getTapMonitors(undefined, true).subscribe({
       next: (tapMonitors: TapMonitor[]) => {
         this.tapMonitors = [];
@@ -90,7 +90,7 @@ export class ManageTapMonitorsComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         if (!_.isNil(error)) {
-          error();
+          error(err);
         }
         if (!_.isNil(always)) {
           always();
@@ -107,7 +107,7 @@ export class ManageTapMonitorsComponent implements OnInit {
     });
   }
 
-  refreshAll(always?: Function, next?: Function, error?: Function) {
+  refreshAll(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
         this.locations = _.sortBy(locations, [
@@ -123,7 +123,7 @@ export class ManageTapMonitorsComponent implements OnInit {
           error: (err: DataError) => {
             this.displayError(err.message);
             if (!_.isNil(error)) {
-              error();
+              error(err);
             }
             if (!_.isNil(always)) {
               always();
@@ -134,7 +134,7 @@ export class ManageTapMonitorsComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         if (!_.isNil(error)) {
-          error();
+          error(err);
         }
         if (!_.isNil(always)) {
           always();
@@ -216,7 +216,7 @@ export class ManageTapMonitorsComponent implements OnInit {
       meta: meta,
     };
     this.dataService.createTapMonitor(data).subscribe({
-      next: (tapMonitor: TapMonitor) => {
+      next: (_: TapMonitor) => {
         this._refresh(
           () => {
             this.processing = false;
@@ -273,7 +273,7 @@ export class ManageTapMonitorsComponent implements OnInit {
     this.dataService
       .updateTapMonitor(this.modifyTapMonitor.id, this.modifyTapMonitor.changes)
       .subscribe({
-        next: (res: any) => {
+        next: (_: any) => {
           this.modifyTapMonitor.disableEditing();
           this._refresh(
             () => {
@@ -300,7 +300,7 @@ export class ManageTapMonitorsComponent implements OnInit {
     if (confirm(`Are you sure you want to delete tap monitor '${tapMonitor.name}'?`)) {
       this.processing = true;
       this.dataService.deleteTapMonitor(tapMonitor.id).subscribe({
-        next: (resp: any) => {
+        next: (_: any) => {
           this.processing = false;
           this.loading = true;
           this._refresh(() => {
@@ -373,7 +373,7 @@ export class ManageTapMonitorsComponent implements OnInit {
     }
   }
 
-  discoverTapMonitors(next?: Function) {
+  discoverTapMonitors(next?: () => void) {
     this.tapMonitorDiscoveryData = [];
     this.tapMonitorDiscoveryProcessing = true;
     this.dataService.discoverTapMonitors(this.modifyTapMonitor.editValues.monitorType).subscribe({

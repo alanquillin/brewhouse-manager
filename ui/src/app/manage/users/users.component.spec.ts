@@ -1,14 +1,14 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { ManageUsersComponent } from './users.component';
 import { CurrentUserService } from '../../_services/current-user.service';
-import { DataService, DataError } from '../../_services/data.service';
+import { DataError, DataService } from '../../_services/data.service';
 import { Location, UserInfo } from '../../models/models';
+import { ManageUsersComponent } from './users.component';
 
 describe('ManageUsersComponent', () => {
   let component: ManageUsersComponent;
@@ -621,7 +621,9 @@ describe('ManageUsersComponent', () => {
 
         component.savePassword();
 
-        expect(mockDataService.updateUser).toHaveBeenCalledWith('user-1', { password: 'StrongPass1!' });
+        expect(mockDataService.updateUser).toHaveBeenCalledWith('user-1', {
+          password: 'StrongPass1!',
+        });
       });
 
       it('should set changePassword to false on success', () => {

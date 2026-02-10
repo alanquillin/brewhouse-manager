@@ -59,7 +59,7 @@ export class ProfileComponent implements OnInit {
     this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  refresh(always?: Function, next?: Function, error?: Function) {
+  refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.processing = true;
     this.currentUserService.getCurrentUser().subscribe({
       next: (userInfo: UserInfo | null) => {
@@ -76,7 +76,7 @@ export class ProfileComponent implements OnInit {
         this.displayError(err.message);
         this.processing = false;
         if (!_.isNil(error)) {
-          error();
+          error(err);
         }
         if (!_.isNil(always)) {
           always();
@@ -202,7 +202,7 @@ export class ProfileComponent implements OnInit {
     this.processing = true;
     if (confirm(`Are you sure you want to delete your API key?`)) {
       this.dataService.deleteUserAPIKey(this.userInfo.id).subscribe({
-        next: (resp: string) => {
+        next: (_: string) => {
           this.userInfo.apiKey = '';
           this.processing = false;
         },
@@ -223,7 +223,7 @@ export class ProfileComponent implements OnInit {
       .then(() => {
         return;
       })
-      .catch(err => {
+      .catch(_ => {
         this.displayError('Error trying to copy data to clipboard');
       });
   }

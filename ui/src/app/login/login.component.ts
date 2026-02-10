@@ -61,7 +61,7 @@ export class LoginComponent implements OnInit {
   submit(): void {
     this.processing = true;
     this.dataService.login(this.email, this.password).subscribe({
-      next: (data: any) => {
+      next: (_: any) => {
         window.location.href = '/manage';
       },
       error: (err: DataError) => {

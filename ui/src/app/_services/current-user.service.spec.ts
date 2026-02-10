@@ -1,10 +1,10 @@
-import { TestBed } from '@angular/core/testing';
 import { EventEmitter } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
-import { CurrentUserService } from './current-user.service';
-import { DataService, DataError } from './data.service';
 import { UserInfo } from '../models/models';
+import { CurrentUserService } from './current-user.service';
+import { DataError, DataService } from './data.service';
 
 describe('CurrentUserService', () => {
   let service: CurrentUserService;
@@ -250,7 +250,7 @@ describe('CurrentUserService', () => {
 
   describe('currentUser$ observable', () => {
     it('should emit null initially', (done: DoneFn) => {
-      let emissions: (UserInfo | null)[] = [];
+      const emissions: (UserInfo | null)[] = [];
       service.currentUser$.subscribe(user => {
         emissions.push(user);
         if (emissions.length === 1) {
@@ -261,7 +261,7 @@ describe('CurrentUserService', () => {
     });
 
     it('should emit user after getCurrentUser is called', (done: DoneFn) => {
-      let emissions: (UserInfo | null)[] = [];
+      const emissions: (UserInfo | null)[] = [];
       service.currentUser$.subscribe(user => {
         emissions.push(user);
       });

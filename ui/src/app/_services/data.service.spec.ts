@@ -1,8 +1,8 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
 
-import { DataService, DataError } from './data.service';
 import { WINDOW } from '../window.provider';
+import { DataError, DataService } from './data.service';
 
 describe('DataService', () => {
   let service: DataService;
@@ -393,7 +393,9 @@ describe('DataService', () => {
     it('should GET tap monitors with tap details', () => {
       service.getTapMonitors(undefined, true).subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/tap_monitors?include_tap_details=true');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/tap_monitors?include_tap_details=true'
+      );
       expect(req.request.method).toBe('GET');
       req.flush([]);
     });
@@ -419,7 +421,9 @@ describe('DataService', () => {
     it('should GET tap monitor with tap details', () => {
       service.getTapMonitor('mon1', true).subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/tap_monitors/mon1?include_tap_details=true');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/tap_monitors/mon1?include_tap_details=true'
+      );
       expect(req.request.method).toBe('GET');
       req.flush({});
     });
@@ -467,7 +471,9 @@ describe('DataService', () => {
     it('should GET specific tap monitor data', () => {
       service.getTapMonitorData('mon1', 'temperature').subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/tap_monitors/mon1/data/temperature');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/tap_monitors/mon1/data/temperature'
+      );
       expect(req.request.method).toBe('GET');
       req.flush({});
     });
@@ -475,7 +481,9 @@ describe('DataService', () => {
     it('should GET percent beer remaining', () => {
       service.getPercentBeerRemaining('mon1').subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/tap_monitors/mon1/data/percent_beer_remaining');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/tap_monitors/mon1/data/percent_beer_remaining'
+      );
       expect(req.request.method).toBe('GET');
       req.flush(75);
     });
@@ -483,7 +491,9 @@ describe('DataService', () => {
     it('should GET total beer remaining', () => {
       service.getTotalBeerRemaining('mon1').subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/tap_monitors/mon1/data/total_beer_remaining');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/tap_monitors/mon1/data/total_beer_remaining'
+      );
       expect(req.request.method).toBe('GET');
       req.flush(5.5);
     });
@@ -491,7 +501,9 @@ describe('DataService', () => {
     it('should GET beer remaining unit', () => {
       service.getBeerRemainingUnit('mon1').subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/tap_monitors/mon1/data/beer_remaining_unit');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/tap_monitors/mon1/data/beer_remaining_unit'
+      );
       expect(req.request.method).toBe('GET');
       req.flush('gallons');
     });
@@ -499,7 +511,9 @@ describe('DataService', () => {
     it('should GET firmware version', () => {
       service.getTapMonitorFirmwareVersion('mon1').subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/tap_monitors/mon1/data/firmware_version');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/tap_monitors/mon1/data/firmware_version'
+      );
       expect(req.request.method).toBe('GET');
       req.flush('1.0.0');
     });
@@ -573,7 +587,9 @@ describe('DataService', () => {
     it('should set plaato keg unit type', () => {
       service.setPlaatoKegUnitType('dev1', 'metric').subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/devices/plaato_keg/dev1/set/unit_type');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/plaato_keg/dev1/set/unit_type'
+      );
       expect(req.request.body).toEqual({ value: 'metric' });
       req.flush({});
     });
@@ -581,7 +597,9 @@ describe('DataService', () => {
     it('should set plaato keg unit mode', () => {
       service.setPlaatoKegUnitMode('dev1', 'volume').subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/devices/plaato_keg/dev1/set/unit_mode');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/plaato_keg/dev1/set/unit_mode'
+      );
       expect(req.request.body).toEqual({ value: 'volume' });
       req.flush({});
     });
@@ -655,7 +673,9 @@ describe('DataService', () => {
     it('should generate user API key', () => {
       service.generateUserAPIKey('user1').subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/users/user1/api_key/generate?regen=true');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/users/user1/api_key/generate?regen=true'
+      );
       expect(req.request.method).toBe('POST');
       req.flush({});
     });
@@ -766,7 +786,9 @@ describe('DataService', () => {
     it('should GET beverage with tap details', () => {
       service.getBeverage('bev1', true).subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/beverages/bev1?include_tap_details');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/beverages/bev1?include_tap_details'
+      );
       expect(req.request.method).toBe('GET');
       req.flush({});
     });
@@ -886,7 +908,9 @@ describe('DataService', () => {
     it('should GET beer batches with tap details', () => {
       service.getBeerBatches('beer1', true).subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/beers/beer1/batches?include_tap_details=true');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/beers/beer1/batches?include_tap_details=true'
+      );
       expect(req.request.method).toBe('GET');
       req.flush([]);
     });
@@ -894,7 +918,9 @@ describe('DataService', () => {
     it('should GET beer batches with archived', () => {
       service.getBeerBatches('beer1', false, true).subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/beers/beer1/batches?include_archived=true');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/beers/beer1/batches?include_archived=true'
+      );
       expect(req.request.method).toBe('GET');
       req.flush([]);
     });
@@ -938,7 +964,9 @@ describe('DataService', () => {
     it('should GET batch with tap details', () => {
       service.getBatch('batch1', true).subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/batches/batch1?include_tap_details=true');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/batches/batch1?include_tap_details=true'
+      );
       expect(req.request.method).toBe('GET');
       req.flush({});
     });

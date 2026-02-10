@@ -101,7 +101,7 @@ export class ManagePlaatoKegComponent implements OnInit {
     });
   }
 
-  refreshAll(always?: Function): void {
+  refreshAll(always?: () => void): void {
     this.dataService.getPlaatoKegDevices().subscribe({
       next: (devices: PlaatoKegDevice[]) => {
         this.devices = devices.map(d => new PlaatoKegDevice(d));
@@ -129,7 +129,7 @@ export class ManagePlaatoKegComponent implements OnInit {
     });
   }
 
-  _refreshModifyDevice(next?: Function): void {
+  _refreshModifyDevice(next?: () => void): void {
     if (isNilOrEmpty(this.modifyDevice)) {
       return;
     }
@@ -162,7 +162,7 @@ export class ManagePlaatoKegComponent implements OnInit {
     this.dataService
       .updatePlaatoKegDevice(this.modifyDevice.id, { name: this.modifyDevice.editValues.name })
       .subscribe({
-        next: (resp: any) => {
+        next: (_: any) => {
           this._refreshModifyDevice(() => {
             this.processing = false;
           });
@@ -178,7 +178,7 @@ export class ManagePlaatoKegComponent implements OnInit {
     if (confirm(`Are you sure you want to delete plaato device ${device.id} (${device.name})?`)) {
       this.processing = true;
       this.dataService.deletePlaatoKegDevice(device.id).subscribe({
-        next: (resp: any) => {
+        next: (_: any) => {
           this.loading = true;
           this.processing = false;
           this.refreshAll(() => {
