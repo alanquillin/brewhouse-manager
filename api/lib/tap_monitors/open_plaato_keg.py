@@ -50,7 +50,7 @@ class OpenPlaatoKeg(TapMonitorBase):
 
     async def _get_data(self, monitor_id=None, monitor=None, meta=None):
         if not monitor_id and not monitor and not meta:
-            raise Exception("WTH!!")
+            raise ValueError("monitor_id, monitor, or meta must be provided")
 
         if not meta:
             if not monitor:

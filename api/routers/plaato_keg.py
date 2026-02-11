@@ -1,4 +1,4 @@
-"""Beer router for FastAPI"""
+"""Plaato Keg Device Management Router for FastAPI"""
 
 from typing import Any, Dict, List, Optional
 
@@ -24,7 +24,7 @@ async def get_all(
     current_user: AuthUser = Depends(require_admin),
     db_session: AsyncSession = Depends(get_db_session),
 ):
-    """List all beers"""
+    """List all devices"""
     devices = await PlaatoDataDB.query(db_session)
 
     if not devices:
@@ -52,7 +52,7 @@ async def create_device(
 async def get_all_connected(
     current_user: AuthUser = Depends(require_admin),
 ):
-    """List all beers"""
+    """Get all connected to devices"""
 
     return {
         "registered": service_handler.command_writer.connection_handler.get_registered_device_ids(),
@@ -66,7 +66,7 @@ async def get(
     current_user: AuthUser = Depends(require_admin),
     db_session: AsyncSession = Depends(get_db_session),
 ):
-    """List all beers"""
+    """Get device by id"""
     dev = await PlaatoDataDB.get_by_pkey(db_session, device_id)
     if not dev:
         raise HTTPException(status_code=404, detail="Plaato keg device not found")
@@ -98,7 +98,7 @@ async def delete(
     current_user: AuthUser = Depends(require_admin),
     db_session: AsyncSession = Depends(get_db_session),
 ):
-    """List all beers"""
+    """Delete device"""
     dev = await PlaatoDataDB.get_by_pkey(db_session, device_id)
     if not dev:
         raise HTTPException(status_code=404, detail="Plaato keg device not found")

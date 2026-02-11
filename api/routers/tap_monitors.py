@@ -256,12 +256,10 @@ async def get_specific_tap_monitor_data(
         raise HTTPException(status_code=404, detail="Tap monitor not found")
 
     tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
+
     try:
-        try:
-            if data_type == "online":
-                return await tap_monitor_lib.is_online(monitor=tap_monitor, db_session=db_session)
-            return await tap_monitor_lib.get(data_type, monitor=tap_monitor, db_session=db_session)
-        except InvalidDataType as e:
-            raise HTTPException(status_code=400, detail=f"Invalid data type: {data_type}") from e
+        if data_type == "online":
+            return await tap_monitor_lib.is_online(monitor=tap_monitor, db_session=db_session)
+        return await tap_monitor_lib.get(data_type, monitor=tap_monitor, db_session=db_session)
     except InvalidDataType as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+        raise HTTPException(status_code=400, detail=f"Invalid data type: {data_type}") from e

@@ -14,7 +14,7 @@ class KegtronBase(TapMonitorBase):
 MONITOR_TYPE = "kegtron-pro"
 
 
-class KegtronPro(TapMonitorBase):
+class KegtronPro(KegtronBase):
     supported_device_keys = ["beaconEna", "cleanEna"]
     supported_port_keys = [
         "abv",
@@ -68,7 +68,7 @@ class KegtronPro(TapMonitorBase):
         if callable(fn):
             return await fn(meta)
 
-        return self._get_from_key(fn, meta)
+        return await self._get_from_key(fn, meta)
 
     def _get_device_access_token(self, meta):
         return meta.get("access_token")
@@ -104,8 +104,8 @@ class KegtronPro(TapMonitorBase):
         self.logger.debug("serve data: max = %s, start = %s, dispensed = %s", _max, start, disp)
         return _max, start, disp
 
-    def _get_from_key(self, key, meta, params=None):
-        device = self._get(meta, params)
+    async def _get_from_key(self, key, meta, params=None):
+        device = await self._get(meta, params)
         port = self._get_port_data(device, meta, params=params)
 
         return port.get(key, None)
@@ -125,7 +125,7 @@ class KegtronPro(TapMonitorBase):
         access_token = self._get_device_access_token(meta)
         params["access_token"] = access_token
         url = "https://mdash.net/api/v2/m/device"
-        self.logger.debug("Retriving devive data for access token %s. GET Request: %s, params: %s", access_token, url, params)
+        self.logger.debug("Retrieving device data for access token %s. GET Request: %s, params: %s", access_token, url, params)
         async with AsyncClient() as client:
             resp = await client.get(url, params=params)
             self.logger.debug("GET response code: %s", resp.status_code)
@@ -234,7 +234,7 @@ class KegtronPro(TapMonitorBase):
 
     async def update_device(self, data, monitor_id=None, monitor=None, meta=None, params=None):
         if not monitor_id and not monitor and not meta:
-            raise Exception("WTH!!")
+            raise ValueError("monitor_id, monitor, or meta must be provided")
 
         if not meta:
             if not monitor:
@@ -253,7 +253,7 @@ class KegtronPro(TapMonitorBase):
 
     async def update_port(self, port_num, data, monitor_id=None, monitor=None, meta=None, params=None):
         if not monitor_id and not monitor and not meta:
-            raise Exception("WTH!!")
+            raise ValueError("monitor_id, monitor, or meta must be provided")
 
         if not meta:
             if not monitor:
@@ -262,7 +262,7 @@ class KegtronPro(TapMonitorBase):
             meta = monitor.meta
         port_num = meta.get("port_num")
         if not port_num:
-            raise Exception("Port num not found... WTH!?!?!")
+            raise ValueError("port_num not found in tap monitor metadata")
 
         p_data = {}
         for k, v in data.items():

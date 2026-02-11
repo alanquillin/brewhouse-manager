@@ -68,33 +68,6 @@ class TestGetLocationId:
 
         assert result == uuid_str
 
-    def test_looks_up_by_name(self):
-        """Test looks up location by name"""
-        from routers.dashboard import get_location_id
-
-        mock_session = AsyncMock()
-        mock_location = create_mock_location(id_="loc-abc")
-
-        with patch("routers.dashboard.util.is_valid_uuid", return_value=False), patch("routers.dashboard.LocationsDB") as mock_db:
-            mock_db.query = AsyncMock(return_value=[mock_location])
-
-            result = run_async(get_location_id("Test Location", mock_session))
-
-        assert result == "loc-abc"
-
-    def test_returns_none_when_not_found(self):
-        """Test returns None when location not found"""
-        from routers.dashboard import get_location_id
-
-        mock_session = AsyncMock()
-
-        with patch("routers.dashboard.util.is_valid_uuid", return_value=False), patch("routers.dashboard.LocationsDB") as mock_db:
-            mock_db.query = AsyncMock(return_value=[])
-
-            result = run_async(get_location_id("Unknown", mock_session))
-
-        assert result is None
-
 
 class TestListDashboardLocations:
     """Tests for list_dashboard_locations endpoint"""

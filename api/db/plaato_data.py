@@ -46,7 +46,6 @@ class PlaatoData(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     sensitivity = Column(String, nullable=True)
     chip_temperature_string = Column(String, nullable=True)
     firmware_version = Column(String, nullable=True)
-    max_keg_volume = Column(String, nullable=True)
     last_updated_on = Column(DateTime(timezone=True), nullable=True)
     user_keg_mode_c02_beer = Column(String, nullable=True)
     user_unit = Column(String, nullable=True)

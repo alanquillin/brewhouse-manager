@@ -29,7 +29,7 @@ class KegVolumeMonitor(TapMonitorBase):
 
     async def get(self, key, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
-            raise Exception("WTH!!")
+            raise ValueError("monitor_id, monitor, or meta must be provided")
 
         if not meta:
             if not monitor:
@@ -43,7 +43,7 @@ class KegVolumeMonitor(TapMonitorBase):
 
     async def get_all(self, monitor_id=None, monitor=None, meta=None, **kwargs):
         if not monitor_id and not monitor and not meta:
-            raise Exception("WTH!!")
+            raise ValueError("monitor_id, monitor, or meta must be provided")
 
         if not meta:
             if not monitor:

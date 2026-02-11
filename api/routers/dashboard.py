@@ -12,6 +12,7 @@ from db.tap_monitors import TapMonitors as TapMonitorsDB
 from db.taps import Taps as TapsDB
 from dependencies.auth import get_db_session
 from lib import logging, util
+from routers import get_location_id
 from services.beers import BeerService
 from services.beverages import BeverageService
 from services.locations import LocationService
@@ -20,18 +21,6 @@ from services.taps import TapService
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
 LOGGER = logging.getLogger(__name__)
-
-
-async def get_location_id(location_identifier: str, db_session: AsyncSession) -> str:
-    """Get location ID from name or UUID"""
-    if util.is_valid_uuid(location_identifier):
-        return location_identifier
-
-    locations = await LocationsDB.query(db_session, name=location_identifier)
-    if locations:
-        return locations[0].id
-
-    return None
 
 
 @router.get("/locations", response_model=List[dict])

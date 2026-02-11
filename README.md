@@ -21,9 +21,10 @@ integrates with 3rd party brew systems and tap monitors to pull in your batch de
 - [brewfather](https://brewfather.app/): The brewfather integration allows you to associate a batch with a beer to auto
 import details.  These details will refresh automatically until the batch is marked as completed.
 
-### Sensors
+### Tap Monitoring Sensors
 
 #### Plaato Keg
+
 **These devices have been discontinued and are no longer supported by the manufacturer.** However, like us, we know there are many die-hard fans out there taking theirs to the grave. Since their services have been discontinued, open source options have become available to support them.
 
 Brewhouse Manager now supports **two integration methods** for Plaato Keg devices:
@@ -40,7 +41,8 @@ Brewhouse Manager now supports **two integration methods** for Plaato Keg device
    - Read-only sensor data access
    - Useful if you already have open-plaato-keg running
 
-#### Other Sensors
+#### Other Tap Monitoring Sensors
+
 - [Kegtron Pro](https://kegtron.com/pro/)
 - [DIY Keg Volume Monitors](https://github.com/alanquillin/keg-volume-monitors)
 
