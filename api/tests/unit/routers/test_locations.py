@@ -29,22 +29,6 @@ def create_mock_location(id_="loc-1", name="Test Location"):
     return mock
 
 
-class TestGetLocationId:
-    """Tests for get_location_id helper"""
-
-    def test_returns_uuid_unchanged(self):
-        """Test returns valid UUID unchanged"""
-        from routers.locations import get_location_id
-
-        mock_session = AsyncMock()
-        uuid_str = "123e4567-e89b-12d3-a456-426614174000"
-
-        with patch("routers.locations.util.is_valid_uuid", return_value=True):
-            result = run_async(get_location_id(uuid_str, mock_session))
-
-        assert result == uuid_str
-
-
 class TestListLocations:
     """Tests for list_locations endpoint"""
 

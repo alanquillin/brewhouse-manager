@@ -11,7 +11,7 @@ from db.locations import Locations as LocationsDB
 from db.tap_monitors import TapMonitors as TapMonitorsDB
 from db.taps import Taps as TapsDB
 from dependencies.auth import get_db_session
-from lib import logging, util
+from lib import logging
 from routers import get_location_id
 from services.beers import BeerService
 from services.beverages import BeverageService

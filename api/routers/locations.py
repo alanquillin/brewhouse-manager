@@ -10,7 +10,7 @@ from db.locations import Locations as LocationsDB
 from db.taps import Taps as TapsDB
 from db.user_locations import UserLocations as UserLocationsDB
 from dependencies.auth import AuthUser, get_db_session, require_admin, require_user
-from lib import logging, util
+from lib import logging
 from routers import get_location_id
 from schemas.locations import LocationCreate, LocationUpdate
 from services.locations import LocationService

@@ -53,22 +53,6 @@ def create_mock_tap_monitor(id_="monitor-1", name="Test Monitor"):
     return mock
 
 
-class TestGetLocationId:
-    """Tests for get_location_id helper"""
-
-    def test_returns_uuid_unchanged(self):
-        """Test returns valid UUID unchanged"""
-        from routers.dashboard import get_location_id
-
-        mock_session = AsyncMock()
-        uuid_str = "123e4567-e89b-12d3-a456-426614174000"
-
-        with patch("routers.dashboard.util.is_valid_uuid", return_value=True):
-            result = run_async(get_location_id(uuid_str, mock_session))
-
-        assert result == uuid_str
-
-
 class TestListDashboardLocations:
     """Tests for list_dashboard_locations endpoint"""
 
