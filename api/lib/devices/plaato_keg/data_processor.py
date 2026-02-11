@@ -89,6 +89,7 @@ class DataProcessor:
         LOGGER.debug(f"saving to database.  device_id: {device_id}, data: {data}")
         if not data:
             LOGGER.debug(f"ignoring, nothing to write to DB.  device_id: {device_id}, data: {data}")
+            return
 
         data["last_updated_on"] = datetime.now(timezone.utc)
         async with async_session_scope(CONFIG) as db_session:

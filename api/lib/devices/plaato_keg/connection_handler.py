@@ -129,8 +129,9 @@ class ConnectionHandler:
             LOGGER.info(f"Registering socket for keg {device_id}")
             state.device_id = device_id
             self.socket_registry[device_id] = state
+            return True
 
-        return True
+        return False
 
     def _extract_device_id(self, data: bytes) -> Optional[str]:
         """Extract keg ID from incoming data"""

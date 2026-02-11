@@ -116,7 +116,7 @@ class Application:
         LOGGER.info("Shutting down application...")
 
         if self.plaato_service and self.plaato_service.connection_handler:
-            self.plaato_service.connection_handler.stop_server()
+            await self.plaato_service.connection_handler.stop_server()
 
         if self.tcp_task:
             self.tcp_task.cancel()
@@ -153,7 +153,7 @@ if __name__ == "__main__":
         asyncio.run(app_instance.run())
     except KeyboardInterrupt:
         LOGGER.info("Received keyboard interrupt, shutting down...")
-        app_instance.shutdown()
+        asyncio.run(app_instance.shutdown())
     except Exception:
         LOGGER.error("Unhandled application error", stack_info=True, exc_info=True)
         sys.exit(1)

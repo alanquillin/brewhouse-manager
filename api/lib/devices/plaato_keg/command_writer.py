@@ -91,6 +91,10 @@ class CommandWriter:
         if not value:
             return False  # TODO raise exception
 
+        fn = command_info.get("fn")
+        if fn:
+            value = fn(value)
+
         LOGGER.debug(f"Sending device command: {command}, data: {value}")
         return await self._send_hardware_command(device_id, command_info["pin"], str(value))
 
