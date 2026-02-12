@@ -87,6 +87,7 @@ class Application:
             host=host,
             port=port,
             log_level=self.log_level.lower(),
+            log_config=None,  # Disable uvicorn's default logging config; use our root logger
             proxy_headers=True,  # Handle X-Forwarded-* headers (replaces ProxyFix)
             forwarded_allow_ips="*",
             reload=CONFIG.get("ENV") == "development",  # Auto-reload in development

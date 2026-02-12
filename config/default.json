@@ -28,7 +28,9 @@
     "tap_monitors.open_plaato_keg.enabled": "bool",
     "tap_monitors.open_plaato_keg.insecure": "bool",
     "tap_monitors.plaato_keg.enabled": "bool",
-    "tap_monitors.plaato_keg.port": "int"
+    "tap_monitors.plaato_keg.port": "int",
+    "logging.colored": "bool",
+    "logging.json": "bool"
   },
   "api": {
     "host": "localhost",
@@ -72,8 +74,10 @@
     }
   },
   "logging": {
+    "colored": true,
+    "json": false,
     "levels": {
-      "sqlalchemy.engine": "INFO"
+      "sqlalchemy.engine": "WARNING"
     }
   },
   "taps": {

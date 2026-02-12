@@ -2,10 +2,18 @@
 
 import argparse
 from datetime import datetime
-import logging
 import os
 import sys
 from time import sleep
+
+from lib import logging
+from lib.config import Config
+
+# Initialize configuration
+config = Config()
+config.setup(config_files=["default.json"])
+
+logging.init(fmt=logging.DEFAULT_LOG_FMT)
 
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.sql import text
@@ -584,9 +592,6 @@ if __name__ == "__main__":
     log_level = getattr(logging, args.loglevel)
     logging.basicConfig(level=log_level, format="%(levelname)-8s: %(asctime)-15s [%(name)s]: %(message)s")
     logger = logging.getLogger()
-
-    config = Config()
-    config.setup(config_files=["default.json"])
 
     skip_db_seed = config.get("db.seed.skip")
     if skip_db_seed:
