@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.plaato_data import PlaatoData as PlaatoDataDB
+from db.tap_monitors import TapMonitors as TapMonitorsDB
 from dependencies.auth import AuthUser, get_db_session, require_admin
 from lib import logging, util
 from lib.devices.plaato_keg import service_handler
@@ -95,6 +96,7 @@ async def update_device(
 @router.delete("/{device_id}", status_code=204)
 async def delete(
     device_id: str,
+    request: Request,
     current_user: AuthUser = Depends(require_admin),
     db_session: AsyncSession = Depends(get_db_session),
 ):
@@ -102,6 +104,22 @@ async def delete(
     dev = await PlaatoDataDB.get_by_pkey(db_session, device_id)
     if not dev:
         raise HTTPException(status_code=404, detail="Plaato keg device not found")
+
+    force_delete_tap_monitor = request.query_params.get("force_delete_tap_monitor", "false").lower() in ["true", "yes", "", "1"]
+    referencing_monitors = await TapMonitorsDB.query(
+        db_session,
+        q_fn=lambda q: q.where(TapMonitorsDB.meta["device_id"].astext == device_id, TapMonitorsDB.monitor_type == "plaato-keg"),
+    )
+    if referencing_monitors:
+        if force_delete_tap_monitor:
+            for monitor in referencing_monitors:
+                await TapMonitorsDB.delete(db_session, monitor.id)
+        else:
+            monitor_names = ", ".join(m.name for m in referencing_monitors)
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cannot delete device: it is referenced by tap monitor(s): {monitor_names}",
+            )
 
     cnt = await PlaatoDataDB.delete(db_session, device_id)
 

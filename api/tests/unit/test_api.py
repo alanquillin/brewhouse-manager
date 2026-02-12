@@ -243,7 +243,7 @@ class TestFastAPIAppConfiguration:
     def test_api_has_version(self, api_module):
         """Test API has version set"""
         assert api_module.api.version is not None
-        assert api_module.api.version == "0.7.1"
+        assert api_module.api.version == "0.8.0"
 
     def test_api_has_docs_url(self, api_module):
         """Test API has docs URL configured"""
