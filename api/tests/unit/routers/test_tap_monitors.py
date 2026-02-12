@@ -255,6 +255,102 @@ class TestCreateTapMonitor:
 
         assert exc_info.value.status_code == 403
 
+    def test_raises_409_for_duplicate_device_id_and_monitor_type(self):
+        """Test raises 409 when a monitor with the same device_id and monitor_type already exists"""
+        from routers.tap_monitors import create_tap_monitor
+        from schemas.tap_monitors import TapMonitorCreate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        existing_monitor = create_mock_tap_monitor(name="Existing Monitor")
+        monitor_data = TapMonitorCreate(
+            name="Duplicate Monitor",
+            monitor_type="plaato-keg",
+            location_id="loc-1",
+            meta={"deviceId": "device-1"},
+        )
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db:
+            mock_db.query = AsyncMock(return_value=[existing_monitor])
+
+            with pytest.raises(HTTPException) as exc_info:
+                run_async(create_tap_monitor(monitor_data, None, mock_auth_user, mock_session))
+
+            assert exc_info.value.status_code == 409
+            assert "plaato-keg" in exc_info.value.detail
+            assert "device-1" in exc_info.value.detail
+
+    def test_allows_same_device_id_with_different_monitor_type(self):
+        """Test allows creating a monitor with same device_id but different monitor_type"""
+        from routers.tap_monitors import create_tap_monitor
+        from schemas.tap_monitors import TapMonitorCreate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        monitor_data = TapMonitorCreate(
+            name="New Monitor",
+            monitor_type="open-plaato-keg",
+            location_id="loc-1",
+            meta={"deviceId": "device-1"},
+        )
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.query = AsyncMock(return_value=[])
+            mock_db.create = AsyncMock(return_value=mock_monitor)
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            result = run_async(create_tap_monitor(monitor_data, None, mock_auth_user, mock_session))
+
+            mock_db.create.assert_called_once()
+
+    def test_allows_create_without_device_id_in_meta(self):
+        """Test allows creating a monitor without device_id in meta (no duplicate check needed)"""
+        from routers.tap_monitors import create_tap_monitor
+        from schemas.tap_monitors import TapMonitorCreate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        monitor_data = TapMonitorCreate(
+            name="New Monitor",
+            monitor_type="plaato-keg",
+            location_id="loc-1",
+            meta={"emptyKegWeight": 4400},
+        )
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.create = AsyncMock(return_value=mock_monitor)
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            result = run_async(create_tap_monitor(monitor_data, None, mock_auth_user, mock_session))
+
+            mock_db.create.assert_called_once()
+            mock_db.query.assert_not_called()
+
+    def test_allows_create_without_meta(self):
+        """Test allows creating a monitor without meta at all"""
+        from routers.tap_monitors import create_tap_monitor
+        from schemas.tap_monitors import TapMonitorCreate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        monitor_data = TapMonitorCreate(
+            name="New Monitor",
+            monitor_type="plaato-keg",
+            location_id="loc-1",
+        )
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.create = AsyncMock(return_value=mock_monitor)
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            result = run_async(create_tap_monitor(monitor_data, None, mock_auth_user, mock_session))
+
+            mock_db.create.assert_called_once()
+            mock_db.query.assert_not_called()
+
 
 class TestGetTapMonitor:
     """Tests for get_tap_monitor endpoint"""

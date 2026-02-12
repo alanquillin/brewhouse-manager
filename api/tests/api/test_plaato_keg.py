@@ -84,19 +84,6 @@ class TestDeletePlaatoKegDevice:
         get_monitor = api_client.get(f"{api_base_url}/tap_monitors/{monitor_id}")
         assert get_monitor.status_code == 404
 
-    def test_force_delete_removes_multiple_tap_monitors(self, api_client: requests.Session, api_base_url: str):
-        """Test force delete removes all referencing monitors."""
-        device_id = create_device(api_client, api_base_url, name="Multi Monitor Device")
-        monitor_id_1 = create_tap_monitor(api_client, api_base_url, device_id, name="Monitor A")
-        monitor_id_2 = create_tap_monitor(api_client, api_base_url, device_id, name="Monitor B")
-
-        response = api_client.delete(f"{api_base_url}/devices/plaato_keg/{device_id}", params={"force_delete_tap_monitor": "true"})
-        assert response.status_code == 204
-
-        # Verify all are gone
-        assert api_client.get(f"{api_base_url}/devices/plaato_keg/{device_id}").status_code == 404
-        assert api_client.get(f"{api_base_url}/tap_monitors/{monitor_id_1}").status_code == 404
-        assert api_client.get(f"{api_base_url}/tap_monitors/{monitor_id_2}").status_code == 404
 
     def test_returns_404_for_nonexistent_device(self, api_client: requests.Session, api_base_url: str):
         """Test deleting a non-existent device returns 404."""

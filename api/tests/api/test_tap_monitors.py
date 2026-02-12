@@ -162,6 +162,32 @@ class TestCreateTapMonitor:
         get_response = api_client.get(f"{api_base_url}/tap_monitors/{data['id']}")
         assert get_response.status_code == 200
 
+    def test_returns_409_for_duplicate_device_id_and_monitor_type(self, api_client: requests.Session, api_base_url: str):
+        """Test creating a tap monitor with the same device_id and monitor_type as an existing one returns 409."""
+        device_id = "test-duplicate-check-device"
+        monitor_type = "open-plaato-keg"
+
+        # Create the first monitor
+        first_monitor = {
+            "name": "First Monitor",
+            "monitorType": monitor_type,
+            "locationId": LOCATION_MAIN_ID,
+            "meta": {"deviceId": device_id},
+        }
+        first_response = api_client.post(f"{api_base_url}/tap_monitors", json=first_monitor)
+        assert first_response.status_code == 201
+
+        # Attempt to create a second monitor with the same device_id and monitor_type
+        second_monitor = {
+            "name": "Duplicate Monitor",
+            "monitorType": monitor_type,
+            "locationId": LOCATION_SECONDARY_ID,
+            "meta": {"deviceId": device_id},
+        }
+        second_response = api_client.post(f"{api_base_url}/tap_monitors", json=second_monitor)
+        assert second_response.status_code == 409
+        assert device_id in second_response.json()["message"]
+
 
 class TestUpdateTapMonitor:
     """Tests for PATCH /tap_monitors/{id} endpoint."""

@@ -101,6 +101,21 @@ async def create_tap_monitor(
     if not current_user.admin and data.get("location_id") not in current_user.locations:
         raise HTTPException(status_code=403, detail="Not authorized to create tap monitor in this location")
 
+    # Check for duplicate device_id within the same monitor type
+    device_id = (data.get("meta") or {}).get("device_id")
+    monitor_type = data.get("monitor_type")
+    if device_id and monitor_type:
+        existing = await TapMonitorsDB.query(
+            db_session,
+            monitor_type=monitor_type,
+            q_fn=lambda q: q.where(TapMonitorsDB.meta["device_id"].astext == device_id),
+        )
+        if existing:
+            raise HTTPException(
+                status_code=409,
+                detail=f"A tap monitor of type '{monitor_type}' already exists for device '{device_id}'",
+            )
+
     LOGGER.debug("Creating tap monitor with: %s", data)
     tap_monitor = await TapMonitorsDB.create(db_session, **data)
 
