@@ -47,7 +47,9 @@ class TapMonitorService:
             tap_monitor_lib = get_tap_monitor_lib(monitor_type)
             if not tap_monitor_lib:
                 LOGGER.warning("No tap monitor library found for monitor type: %s.  Configured types: %s", monitor_type, get_tap_monitor_types())
-            data["reports_online_status"] = tap_monitor_lib.reports_online_status()
+                data["error"] = f"Unknown or unsupported tap monitor type: {monitor_type}"
+            else:
+                data["reports_online_status"] = tap_monitor_lib.reports_online_status()
 
         return transform_dict_to_camel_case(data)
 
