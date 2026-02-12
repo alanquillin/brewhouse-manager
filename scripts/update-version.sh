@@ -68,7 +68,7 @@ fi
 # Update ui/src/environments/environment.prod.ts
 ENV_PROD="$PROJECT_ROOT/ui/src/environments/environment.prod.ts"
 if [ -f "$ENV_PROD" ]; then
-    sed -i '' "s/appVersion: \".*\"/appVersion: \"$VERSION\"/" "$ENV_PROD"
+    sed -i '' "s/appVersion: ['\"].*['\"]/appVersion: '$VERSION'/" "$ENV_PROD"
     echo -e "  ${GREEN}✓${NC} Updated $ENV_PROD"
 else
     echo -e "  ${RED}✗${NC} File not found: $ENV_PROD"
