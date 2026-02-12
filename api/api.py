@@ -32,7 +32,7 @@ CONFIG = Config()
 # Create FastAPI app
 api = FastAPI(
     title="Brewhouse Manager",
-    version="0.7.1",
+    version="0.8.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc" if CONFIG.get("ENV") == "development" else None,
 )
