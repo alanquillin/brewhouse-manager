@@ -185,6 +185,9 @@ export class ManageTapMonitorsComponent implements OnInit {
 
     this.modifyTapMonitor = new TapMonitor(data);
     this.modifyTapMonitor.editValues = data;
+    if (!isNilOrEmpty(data['monitorType']) && this.currentTypeSupportsDiscovery()) {
+      this.discoverTapMonitors();
+    }
     this.adding = true;
   }
 
@@ -367,7 +370,6 @@ export class ManageTapMonitorsComponent implements OnInit {
   }
 
   monitorTypeChanged() {
-    console.log(this.modifyTapMonitor.editValues);
     if (this.currentTypeSupportsDiscovery()) {
       this.discoverTapMonitors();
     }
