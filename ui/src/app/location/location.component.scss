@@ -17,6 +17,7 @@ div.tap-image {
   display: inline-block;
   vertical-align: top;
   min-width: 106px !important;
+  flex-shrink: 0;
 }
 
 .tap-count-1,
@@ -28,6 +29,12 @@ div.tap-image {
   div.tap-volume {
     height: 212px;
     width: 200px;
+    min-width: 200px !important;
+  }
+
+  div.tap-image {
+    width: 200px;
+    min-width: 200px !important;
   }
 
   div.tap-logo,
@@ -60,6 +67,10 @@ div.tap-image {
   div.tap-volume {
     height: 159px;
     width: 150px;
+  }
+  div.tap-image {
+    width: 150px;
+    min-width: 150px !important;
   }
   div.tap-logo,
   div.tap-image {
