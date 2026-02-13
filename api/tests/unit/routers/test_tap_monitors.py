@@ -352,6 +352,276 @@ class TestCreateTapMonitor:
             mock_db.query.assert_not_called()
 
 
+class TestCreateKegtronProValidation:
+    """Tests for kegtron-pro meta validation on create"""
+
+    def test_raises_400_when_missing_all_required_meta(self):
+        """Test raises 400 when creating kegtron-pro without required meta fields"""
+        from routers.tap_monitors import create_tap_monitor
+        from schemas.tap_monitors import TapMonitorCreate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        monitor_data = TapMonitorCreate(
+            name="Kegtron Monitor",
+            monitor_type="kegtron-pro",
+            location_id="loc-1",
+            meta={},
+        )
+
+        with pytest.raises(HTTPException) as exc_info:
+            run_async(create_tap_monitor(monitor_data, None, mock_auth_user, mock_session))
+
+        assert exc_info.value.status_code == 400
+        assert "port_num" in exc_info.value.detail
+        assert "device_id" in exc_info.value.detail
+        assert "access_token" in exc_info.value.detail
+
+    def test_raises_400_when_missing_some_required_meta(self):
+        """Test raises 400 listing only the missing fields"""
+        from routers.tap_monitors import create_tap_monitor
+        from schemas.tap_monitors import TapMonitorCreate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        monitor_data = TapMonitorCreate(
+            name="Kegtron Monitor",
+            monitor_type="kegtron-pro",
+            location_id="loc-1",
+            meta={"accessToken": "tok123"},
+        )
+
+        with pytest.raises(HTTPException) as exc_info:
+            run_async(create_tap_monitor(monitor_data, None, mock_auth_user, mock_session))
+
+        assert exc_info.value.status_code == 400
+        assert "port_num" in exc_info.value.detail
+        assert "device_id" in exc_info.value.detail
+        assert "access_token" not in exc_info.value.detail
+
+    def test_raises_400_when_meta_is_none(self):
+        """Test raises 400 when creating kegtron-pro with no meta at all"""
+        from routers.tap_monitors import create_tap_monitor
+        from schemas.tap_monitors import TapMonitorCreate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        monitor_data = TapMonitorCreate(
+            name="Kegtron Monitor",
+            monitor_type="kegtron-pro",
+            location_id="loc-1",
+        )
+
+        with pytest.raises(HTTPException) as exc_info:
+            run_async(create_tap_monitor(monitor_data, None, mock_auth_user, mock_session))
+
+        assert exc_info.value.status_code == 400
+
+    def test_passes_with_all_required_meta(self):
+        """Test kegtron-pro creation succeeds with all required meta fields"""
+        from routers.tap_monitors import create_tap_monitor
+        from schemas.tap_monitors import TapMonitorCreate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        monitor_data = TapMonitorCreate(
+            name="Kegtron Monitor",
+            monitor_type="kegtron-pro",
+            location_id="loc-1",
+            meta={"portNum": 0, "deviceId": "dev-1", "accessToken": "tok123"},
+        )
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.query = AsyncMock(return_value=[])
+            mock_db.create = AsyncMock(return_value=mock_monitor)
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            result = run_async(create_tap_monitor(monitor_data, None, mock_auth_user, mock_session))
+
+            mock_db.create.assert_called_once()
+
+    def test_non_kegtron_type_skips_validation(self):
+        """Test non-kegtron-pro types are not subject to kegtron meta validation"""
+        from routers.tap_monitors import create_tap_monitor
+        from schemas.tap_monitors import TapMonitorCreate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        monitor_data = TapMonitorCreate(
+            name="Plaato Monitor",
+            monitor_type="open-plaato-keg",
+            location_id="loc-1",
+            meta={"deviceId": "dev-1"},
+        )
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.query = AsyncMock(return_value=[])
+            mock_db.create = AsyncMock(return_value=mock_monitor)
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            result = run_async(create_tap_monitor(monitor_data, None, mock_auth_user, mock_session))
+
+            mock_db.create.assert_called_once()
+
+
+class TestUpdateKegtronProValidation:
+    """Tests for kegtron-pro meta validation on update"""
+
+    def test_raises_400_when_updating_meta_missing_required_fields(self):
+        """Test raises 400 when updating kegtron-pro meta without required fields"""
+        from routers.tap_monitors import update_tap_monitor
+        from schemas.tap_monitors import TapMonitorUpdate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor(monitor_type="kegtron-pro", location_id="loc-1")
+        update_data = TapMonitorUpdate(meta={"portNum": None, "deviceId": ""})
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+
+            with pytest.raises(HTTPException) as exc_info:
+                run_async(update_tap_monitor("monitor-1", update_data, None, mock_auth_user, mock_session))
+
+            assert exc_info.value.status_code == 400
+            assert "device_id" in exc_info.value.detail
+            assert "port_num" in exc_info.value.detail
+
+    def test_passes_when_updating_meta_with_all_required_fields(self):
+        """Test kegtron-pro update succeeds when meta has all required fields"""
+        from routers.tap_monitors import update_tap_monitor
+        from schemas.tap_monitors import TapMonitorUpdate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor(monitor_type="kegtron-pro", location_id="loc-1")
+        update_data = TapMonitorUpdate(
+            meta={"portNum": 1, "deviceId": "dev-1", "accessToken": "tok"},
+        )
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_db.update = AsyncMock()
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            result = run_async(update_tap_monitor("monitor-1", update_data, None, mock_auth_user, mock_session))
+
+            mock_db.update.assert_called_once()
+
+    def test_skips_validation_when_meta_not_in_update(self):
+        """Test no validation when only updating name (no meta)"""
+        from routers.tap_monitors import update_tap_monitor
+        from schemas.tap_monitors import TapMonitorUpdate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor(monitor_type="kegtron-pro", location_id="loc-1")
+        update_data = TapMonitorUpdate(name="Renamed Monitor")
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_db.update = AsyncMock()
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            result = run_async(update_tap_monitor("monitor-1", update_data, None, mock_auth_user, mock_session))
+
+            mock_db.update.assert_called_once()
+
+    def test_raises_400_if_monitor_type_changes(self):
+        """Test validates meta when monitor_type is being changed to kegtron-pro"""
+        from routers.tap_monitors import update_tap_monitor
+        from schemas.tap_monitors import TapMonitorUpdate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor(monitor_type="open-plaato-keg", location_id="loc-1")
+        update_data = TapMonitorUpdate(
+            monitor_type="kegtron-pro",
+            meta={"portNum": 0},
+        )
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+
+            with pytest.raises(HTTPException) as exc_info:
+                run_async(update_tap_monitor("monitor-1", update_data, None, mock_auth_user, mock_session))
+
+            assert exc_info.value.status_code == 400
+
+    def test_skips_validation_for_non_kegtron_type(self):
+        """Test no kegtron validation when updating a non-kegtron monitor's meta"""
+        from routers.tap_monitors import update_tap_monitor
+        from schemas.tap_monitors import TapMonitorUpdate
+
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor(monitor_type="open-plaato-keg", location_id="loc-1")
+        update_data = TapMonitorUpdate(meta={"deviceId": "dev-1"})
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_db.update = AsyncMock()
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            result = run_async(update_tap_monitor("monitor-1", update_data, None, mock_auth_user, mock_session))
+
+            mock_db.update.assert_called_once()
+
+
+class TestValidateKegtronProMeta:
+    """Direct tests for _validate_kegtron_pro_meta helper"""
+
+    def test_all_fields_present(self):
+        """No exception when all required fields are present"""
+        from routers.tap_monitors import _validate_kegtron_pro_meta
+
+        _validate_kegtron_pro_meta({"port_num": 0, "device_id": "dev", "access_token": "tok"})
+
+    def test_empty_meta_raises(self):
+        """Raises HTTPException for empty meta"""
+        from routers.tap_monitors import _validate_kegtron_pro_meta
+
+        with pytest.raises(HTTPException) as exc_info:
+            _validate_kegtron_pro_meta({})
+
+        assert exc_info.value.status_code == 400
+        assert "port_num" in exc_info.value.detail
+        assert "device_id" in exc_info.value.detail
+        assert "access_token" in exc_info.value.detail
+
+    def test_partial_meta_lists_only_missing(self):
+        """Only missing fields are listed in the error"""
+        from routers.tap_monitors import _validate_kegtron_pro_meta
+
+        with pytest.raises(HTTPException) as exc_info:
+            _validate_kegtron_pro_meta({"port_num": 0})
+
+        assert exc_info.value.status_code == 400
+        assert "port_num" not in exc_info.value.detail
+        assert "device_id" in exc_info.value.detail
+        assert "access_token" in exc_info.value.detail
+
+    def test_empty_string_treated_as_missing(self):
+        """Empty string values are treated as missing"""
+        from routers.tap_monitors import _validate_kegtron_pro_meta
+
+        with pytest.raises(HTTPException) as exc_info:
+            _validate_kegtron_pro_meta({"port_num": 0, "device_id": "", "access_token": None})
+
+        assert exc_info.value.status_code == 400
+        assert "port_num" not in exc_info.value.detail
+        assert "device_id" in exc_info.value.detail
+        assert "access_token" in exc_info.value.detail
+
+    def test_zero_port_num_is_valid(self):
+        """port_num of 0 is a valid value"""
+        from routers.tap_monitors import _validate_kegtron_pro_meta
+
+        _validate_kegtron_pro_meta({"port_num": 0, "device_id": "dev", "access_token": "tok"})
+
+
 class TestGetTapMonitor:
     """Tests for get_tap_monitor endpoint"""
 

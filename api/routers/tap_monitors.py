@@ -19,6 +19,26 @@ from services.tap_monitors import TapMonitorService, TapMonitorTypeService
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
 
+KEGTRON_PRO_REQUIRED_META_KEYS = ["port_num", "device_id", "access_token"]
+
+
+def _validate_kegtron_pro_meta(meta: dict, allow_missing=False):
+    """Validate that kegtron-pro tap monitors have required meta fields."""
+    missing = []
+    for k in KEGTRON_PRO_REQUIRED_META_KEYS:
+        if k not in meta:
+            if not allow_missing:
+                missing.append(k)
+        else:
+            if meta[k] is None or meta[k] == "":
+                missing.append(k)
+
+    if missing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"kegtron-pro tap monitors require the following meta fields: {', '.join(missing)}",
+        )
+
 
 @router.get("/types", response_model=List[TapMonitorTypeBase])
 async def list_monitor_types(
@@ -101,9 +121,13 @@ async def create_tap_monitor(
     if not current_user.admin and data.get("location_id") not in current_user.locations:
         raise HTTPException(status_code=403, detail="Not authorized to create tap monitor in this location")
 
+    # Validate kegtron-pro required meta fields
+    monitor_type = data.get("monitor_type")
+    if monitor_type == "kegtron-pro":
+        _validate_kegtron_pro_meta(data.get("meta") or {})
+
     # Check for duplicate device_id within the same monitor type
     device_id = (data.get("meta") or {}).get("device_id")
-    monitor_type = data.get("monitor_type")
     if device_id and monitor_type:
         existing = await TapMonitorsDB.query(
             db_session,
@@ -176,6 +200,14 @@ async def update_tap_monitor(
     # Check authorization
     if not current_user.admin and tap_monitor.location_id not in current_user.locations:
         raise HTTPException(status_code=403, detail="Not authorized to update this tap monitor")
+
+    # Validate kegtron-pro required meta fields when meta is being updated
+    if "monitor_type" in data:
+        raise HTTPException(status_code=400, detail="You cannot change the type of an existing tap monitor")
+    
+    if data.get("meta"):
+        if tap_monitor.monitor_type == "kegtron-pro":
+            _validate_kegtron_pro_meta(data["meta"], allow_missing=True)
 
     LOGGER.debug("Updating tap monitor %s with data: %s", tap_monitor_id, data)
 
