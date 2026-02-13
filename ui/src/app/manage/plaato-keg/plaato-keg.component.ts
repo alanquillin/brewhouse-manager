@@ -196,6 +196,7 @@ export class ManagePlaatoKegComponent implements OnInit {
   cancelEdit(): void {
     this.modifyDevice.disableEditing();
     this.editing = false;
+    this.refresh();
   }
 
   displayError(errMsg: string): void {

@@ -1,3 +1,5 @@
+from typing import Dict
+
 from httpx import AsyncClient, BasicAuth
 
 from db import async_session_scope
@@ -48,12 +50,27 @@ class KegtronPro(KegtronBase):
 
     @staticmethod
     def reports_online_status():
-        return False
+        return True
 
-    async def is_online(self, **kwargs):
-        raise NotImplementedError("Kegtron does not support reporting online")
+    async def is_online(self, monitor_id=None, monitor=None, meta=None, db_session=None, device=None, **kwargs) -> bool:
+        if not monitor_id and not monitor and not meta:
+            raise Exception("monitor_id, monitor, or meta must be provided")
 
-    async def get(self, data_type, monitor_id=None, monitor=None, meta=None, **kwargs):
+        if not meta:
+            if not monitor:
+                async with async_session_scope(self.config) as db_session:
+                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
+            meta = monitor.meta
+
+        if not device:
+            device = await self._get(meta)
+
+        if not device:
+            return False
+
+        return device.get("online", False)
+
+    async def get(self, data_type, monitor_id=None, monitor=None, meta=None, **kwargs) -> any:
         if not monitor_id and not monitor and not meta:
             raise Exception("monitor_id, monitor, or meta must be provided")
 
@@ -69,19 +86,40 @@ class KegtronPro(KegtronBase):
             return await fn(meta)
 
         return await self._get_from_key(fn, meta)
+    
+    async def get_all(self, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> Dict:
+        if not monitor_id and not monitor and not meta:
+            raise Exception("monitor_id, monitor, or meta must be provided")
+
+        if not meta:
+            if not monitor:
+                async with async_session_scope(self.config) as db_session:
+                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
+            meta = monitor.meta
+
+        device = await self._get(meta)
+
+        return {
+            "percentRemaining": self._get_percent_remaining(meta, device),
+            "totalVolumeRemaining": self._get_total_remaining(meta, device),
+            "displayVolumeUnit": self._get_vol_unit(meta),
+            #"firmwareVersion": data.get("firmware_version"),
+            #"lastUpdatedOn": data.get("last_updated_on"),
+            "online": await self.is_online(meta=meta, db_session=db_session, device=None, **kwargs),
+        }
 
     def _get_device_access_token(self, meta):
         return meta.get("access_token")
 
-    async def _get_total_remaining(self, meta, params=None):
-        _, start, disp = await self._get_served_data(meta, params)
+    async def _get_total_remaining(self, meta, device=None, params=None):
+        _, start, disp = await self._get_served_data(meta, device, params)
 
         remaining = start - disp
         unit = await self._get_vol_unit(meta, params=params)
         return from_ml(remaining, unit)
 
-    async def _get_percent_remaining(self, meta, params=None):
-        _max, start, disp = await self._get_served_data(meta, params)
+    async def _get_percent_remaining(self, meta, device=None, params=None):
+        _max, start, disp = await self._get_served_data(meta, device, params)
 
         remaining = start - disp
         return round((remaining / _max) * 100, 2)
@@ -90,10 +128,14 @@ class KegtronPro(KegtronBase):
         self.logger.debug("meta: %s", meta)
         self.logger.debug("default_vol_unit: %s", self.default_vol_unit)
         return meta.get("unit", self.default_vol_unit).lower()
+    
+    async def _get_online_status(self, meta, params=None):
+        pass
 
-    async def _get_served_data(self, meta, params=None):
+    async def _get_served_data(self, meta, device=None, params=None):
         self.logger.debug("retrieving served data.")
-        device = await self._get(meta, params)
+        if not device:
+            device = await self._get(meta, params)
         port = self._get_port_data(device, meta, params=params)
         self.logger.debug("port data: %s", port)
 
@@ -118,7 +160,7 @@ class KegtronPro(KegtronBase):
 
         return {}
 
-    async def _get(self, meta, params=None):
+    async def _get(self, meta, params=None) -> Dict:
         if not params:
             params = {}
 
@@ -140,7 +182,7 @@ class KegtronPro(KegtronBase):
 
             return self.parse_resp(j)
 
-    def parse_resp(self, j):
+    def parse_resp(self, j) -> Dict:
         self.logger.debug("parsing kegtron pro response: %s", j)
         _id = j.get("id")
         self.logger.debug("id: %s", _id)
