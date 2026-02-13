@@ -100,11 +100,9 @@ class KegtronPro(KegtronBase):
         device = await self._get(meta)
 
         return {
-            "percentRemaining": self._get_percent_remaining(meta, device),
-            "totalVolumeRemaining": self._get_total_remaining(meta, device),
-            "displayVolumeUnit": self._get_vol_unit(meta),
-            #"firmwareVersion": data.get("firmware_version"),
-            #"lastUpdatedOn": data.get("last_updated_on"),
+            "percentRemaining": await self._get_percent_remaining(meta, device),
+            "totalVolumeRemaining": await self._get_total_remaining(meta, device),
+            "displayVolumeUnit": await self._get_vol_unit(meta),
             "online": await self.is_online(meta=meta, db_session=db_session, device=None, **kwargs),
         }
 

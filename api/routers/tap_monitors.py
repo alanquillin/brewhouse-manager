@@ -276,7 +276,9 @@ async def get_tap_monitor_data(
 
     tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
     try:
-        return await tap_monitor_lib.get_all(monitor=tap_monitor, db_session=db_session)
+        data = await tap_monitor_lib.get_all(monitor=tap_monitor, db_session=db_session)
+        LOGGER.debug("data retrieved: %s", data)
+        return data
     except InvalidDataType as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 

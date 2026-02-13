@@ -196,7 +196,9 @@ export class ManageTapMonitorsComponent implements OnInit {
     const meta: any = {};
     if (this.modifyTapMonitor.editValues.monitorType == 'plaato-blynk') {
       meta.authToken = this.modifyTapMonitor.editValues.meta.authToken;
-    } else if (
+    }
+
+    if (
       [
         'keg-volume-monitor-weight',
         'keg-volume-monitor-flow',
@@ -206,7 +208,10 @@ export class ManageTapMonitorsComponent implements OnInit {
       ].includes(this.modifyTapMonitor.editValues.monitorType)
     ) {
       meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
-    } else if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-pro') {
+    }
+
+    if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-pro') {
+      console.log(this.modifyTapMonitor.editValues);
       meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
       meta.portNum = _.toInteger(this.modifyTapMonitor.editValues.meta.portNum);
       meta.accessToken = this.modifyTapMonitor.editValues.meta.accessToken;
@@ -404,7 +409,9 @@ export class ManageTapMonitorsComponent implements OnInit {
       ].includes(this.modifyTapMonitor.editValues.monitorType)
     ) {
       this.modifyTapMonitor.editValues.meta.deviceId = this.selectedDiscoveredTapMonitorId;
-    } else if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-pro') {
+    }
+
+    if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-pro') {
       const parts = _.split(this.selectedDiscoveredTapMonitorId, '|');
       this.modifyTapMonitor.editValues.meta.deviceId = parts[0];
       this.modifyTapMonitor.editValues.meta.portNum = _.toInteger(parts[1]);
