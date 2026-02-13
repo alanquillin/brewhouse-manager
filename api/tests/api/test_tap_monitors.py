@@ -189,6 +189,176 @@ class TestCreateTapMonitor:
         assert device_id in second_response.json()["message"]
 
 
+class TestCreateKegtronProValidation:
+    """Tests for kegtron-pro meta validation on POST /tap_monitors."""
+
+    def test_returns_400_when_missing_all_required_meta(self, api_client: requests.Session, api_base_url: str):
+        """Test creating kegtron-pro monitor without required meta fields returns 400."""
+        new_monitor = {
+            "name": "Bad Kegtron",
+            "monitorType": "kegtron-pro",
+            "locationId": LOCATION_MAIN_ID,
+            "meta": {},
+        }
+
+        response = api_client.post(f"{api_base_url}/tap_monitors", json=new_monitor)
+
+        assert response.status_code == 400
+        detail = response.json()["message"]
+        assert "port_num" in detail
+        assert "device_id" in detail
+        assert "access_token" in detail
+
+    def test_returns_400_when_missing_some_required_meta(self, api_client: requests.Session, api_base_url: str):
+        """Test that only the missing fields are listed in the error."""
+        new_monitor = {
+            "name": "Partial Kegtron",
+            "monitorType": "kegtron-pro",
+            "locationId": LOCATION_MAIN_ID,
+            "meta": {"accessToken": "tok123"},
+        }
+
+        response = api_client.post(f"{api_base_url}/tap_monitors", json=new_monitor)
+
+        assert response.status_code == 400
+        detail = response.json()["message"]
+        assert "port_num" in detail
+        assert "device_id" in detail
+        assert "access_token" not in detail
+
+    def test_returns_400_when_no_meta(self, api_client: requests.Session, api_base_url: str):
+        """Test creating kegtron-pro monitor with no meta at all returns 400."""
+        new_monitor = {
+            "name": "No Meta Kegtron",
+            "monitorType": "kegtron-pro",
+            "locationId": LOCATION_MAIN_ID,
+        }
+
+        response = api_client.post(f"{api_base_url}/tap_monitors", json=new_monitor)
+
+        assert response.status_code == 400
+
+    def test_creates_kegtron_pro_with_valid_meta(self, api_client: requests.Session, api_base_url: str):
+        """Test creating kegtron-pro monitor succeeds with all required meta fields."""
+        new_monitor = {
+            "name": "Valid Kegtron",
+            "monitorType": "kegtron-pro",
+            "locationId": LOCATION_MAIN_ID,
+            "meta": {
+                "portNum": 0,
+                "deviceId": "kegtron-func-test-dev",
+                "accessToken": "kegtron-func-test-tok",
+            },
+        }
+
+        response = api_client.post(f"{api_base_url}/tap_monitors", json=new_monitor)
+
+        assert response.status_code == 201
+        data = response.json()
+        assert data["name"] == "Valid Kegtron"
+        assert data["monitorType"] == "kegtron-pro"
+        assert data["meta"]["portNum"] == 0
+        assert data["meta"]["deviceId"] == "kegtron-func-test-dev"
+        assert data["meta"]["accessToken"] == "kegtron-func-test-tok"
+
+    def test_returns_400_when_meta_values_are_empty(self, api_client: requests.Session, api_base_url: str):
+        """Test that empty string values are rejected."""
+        new_monitor = {
+            "name": "Empty Values Kegtron",
+            "monitorType": "kegtron-pro",
+            "locationId": LOCATION_MAIN_ID,
+            "meta": {
+                "portNum": 0,
+                "deviceId": "",
+                "accessToken": "tok",
+            },
+        }
+
+        response = api_client.post(f"{api_base_url}/tap_monitors", json=new_monitor)
+
+        assert response.status_code == 400
+        detail = response.json()["message"]
+        assert "device_id" in detail
+
+    def test_non_kegtron_type_not_affected(self, api_client: requests.Session, api_base_url: str):
+        """Test that non-kegtron-pro types are not subject to kegtron meta validation."""
+        new_monitor = {
+            "name": "Non-Kegtron Monitor",
+            "monitorType": "open-plaato-keg",
+            "locationId": LOCATION_SECONDARY_ID,
+            "meta": {"deviceId": "non-kegtron-func-test-dev"},
+        }
+
+        response = api_client.post(f"{api_base_url}/tap_monitors", json=new_monitor)
+
+        assert response.status_code == 201
+
+
+class TestUpdateKegtronProValidation:
+    """Tests for kegtron-pro meta validation on PATCH /tap_monitors/{id}."""
+
+    def _create_kegtron_monitor(self, api_client, api_base_url, suffix=""):
+        """Helper to create a kegtron-pro monitor for update tests."""
+        new_monitor = {
+            "name": f"Kegtron For Update{suffix}",
+            "monitorType": "kegtron-pro",
+            "locationId": LOCATION_MAIN_ID,
+            "meta": {
+                "portNum": 0,
+                "deviceId": f"kegtron-update-test-dev{suffix}",
+                "accessToken": f"kegtron-update-test-tok{suffix}",
+            },
+        }
+        response = api_client.post(f"{api_base_url}/tap_monitors", json=new_monitor)
+        assert response.status_code == 201
+        return response.json()["id"]
+
+    def test_returns_400_when_meta_has_empty_values(self, api_client: requests.Session, api_base_url: str):
+        """Test updating kegtron-pro meta with empty values returns 400."""
+        monitor_id = self._create_kegtron_monitor(api_client, api_base_url, "-empty-val")
+
+        update_data = {"meta": {"accessToken": ""}}
+
+        response = api_client.patch(f"{api_base_url}/tap_monitors/{monitor_id}", json=update_data)
+
+        assert response.status_code == 400
+        detail = response.json()["message"]
+        assert "access_token" in detail
+
+    def test_allows_partial_meta_update(self, api_client: requests.Session, api_base_url: str):
+        """Test updating kegtron-pro meta with a subset of required fields succeeds (allow_missing)."""
+        monitor_id = self._create_kegtron_monitor(api_client, api_base_url, "-partial")
+
+        update_data = {"meta": {"accessToken": "new-token"}}
+
+        response = api_client.patch(f"{api_base_url}/tap_monitors/{monitor_id}", json=update_data)
+
+        assert response.status_code == 200
+        assert response.json()["meta"]["accessToken"] == "new-token"
+
+    def test_name_update_skips_meta_validation(self, api_client: requests.Session, api_base_url: str):
+        """Test updating only the name does not trigger meta validation."""
+        monitor_id = self._create_kegtron_monitor(api_client, api_base_url, "-name-only")
+
+        update_data = {"name": "Renamed Kegtron"}
+
+        response = api_client.patch(f"{api_base_url}/tap_monitors/{monitor_id}", json=update_data)
+
+        assert response.status_code == 200
+        assert response.json()["name"] == "Renamed Kegtron"
+
+    def test_returns_400_when_changing_monitor_type(self, api_client: requests.Session, api_base_url: str):
+        """Test that changing monitor_type on an existing monitor is rejected."""
+        monitor_id = self._create_kegtron_monitor(api_client, api_base_url, "-type-change")
+
+        update_data = {"monitorType": "open-plaato-keg"}
+
+        response = api_client.patch(f"{api_base_url}/tap_monitors/{monitor_id}", json=update_data)
+
+        assert response.status_code == 400
+        assert "cannot change the type" in response.json()["message"].lower()
+
+
 class TestUpdateTapMonitor:
     """Tests for PATCH /tap_monitors/{id} endpoint."""
 
