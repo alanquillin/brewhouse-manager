@@ -86,7 +86,7 @@ class KegtronPro(KegtronBase):
             return await fn(meta)
 
         return await self._get_from_key(fn, meta)
-    
+
     async def get_all(self, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> Dict:
         if not monitor_id and not monitor and not meta:
             raise Exception("monitor_id, monitor, or meta must be provided")
@@ -126,7 +126,7 @@ class KegtronPro(KegtronBase):
         self.logger.debug("meta: %s", meta)
         self.logger.debug("default_vol_unit: %s", self.default_vol_unit)
         return meta.get("unit", self.default_vol_unit).lower()
-    
+
     async def _get_online_status(self, meta, params=None):
         pass
 

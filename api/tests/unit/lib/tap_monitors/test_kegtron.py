@@ -10,7 +10,6 @@ import pytest
 from lib.tap_monitors.exceptions import TapMonitorDependencyError
 from lib.tap_monitors.kegtron import MONITOR_TYPE, KegtronPro
 
-
 RESOURCES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "_resources")
 
 

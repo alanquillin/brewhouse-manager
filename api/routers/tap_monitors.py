@@ -204,7 +204,7 @@ async def update_tap_monitor(
     # Validate kegtron-pro required meta fields when meta is being updated
     if "monitor_type" in data:
         raise HTTPException(status_code=400, detail="You cannot change the type of an existing tap monitor")
-    
+
     if data.get("meta"):
         if tap_monitor.monitor_type == "kegtron-pro":
             _validate_kegtron_pro_meta(data["meta"], allow_missing=True)
