@@ -61,7 +61,7 @@ class TestDeletePlaatoKegDevice:
         # Verify tap monitor still exists
         get_monitor = api_client.get(f"{api_base_url}/tap_monitors/{monitor_id}")
         assert get_monitor.status_code == 200
-        
+
         response = api_client.delete(f"{api_base_url}/tap_monitors/{monitor_id}")
         assert response.status_code == 204
 
@@ -83,7 +83,6 @@ class TestDeletePlaatoKegDevice:
         # Verify tap monitor is also gone
         get_monitor = api_client.get(f"{api_base_url}/tap_monitors/{monitor_id}")
         assert get_monitor.status_code == 404
-
 
     def test_returns_404_for_nonexistent_device(self, api_client: requests.Session, api_base_url: str):
         """Test deleting a non-existent device returns 404."""
