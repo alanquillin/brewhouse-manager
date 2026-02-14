@@ -155,7 +155,7 @@
               name="monitorType"
               [(ngModel)]="modifyTapMonitor.editValues.monitorType"
               (selectionChange)="monitorTypeChanged()"
-              [disabled]="tapMonitorDiscoveryProcessing"
+              [disabled]="tapMonitorDiscoveryProcessing || editing"
             >
               @for (t of monitorTypes; track t.type) {
                 <mat-option [value]="t.type">
