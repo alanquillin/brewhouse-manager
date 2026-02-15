@@ -853,3 +853,178 @@ class TestKegtronPro:
 
         call_kwargs = mock_client.post.call_args.kwargs
         assert call_kwargs["params"]["access_token"] == "my_token"
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_update_with_path(self, mock_async_client, monitor):
+        resp = _make_mock_response(200)
+        mock_client = _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok"}
+        run_async(monitor._update({"d": 1}, meta, path="/rpc/SomeMethod"))
+
+        call_args = mock_client.post.call_args
+        assert "/rpc/SomeMethod" in call_args[0][0]
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_update_without_path(self, mock_async_client, monitor):
+        resp = _make_mock_response(200)
+        mock_client = _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok"}
+        run_async(monitor._update({"d": 1}, meta))
+
+        call_args = mock_client.post.call_args
+        assert call_args[0][0] == "https://mdash.net/api/v2/m/device"
+
+    # ------------------------------------------------------------------
+    # update_user_overrides
+    # ------------------------------------------------------------------
+
+    def test_update_user_overrides_no_args_raises(self, monitor):
+        with pytest.raises(ValueError, match="monitor_id, monitor, or meta must be provided"):
+            run_async(monitor.update_user_overrides({}))
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_update_user_overrides_filters_keys(self, mock_async_client, monitor):
+        resp = _make_mock_response(200)
+        mock_client = _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok", "port_num": 1}
+        data = {"volStart": 19000, "dateTapped": "2025/01/15", "badKey": "nope"}
+        result = run_async(monitor.update_user_overrides(data, meta=meta))
+
+        assert result is True
+        posted_data = mock_client.post.call_args.kwargs["json"]
+        port_data = posted_data["state"]["config_readonly"]["port1"]
+        assert port_data == {"volStart": 19000, "dateTapped": "2025/01/15"}
+        assert "badKey" not in port_data
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_update_user_overrides_uses_rpc_path(self, mock_async_client, monitor):
+        resp = _make_mock_response(200)
+        mock_client = _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok", "port_num": 0}
+        run_async(monitor.update_user_overrides({"volStart": 10000}, meta=meta))
+
+        call_args = mock_client.post.call_args
+        assert "/rpc/Kegtron.UserOverride" in call_args[0][0]
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_update_user_overrides_missing_port_num_raises(self, mock_async_client, monitor):
+        meta = {"access_token": "tok"}
+        with pytest.raises(ValueError, match="port_num not found"):
+            run_async(monitor.update_user_overrides({"volStart": 10000}, meta=meta))
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_update_user_overrides_date_cleaned(self, mock_async_client, monitor):
+        resp = _make_mock_response(200)
+        mock_client = _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok", "port_num": 2}
+        data = {"dateCleaned": "2025/06/01"}
+        run_async(monitor.update_user_overrides(data, meta=meta))
+
+        posted_data = mock_client.post.call_args.kwargs["json"]
+        assert posted_data["state"]["config_readonly"]["port2"]["dateCleaned"] == "2025/06/01"
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_update_user_overrides_returns_false_on_failure(self, mock_async_client, monitor):
+        resp = _make_mock_response(500)
+        _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok", "port_num": 0}
+        result = run_async(monitor.update_user_overrides({"volStart": 10000}, meta=meta))
+        assert result is False
+
+    # ------------------------------------------------------------------
+    # reset_volume
+    # ------------------------------------------------------------------
+
+    def test_reset_volume_no_args_raises(self, monitor):
+        with pytest.raises(ValueError, match="monitor_id, monitor, or meta must be provided"):
+            run_async(monitor.reset_volume())
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_reset_volume_sends_port_num(self, mock_async_client, monitor):
+        resp = _make_mock_response(200)
+        mock_client = _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok", "port_num": 2}
+        result = run_async(monitor.reset_volume(meta=meta))
+
+        assert result is True
+        posted_data = mock_client.post.call_args.kwargs["json"]
+        assert posted_data == {"port": 2}
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_reset_volume_uses_rpc_path(self, mock_async_client, monitor):
+        resp = _make_mock_response(200)
+        mock_client = _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok", "port_num": 0}
+        run_async(monitor.reset_volume(meta=meta))
+
+        call_args = mock_client.post.call_args
+        assert "/rpc/Kegtron.ResetVolume" in call_args[0][0]
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_reset_volume_missing_port_num_raises(self, mock_async_client, monitor):
+        meta = {"access_token": "tok"}
+        with pytest.raises(ValueError, match="port_num not found"):
+            run_async(monitor.reset_volume(meta=meta))
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_reset_volume_returns_false_on_failure(self, mock_async_client, monitor):
+        resp = _make_mock_response(500)
+        _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok", "port_num": 0}
+        result = run_async(monitor.reset_volume(meta=meta))
+        assert result is False
+
+    # ------------------------------------------------------------------
+    # reset_kegs_served
+    # ------------------------------------------------------------------
+
+    def test_reset_kegs_served_no_args_raises(self, monitor):
+        with pytest.raises(ValueError, match="monitor_id, monitor, or meta must be provided"):
+            run_async(monitor.reset_kegs_served())
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_reset_kegs_served_sends_port_num(self, mock_async_client, monitor):
+        resp = _make_mock_response(200)
+        mock_client = _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok", "port_num": 3}
+        result = run_async(monitor.reset_kegs_served(meta=meta))
+
+        assert result is True
+        posted_data = mock_client.post.call_args.kwargs["json"]
+        assert posted_data == {"port": 3}
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_reset_kegs_served_uses_rpc_path(self, mock_async_client, monitor):
+        resp = _make_mock_response(200)
+        mock_client = _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok", "port_num": 0}
+        run_async(monitor.reset_kegs_served(meta=meta))
+
+        call_args = mock_client.post.call_args
+        assert "/rpc/Kegtron.ResetKegsServed" in call_args[0][0]
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_reset_kegs_served_missing_port_num_raises(self, mock_async_client, monitor):
+        meta = {"access_token": "tok"}
+        with pytest.raises(ValueError, match="port_num not found"):
+            run_async(monitor.reset_kegs_served(meta=meta))
+
+    @patch("lib.tap_monitors.kegtron.AsyncClient")
+    def test_reset_kegs_served_returns_false_on_failure(self, mock_async_client, monitor):
+        resp = _make_mock_response(500)
+        _make_mock_http_client(mock_async_client, resp)
+
+        meta = {"access_token": "tok", "port_num": 0}
+        result = run_async(monitor.reset_kegs_served(meta=meta))
+        assert result is False

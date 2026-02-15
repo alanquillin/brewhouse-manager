@@ -256,3 +256,136 @@ class TestResetPort:
 
             call_args = mock_kegtron_lib.update_user_overrides.call_args
             assert call_args[1]["meta"] == mock_monitor_1.meta
+
+    def test_update_date_tapped_includes_date(self):
+        """Test that update_date_tapped=true adds dateTapped to the payload"""
+        from routers.kegtron import reset_port
+
+        mock_auth_user = create_mock_auth_user()
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        mock_kegtron_lib = MagicMock()
+        mock_kegtron_lib.update_user_overrides = AsyncMock(return_value=True)
+        mock_kegtron_lib.reset_volume = AsyncMock(return_value=True)
+        mock_kegtron_lib.reset_kegs_served = AsyncMock(return_value=True)
+        request_data = create_reset_request(volume_size=5.0, volume_unit="gal")
+        mock_request = create_mock_request(query_params={"update_date_tapped": "true"})
+
+        with (
+            patch("routers.kegtron.TapMonitorsDB") as mock_db,
+            patch("routers.kegtron.get_tap_monitor_lib", return_value=mock_kegtron_lib),
+        ):
+            mock_db.query = AsyncMock(return_value=[mock_monitor])
+
+            run_async(reset_port("device-1", 0, request_data, mock_request, mock_auth_user, mock_session))
+
+            call_args = mock_kegtron_lib.update_user_overrides.call_args
+            data = call_args[0][0]
+            assert "dateTapped" in data
+            assert "volStart" in data
+
+    def test_update_date_tapped_false_excludes_date(self):
+        """Test that without update_date_tapped, dateTapped is not included"""
+        from routers.kegtron import reset_port
+
+        mock_auth_user = create_mock_auth_user()
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        mock_kegtron_lib = MagicMock()
+        mock_kegtron_lib.update_user_overrides = AsyncMock(return_value=True)
+        mock_kegtron_lib.reset_volume = AsyncMock(return_value=True)
+        mock_kegtron_lib.reset_kegs_served = AsyncMock(return_value=True)
+        request_data = create_reset_request(volume_size=5.0, volume_unit="gal")
+        mock_request = create_mock_request()
+
+        with (
+            patch("routers.kegtron.TapMonitorsDB") as mock_db,
+            patch("routers.kegtron.get_tap_monitor_lib", return_value=mock_kegtron_lib),
+        ):
+            mock_db.query = AsyncMock(return_value=[mock_monitor])
+
+            run_async(reset_port("device-1", 0, request_data, mock_request, mock_auth_user, mock_session))
+
+            call_args = mock_kegtron_lib.update_user_overrides.call_args
+            data = call_args[0][0]
+            assert "dateTapped" not in data
+            assert "volStart" in data
+
+    def test_reset_volume_failure_returns_502(self):
+        """Test raises 502 when reset_volume fails"""
+        from routers.kegtron import reset_port
+
+        mock_auth_user = create_mock_auth_user()
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        mock_kegtron_lib = MagicMock()
+        mock_kegtron_lib.update_user_overrides = AsyncMock(return_value=True)
+        mock_kegtron_lib.reset_volume = AsyncMock(return_value=False)
+        mock_kegtron_lib.reset_kegs_served = AsyncMock(return_value=True)
+        request_data = create_reset_request(volume_size=5.0, volume_unit="gal")
+        mock_request = create_mock_request()
+
+        with (
+            patch("routers.kegtron.TapMonitorsDB") as mock_db,
+            patch("routers.kegtron.get_tap_monitor_lib", return_value=mock_kegtron_lib),
+        ):
+            mock_db.query = AsyncMock(return_value=[mock_monitor])
+
+            with pytest.raises(HTTPException) as exc_info:
+                run_async(reset_port("device-1", 0, request_data, mock_request, mock_auth_user, mock_session))
+
+            assert exc_info.value.status_code == 502
+
+    def test_reset_kegs_served_failure_returns_502(self):
+        """Test raises 502 when reset_kegs_served fails"""
+        from routers.kegtron import reset_port
+
+        mock_auth_user = create_mock_auth_user()
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        mock_kegtron_lib = MagicMock()
+        mock_kegtron_lib.update_user_overrides = AsyncMock(return_value=True)
+        mock_kegtron_lib.reset_volume = AsyncMock(return_value=True)
+        mock_kegtron_lib.reset_kegs_served = AsyncMock(return_value=False)
+        request_data = create_reset_request(volume_size=5.0, volume_unit="gal")
+        mock_request = create_mock_request()
+
+        with (
+            patch("routers.kegtron.TapMonitorsDB") as mock_db,
+            patch("routers.kegtron.get_tap_monitor_lib", return_value=mock_kegtron_lib),
+        ):
+            mock_db.query = AsyncMock(return_value=[mock_monitor])
+
+            with pytest.raises(HTTPException) as exc_info:
+                run_async(reset_port("device-1", 0, request_data, mock_request, mock_auth_user, mock_session))
+
+            assert exc_info.value.status_code == 502
+
+    def test_all_three_operations_called_concurrently(self):
+        """Test that update_user_overrides, reset_volume, and reset_kegs_served are all called"""
+        from routers.kegtron import reset_port
+
+        mock_auth_user = create_mock_auth_user()
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        mock_kegtron_lib = MagicMock()
+        mock_kegtron_lib.update_user_overrides = AsyncMock(return_value=True)
+        mock_kegtron_lib.reset_volume = AsyncMock(return_value=True)
+        mock_kegtron_lib.reset_kegs_served = AsyncMock(return_value=True)
+        request_data = create_reset_request(volume_size=5.0, volume_unit="gal")
+        mock_request = create_mock_request()
+
+        with (
+            patch("routers.kegtron.TapMonitorsDB") as mock_db,
+            patch("routers.kegtron.get_tap_monitor_lib", return_value=mock_kegtron_lib),
+        ):
+            mock_db.query = AsyncMock(return_value=[mock_monitor])
+
+            run_async(reset_port("device-1", 0, request_data, mock_request, mock_auth_user, mock_session))
+
+            mock_kegtron_lib.update_user_overrides.assert_called_once()
+            mock_kegtron_lib.reset_volume.assert_called_once()
+            mock_kegtron_lib.reset_kegs_served.assert_called_once()
+            # Verify reset_volume and reset_kegs_served receive the correct meta
+            assert mock_kegtron_lib.reset_volume.call_args[1]["meta"] == mock_monitor.meta
+            assert mock_kegtron_lib.reset_kegs_served.call_args[1]["meta"] == mock_monitor.meta
