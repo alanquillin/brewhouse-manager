@@ -1,13 +1,15 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
+import { KegtronResetDialogComponent } from '../../_dialogs/kegtron-reset-dialog/kegtron-reset-dialog.component';
 import { Batch, Beer, Beverage, Location, Tap, TapMonitor } from '../../models/models';
 import { ManageTapsComponent } from './taps.component';
 
@@ -19,6 +21,7 @@ describe('ManageTapsComponent', () => {
   let mockSettingsService: jasmine.SpyObj<SettingsService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+  let mockDialog: jasmine.SpyObj<MatDialog>;
 
   const mockUserInfo = {
     id: 'user-1',
@@ -90,6 +93,7 @@ describe('ManageTapsComponent', () => {
     mockSettingsService = jasmine.createSpyObj('SettingsService', ['getSetting']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+    mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
 
     mockCurrentUserService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
     mockDataService.getLocations.and.returnValue(of(mockLocations as any));
@@ -108,6 +112,7 @@ describe('ManageTapsComponent', () => {
         { provide: SettingsService, useValue: mockSettingsService },
         { provide: Router, useValue: mockRouter },
         { provide: MatSnackBar, useValue: mockSnackBar },
+        { provide: MatDialog, useValue: mockDialog },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -699,6 +704,140 @@ describe('ManageTapsComponent', () => {
       component.displayError('Something went wrong');
 
       expect(mockSnackBar.open).toHaveBeenCalledWith('Error: Something went wrong', 'Close');
+    });
+  });
+
+  describe('save with kegtron-pro monitor', () => {
+    let afterClosedSubject: Subject<string | undefined>;
+
+    beforeEach(() => {
+      fixture.detectChanges();
+
+      afterClosedSubject = new Subject<string | undefined>();
+      const mockDialogRef = { afterClosed: () => afterClosedSubject.asObservable() };
+      mockDialog.open.and.returnValue(mockDialogRef as any);
+      mockDataService.updateTap.and.returnValue(of(mockTaps[0] as any));
+
+      component.modifyTap = new Tap({
+        id: 'tap-1',
+        description: 'Tap 1',
+        tapNumber: 1,
+        locationId: 'loc-1',
+        tapMonitor: {
+          id: 'tm-kegtron',
+          monitorType: 'kegtron-pro',
+          meta: { deviceId: 'kegtron-dev-1', portNum: 0 },
+        },
+      } as any);
+      component.modifyTap.enableEditing();
+      component.modifyTap.editValues.batchId = 'batch-1';
+    });
+
+    it('should open kegtron reset dialog when batchId changes on kegtron-pro tap', () => {
+      component.save();
+
+      expect(mockDialog.open).toHaveBeenCalledWith(
+        KegtronResetDialogComponent,
+        jasmine.objectContaining({
+          data: jasmine.objectContaining({
+            deviceId: 'kegtron-dev-1',
+            portNum: 0,
+            showSkip: true,
+            updateDateTapped: true,
+          }),
+        })
+      );
+    });
+
+    it('should execute save when dialog result is submit', () => {
+      component.save();
+      afterClosedSubject.next('submit');
+
+      expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', jasmine.any(Object));
+    });
+
+    it('should execute save when dialog result is skip', () => {
+      component.save();
+      afterClosedSubject.next('skip');
+
+      expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', jasmine.any(Object));
+    });
+
+    it('should not execute save when dialog result is cancel', () => {
+      component.save();
+      afterClosedSubject.next('cancel');
+
+      expect(mockDataService.updateTap).not.toHaveBeenCalled();
+    });
+
+    it('should not execute save when dialog is dismissed (undefined)', () => {
+      component.save();
+      afterClosedSubject.next(undefined);
+
+      expect(mockDataService.updateTap).not.toHaveBeenCalled();
+    });
+
+    it('should not open dialog when tap has non-kegtron monitor', () => {
+      component.modifyTap = new Tap({
+        id: 'tap-2',
+        description: 'Tap 2',
+        tapNumber: 2,
+        locationId: 'loc-1',
+        tapMonitor: {
+          id: 'tm-plaato',
+          monitorType: 'open-plaato-keg',
+          meta: { deviceId: 'plaato-dev-1' },
+        },
+      } as any);
+      component.modifyTap.enableEditing();
+      component.modifyTap.editValues.batchId = 'batch-1';
+
+      component.save();
+
+      expect(mockDialog.open).not.toHaveBeenCalled();
+      expect(mockDataService.updateTap).toHaveBeenCalled();
+    });
+
+    it('should not open dialog when batchId is not in changes', () => {
+      component.modifyTap.editValues.description = 'Updated Description';
+      // Remove batchId from editValues so it's not in changes
+      delete component.modifyTap.editValues.batchId;
+
+      component.save();
+
+      expect(mockDialog.open).not.toHaveBeenCalled();
+      expect(mockDataService.updateTap).toHaveBeenCalled();
+    });
+
+    it('should not open dialog when tap has no monitor', () => {
+      component.modifyTap = new Tap({
+        id: 'tap-3',
+        description: 'Tap 3',
+        tapNumber: 3,
+        locationId: 'loc-1',
+      } as any);
+      component.modifyTap.enableEditing();
+      component.modifyTap.editValues.batchId = 'batch-1';
+
+      component.save();
+
+      expect(mockDialog.open).not.toHaveBeenCalled();
+      expect(mockDataService.updateTap).toHaveBeenCalled();
+    });
+
+    it('should pass batchId to dialog data when batch exists', () => {
+      component.batches = [new Batch({ id: 'batch-1', beerId: 'beer-1' } as any)];
+
+      component.save();
+
+      expect(mockDialog.open).toHaveBeenCalledWith(
+        KegtronResetDialogComponent,
+        jasmine.objectContaining({
+          data: jasmine.objectContaining({
+            batchId: 'batch-1',
+          }),
+        })
+      );
     });
   });
 });

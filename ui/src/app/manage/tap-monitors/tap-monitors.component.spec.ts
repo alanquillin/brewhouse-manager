@@ -1,12 +1,14 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
+import { KegtronResetDialogComponent } from '../../_dialogs/kegtron-reset-dialog/kegtron-reset-dialog.component';
 import { Location, TapMonitor, TapMonitorType } from '../../models/models';
 import { ManageTapMonitorsComponent } from './tap-monitors.component';
 
@@ -17,6 +19,7 @@ describe('ManageTapMonitorsComponent', () => {
   let mockDataService: jasmine.SpyObj<DataService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+  let mockDialog: jasmine.SpyObj<MatDialog>;
 
   const mockUserInfo = {
     id: 'user-1',
@@ -72,6 +75,7 @@ describe('ManageTapMonitorsComponent', () => {
     ]);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+    mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
 
     mockCurrentUserService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
     mockDataService.getLocations.and.returnValue(of(mockLocations as any));
@@ -86,6 +90,7 @@ describe('ManageTapMonitorsComponent', () => {
         { provide: DataService, useValue: mockDataService },
         { provide: Router, useValue: mockRouter },
         { provide: MatSnackBar, useValue: mockSnackBar },
+        { provide: MatDialog, useValue: mockDialog },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -679,6 +684,64 @@ describe('ManageTapMonitorsComponent', () => {
       component.displayError('Something went wrong');
 
       expect(mockSnackBar.open).toHaveBeenCalledWith('Error: Something went wrong', 'Close');
+    });
+  });
+
+  describe('resetKegtron', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
+    it('should open KegtronResetDialogComponent with correct data', () => {
+      const tapMonitor = new TapMonitor({
+        id: 'tm-kegtron',
+        name: 'Kegtron Monitor',
+        monitorType: 'kegtron-pro',
+        locationId: 'loc-1',
+        meta: { deviceId: 'kegtron-dev-1', portNum: 0 },
+      } as any);
+
+      component.resetKegtron(tapMonitor);
+
+      expect(mockDialog.open).toHaveBeenCalledWith(KegtronResetDialogComponent, {
+        data: {
+          deviceId: 'kegtron-dev-1',
+          portNum: 0,
+        },
+      });
+    });
+
+    it('should pass correct portNum for non-zero port', () => {
+      const tapMonitor = new TapMonitor({
+        id: 'tm-kegtron-2',
+        name: 'Kegtron Monitor Port 1',
+        monitorType: 'kegtron-pro',
+        locationId: 'loc-1',
+        meta: { deviceId: 'kegtron-dev-2', portNum: 1 },
+      } as any);
+
+      component.resetKegtron(tapMonitor);
+
+      expect(mockDialog.open).toHaveBeenCalledWith(KegtronResetDialogComponent, {
+        data: {
+          deviceId: 'kegtron-dev-2',
+          portNum: 1,
+        },
+      });
+    });
+
+    it('should not pass showSkip or updateDateTapped', () => {
+      const tapMonitor = new TapMonitor({
+        id: 'tm-kegtron',
+        monitorType: 'kegtron-pro',
+        meta: { deviceId: 'kegtron-dev-1', portNum: 0 },
+      } as any);
+
+      component.resetKegtron(tapMonitor);
+
+      const dialogData = mockDialog.open.calls.mostRecent().args[1]?.data as any;
+      expect(dialogData.showSkip).toBeUndefined();
+      expect(dialogData.updateDateTapped).toBeUndefined();
     });
   });
 });

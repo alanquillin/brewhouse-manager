@@ -878,6 +878,78 @@ describe('DataService', () => {
     });
   });
 
+  describe('Kegtron Device API', () => {
+    it('should POST to reset kegtron port', () => {
+      const data = { volumeSize: 5.0, volumeUnit: 'gal' };
+
+      service.resetKegtronPort('dev-1', 0, data).subscribe();
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(data);
+      req.flush(true);
+    });
+
+    it('should include update_date_tapped query param when true', () => {
+      const data = { volumeSize: 5.0, volumeUnit: 'gal' };
+
+      service.resetKegtronPort('dev-1', 0, data, true).subscribe();
+
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/dev-1/0?update_date_tapped=true'
+      );
+      expect(req.request.method).toBe('POST');
+      req.flush(true);
+    });
+
+    it('should not include query param when updateDateTapped is false', () => {
+      const data = { volumeSize: 5.0, volumeUnit: 'gal' };
+
+      service.resetKegtronPort('dev-1', 0, data, false).subscribe();
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
+      expect(req.request.method).toBe('POST');
+      req.flush(true);
+    });
+
+    it('should not include query param when updateDateTapped is omitted', () => {
+      const data = { volumeSize: 5.0, volumeUnit: 'gal' };
+
+      service.resetKegtronPort('dev-1', 0, data).subscribe();
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
+      expect(req.request.method).toBe('POST');
+      req.flush(true);
+    });
+
+    it('should handle kegtron port reset errors', (done: DoneFn) => {
+      const data = { volumeSize: 5.0, volumeUnit: 'gal' };
+
+      service.resetKegtronPort('dev-1', 0, data).subscribe({
+        error: err => {
+          expect(err.statusCode).toBe(502);
+          done();
+        },
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
+      req.flush(
+        { message: 'Failed to update kegtron device' },
+        { status: 502, statusText: 'Bad Gateway' }
+      );
+    });
+
+    it('should use correct port number in URL', () => {
+      const data = { volumeSize: 19.0, volumeUnit: 'l' };
+
+      service.resetKegtronPort('dev-2', 1, data).subscribe();
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-2/1');
+      expect(req.request.method).toBe('POST');
+      req.flush(true);
+    });
+  });
+
   describe('Health API', () => {
     it('should check if available', () => {
       service.isAvailable().subscribe();
