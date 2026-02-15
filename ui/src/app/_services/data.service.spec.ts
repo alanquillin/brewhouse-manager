@@ -948,6 +948,127 @@ describe('DataService', () => {
       expect(req.request.method).toBe('POST');
       req.flush(true);
     });
+
+    it('should return true on successful reset', (done: DoneFn) => {
+      const data = { volumeSize: 5.0, volumeUnit: 'gal' };
+
+      service.resetKegtronPort('dev-1', 0, data).subscribe(result => {
+        expect(result).toBe(true);
+        done();
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
+      req.flush(true);
+    });
+
+    it('should include batchId in request body when provided', () => {
+      const data = { volumeSize: 5.0, volumeUnit: 'gal', batchId: 'batch-abc-123' };
+
+      service.resetKegtronPort('dev-1', 0, data).subscribe();
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
+      expect(req.request.body).toEqual({
+        volumeSize: 5.0,
+        volumeUnit: 'gal',
+        batchId: 'batch-abc-123',
+      });
+      req.flush(true);
+    });
+
+    it('should send ml volume unit in payload', () => {
+      const data = { volumeSize: 19000.0, volumeUnit: 'ml' };
+
+      service.resetKegtronPort('dev-1', 0, data).subscribe();
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
+      expect(req.request.body.volumeUnit).toBe('ml');
+      expect(req.request.body.volumeSize).toBe(19000.0);
+      req.flush(true);
+    });
+
+    it('should send liters volume unit in payload', () => {
+      const data = { volumeSize: 19.0, volumeUnit: 'l' };
+
+      service.resetKegtronPort('dev-1', 0, data).subscribe();
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
+      expect(req.request.body.volumeUnit).toBe('l');
+      expect(req.request.body.volumeSize).toBe(19.0);
+      req.flush(true);
+    });
+
+    it('should return DataError on 400 invalid volume unit', (done: DoneFn) => {
+      const data = { volumeSize: 5.0, volumeUnit: 'invalid' };
+
+      service.resetKegtronPort('dev-1', 0, data).subscribe({
+        error: err => {
+          expect(err instanceof DataError).toBe(true);
+          expect(err.statusCode).toBe(400);
+          expect(err.message).toBe('Invalid volume unit');
+          done();
+        },
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
+      req.flush(
+        { message: 'Invalid volume unit' },
+        { status: 400, statusText: 'Bad Request' }
+      );
+    });
+
+    it('should return DataError on 404 device not found', (done: DoneFn) => {
+      const data = { volumeSize: 5.0, volumeUnit: 'gal' };
+
+      service.resetKegtronPort('nonexistent', 0, data).subscribe({
+        error: err => {
+          expect(err instanceof DataError).toBe(true);
+          expect(err.statusCode).toBe(404);
+          expect(err.message).toBe('Tap monitor not found');
+          done();
+        },
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/nonexistent/0');
+      req.flush(
+        { message: 'Tap monitor not found' },
+        { status: 404, statusText: 'Not Found' }
+      );
+    });
+
+    it('should emit unauthorized event on 401 error', (done: DoneFn) => {
+      const data = { volumeSize: 5.0, volumeUnit: 'gal' };
+
+      service.unauthorized.subscribe(error => {
+        expect(error.statusCode).toBe(401);
+        done();
+      });
+
+      service.resetKegtronPort('dev-1', 0, data).subscribe({
+        error: () => {},
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
+      req.flush(
+        { message: 'Unauthorized' },
+        { status: 401, statusText: 'Unauthorized' }
+      );
+    });
+
+    it('should combine batchId and updateDateTapped in same request', () => {
+      const data = { volumeSize: 5.0, volumeUnit: 'gal', batchId: 'batch-456' };
+
+      service.resetKegtronPort('dev-1', 0, data, true).subscribe();
+
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/dev-1/0?update_date_tapped=true'
+      );
+      expect(req.request.body).toEqual({
+        volumeSize: 5.0,
+        volumeUnit: 'gal',
+        batchId: 'batch-456',
+      });
+      req.flush(true);
+    });
   });
 
   describe('Health API', () => {
