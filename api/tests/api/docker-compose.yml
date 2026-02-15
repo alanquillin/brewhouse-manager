@@ -20,7 +20,7 @@ services:
       - TAP_MONITORS_OPEN_PLAATO_KEG_ENABLED=true
       - TAP_MONITORS_KEG_VOLUME_MONITORS_ENABLED=true
       - TAP_MONITORS_KEG_VOLUME_MONITORS_WEIGHT_ENABLED=true
-      - TAP_MONITORS_KEGTRON_PRO_ENABLED=false
+      - TAP_MONITORS_KEGTRON_PRO_ENABLED=true
     depends_on:
       postgres:
         condition: service_healthy
