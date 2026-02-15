@@ -89,6 +89,16 @@
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let element">
               <div class="actions">
+                @if (element.monitorType === 'kegtron-pro') {
+                  <button
+                    mat-icon-button
+                    color="accent"
+                    aria-label="Reset kegtron monitor"
+                    (click)="resetKegtron(element)"
+                  >
+                    <mat-icon>restart_alt</mat-icon>
+                  </button>
+                }
                 <button
                   mat-icon-button
                   color="primary"

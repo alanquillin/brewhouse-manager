@@ -434,6 +434,15 @@ export class DataService {
     );
   }
 
+  resetKegtronPort(deviceId: string, portNum: number, data: any): Observable<boolean> {
+    const url = `${this.apiBaseUrl}/devices/kegtron/${deviceId}/${portNum}`;
+    return this.http.post<boolean>(url, data, httpOptions).pipe(
+      catchError(err => {
+        return this.getError(err);
+      })
+    );
+  }
+
   setPlaatoKegMode(deviceId: string, mode: string): Observable<any> {
     const url = `${this.apiBaseUrl}/devices/plaato_keg/${deviceId}/set/mode`;
     return this.http.post<any>(url, { value: mode }, httpOptions).pipe(

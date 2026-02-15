@@ -816,7 +816,7 @@ class TestKegtronPro:
 
         meta = {"access_token": "tok", "port_num": 2}
         data = {"userName": "New IPA", "abv": 7.5, "badKey": "nope"}
-        result = run_async(monitor.update_port(2, data, meta=meta))
+        result = run_async(monitor.update_port(data, meta=meta))
 
         assert result is True
         posted_data = mock_client.post.call_args.kwargs["json"]

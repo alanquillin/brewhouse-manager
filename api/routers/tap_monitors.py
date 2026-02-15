@@ -3,6 +3,7 @@
 from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy import Integer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.tap_monitors import TapMonitors as TapMonitorsDB
@@ -129,15 +130,28 @@ async def create_tap_monitor(
     # Check for duplicate device_id within the same monitor type
     device_id = (data.get("meta") or {}).get("device_id")
     if device_id and monitor_type:
-        existing = await TapMonitorsDB.query(
-            db_session,
-            monitor_type=monitor_type,
-            q_fn=lambda q: q.where(TapMonitorsDB.meta["device_id"].astext == device_id),
-        )
+        err_msg = f"A tap monitor of type '{monitor_type}' already exists for device '{device_id}'"
+        if monitor_type == "kegtron-pro":
+            port_num = (data.get("meta") or {}).get("port_num")
+            err_msg = f"A tap monitor of type '{monitor_type}' already exists for device '{device_id}' and port {port_num}"
+            existing = await TapMonitorsDB.query(
+                db_session,
+                monitor_type=monitor_type,
+                q_fn=lambda q: q.where(
+                    TapMonitorsDB.meta["device_id"].astext == device_id,
+                    TapMonitorsDB.meta["port_num"].astext.cast(Integer) == port_num
+                )
+            )
+        else: 
+            existing = await TapMonitorsDB.query(
+                db_session,
+                monitor_type=monitor_type,
+                q_fn=lambda q: q.where(TapMonitorsDB.meta["device_id"].astext == device_id),
+            )
         if existing:
             raise HTTPException(
                 status_code=409,
-                detail=f"A tap monitor of type '{monitor_type}' already exists for device '{device_id}'",
+                detail=err_msg,
             )
 
     LOGGER.debug("Creating tap monitor with: %s", data)

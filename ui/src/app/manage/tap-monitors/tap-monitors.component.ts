@@ -1,10 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
+
+import { KegtronResetDialogComponent } from '../../_dialogs/kegtron-reset-dialog/kegtron-reset-dialog.component';
 
 import {
   Location,
@@ -68,7 +71,8 @@ export class ManageTapMonitorsComponent implements OnInit {
     private currentUserService: CurrentUserService,
     private dataService: DataService,
     private router: Router,
-    private _snackBar: MatSnackBar
+    private _snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -403,7 +407,6 @@ export class ManageTapMonitorsComponent implements OnInit {
       [
         'keg-volume-monitor-weight',
         'keg-volume-monitor-flow',
-        'kegtron-pro',
         'open-plaato-keg',
         'plaato-keg',
       ].includes(this.modifyTapMonitor.editValues.monitorType)
@@ -429,6 +432,15 @@ export class ManageTapMonitorsComponent implements OnInit {
 
   get modifyForm(): Record<string, AbstractControl> {
     return this.modifyFormGroup.controls;
+  }
+
+  resetKegtron(tapMonitor: TapMonitor): void {
+    this.dialog.open(KegtronResetDialogComponent, {
+      data: {
+        deviceId: tapMonitor.meta.deviceId,
+        portNum: tapMonitor.meta.portNum,
+      },
+    });
   }
 
   getTapDetails(tapMonitor: TapMonitor): string {

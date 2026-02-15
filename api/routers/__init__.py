@@ -21,6 +21,7 @@ __all__ = [
     "image_transitions",
     "pages",
     "plaato_keg",
+    "kegtron",
 ]
 
 

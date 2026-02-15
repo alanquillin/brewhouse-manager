@@ -28,6 +28,7 @@ class KegtronPro(KegtronBase):
         "style",
         "volSize",
     ]
+    supported_port_user_override_keys = ["dateTapped", "dateCleaned", "volStart"]
 
     def __init__(self) -> None:
         super().__init__()
@@ -53,14 +54,8 @@ class KegtronPro(KegtronBase):
         return True
 
     async def is_online(self, monitor_id=None, monitor=None, meta=None, db_session=None, device=None, **kwargs) -> bool:
-        if not monitor_id and not monitor and not meta:
-            raise Exception("monitor_id, monitor, or meta must be provided")
-
         if not meta:
-            if not monitor:
-                async with async_session_scope(self.config) as db_session:
-                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
-            meta = monitor.meta
+            meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
 
         if not device:
             device = await self._get(meta)
@@ -70,15 +65,9 @@ class KegtronPro(KegtronBase):
 
         return device.get("online", False)
 
-    async def get(self, data_type, monitor_id=None, monitor=None, meta=None, **kwargs) -> any:
-        if not monitor_id and not monitor and not meta:
-            raise Exception("monitor_id, monitor, or meta must be provided")
-
+    async def get(self, data_type, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> any:
         if not meta:
-            if not monitor:
-                async with async_session_scope(self.config) as db_session:
-                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
-            meta = monitor.meta
+            meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
 
         fn = self._data_type_to_key[data_type]
 
@@ -88,14 +77,8 @@ class KegtronPro(KegtronBase):
         return await self._get_from_key(fn, meta)
 
     async def get_all(self, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> Dict:
-        if not monitor_id and not monitor and not meta:
-            raise Exception("monitor_id, monitor, or meta must be provided")
-
         if not meta:
-            if not monitor:
-                async with async_session_scope(self.config) as db_session:
-                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
-            meta = monitor.meta
+            meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
 
         device = await self._get(meta)
 
@@ -127,8 +110,6 @@ class KegtronPro(KegtronBase):
         self.logger.debug("default_vol_unit: %s", self.default_vol_unit)
         return meta.get("unit", self.default_vol_unit).lower()
 
-    async def _get_online_status(self, meta, params=None):
-        pass
 
     async def _get_served_data(self, meta, device=None, params=None):
         self.logger.debug("retrieving served data.")
@@ -272,15 +253,9 @@ class KegtronPro(KegtronBase):
 
             return devices
 
-    async def update_device(self, data, monitor_id=None, monitor=None, meta=None, params=None):
-        if not monitor_id and not monitor and not meta:
-            raise ValueError("monitor_id, monitor, or meta must be provided")
-
+    async def update_device(self, data, monitor_id=None, monitor=None, meta=None, params=None, db_session=None):
         if not meta:
-            if not monitor:
-                async with async_session_scope(self.config) as db_session:
-                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
-            meta = monitor.meta
+            meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
 
         d_data = {}
         for k, v in data.items():
@@ -289,19 +264,14 @@ class KegtronPro(KegtronBase):
             else:
                 self.logger.warning("ignoring unsupported kegtron pro device data with key `%s`", k)
         data = {"shadow": {"state": {"desired": {"config": d_data}}}}
-        return await self._update(data, meta, params)
+        return await self._update(data, meta, params=params)
 
-    async def update_port(self, port_num, data, monitor_id=None, monitor=None, meta=None, params=None):
-        if not monitor_id and not monitor and not meta:
-            raise ValueError("monitor_id, monitor, or meta must be provided")
-
+    async def update_port(self, data, monitor_id=None, monitor=None, meta=None, params=None, db_session=None):
         if not meta:
-            if not monitor:
-                async with async_session_scope(self.config) as db_session:
-                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
-            meta = monitor.meta
+            meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
+
         port_num = meta.get("port_num")
-        if not port_num:
+        if port_num is None:
             raise ValueError("port_num not found in tap monitor metadata")
 
         p_data = {}
@@ -312,17 +282,57 @@ class KegtronPro(KegtronBase):
                 self.logger.warning("ignoring unsupported kegtron pro device data with key `%s`", k)
 
         data = {"shadow": {"state": {"desired": {"config": {f"port{port_num}": p_data}}}}}
-        return await self._update(data, meta, params)
+        return await self._update(data, meta, params=params)
+    
+    async def update_user_overrides(self, data, monitor_id=None, monitor=None, meta=None, params=None, db_session=None):
+        if not meta:
+            meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
 
-    async def _update(self, data, meta, params=None):
+        port_num = meta.get("port_num")
+        if port_num is None:
+            raise ValueError("port_num not found in tap monitor metadata.  Meta: %s", meta)
+
+        p_data = {}
+        for k, v in data.items():
+            if k in self.supported_port_user_override_keys:
+                p_data[k] = v
+            else:
+                self.logger.warning("ignoring unsupported kegtron pro device data with key `%s`", k)
+
+        data = {"state": {"config_readonly": {f"port{port_num}": p_data}}}
+        return await self._update(data, meta, path="/rpc/Kegtron.UserOverride", params=params)
+    
+    async def reset_volume(self, monitor_id=None, monitor=None, meta=None, params=None, db_session=None):
+        if not meta:
+            meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
+
+        port_num = meta.get("port_num")
+        if port_num is None:
+            raise ValueError("port_num not found in tap monitor metadata")
+
+        data = {"port": port_num}
+        return await self._update(data, meta, path="/rpc/Kegtron.ResetVolume", params=params)
+    
+    async def reset_kegs_served(self, monitor_id=None, monitor=None, meta=None, params=None, db_session=None):
+        if not meta:
+            meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
+
+        port_num = meta.get("port_num")
+        if port_num is None:
+            raise ValueError("port_num not found in tap monitor metadata")
+
+        data = {"port": port_num}
+        return await self._update(data, meta, path="/rpc/Kegtron.ResetKegsServed", params=params)
+
+    async def _update(self, data, meta, path="", params=None):
         if not params:
             params = {}
         access_token = self._get_device_access_token(meta)
         params["access_token"] = access_token
-        url = "https://mdash.net/api/v2/m/device"
-        self.logger.debug("GET Request: %s, params: %s", url, params)
+        url = f"https://mdash.net/api/v2/m/device{path}"
+        self.logger.debug("POST Request: %s, params: %s, data: %s", url, params, data)
         async with AsyncClient() as client:
-            resp = await client.post(url, json=data, params=params)
+            resp = await client.post(url, json=data, params=params, timeout=10)
             self.logger.debug("GET response code: %s", resp.status_code)
 
             return resp.status_code == 200

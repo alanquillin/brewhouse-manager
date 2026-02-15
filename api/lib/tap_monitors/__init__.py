@@ -1,5 +1,7 @@
 from typing import Dict, List
 
+from db import async_session_scope
+from db.tap_monitors import TapMonitors as TapMonitorsDB
 from lib import Error, logging
 from lib.config import Config
 
@@ -23,6 +25,18 @@ class TapMonitorBase:
     def __init__(self) -> None:
         self.config = Config()
         self.logger = logging.getLogger(self.__class__.__name__)
+
+    async def extract_meta(self, monitor_id=None, monitor=None, meta=None, db_session=None) -> dict:
+        if not monitor_id and not monitor and not meta:
+            raise ValueError("monitor_id, monitor, or meta must be provided")
+
+        if not meta:
+            if not monitor:
+                if not db_session:
+                    async with async_session_scope(self.config) as db_session:
+                        return await self.extract_meta(monitor_id, monitor, meta, db_session)
+                    monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
+            return monitor.meta
 
 
 def _init_tap_monitors():

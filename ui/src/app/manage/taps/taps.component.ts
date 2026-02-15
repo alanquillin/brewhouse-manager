@@ -1,11 +1,14 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
+
+import { KegtronResetDialogComponent } from '../../_dialogs/kegtron-reset-dialog/kegtron-reset-dialog.component';
 
 import { Batch, Beer, Beverage, Location, Tap, TapMonitor, UserInfo } from '../../models/models';
 
@@ -64,7 +67,8 @@ export class ManageTapsComponent implements OnInit {
     private dataService: DataService,
     private settingsService: SettingsService,
     private router: Router,
-    private _snackBar: MatSnackBar
+    private _snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -335,6 +339,27 @@ export class ManageTapsComponent implements OnInit {
       updateData.tapMonitorId = null;
     }
 
+    if (
+      _.has(updateData, 'batchId') &&
+      this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro'
+    ) {
+      const dialogRef = this.dialog.open(KegtronResetDialogComponent, {
+        data: {
+          deviceId: this.modifyTap.tapMonitor.meta.deviceId,
+          portNum: this.modifyTap.tapMonitor.meta.portNum,
+        },
+      });
+      dialogRef.afterClosed().subscribe(result => {
+        if (result === 'submit' || result === 'skip') {
+          this._executeSave(updateData);
+        }
+      });
+    } else {
+      this._executeSave(updateData);
+    }
+  }
+
+  private _executeSave(updateData: any): void {
     this.processing = true;
     this.dataService.updateTap(this.modifyTap.id, updateData).subscribe({
       next: (_: Tap) => {

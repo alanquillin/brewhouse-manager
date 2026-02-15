@@ -46,6 +46,7 @@ import { HeaderComponent } from './_components/header/header.component';
 import { FileUploadDialogComponent } from './_dialogs/file-upload-dialog/file-upload-dialog.component';
 import { LocationImageDialogComponent } from './_dialogs/image-preview-dialog/image-preview-dialog.component';
 import { ImageSelectorDialogComponent } from './_dialogs/image-selector-dialog/image-selector-dialog.component';
+import { KegtronResetDialogComponent } from './_dialogs/kegtron-reset-dialog/kegtron-reset-dialog.component';
 import { LocationQRCodeDialogComponent } from './_dialogs/qrcode-dialog/qrcode-dialog.component';
 import { LocationSelectorComponent } from './location-selector/location-selector.component';
 import { LocationComponent } from './location/location.component';
@@ -82,6 +83,7 @@ export function initializeSettings(settingsService: SettingsService) {
     HeaderComponent,
     FooterComponent,
     ImageSelectorDialogComponent,
+    KegtronResetDialogComponent,
     LocationComponent,
     LocationImageDialogComponent,
     LocationQRCodeDialogComponent,
