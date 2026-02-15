@@ -1,4 +1,5 @@
 """Kegtron Device Management Router for FastAPI"""
+
 import asyncio
 from datetime import datetime
 from typing import Optional
@@ -13,7 +14,6 @@ from dependencies.auth import AuthUser, get_db_session, require_admin
 from lib import logging
 from lib.tap_monitors import get_tap_monitor_lib
 from lib.units import to_ml
-from services.batches import BatchService
 from schemas.base import CamelCaseModel
 
 router = APIRouter(prefix="/api/v1/devices/kegtron", tags=["kegtron_device_management"])
@@ -27,19 +27,21 @@ class ResetPortRequest(CamelCaseModel):
     volume_unit: str
     batch_id: Optional[str] = None
 
+
 def get_beer_data(batch_d, beer_d, key):
-    batch_ext_data = batch_d.get("external_brewing_tool_meta", {})
-    batch_ext_details = batch_ext_data.get("details", {})
+    batch_ext_data = (batch_d.get("external_brewing_tool_meta") or {})
+    batch_ext_details = (batch_ext_data.get("details") or {})
     v = batch_ext_details.get(key)
     if not v:
         batch_d.get(key)
     if not v:
-        beer_ext_data = beer_d.get("external_brewing_tool_meta", {})
-        beer_ext_details = beer_ext_data.get("details", {})
+        beer_ext_data = (beer_d.get("external_brewing_tool_meta") or {})
+        beer_ext_details = (beer_ext_data.get("details") or {})
         v = beer_ext_details.get(key)
     if not v:
         beer_d.get(key)
     return v
+
 
 @router.post("/{device_id}/{port_num}", response_model=bool)
 async def reset_port(
@@ -90,7 +92,7 @@ async def reset_port(
     tasks = [
         kegtron_lib.update_user_overrides(data, meta=monitor.meta),
         kegtron_lib.reset_volume(meta=monitor.meta),
-        kegtron_lib.reset_kegs_served(meta=monitor.meta)
+        kegtron_lib.reset_kegs_served(meta=monitor.meta),
     ]
 
     port_data = {}
@@ -98,7 +100,7 @@ async def reset_port(
         batch = await BatchesDB.get_by_pkey(db_session, request_data.batch_id)
         if not batch:
             raise HTTPException(status_code=400, detail=f"Batch with id '{request_data.batch_id}' not found.")
-        
+
         LOGGER.debug("Batch id set for kegtron rest, attempting to update the kegtron device.")
         if batch.beer_id:
             await batch.awaitable_attrs.beer

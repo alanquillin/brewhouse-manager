@@ -12,11 +12,7 @@ import requests
 
 pytestmark = pytest.mark.functional
 
-from .seed_data import (
-    BATCH_COFFEE_ID,
-    BATCH_IPA_ID,
-    LOCATION_SECONDARY_ID,
-)
+from .seed_data import BATCH_COFFEE_ID, BATCH_IPA_ID, LOCATION_SECONDARY_ID
 
 
 class TestResetKegtronPort:

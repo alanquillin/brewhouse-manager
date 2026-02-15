@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DataError, DataService } from '../../_services/data.service';
+import { isNilOrEmpty } from '../../utils/helpers';
 
 @Component({
   selector: 'app-kegtron-reset-dialog',
@@ -14,6 +15,7 @@ export class KegtronResetDialogComponent {
   volumeUnit = 'gal';
   processing = false;
   showSkip = false;
+  isNilOrEmpty = isNilOrEmpty;
 
   volumeUnits = [
     { value: 'gal', label: 'Gallons' },

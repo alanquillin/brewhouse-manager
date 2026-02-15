@@ -434,7 +434,12 @@ export class DataService {
     );
   }
 
-  resetKegtronPort(deviceId: string, portNum: number, data: any, updateDateTapped = false): Observable<boolean> {
+  resetKegtronPort(
+    deviceId: string,
+    portNum: number,
+    data: any,
+    updateDateTapped = false
+  ): Observable<boolean> {
     const params = [];
     if (updateDateTapped) params.push('update_date_tapped=true');
     const queryString = params.length > 0 ? `?${params.join('&')}` : '';

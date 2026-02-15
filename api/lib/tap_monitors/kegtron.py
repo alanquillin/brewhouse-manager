@@ -2,8 +2,6 @@ from typing import Dict
 
 from httpx import AsyncClient, BasicAuth
 
-from db import async_session_scope
-from db.tap_monitors import TapMonitors as TapMonitorsDB
 from lib.tap_monitors import TapMonitorBase
 from lib.tap_monitors.exceptions import TapMonitorDependencyError
 from lib.units import from_ml
@@ -18,18 +16,7 @@ MONITOR_TYPE = "kegtron-pro"
 
 class KegtronPro(KegtronBase):
     supported_device_keys = ["beaconEna", "cleanEna"]
-    supported_port_keys = [
-        "abv",
-        "beaconEna",
-        "userName",
-        "userDesc",
-        "ibu",
-        "maker",
-        "style",
-        "volSize",
-        "srm",
-        "labelUrl"
-    ]
+    supported_port_keys = ["abv", "beaconEna", "userName", "userDesc", "ibu", "maker", "style", "volSize", "srm", "labelUrl"]
     supported_port_user_override_keys = ["dateTapped", "dateCleaned", "volStart"]
 
     def __init__(self) -> None:
@@ -111,7 +98,6 @@ class KegtronPro(KegtronBase):
         self.logger.debug("meta: %s", meta)
         self.logger.debug("default_vol_unit: %s", self.default_vol_unit)
         return meta.get("unit", self.default_vol_unit).lower()
-
 
     async def _get_served_data(self, meta, device=None, params=None):
         self.logger.debug("retrieving served data.")
@@ -285,14 +271,14 @@ class KegtronPro(KegtronBase):
 
         data = {"shadow": {"state": {"desired": {"config": {f"port{port_num}": p_data}}}}}
         return await self._update(data, meta, params=params)
-    
+
     async def update_user_overrides(self, data, monitor_id=None, monitor=None, meta=None, params=None, db_session=None):
         if not meta:
             meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
 
         port_num = meta.get("port_num")
         if port_num is None:
-            raise ValueError("port_num not found in tap monitor metadata.  Meta: %s", meta)
+            raise ValueError("port_num not found in tap monitor metadata.")
 
         p_data = {}
         for k, v in data.items():
@@ -303,7 +289,7 @@ class KegtronPro(KegtronBase):
 
         data = {"state": {"config_readonly": {f"port{port_num}": p_data}}}
         return await self._update(data, meta, path="/rpc/Kegtron.UserOverride", params=params)
-    
+
     async def reset_volume(self, monitor_id=None, monitor=None, meta=None, params=None, db_session=None):
         if not meta:
             meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
@@ -314,7 +300,7 @@ class KegtronPro(KegtronBase):
 
         data = {"port": port_num}
         return await self._update(data, meta, path="/rpc/Kegtron.ResetVolume", params=params)
-    
+
     async def reset_kegs_served(self, monitor_id=None, monitor=None, meta=None, params=None, db_session=None):
         if not meta:
             meta = await self.extract_meta(monitor_id, monitor, meta, db_session)

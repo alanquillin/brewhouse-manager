@@ -21,7 +21,7 @@
     mat-raised-button
     color="primary"
     (click)="submit()"
-    [disabled]="volumeSize == null || processing"
+    [disabled]="isNilOrEmpty(volumeSize) || processing"
   >
     @if (processing) {
       <mat-spinner diameter="20"></mat-spinner>

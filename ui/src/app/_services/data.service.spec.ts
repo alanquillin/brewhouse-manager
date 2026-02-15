@@ -1010,10 +1010,7 @@ describe('DataService', () => {
       });
 
       const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
-      req.flush(
-        { message: 'Invalid volume unit' },
-        { status: 400, statusText: 'Bad Request' }
-      );
+      req.flush({ message: 'Invalid volume unit' }, { status: 400, statusText: 'Bad Request' });
     });
 
     it('should return DataError on 404 device not found', (done: DoneFn) => {
@@ -1029,10 +1026,7 @@ describe('DataService', () => {
       });
 
       const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/nonexistent/0');
-      req.flush(
-        { message: 'Tap monitor not found' },
-        { status: 404, statusText: 'Not Found' }
-      );
+      req.flush({ message: 'Tap monitor not found' }, { status: 404, statusText: 'Not Found' });
     });
 
     it('should emit unauthorized event on 401 error', (done: DoneFn) => {
@@ -1048,10 +1042,7 @@ describe('DataService', () => {
       });
 
       const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0');
-      req.flush(
-        { message: 'Unauthorized' },
-        { status: 401, statusText: 'Unauthorized' }
-      );
+      req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
     });
 
     it('should combine batchId and updateDateTapped in same request', () => {
