@@ -105,7 +105,7 @@ class TestKegtronPro:
         assert len(KegtronPro.supported_device_keys) == 2
 
     def test_supported_port_keys(self):
-        expected = {"abv", "beaconEna", "userName", "userDesc", "ibu", "maker", "style", "volSize"}
+        expected = {"abv", "beaconEna", "userName", "userDesc", "ibu", "maker", "style", "volSize", "srm", "labelUrl"}
         assert set(KegtronPro.supported_port_keys) == expected
 
     # ------------------------------------------------------------------
