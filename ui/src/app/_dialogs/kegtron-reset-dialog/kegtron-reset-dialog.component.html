@@ -26,10 +26,12 @@
     <mat-icon>save</mat-icon>
     Submit
   </button>
-  <button mat-raised-button (click)="skip()" [disabled]="processing">
-    <mat-icon>skip_next</mat-icon>
-    Skip
-  </button>
+  @if (showSkip) {
+    <button mat-raised-button (click)="skip()" [disabled]="processing">
+      <mat-icon>skip_next</mat-icon>
+      Skip
+    </button>
+  }
   <button mat-raised-button color="warn" (click)="cancel()" [disabled]="processing">
     <mat-icon>cancel</mat-icon>
     Cancel

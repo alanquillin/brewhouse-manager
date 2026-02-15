@@ -13,6 +13,7 @@ export class KegtronResetDialogComponent {
   volumeSize: number | null = null;
   volumeUnit = 'gal';
   processing = false;
+  showSkip = false;
 
   volumeUnits = [
     { value: 'gal', label: 'Gallons' },
@@ -21,19 +22,37 @@ export class KegtronResetDialogComponent {
   ];
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { deviceId: string; portNum: number },
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      deviceId: string;
+      portNum: number;
+      showSkip?: boolean;
+      updateDateTapped?: boolean;
+      beerId?: string;
+      beverageId?: string;
+    },
     public dialogRef: MatDialogRef<KegtronResetDialogComponent>,
     private dataService: DataService,
     private _snackBar: MatSnackBar
-  ) {}
+  ) {
+    this.showSkip = data.showSkip ?? false;
+  }
 
   submit(): void {
     this.processing = true;
+    const payload: any = {
+      volumeSize: this.volumeSize,
+      volumeUnit: this.volumeUnit,
+    };
+    if (this.data.beerId) {
+      payload.beerId = this.data.beerId;
+    }
+    if (this.data.beverageId) {
+      payload.beverageId = this.data.beverageId;
+    }
+    const params = this.data.updateDateTapped ? { update_date_tapped: 'true' } : undefined;
     this.dataService
-      .resetKegtronPort(this.data.deviceId, this.data.portNum, {
-        volumeSize: this.volumeSize,
-        volumeUnit: this.volumeUnit,
-      })
+      .resetKegtronPort(this.data.deviceId, this.data.portNum, payload, params)
       .subscribe({
         next: () => {
           this.processing = false;

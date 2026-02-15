@@ -343,10 +343,15 @@ export class ManageTapsComponent implements OnInit {
       _.has(updateData, 'batchId') &&
       this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro'
     ) {
+      const batch = updateData.batchId ? this.findBatch(updateData.batchId) : undefined;
       const dialogRef = this.dialog.open(KegtronResetDialogComponent, {
         data: {
           deviceId: this.modifyTap.tapMonitor.meta.deviceId,
           portNum: this.modifyTap.tapMonitor.meta.portNum,
+          showSkip: true,
+          updateDateTapped: true,
+          beerId: batch?.beerId,
+          beverageId: batch?.beverageId,
         },
       });
       dialogRef.afterClosed().subscribe(result => {

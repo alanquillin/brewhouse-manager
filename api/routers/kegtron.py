@@ -71,6 +71,7 @@ async def reset_port(
     if update_date_tapped:
         now = datetime.now()
         data["dateTapped"] = now.strftime("%Y/%m/%d")
+        LOGGER.debug("Including the dateTapped value with the user overrides data: val = %s", data["dateTapped"])
 
     results = await asyncio.gather(
         kegtron_lib.update_user_overrides(data, meta=monitor.meta),
