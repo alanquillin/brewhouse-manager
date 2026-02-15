@@ -23,7 +23,11 @@
     (click)="submit()"
     [disabled]="volumeSize == null || processing"
   >
-    <mat-icon>save</mat-icon>
+    @if (processing) {
+      <mat-spinner diameter="20"></mat-spinner>
+    } @else {
+      <mat-icon>save</mat-icon>
+    }
     Submit
   </button>
   @if (showSkip) {

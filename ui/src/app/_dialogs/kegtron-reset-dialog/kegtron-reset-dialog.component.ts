@@ -28,39 +28,39 @@ export class KegtronResetDialogComponent {
       portNum: number;
       showSkip?: boolean;
       updateDateTapped?: boolean;
-      beerId?: string;
-      beverageId?: string;
+      batchId?: string;
     },
     public dialogRef: MatDialogRef<KegtronResetDialogComponent>,
     private dataService: DataService,
     private _snackBar: MatSnackBar
   ) {
     this.showSkip = data.showSkip ?? false;
+    this.dialogRef.disableClose = false;
   }
 
   submit(): void {
     this.processing = true;
+    this.dialogRef.disableClose = true;
     const payload: any = {
       volumeSize: this.volumeSize,
       volumeUnit: this.volumeUnit,
     };
-    if (this.data.beerId) {
-      payload.beerId = this.data.beerId;
+    if (this.data.batchId) {
+      payload.batchId = this.data.batchId;
     }
-    if (this.data.beverageId) {
-      payload.beverageId = this.data.beverageId;
-    }
-    const params = this.data.updateDateTapped ? { update_date_tapped: 'true' } : undefined;
+
     this.dataService
-      .resetKegtronPort(this.data.deviceId, this.data.portNum, payload, params)
+      .resetKegtronPort(this.data.deviceId, this.data.portNum, payload, this.data.updateDateTapped)
       .subscribe({
         next: () => {
           this.processing = false;
+          this.dialogRef.disableClose = false;
           this.dialogRef.close('submit');
         },
         error: (err: DataError) => {
           this._snackBar.open('Error: ' + err.message, 'Close');
           this.processing = false;
+          this.dialogRef.disableClose = false;
         },
       });
   }

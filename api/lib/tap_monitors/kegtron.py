@@ -27,6 +27,8 @@ class KegtronPro(KegtronBase):
         "maker",
         "style",
         "volSize",
+        "srm",
+        "labelUrl"
     ]
     supported_port_user_override_keys = ["dateTapped", "dateCleaned", "volStart"]
 

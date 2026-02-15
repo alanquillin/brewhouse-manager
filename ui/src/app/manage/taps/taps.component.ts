@@ -350,8 +350,7 @@ export class ManageTapsComponent implements OnInit {
           portNum: this.modifyTap.tapMonitor.meta.portNum,
           showSkip: true,
           updateDateTapped: true,
-          beerId: batch?.beerId,
-          beverageId: batch?.beverageId,
+          batchId: batch?.id,
         },
       });
       dialogRef.afterClosed().subscribe(result => {

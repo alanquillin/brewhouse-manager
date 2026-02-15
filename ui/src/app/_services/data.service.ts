@@ -434,15 +434,13 @@ export class DataService {
     );
   }
 
-  resetKegtronPort(
-    deviceId: string,
-    portNum: number,
-    data: any,
-    params?: { [key: string]: string }
-  ): Observable<boolean> {
-    const url = `${this.apiBaseUrl}/devices/kegtron/${deviceId}/${portNum}`;
-    const options = params ? { ...httpOptions, params } : httpOptions;
-    return this.http.post<boolean>(url, data, options).pipe(
+  resetKegtronPort(deviceId: string, portNum: number, data: any, updateDateTapped = false): Observable<boolean> {
+    const params = [];
+    if (updateDateTapped) params.push('update_date_tapped=true');
+    const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+
+    const url = `${this.apiBaseUrl}/devices/kegtron/${deviceId}/${portNum}${queryString}`;
+    return this.http.post<boolean>(url, data).pipe(
       catchError(err => {
         return this.getError(err);
       })
