@@ -16,6 +16,26 @@ integrates with 3rd party brew systems and tap monitors to pull in your batch de
 
 ## Supported Third Party Integrations
 
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/img/brewfather-white.png">
+    <source media="(prefers-color-scheme: light)" srcset="./docs/img/brewfather-black.png">
+    <img alt="Brewfather" src="./docs/img/brewfather-black.png" height="60" style="padding-right: 24px; padding-left: 24px;">
+  </picture>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/img/plaato-white.png">
+    <source media="(prefers-color-scheme: light)" srcset="./docs/img/plaato-black.png">
+    <img alt="Plaato" src="./docs/img/plaato-black.png" height="60" style="padding-right: 24px; padding-left: 24px">
+  </picture>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/img/kegtron-white.png">
+    <source media="(prefers-color-scheme: light)" srcset="./docs/img/kegtron-black.png">
+    <img alt="Kegtron" src="./docs/img/kegtron-black.png" height="60" style="padding-right: 24px; padding-left: 24px">
+  </picture>
+</div>
+
 ### Brew tracking applications
 
 - [brewfather](https://brewfather.app/): The brewfather integration allows you to associate a batch with a beer to auto
