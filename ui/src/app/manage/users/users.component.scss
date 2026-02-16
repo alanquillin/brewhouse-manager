@@ -90,6 +90,26 @@
   width: 400px;
 }
 
+.change-password {
+  display: flex;
+  flex-direction: column;
+
+  .change-password-form fieldset {
+    display: flex;
+    flex-direction: column;
+    border: none;
+    width: 400px;
+  }
+
+  .profile-actions {
+    padding-top: 12px;
+
+    button {
+      margin: 2px 6px;
+    }
+  }
+}
+
 .user-image-preview {
   max-width: 200px;
   height: auto;
