@@ -10,6 +10,7 @@ div.tap-volume {
   vertical-align: top;
   width: 106px;
   min-width: 106px !important;
+  flex-shrink: 0;
 }
 
 div.tap-image {
@@ -137,6 +138,9 @@ div.tap-details {
   display: inline-block;
   vertical-align: top;
   padding-left: 12px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 div.tap-details p {
@@ -149,6 +153,7 @@ div.tap-details p.title {
 
 div.tap-logo {
   order: 4;
+  flex-shrink: 0;
 }
 
 div.tap-logo-cold-brew {
