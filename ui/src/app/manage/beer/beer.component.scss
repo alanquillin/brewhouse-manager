@@ -115,6 +115,13 @@
       p {
         margin: 0;
       }
+
+      .heading-actions {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+      }
     }
 
     .archived-batch {

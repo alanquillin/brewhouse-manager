@@ -590,33 +590,24 @@
       <mat-icon>cancel</mat-icon>
       Cancel
     </button>
-    <button mat-raised-button (click)="addBatch(modifyBeverage)">
-      <mat-icon>add</mat-icon>
-      Add Batch
-    </button>
   </div>
-  <div
-    *ngIf="editingBeverage && beverageBatches[modifyBeverage.id].length <= 0"
-    class="beverage-batches"
-  >
-    <div class="heading">
-      <p>No batches</p>
-    </div>
-  </div>
-  <div
-    *ngIf="editingBeverage && beverageBatches[modifyBeverage.id].length > 0"
-    class="beverage-batches"
-  >
+  <div class="beverage-batches">
     <div class="heading">
       <p>Batches</p>
-      <mat-slide-toggle
-        [(ngModel)]="showArchivedBatches"
-        (change)="toggleArchivedBatches()"
-        color="primary"
-        [disabled]="loadingBatches"
-      >
-        Show Archived
-      </mat-slide-toggle>
+      <div class="heading-actions">
+        <mat-slide-toggle
+          [(ngModel)]="showArchivedBatches"
+          (change)="toggleArchivedBatches()"
+          color="primary"
+          [disabled]="loadingBatches"
+        >
+          Show Archived
+        </mat-slide-toggle>
+        <button mat-raised-button color="primary" (click)="addBatch(modifyBeverage)">
+          <mat-icon>add</mat-icon>
+          Add Batch
+        </button>
+      </div>
     </div>
     <div class="taps-list-loading" *ngIf="loadingBatches">
       <mat-spinner></mat-spinner>
