@@ -20,19 +20,19 @@ integrates with 3rd party brew systems and tap monitors to pull in your batch de
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./docs/img/brewfather-white.png">
     <source media="(prefers-color-scheme: light)" srcset="./docs/img/brewfather-black.png">
-    <img alt="Brewfather" src="./docs/img/brewfather-black.png" height="60" style="padding-right: 24px; padding-left: 24px;">
+    <img alt="Brewfather" src="./docs/img/brewfather-black.png" height="40" style="padding-right: 24px; padding-left: 24px;">
   </picture>
   &nbsp;&nbsp;&nbsp;&nbsp;
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./docs/img/plaato-white.png">
     <source media="(prefers-color-scheme: light)" srcset="./docs/img/plaato-black.png">
-    <img alt="Plaato" src="./docs/img/plaato-black.png" height="60" style="padding-right: 24px; padding-left: 24px">
+    <img alt="Plaato" src="./docs/img/plaato-black.png" height="40" style="padding-right: 24px; padding-left: 24px">
   </picture>
   &nbsp;&nbsp;&nbsp;&nbsp;
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./docs/img/kegtron-white.png">
     <source media="(prefers-color-scheme: light)" srcset="./docs/img/kegtron-black.png">
-    <img alt="Kegtron" src="./docs/img/kegtron-black.png" height="60" style="padding-right: 24px; padding-left: 24px">
+    <img alt="Kegtron" src="./docs/img/kegtron-black.png" height="40" style="padding-right: 24px; padding-left: 24px">
   </picture>
 </div>
 
