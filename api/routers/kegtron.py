@@ -42,6 +42,27 @@ def get_beer_data(batch_d, beer_d, key):
         beer_d.get(key)
     return v
 
+async def get_monitor_from_device_and_port(device_id: str, port_num: int, db_session) -> TapMonitorsDB:
+    monitors = await TapMonitorsDB.query(
+        db_session,
+        q_fn=lambda q: q.where(
+            TapMonitorsDB.meta["device_id"].astext == device_id,
+            TapMonitorsDB.meta["port_num"].astext.cast(Integer) == port_num,
+            TapMonitorsDB.monitor_type == "kegtron-pro",
+        ),
+    )
+
+    monitor = None
+    for m in monitors:
+        if m.meta.get("port_num") == port_num:
+            monitor = m
+            break
+
+    if not monitor:
+        raise HTTPException(status_code=404, detail=f"Kegtron tap monitor not found for device '{device_id}' port {port_num}")
+    
+    return monitor
+
 
 @router.post("/{device_id}/{port_num}", response_model=bool)
 async def reset_port(
@@ -62,23 +83,7 @@ async def reset_port(
     if not kegtron_lib:
         raise HTTPException(status_code=400, detail="Kegtron Pro tap monitor support is not enabled")
 
-    monitors = await TapMonitorsDB.query(
-        db_session,
-        q_fn=lambda q: q.where(
-            TapMonitorsDB.meta["device_id"].astext == device_id,
-            TapMonitorsDB.meta["port_num"].astext.cast(Integer) == port_num,
-            TapMonitorsDB.monitor_type == "kegtron-pro",
-        ),
-    )
-
-    monitor = None
-    for m in monitors:
-        if m.meta.get("port_num") == port_num:
-            monitor = m
-            break
-
-    if not monitor:
-        raise HTTPException(status_code=404, detail=f"Kegtron tap monitor not found for device '{device_id}' port {port_num}")
+    monitor = await get_monitor_from_device_and_port(device_id, port_num, db_session)
 
     vol_ml = to_ml(request_data.volume_size, request_data.volume_unit)
 
@@ -149,5 +154,27 @@ async def reset_port(
     for res in results:
         if not res:
             raise HTTPException(status_code=502, detail="Failed to update kegtron device")
+
+    return True
+
+@router.post("/{device_id}/{port_num}/clear", response_model=bool)
+async def clear_port(
+    device_id: str,
+    port_num: int,
+    current_user: AuthUser = Depends(require_admin),
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    kegtron_lib = get_tap_monitor_lib("kegtron-pro")
+    if not kegtron_lib:
+        raise HTTPException(status_code=400, detail="Kegtron Pro tap monitor support is not enabled")
+
+    monitor = await get_monitor_from_device_and_port(device_id, port_num, db_session)
+
+    port_data = {"abv": 0.0, "ibu": 0, "srm": 0, "style": "", "userDesc": "", "userName": f"Port {port_num + 1}", "labelUrl": ""}
+
+    res = await kegtron_lib.update_port(port_data, meta=monitor.meta)
+
+    if not res:
+        raise HTTPException(status_code=502, detail="Failed to update kegtron device")
 
     return True

@@ -3,7 +3,7 @@ import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } fro
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
-import { Router } from '@angular/router';
+import { Data, Router } from '@angular/router';
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
@@ -338,24 +338,53 @@ export class ManageTapsComponent implements OnInit {
     ) {
       updateData.tapMonitorId = null;
     }
-
-    if (_.has(updateData, 'batchId') && this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro') {
-      const batch = updateData.batchId ? this.findBatch(updateData.batchId) : undefined;
-      const dialogRef = this.dialog.open(KegtronResetDialogComponent, {
-        data: {
-          deviceId: this.modifyTap.tapMonitor.meta.deviceId,
-          portNum: this.modifyTap.tapMonitor.meta.portNum,
-          showSkip: true,
-          updateDateTapped: true,
-          batchId: batch?.id,
-        },
-      });
-      dialogRef.afterClosed().subscribe(result => {
-        if (result === 'submit' || result === 'skip') {
-          this._executeSave(updateData);
-        }
-      });
-    } else {
+    console.log(updateData);
+    console.log(this.modifyTap);
+    if (!_.has(updateData, 'tapMonitorId') && _.has(updateData, 'batchId') && this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro') {
+      if (isNilOrEmpty(updateData.batchId)) {
+        this.processing = true;
+        this.dataService
+          .clearKegtronPort(this.modifyTap.tapMonitor.meta.deviceId, this.modifyTap.tapMonitor.meta.portNum)
+          .subscribe({
+            next: (_: any) => {
+              this._executeSave(updateData);
+            },
+            error: (err: DataError) => {
+              this.displayError("There was an error trying to clear the Kegtron port, skipping...  Error: " + err.message);
+              this._executeSave(updateData);
+            },
+          });
+      } else {
+        const batch = updateData.batchId ? this.findBatch(updateData.batchId) : undefined;
+        const dialogRef = this.dialog.open(KegtronResetDialogComponent, {
+          data: {
+            deviceId: this.modifyTap.tapMonitor.meta.deviceId,
+            portNum: this.modifyTap.tapMonitor.meta.portNum,
+            showSkip: true,
+            updateDateTapped: true,
+            batchId: batch?.id,
+          },
+        });
+        dialogRef.afterClosed().subscribe(result => {
+          if (result === 'submit' || result === 'skip') {
+            this._executeSave(updateData);
+          }
+        });
+      }
+    } else if (_.has(updateData, 'tapMonitorId') && this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro') {
+      this.processing = true;
+      this.dataService
+        .clearKegtronPort(this.modifyTap.tapMonitor.meta.deviceId, this.modifyTap.tapMonitor.meta.portNum)
+        .subscribe({
+          next: (_: any) => {
+            this._executeSave(updateData);
+          },
+          error: (err: DataError) => {
+            this.displayError("There was an error trying to clear the Kegtron port, skipping...  Error: " + err.message);
+            this._executeSave(updateData);
+          },
+        });
+      } else {
       this._executeSave(updateData);
     }
   }
@@ -503,20 +532,38 @@ export class ManageTapsComponent implements OnInit {
   clear(tap: Tap) {
     if (confirm(`Are you sure you want to clear the tap?`)) {
       this.processing = true;
-      this.dataService.clearTap(tap.id).subscribe({
-        next: (_: any) => {
-          this.processing = false;
-          this.loading = true;
-          this.refresh(() => {
-            this.loading = false;
+      if (tap.tapMonitor?.monitorType === 'kegtron-pro') {
+        this.dataService
+          .clearKegtronPort(tap.tapMonitor.meta.deviceId, tap.tapMonitor.meta.portNum)
+          .subscribe({
+            next: (_: any) => {
+              this.clearTap(tap);
+            },
+            error: (err: DataError) => {
+              this.displayError("There was an error trying to clear the Kegtron port, skipping...  Error: " + err.message);
+              this.clearTap(tap);
+            },
           });
-        },
-        error: (err: DataError) => {
-          this.displayError(err.message);
-          this.processing = false;
-        },
-      });
+      } else {
+        this.clearTap(tap);
+      }
     }
+  }
+
+  clearTap(tap: Tap) {
+    this.dataService.clearTap(tap.id).subscribe({
+      next: (_: any) => {
+        this.processing = false;
+        this.loading = true;
+        this.refresh(() => {
+          this.loading = false;
+        });
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      },
+    });
   }
 
   getBeerBatches(locationId: string): Batch[] {
