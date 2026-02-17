@@ -136,16 +136,15 @@
                     <mat-icon>edit</mat-icon>
                   </button>
                 }
-                @if (me.id !== element.id && me.admin) {
                   <button
                     mat-icon-button
                     color="warn"
                     aria-label="Delete user"
                     (click)="delete(element)"
+                    [disabled]="me.id === element.id || !me.admin"
                   >
                     <mat-icon>delete</mat-icon>
                   </button>
-                }
               </div>
             </td>
           </ng-container>
