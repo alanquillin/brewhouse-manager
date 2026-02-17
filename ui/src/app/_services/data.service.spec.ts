@@ -1060,6 +1060,73 @@ describe('DataService', () => {
       });
       req.flush(true);
     });
+
+    it('should POST to clear kegtron port', () => {
+      service.clearKegtronPort('dev-1', 0).subscribe();
+
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/dev-1/0/clear'
+      );
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({});
+      req.flush(true);
+    });
+
+    it('should return true on successful clear', (done: DoneFn) => {
+      service.clearKegtronPort('dev-1', 0).subscribe(result => {
+        expect(result).toBe(true);
+        done();
+      });
+
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/dev-1/0/clear'
+      );
+      req.flush(true);
+    });
+
+    it('should use correct port number in clear URL', () => {
+      service.clearKegtronPort('dev-2', 1).subscribe();
+
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/dev-2/1/clear'
+      );
+      expect(req.request.method).toBe('POST');
+      req.flush(true);
+    });
+
+    it('should return DataError on clear port failure', (done: DoneFn) => {
+      service.clearKegtronPort('dev-1', 0).subscribe({
+        error: err => {
+          expect(err instanceof DataError).toBe(true);
+          expect(err.statusCode).toBe(502);
+          done();
+        },
+      });
+
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/dev-1/0/clear'
+      );
+      req.flush(
+        { message: 'Failed to update kegtron device' },
+        { status: 502, statusText: 'Bad Gateway' }
+      );
+    });
+
+    it('should emit unauthorized event on 401 clear error', (done: DoneFn) => {
+      service.unauthorized.subscribe(error => {
+        expect(error.statusCode).toBe(401);
+        done();
+      });
+
+      service.clearKegtronPort('dev-1', 0).subscribe({
+        error: () => {},
+      });
+
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/dev-1/0/clear'
+      );
+      req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+    });
   });
 
   describe('Health API', () => {

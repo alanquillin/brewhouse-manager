@@ -89,6 +89,7 @@ describe('ManageTapsComponent', () => {
       'updateTap',
       'deleteTap',
       'clearTap',
+      'clearKegtronPort',
     ]);
     mockSettingsService = jasmine.createSpyObj('SettingsService', ['getSetting']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
@@ -838,6 +839,119 @@ describe('ManageTapsComponent', () => {
           }),
         })
       );
+    });
+  });
+
+  describe('save with kegtron-pro clear on null batch', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+
+      mockDataService.clearKegtronPort.and.returnValue(of(true));
+      mockDataService.updateTap.and.returnValue(of(mockTaps[0] as any));
+
+      component.modifyTap = new Tap({
+        id: 'tap-1',
+        description: 'Tap 1',
+        tapNumber: 1,
+        locationId: 'loc-1',
+        batchId: 'batch-1',
+        tapMonitor: {
+          id: 'tm-kegtron',
+          monitorType: 'kegtron-pro',
+          meta: { deviceId: 'kegtron-dev-1', portNum: 0 },
+        },
+      } as any);
+      component.modifyTap.enableEditing();
+      component.modifyTap.editValues.batchId = null;
+    });
+
+    it('should call clearKegtronPort when batchId is set to null on kegtron-pro tap', () => {
+      component.save();
+
+      expect(mockDataService.clearKegtronPort).toHaveBeenCalledWith('kegtron-dev-1', 0);
+    });
+
+    it('should not open reset dialog when clearing batch', () => {
+      component.save();
+
+      expect(mockDialog.open).not.toHaveBeenCalled();
+    });
+
+    it('should execute save after successful clear', () => {
+      component.save();
+
+      expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', jasmine.any(Object));
+    });
+
+    it('should still execute save when clearKegtronPort fails', () => {
+      mockDataService.clearKegtronPort.and.returnValue(
+        throwError(() => ({ message: 'Device error' }) as DataError)
+      );
+
+      component.save();
+
+      expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', jasmine.any(Object));
+    });
+
+    it('should display error when clearKegtronPort fails', () => {
+      mockDataService.clearKegtronPort.and.returnValue(
+        throwError(() => ({ message: 'Device error' }) as DataError)
+      );
+
+      component.save();
+
+      expect(mockSnackBar.open).toHaveBeenCalled();
+    });
+  });
+
+  describe('save with kegtron-pro clear on monitor change', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+
+      mockDataService.clearKegtronPort.and.returnValue(of(true));
+      mockDataService.updateTap.and.returnValue(of(mockTaps[0] as any));
+
+      component.modifyTap = new Tap({
+        id: 'tap-1',
+        description: 'Tap 1',
+        tapNumber: 1,
+        locationId: 'loc-1',
+        tapMonitor: {
+          id: 'tm-kegtron',
+          monitorType: 'kegtron-pro',
+          meta: { deviceId: 'kegtron-dev-1', portNum: 0 },
+        },
+      } as any);
+      component.modifyTap.enableEditing();
+      component.modifyTap.editValues.tapMonitorId = 'tm-other';
+    });
+
+    it('should call clearKegtronPort when tap monitor is changed on kegtron-pro tap', () => {
+      component.save();
+
+      expect(mockDataService.clearKegtronPort).toHaveBeenCalledWith('kegtron-dev-1', 0);
+    });
+
+    it('should not open reset dialog when changing monitor', () => {
+      component.save();
+
+      expect(mockDialog.open).not.toHaveBeenCalled();
+    });
+
+    it('should execute save after successful clear on monitor change', () => {
+      component.save();
+
+      expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', jasmine.any(Object));
+    });
+
+    it('should still execute save when clearKegtronPort fails on monitor change', () => {
+      mockDataService.clearKegtronPort.and.returnValue(
+        throwError(() => ({ message: 'Device error' }) as DataError)
+      );
+
+      component.save();
+
+      expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', jasmine.any(Object));
     });
   });
 });

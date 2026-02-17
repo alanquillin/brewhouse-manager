@@ -338,8 +338,6 @@ export class ManageTapsComponent implements OnInit {
     ) {
       updateData.tapMonitorId = null;
     }
-    console.log(updateData);
-    console.log(this.modifyTap);
     if (!_.has(updateData, 'tapMonitorId') && _.has(updateData, 'batchId') && this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro') {
       if (isNilOrEmpty(updateData.batchId)) {
         this.processing = true;
