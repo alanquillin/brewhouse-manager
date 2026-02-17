@@ -15,25 +15,25 @@ pytestmark = pytest.mark.functional
 from .seed_data import BATCH_COFFEE_ID, BATCH_IPA_ID, LOCATION_SECONDARY_ID
 
 
+def _create_kegtron_monitor(api_client, api_base_url, device_id, port_num=0):
+    """Helper to create a kegtron-pro tap monitor for testing."""
+    monitor = {
+        "name": f"Kegtron Test {device_id}-p{port_num}",
+        "monitorType": "kegtron-pro",
+        "locationId": LOCATION_SECONDARY_ID,
+        "meta": {
+            "portNum": port_num,
+            "deviceId": device_id,
+            "accessToken": "fake-test-access-token",
+        },
+    }
+    response = api_client.post(f"{api_base_url}/tap_monitors", json=monitor)
+    assert response.status_code == 201
+    return response.json()
+
+
 class TestResetKegtronPort:
     """Tests for POST /devices/kegtron/{device_id}/{port_num} endpoint."""
-
-    @staticmethod
-    def _create_kegtron_monitor(api_client, api_base_url, device_id, port_num=0):
-        """Helper to create a kegtron-pro tap monitor for testing."""
-        monitor = {
-            "name": f"Kegtron Test {device_id}-p{port_num}",
-            "monitorType": "kegtron-pro",
-            "locationId": LOCATION_SECONDARY_ID,
-            "meta": {
-                "portNum": port_num,
-                "deviceId": device_id,
-                "accessToken": "fake-test-access-token",
-            },
-        }
-        response = api_client.post(f"{api_base_url}/tap_monitors", json=monitor)
-        assert response.status_code == 201
-        return response.json()
 
     def test_returns_400_for_invalid_volume_unit(self, api_client: requests.Session, api_base_url: str):
         """Test that an invalid volume unit returns 400."""
@@ -70,7 +70,7 @@ class TestResetKegtronPort:
 
     def test_returns_404_for_wrong_port_num(self, api_client: requests.Session, api_base_url: str):
         """Test that an existing device with wrong port number returns 404."""
-        monitor = self._create_kegtron_monitor(api_client, api_base_url, "kegtron-wrong-port-001", port_num=0)
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-wrong-port-001", port_num=0)
 
         response = api_client.post(
             f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/5",
@@ -81,7 +81,7 @@ class TestResetKegtronPort:
 
     def test_returns_400_for_nonexistent_batch(self, api_client: requests.Session, api_base_url: str):
         """Test that a non-existent batch_id returns 400."""
-        monitor = self._create_kegtron_monitor(api_client, api_base_url, "kegtron-bad-batch-001")
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-bad-batch-001")
 
         response = api_client.post(
             f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/{monitor['meta']['portNum']}",
@@ -95,7 +95,7 @@ class TestResetKegtronPort:
 
     def test_valid_request_reaches_device_layer(self, api_client: requests.Session, api_base_url: str):
         """Test that a valid request passes all validation and reaches the device communication layer."""
-        monitor = self._create_kegtron_monitor(api_client, api_base_url, "kegtron-valid-001")
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-valid-001")
 
         response = api_client.post(
             f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/{monitor['meta']['portNum']}",
@@ -107,7 +107,7 @@ class TestResetKegtronPort:
 
     def test_valid_request_with_beer_batch(self, api_client: requests.Session, api_base_url: str):
         """Test that a request with a beer batch_id passes validation."""
-        monitor = self._create_kegtron_monitor(api_client, api_base_url, "kegtron-beer-001")
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-beer-001")
 
         response = api_client.post(
             f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/{monitor['meta']['portNum']}",
@@ -119,7 +119,7 @@ class TestResetKegtronPort:
 
     def test_valid_request_with_beverage_batch(self, api_client: requests.Session, api_base_url: str):
         """Test that a request with a beverage batch_id passes validation."""
-        monitor = self._create_kegtron_monitor(api_client, api_base_url, "kegtron-bev-001")
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-bev-001")
 
         try:
             response = api_client.post(
@@ -136,7 +136,7 @@ class TestResetKegtronPort:
 
     def test_accepts_update_date_tapped_param(self, api_client: requests.Session, api_base_url: str):
         """Test that the update_date_tapped query parameter is accepted."""
-        monitor = self._create_kegtron_monitor(api_client, api_base_url, "kegtron-datetap-001")
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-datetap-001")
 
         response = api_client.post(
             f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/{monitor['meta']['portNum']}?update_date_tapped=true",
@@ -148,7 +148,7 @@ class TestResetKegtronPort:
 
     def test_accepts_gal_volume_unit(self, api_client: requests.Session, api_base_url: str):
         """Test that 'gal' is accepted as a valid volume unit."""
-        monitor = self._create_kegtron_monitor(api_client, api_base_url, "kegtron-gal-001")
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-gal-001")
 
         response = api_client.post(
             f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/{monitor['meta']['portNum']}",
@@ -160,7 +160,7 @@ class TestResetKegtronPort:
 
     def test_accepts_l_volume_unit(self, api_client: requests.Session, api_base_url: str):
         """Test that 'l' is accepted as a valid volume unit."""
-        monitor = self._create_kegtron_monitor(api_client, api_base_url, "kegtron-l-001")
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-l-001")
 
         response = api_client.post(
             f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/{monitor['meta']['portNum']}",
@@ -171,7 +171,7 @@ class TestResetKegtronPort:
 
     def test_accepts_ml_volume_unit(self, api_client: requests.Session, api_base_url: str):
         """Test that 'ml' is accepted as a valid volume unit."""
-        monitor = self._create_kegtron_monitor(api_client, api_base_url, "kegtron-ml-001")
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-ml-001")
 
         response = api_client.post(
             f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/{monitor['meta']['portNum']}",
@@ -218,7 +218,7 @@ class TestResetKegtronPort:
 
     def test_batch_id_is_optional(self, api_client: requests.Session, api_base_url: str):
         """Test that batchId is not required in the request body."""
-        monitor = self._create_kegtron_monitor(api_client, api_base_url, "kegtron-no-batch-001")
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-no-batch-001")
 
         response = api_client.post(
             f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/{monitor['meta']['portNum']}",
@@ -226,4 +226,71 @@ class TestResetKegtronPort:
         )
 
         # Should not fail with 422 (validation error for missing field)
+        assert response.status_code != 422
+
+
+class TestClearKegtronPort:
+    """Tests for POST /devices/kegtron/{device_id}/{port_num}/clear endpoint."""
+
+    def test_valid_request_reaches_device_layer(self, api_client: requests.Session, api_base_url: str):
+        """Test that a valid clear request passes validation and reaches the device communication layer."""
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-clear-001")
+
+        response = api_client.post(
+            f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/{monitor['meta']['portNum']}/clear",
+        )
+
+        # Passes validation, fails at kegtron device communication (fake access token)
+        assert response.status_code >= 500
+
+    def test_returns_404_for_nonexistent_device(self, api_client: requests.Session, api_base_url: str):
+        """Test that a non-existent device returns 404."""
+        response = api_client.post(
+            f"{api_base_url}/devices/kegtron/nonexistent-device/99/clear",
+        )
+
+        assert response.status_code == 404
+        body = response.json()
+        error_msg = body.get("detail", body.get("message", ""))
+        assert "not found" in error_msg.lower()
+
+    def test_returns_404_for_wrong_port_num(self, api_client: requests.Session, api_base_url: str):
+        """Test that an existing device with wrong port number returns 404."""
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-clear-wrong-port-001", port_num=0)
+
+        response = api_client.post(
+            f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/5/clear",
+        )
+
+        assert response.status_code == 404
+
+    def test_rejects_non_admin_user(self, user_api_client: requests.Session, api_base_url: str):
+        """Test that non-admin users are rejected."""
+        response = user_api_client.post(
+            f"{api_base_url}/devices/kegtron/any-device/0/clear",
+        )
+
+        assert response.status_code in [401, 403]
+
+    def test_works_with_different_port_numbers(self, api_client: requests.Session, api_base_url: str):
+        """Test that clear works for monitors on different port numbers."""
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-clear-port2-001", port_num=1)
+
+        response = api_client.post(
+            f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/1/clear",
+        )
+
+        # Passes validation, fails at device layer
+        assert response.status_code >= 500
+
+    def test_no_request_body_required(self, api_client: requests.Session, api_base_url: str):
+        """Test that the clear endpoint works without a request body."""
+        monitor = _create_kegtron_monitor(api_client, api_base_url, "kegtron-clear-nobody-001")
+
+        response = api_client.post(
+            f"{api_base_url}/devices/kegtron/{monitor['meta']['deviceId']}/{monitor['meta']['portNum']}/clear",
+            json=None,
+        )
+
+        # Should not fail with 422 (no body required)
         assert response.status_code != 422
