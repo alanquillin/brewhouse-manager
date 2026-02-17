@@ -404,6 +404,7 @@ export class ManageUsersComponent implements OnInit {
       next: (data: UserInfo) => {
         this.edit(new UserInfo(data));
         this.changePassword = false;
+        this.processing = false;
       },
       error: (err: DataError) => {
         this.displayError(err.message);
