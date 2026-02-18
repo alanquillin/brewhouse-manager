@@ -1117,6 +1117,51 @@ describe('DataService', () => {
       const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0/clear');
       req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
     });
+
+    it('should return DataError on 404 clear device not found', (done: DoneFn) => {
+      service.clearKegtronPort('nonexistent', 0).subscribe({
+        error: err => {
+          expect(err instanceof DataError).toBe(true);
+          expect(err.statusCode).toBe(404);
+          expect(err.message).toBe('Tap monitor not found');
+          done();
+        },
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/nonexistent/0/clear');
+      req.flush({ message: 'Tap monitor not found' }, { status: 404, statusText: 'Not Found' });
+    });
+
+    it('should return DataError on 500 clear server error', (done: DoneFn) => {
+      service.clearKegtronPort('dev-1', 0).subscribe({
+        error: err => {
+          expect(err instanceof DataError).toBe(true);
+          expect(err.statusCode).toBe(500);
+          done();
+        },
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0/clear');
+      req.flush({ message: 'Internal Server Error' }, { status: 500, statusText: 'Internal Server Error' });
+    });
+
+    it('should use correct device ID in clear URL', () => {
+      service.clearKegtronPort('my-kegtron-device', 0).subscribe();
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/my-kegtron-device/0/clear');
+      expect(req.request.method).toBe('POST');
+      req.flush(true);
+    });
+
+    it('should return false when server responds with false', (done: DoneFn) => {
+      service.clearKegtronPort('dev-1', 0).subscribe(result => {
+        expect(result).toBe(false);
+        done();
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0/clear');
+      req.flush(false);
+    });
   });
 
   describe('Health API', () => {
