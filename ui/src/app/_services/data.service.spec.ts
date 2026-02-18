@@ -1064,9 +1064,7 @@ describe('DataService', () => {
     it('should POST to clear kegtron port', () => {
       service.clearKegtronPort('dev-1', 0).subscribe();
 
-      const req = httpMock.expectOne(
-        'https://example.com/api/v1/devices/kegtron/dev-1/0/clear'
-      );
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0/clear');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({});
       req.flush(true);
@@ -1078,18 +1076,14 @@ describe('DataService', () => {
         done();
       });
 
-      const req = httpMock.expectOne(
-        'https://example.com/api/v1/devices/kegtron/dev-1/0/clear'
-      );
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0/clear');
       req.flush(true);
     });
 
     it('should use correct port number in clear URL', () => {
       service.clearKegtronPort('dev-2', 1).subscribe();
 
-      const req = httpMock.expectOne(
-        'https://example.com/api/v1/devices/kegtron/dev-2/1/clear'
-      );
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-2/1/clear');
       expect(req.request.method).toBe('POST');
       req.flush(true);
     });
@@ -1103,9 +1097,7 @@ describe('DataService', () => {
         },
       });
 
-      const req = httpMock.expectOne(
-        'https://example.com/api/v1/devices/kegtron/dev-1/0/clear'
-      );
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0/clear');
       req.flush(
         { message: 'Failed to update kegtron device' },
         { status: 502, statusText: 'Bad Gateway' }
@@ -1122,9 +1114,7 @@ describe('DataService', () => {
         error: () => {},
       });
 
-      const req = httpMock.expectOne(
-        'https://example.com/api/v1/devices/kegtron/dev-1/0/clear'
-      );
+      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0/clear');
       req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
     });
   });

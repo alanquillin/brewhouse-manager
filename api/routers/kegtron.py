@@ -42,6 +42,7 @@ def get_beer_data(batch_d, beer_d, key):
         beer_d.get(key)
     return v
 
+
 async def get_monitor_from_device_and_port(device_id: str, port_num: int, db_session) -> TapMonitorsDB:
     monitors = await TapMonitorsDB.query(
         db_session,
@@ -60,7 +61,7 @@ async def get_monitor_from_device_and_port(device_id: str, port_num: int, db_ses
 
     if not monitor:
         raise HTTPException(status_code=404, detail=f"Kegtron tap monitor not found for device '{device_id}' port {port_num}")
-    
+
     return monitor
 
 
@@ -156,6 +157,7 @@ async def reset_port(
             raise HTTPException(status_code=502, detail="Failed to update kegtron device")
 
     return True
+
 
 @router.post("/{device_id}/{port_num}/clear", response_model=bool)
 async def clear_port(

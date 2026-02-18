@@ -3,7 +3,7 @@ import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } fro
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
-import { Data, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
@@ -338,17 +338,27 @@ export class ManageTapsComponent implements OnInit {
     ) {
       updateData.tapMonitorId = null;
     }
-    if (!_.has(updateData, 'tapMonitorId') && _.has(updateData, 'batchId') && this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro') {
+    if (
+      !_.has(updateData, 'tapMonitorId') &&
+      _.has(updateData, 'batchId') &&
+      this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro'
+    ) {
       if (isNilOrEmpty(updateData.batchId)) {
         this.processing = true;
         this.dataService
-          .clearKegtronPort(this.modifyTap.tapMonitor.meta.deviceId, this.modifyTap.tapMonitor.meta.portNum)
+          .clearKegtronPort(
+            this.modifyTap.tapMonitor.meta.deviceId,
+            this.modifyTap.tapMonitor.meta.portNum
+          )
           .subscribe({
             next: (_: any) => {
               this._executeSave(updateData);
             },
             error: (err: DataError) => {
-              this.displayError("There was an error trying to clear the Kegtron port, skipping...  Error: " + err.message);
+              this.displayError(
+                'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+                  err.message
+              );
               this._executeSave(updateData);
             },
           });
@@ -369,20 +379,29 @@ export class ManageTapsComponent implements OnInit {
           }
         });
       }
-    } else if (_.has(updateData, 'tapMonitorId') && this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro') {
+    } else if (
+      _.has(updateData, 'tapMonitorId') &&
+      this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro'
+    ) {
       this.processing = true;
       this.dataService
-        .clearKegtronPort(this.modifyTap.tapMonitor.meta.deviceId, this.modifyTap.tapMonitor.meta.portNum)
+        .clearKegtronPort(
+          this.modifyTap.tapMonitor.meta.deviceId,
+          this.modifyTap.tapMonitor.meta.portNum
+        )
         .subscribe({
           next: (_: any) => {
             this._executeSave(updateData);
           },
           error: (err: DataError) => {
-            this.displayError("There was an error trying to clear the Kegtron port, skipping...  Error: " + err.message);
+            this.displayError(
+              'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+                err.message
+            );
             this._executeSave(updateData);
           },
         });
-      } else {
+    } else {
       this._executeSave(updateData);
     }
   }
@@ -538,7 +557,10 @@ export class ManageTapsComponent implements OnInit {
               this.clearTap(tap);
             },
             error: (err: DataError) => {
-              this.displayError("There was an error trying to clear the Kegtron port, skipping...  Error: " + err.message);
+              this.displayError(
+                'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+                  err.message
+              );
               this.clearTap(tap);
             },
           });
