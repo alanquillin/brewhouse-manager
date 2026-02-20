@@ -1128,7 +1128,9 @@ describe('DataService', () => {
         },
       });
 
-      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/nonexistent/0/clear');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/nonexistent/0/clear'
+      );
       req.flush({ message: 'Tap monitor not found' }, { status: 404, statusText: 'Not Found' });
     });
 
@@ -1142,13 +1144,18 @@ describe('DataService', () => {
       });
 
       const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/dev-1/0/clear');
-      req.flush({ message: 'Internal Server Error' }, { status: 500, statusText: 'Internal Server Error' });
+      req.flush(
+        { message: 'Internal Server Error' },
+        { status: 500, statusText: 'Internal Server Error' }
+      );
     });
 
     it('should use correct device ID in clear URL', () => {
       service.clearKegtronPort('my-kegtron-device', 0).subscribe();
 
-      const req = httpMock.expectOne('https://example.com/api/v1/devices/kegtron/my-kegtron-device/0/clear');
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/my-kegtron-device/0/clear'
+      );
       expect(req.request.method).toBe('POST');
       req.flush(true);
     });
