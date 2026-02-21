@@ -246,6 +246,21 @@ class DictMethodsMixin:
 
 audit_column_names = ["created_app", "created_user", "created_on", "updated_app", "updated_user", "updated_on"]
 
+# Default values for audit columns on UPDATE (Core DML does not trigger Column.onupdate)
+_audit_onupdate_values = {
+    "updated_app": func.current_setting("application_name"),
+    "updated_user": func.current_user(),
+    "updated_on": func.current_timestamp(),
+}
+
+
+def _audit_update_values(cls):
+    """Return audit column update values for Core DML when the model has audit columns."""
+    if not hasattr(cls, "__table__"):
+        return {}
+    table_c = cls.__table__.c
+    return {k: v for k, v in _audit_onupdate_values.items() if k in table_c}
+
 audit_columns = [
     Column("created_app", String, server_default=func.current_setting("application_name"), nullable=False),
     Column("created_user", String, server_default=func.current_user(), nullable=False),  # pylint: disable=not-callable
@@ -575,7 +590,9 @@ class AsyncQueryMethodsMixin:
         if filters is None:
             filters = {}
 
-        q = update(cls).filter_by(**filters).values(**updates)
+        # Core DML does not trigger Column.onupdate; set audit columns explicitly when present
+        values = {**_audit_update_values(cls), **updates}
+        q = update(cls).filter_by(**filters).values(**values)
         result = await session.execute(q)
         rowcnt = result.rowcount
 
@@ -590,7 +607,9 @@ class AsyncQueryMethodsMixin:
 
     @classmethod
     async def update(cls, session, pkey, autocommit=True, **kwargs) -> int:
-        stmt = update(cls).where(cls.id == pkey).values(**kwargs)
+        # Core DML does not trigger Column.onupdate; set audit columns explicitly when present
+        values = {**_audit_update_values(cls), **kwargs}
+        stmt = update(cls).where(cls.id == pkey).values(**values)
         result = await session.execute(stmt)
         rowcnt = result.rowcount
 
