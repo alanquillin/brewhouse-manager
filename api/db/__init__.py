@@ -249,8 +249,8 @@ audit_column_names = ["created_app", "created_user", "created_on", "updated_app"
 # Default values for audit columns on UPDATE (Core DML does not trigger Column.onupdate)
 _audit_onupdate_values = {
     "updated_app": func.current_setting("application_name"),
-    "updated_user": func.current_user(),
-    "updated_on": func.current_timestamp(),
+    "updated_user": func.current_user(),  # pylint: disable=not-callable
+    "updated_on": func.current_timestamp(),  # pylint: disable=not-callable
 }
 
 
@@ -260,6 +260,7 @@ def _audit_update_values(cls):
         return {}
     table_c = cls.__table__.c
     return {k: v for k, v in _audit_onupdate_values.items() if k in table_c}
+
 
 audit_columns = [
     Column("created_app", String, server_default=func.current_setting("application_name"), nullable=False),

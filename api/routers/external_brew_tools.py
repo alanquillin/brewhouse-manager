@@ -2,9 +2,7 @@
 
 from typing import List
 
-from fastapi import APIRouter, Depends
-
-from fastapi import HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from dependencies.auth import AuthUser, require_user
 from lib import external_brew_tools, logging
