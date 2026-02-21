@@ -86,9 +86,8 @@ class BlynkMessage:
         return f"BlynkMessage(command={self.command}, msg_id={self.msg_id}, length={self.length}, body={self.body})"
 
     def __len__(self):
-        if not self.length:
-            return -1
-
+        if self.length is None:
+            return 0
         return self.length
 
 

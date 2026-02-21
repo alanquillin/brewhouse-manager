@@ -37,7 +37,7 @@ async def search_external_brew_tool(
 ):
     """Search recipes in an external brewing tool"""
     tool = external_brew_tools.get_tool(tool_name)
-    results = tool.list()
+    results = await tool.search_batches()
 
     # Transform results to camelCase
     transformed = []

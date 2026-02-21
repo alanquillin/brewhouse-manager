@@ -3,6 +3,8 @@ Authentication router for FastAPI.
 Handles login, logout, and Google OAuth flows.
 """
 
+import asyncio
+
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -145,16 +147,16 @@ async def google_callback(request: Request, code: str, state: str, db_session: A
 
     flow.redirect_uri = redirect_url
 
-    # Exchange authorization code for tokens
-    flow.fetch_token(code=code)
+    # Exchange authorization code for tokens (blocking I/O — run in thread)
+    await asyncio.to_thread(flow.fetch_token, code=code)
 
     # Get credentials and verify ID token
     credentials = flow.credentials
     id_token_jwt = credentials.id_token
 
-    # Verify the token
+    # Verify the token (blocking I/O — run in thread)
     try:
-        idinfo = id_token.verify_oauth2_token(id_token_jwt, google_requests.Request(), client_id)
+        idinfo = await asyncio.to_thread(id_token.verify_oauth2_token, id_token_jwt, google_requests.Request(), client_id)
     except ValueError as e:
         LOGGER.error("Token verification failed: %s", str(e))
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token") from e

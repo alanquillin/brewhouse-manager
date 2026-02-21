@@ -89,7 +89,7 @@ class Application:
             log_level=self.log_level.lower(),
             log_config=None,  # Disable uvicorn's default logging config; use our root logger
             proxy_headers=True,  # Handle X-Forwarded-* headers (replaces ProxyFix)
-            forwarded_allow_ips="*",
+            forwarded_allow_ips=CONFIG.get("api.forwarded_allow_ips", "127.0.0.1"),
             reload=CONFIG.get("ENV") == "development",  # Auto-reload in development
         )
         self.http_server = uvicorn.Server(config)

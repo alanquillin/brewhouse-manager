@@ -85,10 +85,10 @@ class CommandWriter:
             return False  # TODO raise exception
 
         static_val = command_info.get("value")
-        if static_val:
+        if static_val is not None:
             value = static_val
 
-        if not value:
+        if value is None or value == "":
             return False  # TODO raise exception
 
         fn = command_info.get("fn")

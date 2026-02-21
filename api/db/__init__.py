@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager, contextmanager
 from functools import wraps
 from urllib.parse import quote
 
+import asyncpg.exceptions as asyncpg_exc
 import boto3 as aws
 from psycopg2.errors import InvalidTextRepresentation, NotNullViolation, UniqueViolation  # pylint: disable=no-name-in-module
 from psycopg2.extensions import QuotedString, register_adapter
@@ -50,6 +51,13 @@ def create_extensions(_target, connection, **_):
     connection.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'))
 
 
+_ASYNCPG_MAP = {
+    NotNullViolation: asyncpg_exc.NotNullViolationError,
+    UniqueViolation: asyncpg_exc.UniqueViolationError,
+    InvalidTextRepresentation: asyncpg_exc.InvalidTextRepresentationError,
+}
+
+
 @contextmanager
 def convert_exception(sqla, psycopg2=None, new=None, param_names=None, str_match=""):
     if param_names is None:
@@ -68,7 +76,8 @@ def convert_exception(sqla, psycopg2=None, new=None, param_names=None, str_match
         if psycopg2 is None:
             raise new() from exc
 
-        if isinstance(exc.orig, psycopg2):
+        asyncpg_type = _ASYNCPG_MAP.get(psycopg2)
+        if isinstance(exc.orig, psycopg2) or (asyncpg_type and isinstance(exc.orig, asyncpg_type)):
             if not param_names:
                 args = [str(exc.orig)]
             raise new(*args) from exc
@@ -114,6 +123,9 @@ def session_scope(config, **kwargs):
         session.close()
 
 
+_async_engines = {}
+
+
 async def create_async_session(config, **kwargs):
     """Create async database session for FastAPI"""
     engine_kwargs = {
@@ -131,14 +143,15 @@ async def create_async_session(config, **kwargs):
         raise ValueError("Password required for async database connections")
 
     # Use postgresql+asyncpg:// driver for async connections
-    engine = create_async_engine(
-        (
-            "postgresql+asyncpg://"
-            f"{quote(config.get('db.username'))}:{quote(password)}@{quote(config.get('db.host'))}:"
-            f"{config.get('db.port')}/{quote(config.get('db.name'))}"
-        ),
-        **engine_kwargs,
+    conn_str = (
+        "postgresql+asyncpg://"
+        f"{quote(config.get('db.username'))}:{quote(password)}@{quote(config.get('db.host'))}:"
+        f"{config.get('db.port')}/{quote(config.get('db.name'))}"
     )
+
+    if conn_str not in _async_engines:
+        _async_engines[conn_str] = create_async_engine(conn_str, **engine_kwargs)
+    engine = _async_engines[conn_str]
 
     return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)()
 
@@ -517,7 +530,7 @@ class AsyncQueryMethodsMixin:
             result = await session.execute(q)
             return result.unique().scalars().all()
         except DataError as err:
-            if not isinstance(err.orig, InvalidTextRepresentation):
+            if not isinstance(err.orig, (InvalidTextRepresentation, asyncpg_exc.InvalidTextRepresentationError)):
                 raise
             if "invalid input value for enum" not in str(err.orig):
                 raise

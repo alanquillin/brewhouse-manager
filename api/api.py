@@ -29,6 +29,11 @@ class UserMessageError(Exception):
 LOGGER = logging.getLogger(__name__)
 CONFIG = Config()
 
+_secret_key = CONFIG.get("app.secret_key")
+if not _secret_key:
+    _secret_key = str(uuid.uuid4())
+    LOGGER.warning("No 'app.secret_key' configured. Sessions will not persist across restarts. Set 'app.secret_key' in config for production use.")
+
 # Create FastAPI app
 api = FastAPI(
     title="Brewhouse Manager",
@@ -40,7 +45,7 @@ api = FastAPI(
 # Session middleware - must be added before any dependencies use it
 api.add_middleware(
     SessionMiddleware,
-    secret_key=CONFIG.get("app.secret_key", str(uuid.uuid4())),
+    secret_key=_secret_key,
     session_cookie="session",
     max_age=None,  # Session expires when browser closes
     same_site=CONFIG.get("api.cookies.samesite", "lax"),

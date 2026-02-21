@@ -187,10 +187,11 @@ class Config(metaclass=ThreadSafeSingleton):
     def get(self, key, default=None, required=False):
         keys = [key] + self.key_aliases.get(key.upper(), [])
 
+        result = None
         for k in keys:
             _key = self.gen_key(k)
             result = self.explicit_configs.get(_key, os.environ.get(_key, self.data_flat.get(_key)))
-            if result:
+            if result is not None:
                 break
         if result is None:
             result = default
@@ -211,7 +212,7 @@ class Config(metaclass=ThreadSafeSingleton):
             else:
                 return converter(result, *conversion_args)
 
-        if not result:
+        if result is None:
             children = {k: v for k, v in self.data_flat.items() if k.startswith(f"{_key}_")}
             if children:
                 self.logger.debug("No value found for key '%s', but child values found. Assuming the caller wanted a dict and returning a ConfigHelper", key)

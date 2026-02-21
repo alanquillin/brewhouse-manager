@@ -79,6 +79,9 @@ class DataProcessor:
                 LOGGER.info(f"Sending user override commands to keg {self.device_id}: {commands}")
                 for pin, val in commands.items():
                     cmd = command_from_pin(pin)
+                    if cmd is None:
+                        LOGGER.warning("No command mapping found for pin %s, skipping", pin)
+                        continue
                     await command_writer.send_command(self.device_id, cmd, val)
 
         LOGGER.debug(f"Decoded keg data: {decoded_data}")

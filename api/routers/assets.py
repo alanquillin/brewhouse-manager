@@ -1,5 +1,6 @@
 """Assets router for FastAPI"""
 
+import asyncio
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -44,7 +45,7 @@ async def list_images(
         raise HTTPException(status_code=400, detail=f"Invalid image type '{image_type}'. Must be either 'beer', 'beverage' or 'user'")
 
     manager = get_asset_manager()
-    return manager.list(image_type)
+    return await asyncio.to_thread(manager.list, image_type)
 
 
 @router.post("/images/{image_type}", response_model=dict)
@@ -66,7 +67,7 @@ async def upload_image(
         raise HTTPException(status_code=400, detail=f"Invalid file type. Must be one of: {', '.join(allowed_extensions)}")
 
     LOGGER.info("Saving uploaded file '%s'", file.filename)
-    of, df, dp = manager.save(image_type, file)
+    of, df, dp = await asyncio.to_thread(manager.save, image_type, file)
     LOGGER.debug("Successfully saved file '%s' as '%s'", of, df)
 
     return {"sourceFilename": of, "destinationPath": dp}
