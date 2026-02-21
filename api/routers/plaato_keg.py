@@ -82,7 +82,7 @@ async def update_device(
     current_user: AuthUser = Depends(require_admin),
     db_session: AsyncSession = Depends(get_db_session),
 ):
-    data = device_data.model_dump()
+    data = device_data.model_dump(exclude_unset=True)
 
     LOGGER.debug("Updating plaato keg device %s with: %s", device_id, data)
     await PlaatoDataDB.update(db_session, device_id, **data)

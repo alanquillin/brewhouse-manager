@@ -59,7 +59,11 @@ class BeverageService:
             if transition_dict.get("id"):
                 transition_id = transition_dict.pop("id")
                 LOGGER.debug("Updating image transition %s with: %s", transition_id, transition_dict)
-                ret_data.append(await ImageTransitionsDB.update(db_session, transition_id, **transition_dict))
+                res = await ImageTransitionsDB.update(db_session, transition_id, **transition_dict)
+                if res:
+                    it = await ImageTransitionsDB.get_by_pkey(db_session, transition_id)
+                    await db_session.refresh(it)
+                    ret_data.append(it)
             else:
                 LOGGER.debug("Creating image transition with: %s", transition_dict)
                 ret_data.append(await ImageTransitionsDB.create(db_session, **transition_dict))
