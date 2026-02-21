@@ -38,7 +38,6 @@ def upgrade():
 def downgrade():
     # Drop and recreate the FK constraint with the original name
     op.drop_constraint("taps_tap_monitor_id_fkey", "taps", type_="foreignkey")
-    op.create_foreign_key("taps_sensor_id_fkey", "taps", "sensors", ["sensor_id"], ["id"])
 
     # Rename tap_monitor_id column back to sensor_id in taps table
     op.alter_column("taps", "tap_monitor_id", new_column_name="sensor_id")
@@ -52,3 +51,4 @@ def downgrade():
 
     # Rename the tap_monitors table back to sensors
     op.rename_table("tap_monitors", "sensors")
+    op.create_foreign_key("taps_sensor_id_fkey", "taps", "sensors", ["sensor_id"], ["id"])

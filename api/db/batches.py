@@ -20,7 +20,7 @@ class Batches(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     name = Column(String, nullable=True)
     batch_number = Column(String, nullable=True)
     beer_id = Column(UUID, ForeignKey(f"{beers.TABLE_NAME}.{beers.PKEY}"), nullable=True)
-    beverage_id = Column(UUID, ForeignKey(f"{beverages.TABLE_NAME}.{beers.PKEY}"), nullable=True)
+    beverage_id = Column(UUID, ForeignKey(f"{beverages.TABLE_NAME}.{beverages.PKEY}"), nullable=True)
     external_brewing_tool = Column(String, nullable=True)
     external_brewing_tool_meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
     abv = Column(Float, nullable=True)
