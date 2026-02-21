@@ -201,13 +201,7 @@ async def update_batch(
         if v == "":
             data[k] = None
 
-    # Merge external_brewing_tool_meta if both exist
-    external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
-    if external_brewing_tool_meta and batch.external_brewing_tool_meta:
-        data["external_brewing_tool_meta"] = {**batch.external_brewing_tool_meta, **external_brewing_tool_meta}
-
     skip_meta_refresh = False
-    # Merge external_brewing_tool_meta if both exist
     external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
     if external_brewing_tool_meta:
         if batch.external_brewing_tool_meta:

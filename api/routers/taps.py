@@ -1,6 +1,6 @@
 """Taps router for FastAPI"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -71,7 +71,7 @@ async def create_tap(
         if not batch:
             raise HTTPException(status_code=404, detail="Batch not found")
 
-        on_tap = await OnTapDB.create(db_session, batch_id=batch_id, tapped_on=datetime.utcnow())
+        on_tap = await OnTapDB.create(db_session, batch_id=batch_id, tapped_on=datetime.now(timezone.utc))
         data["on_tap_id"] = on_tap.id
 
     # Remove batch_id from data as it's not a direct field
@@ -160,7 +160,7 @@ async def update_tap(
         if new_batch_id != current_batch_id:
             # Remove old on_tap entry if exists
             if tap.on_tap_id:
-                await OnTapDB.update(db_session, tap.on_tap_id, untapped_on=datetime.utcnow())
+                await OnTapDB.update(db_session, tap.on_tap_id, untapped_on=datetime.now(timezone.utc))
                 data["on_tap_id"] = None
 
             # Create new on_tap entry if batch_id provided
@@ -172,7 +172,7 @@ async def update_tap(
                 on_tap = await OnTapDB.create(
                     db_session,
                     batch_id=new_batch_id,
-                    tapped_on=datetime.utcnow(),
+                    tapped_on=datetime.now(timezone.utc),
                 )
                 data["on_tap_id"] = on_tap.id
 

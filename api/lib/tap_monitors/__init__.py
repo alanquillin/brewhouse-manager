@@ -35,6 +35,7 @@ class TapMonitorBase:
                 if not db_session:
                     async with async_session_scope(self.config) as db_session:
                         return await self.extract_meta(monitor_id, monitor, meta, db_session)
+                else:
                     monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
             return monitor.meta
         return meta

@@ -75,7 +75,7 @@ class KegtronPro(KegtronBase):
             "percentRemaining": await self._get_percent_remaining(meta, device),
             "totalVolumeRemaining": await self._get_total_remaining(meta, device),
             "displayVolumeUnit": await self._get_vol_unit(meta),
-            "online": await self.is_online(meta=meta, db_session=db_session, device=None, **kwargs),
+            "online": await self.is_online(meta=meta, db_session=db_session, device=device, **kwargs),
         }
 
     def _get_device_access_token(self, meta):
@@ -90,6 +90,9 @@ class KegtronPro(KegtronBase):
 
     async def _get_percent_remaining(self, meta, device=None, params=None):
         _max, start, disp = await self._get_served_data(meta, device, params)
+
+        if _max == 0:
+            return 0.0
 
         remaining = start - disp
         return round((remaining / _max) * 100, 2)
@@ -134,19 +137,25 @@ class KegtronPro(KegtronBase):
         access_token = self._get_device_access_token(meta)
         params["access_token"] = access_token
         url = "https://mdash.net/api/v2/m/device"
-        self.logger.debug("Retrieving device data for access token %s. GET Request: %s, params: %s", access_token, url, params)
+        self.logger.debug("Retrieving device data. GET Request: %s", url)
         async with AsyncClient() as client:
             resp = await client.get(url, params=params)
             self.logger.debug("GET response code: %s", resp.status_code)
-            j = resp.json()
-            self.logger.debug("GET response JSON: %s", j)
             if resp.status_code == 401:
                 self.logger.error("Kegtron API returned a 401")
                 raise TapMonitorDependencyError(
                     MONITOR_TYPE,
                     message="Kegtron API returned a 401 unauthorized when retrieving device details.",
                 )
+            if resp.status_code != 200:
+                self.logger.error("Kegtron API returned HTTP %s", resp.status_code)
+                raise TapMonitorDependencyError(
+                    MONITOR_TYPE,
+                    message=f"Kegtron API returned HTTP {resp.status_code}",
+                )
 
+            j = resp.json()
+            self.logger.debug("GET response JSON: %s", j)
             return self.parse_resp(j)
 
     def parse_resp(self, j) -> Dict:

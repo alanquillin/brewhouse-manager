@@ -85,8 +85,8 @@ async def get_current_user_from_api_key(
     if request:
         api_key = request.query_params.get("api_key")
 
-    LOGGER.debug("api_key: %s", api_key)
-    LOGGER.debug("credentials: %s", credentials)
+    LOGGER.debug("api_key present: %s", bool(api_key))
+    LOGGER.debug("credentials present: %s", bool(credentials))
     # Try Bearer token from Authorization header
     if not api_key and credentials:
         api_key = credentials.credentials
@@ -94,7 +94,7 @@ async def get_current_user_from_api_key(
         # Try base64 decode (some clients send base64-encoded keys)
         if api_key:
             try:
-                LOGGER.debug("API Key (encoded): %s", api_key)
+                LOGGER.debug("Attempting base64 decode of API key")
                 api_key = base64.b64decode(api_key).decode("ascii")
             except Exception:
                 # If decode fails, use the key as-is

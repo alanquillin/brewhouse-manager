@@ -1,6 +1,6 @@
 from httpx import AsyncClient, BasicAuth, TimeoutException
 
-from db import session_scope
+from db import async_session_scope
 from db.batches import Batches as BatchesDB
 from db.beers import Beers as BeersDB
 from lib.external_brew_tools import ExternalBrewToolBase
@@ -14,8 +14,8 @@ class Brewfather(ExternalBrewToolBase):
 
         if not meta:
             if not batch:
-                with session_scope(self.config) as session:
-                    batch = BatchesDB.get_by_pkey(session, batch_id)
+                async with async_session_scope(self.config) as session:
+                    batch = await BatchesDB.get_by_pkey(session, batch_id)
             meta = batch.external_brewing_tool_meta
 
         fields = [
@@ -62,8 +62,8 @@ class Brewfather(ExternalBrewToolBase):
 
         if not meta:
             if not beer:
-                with session_scope(self.config) as session:
-                    beer = BeersDB.get_by_pkey(session, beer_id)
+                async with async_session_scope(self.config) as session:
+                    beer = await BeersDB.get_by_pkey(session, beer_id)
             meta = beer.external_brewing_tool_meta
 
         fields = ["measuredAbv", "status", "ibu", "color", "name", "img_url", "style.name", "style.type", "abv"]
@@ -149,7 +149,7 @@ class Brewfather(ExternalBrewToolBase):
         if not api_key:
             api_key = self.config.get(f"{config_prefix}.api_key")
         self.logger.debug("username: %s", username)
-        self.logger.debug("api key: %s", api_key)
+        self.logger.debug("api key present: %s", bool(api_key))
         return BasicAuth(username, api_key)
 
     def say_hello(self):
