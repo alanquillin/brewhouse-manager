@@ -401,8 +401,6 @@ export class ManagePlaatoKegComponent implements OnInit {
     const pass = encodeURIComponent(this.deviceConfig.pass);
     const id = encodeURIComponent(this.setupDevice.id);
     const url = `http://192.168.4.1/config?ssid=${ssid}&pass=${pass}&blynk=${id}&host=${host}&port=${port}`;
-    console.log(url);
-    console.log(encodeURI(url));
     const popupRef = window.open(url);
     setTimeout(() => {
       this.checkNewDev(popupRef);

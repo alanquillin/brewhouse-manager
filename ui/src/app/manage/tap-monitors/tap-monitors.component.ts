@@ -215,7 +215,6 @@ export class ManageTapMonitorsComponent implements OnInit {
     }
 
     if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-pro') {
-      console.log(this.modifyTapMonitor.editValues);
       meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
       meta.portNum = _.toInteger(this.modifyTapMonitor.editValues.meta.portNum);
       meta.accessToken = this.modifyTapMonitor.editValues.meta.accessToken;
@@ -427,7 +426,6 @@ export class ManageTapMonitorsComponent implements OnInit {
         }
       });
     }
-    console.log(this.modifyTapMonitor.editValues);
   }
 
   get modifyForm(): Record<string, AbstractControl> {

@@ -33,13 +33,13 @@ def get_beer_data(batch_d, beer_d, key):
     batch_ext_details = batch_ext_data.get("details") or {}
     v = batch_ext_details.get(key)
     if not v:
-        batch_d.get(key)
+        v = batch_d.get(key)
     if not v:
         beer_ext_data = beer_d.get("external_brewing_tool_meta") or {}
         beer_ext_details = beer_ext_data.get("details") or {}
         v = beer_ext_details.get(key)
     if not v:
-        beer_d.get(key)
+        v = beer_d.get(key)
     return v
 
 

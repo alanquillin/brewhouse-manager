@@ -37,6 +37,7 @@ class TapMonitorBase:
                         return await self.extract_meta(monitor_id, monitor, meta, db_session)
                     monitor = await TapMonitorsDB.get_by_pkey(db_session, monitor_id)
             return monitor.meta
+        return meta
 
 
 def _init_tap_monitors():
