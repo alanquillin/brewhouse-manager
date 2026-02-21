@@ -286,6 +286,9 @@ async def get_tap_monitor_data(
         raise HTTPException(status_code=404, detail="Tap monitor not found")
 
     tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
+    if not tap_monitor_lib:
+        raise HTTPException(status_code=400, detail="Tap monitor type not supported")
+
     try:
         data = await tap_monitor_lib.get_all(monitor=tap_monitor, db_session=db_session)
         LOGGER.debug("data retrieved: %s", data)

@@ -14,17 +14,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from lib import logging
 from lib.config import Config
-
-# from resources.exceptions import UserMessageError
-
-
-class UserMessageError(Exception):
-    def __init__(self, response_code, user_msg=None, server_msg=None):
-        self.user_msg = user_msg or ""
-        self.server_msg = server_msg or self.user_msg
-        self.response_code = response_code
-        super().__init__()
-
+from routers.exceptions import UserMessageError
 
 LOGGER = logging.getLogger(__name__)
 CONFIG = Config()

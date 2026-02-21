@@ -116,7 +116,7 @@ def session_scope(config, **kwargs):
     try:
         yield session
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
     finally:
@@ -163,7 +163,7 @@ async def async_session_scope(config, **kwargs):
     try:
         yield session
         await session.commit()
-    except:
+    except Exception:
         await session.rollback()
         raise
     finally:
@@ -459,7 +459,7 @@ class QueryMethodsMixin:
                     IntegrityError, psycopg2=UniqueViolation, new=local_exc.ItemAlreadyExists, str_match="_pkey"
                 ):
                     session.commit()
-            except:
+            except Exception:
                 session.rollback()
                 raise
 
@@ -491,7 +491,7 @@ class QueryMethodsMixin:
         if autocommit:
             try:
                 session.commit()
-            except:
+            except Exception:
                 session.rollback()
                 raise
 
@@ -504,7 +504,7 @@ class QueryMethodsMixin:
         if autocommit:
             try:
                 session.commit()
-            except:
+            except Exception:
                 session.rollback()
                 raise
 
@@ -515,7 +515,7 @@ class QueryMethodsMixin:
         if autocommit:
             try:
                 session.commit()
-            except:
+            except Exception:
                 session.rollback()
                 raise
 
@@ -580,7 +580,7 @@ class AsyncQueryMethodsMixin:
                 ):
                     await session.commit()
                     await session.refresh(row)
-            except:
+            except Exception:
                 await session.rollback()
                 raise
 
@@ -600,7 +600,7 @@ class AsyncQueryMethodsMixin:
         if autocommit:
             try:
                 await session.commit()
-            except:
+            except Exception:
                 await session.rollback()
                 raise
 
@@ -618,7 +618,7 @@ class AsyncQueryMethodsMixin:
             try:
                 LOGGER.debug("Committing update for %s with id %s and data %s", cls.__name__, pkey, kwargs)
                 await session.commit()
-            except:
+            except Exception:
                 await session.rollback()
                 raise
         LOGGER.debug("Rows affected for update: %s. (%s with id %s and data %s)", rowcnt, cls.__name__, pkey, kwargs)
@@ -633,7 +633,7 @@ class AsyncQueryMethodsMixin:
         if autocommit:
             try:
                 await session.commit()
-            except:
+            except Exception:
                 await session.rollback()
                 raise
         return rowcnt
@@ -647,7 +647,7 @@ class AsyncQueryMethodsMixin:
         if autocommit:
             try:
                 await session.commit()
-            except:
+            except Exception:
                 await session.rollback()
                 raise
 

@@ -55,7 +55,9 @@ class ConnectionHandler:
                     LOGGER.debug("no data, bailing and closing the connection")
                     break
 
-                writer.write(blynk_protocol.response_success())
+                messages = blynk_protocol.decode(data)
+                for msg in messages:
+                    writer.write(blynk_protocol.response_success(msg.msg_id))
                 await writer.drain()
 
                 await processor.process_data(data)
