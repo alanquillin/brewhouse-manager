@@ -1,13 +1,15 @@
 """Pydantic schemas for beers"""
 
 from datetime import datetime
-import logging
 from typing import List, Optional
+
 from pydantic import Field
 
+from lib import logging
 from schemas.base import CamelCaseModel
 
 LOGGER = logging.getLogger(__name__)
+
 
 class ImageTransition(CamelCaseModel):
     """Schema for image transitions"""
@@ -41,6 +43,7 @@ class BeerBase(CamelCaseModel):
             ext_brew_tool_meta = self.transform_meta(ext_brew_tool_meta)
             data["external_brewing_tool_meta"] = ext_brew_tool_meta
         return data
+
 
 class BeerCreate(BeerBase):
     """Schema for creating a beer"""

@@ -1,456 +1,839 @@
 <div class="beverages-view" *ngIf="!editingBeverage && !addingBeverage">
-    <div class="heading">
-        <p>Edit Beverages</p>
-        <div class="heading-actions" *ngIf="!loading">
-            <button mat-raised-button color="primary" (click)="addBeverage()"><mat-icon>add</mat-icon> Add Beverage</button>
-            <button matButton="elevated" class="refresh" (click)="refresh()" aria-label="Refresh"><mat-icon>refresh</mat-icon></button>
-        </div>
+  <div class="heading">
+    <p>Edit Beverages</p>
+    <div class="heading-actions" *ngIf="!loading">
+      <button mat-raised-button color="primary" (click)="addBeverage()">
+        <mat-icon>add</mat-icon>
+        Add Beverage
+      </button>
+      <button matButton="elevated" class="refresh" (click)="refresh()" aria-label="Refresh">
+        <mat-icon>refresh</mat-icon>
+      </button>
     </div>
-    <div *ngIf="loading">
-        <mat-spinner></mat-spinner>
-    </div>
-    <div class="beverages-list" *ngIf="!loading">
-        <table mat-table matSort [dataSource]="filteredBeverages" class="mat-elevation-z8" (matSortChange)="filter($event)">
-            <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header="name" sortActionDescription="Sort by name"> Name </th>
-                <td mat-cell *matCellDef="let element">{{element.name}}</td>
-            </ng-container>
-        
-            <ng-container matColumnDef="description">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header="description" sortActionDescription="Sort by description"> Description </th>
-                <td mat-cell *matCellDef="let element">
-                    {{ getDescriptionDisplay(element) }}
-                    <span *ngIf="isDescriptionTooLong(element)">
-                        <ng-template #popupDescription>
-                            <p>{{ element.description }}</p>
-                        </ng-template>
-                        <span [ngbPopover]="popupDescription" popoverTitle="Description" triggers="mouseenter:mouseleave" placement="right"><mat-icon>info</mat-icon></span>
-                    </span>
-                </td>
-            </ng-container>
+  </div>
+  <div *ngIf="loading">
+    <mat-spinner></mat-spinner>
+  </div>
+  <div class="beverages-list" *ngIf="!loading">
+    <table
+      mat-table
+      matSort
+      [dataSource]="filteredBeverages"
+      class="mat-elevation-z8"
+      (matSortChange)="filter($event)"
+    >
+      <ng-container matColumnDef="name">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header="name"
+          sortActionDescription="Sort by name"
+        >
+          Name
+        </th>
+        <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+      </ng-container>
 
-            <ng-container matColumnDef="batchCount">
-                <th mat-header-cell *matHeaderCellDef> # batches </th>
-                <td mat-cell *matCellDef="let element"><span>{{beverageBatches[element.id].length}}</span></td>
-            </ng-container>
+      <ng-container matColumnDef="description">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header="description"
+          sortActionDescription="Sort by description"
+        >
+          Description
+        </th>
+        <td mat-cell *matCellDef="let element">
+          {{ getDescriptionDisplay(element) }}
+          <span *ngIf="isDescriptionTooLong(element)">
+            <ng-template #popupDescription>
+              <p>{{ element.description }}</p>
+            </ng-template>
+            <span
+              [ngbPopover]="popupDescription"
+              popoverTitle="Description"
+              triggers="mouseenter:mouseleave"
+              placement="right"
+            >
+              <mat-icon>info</mat-icon>
+            </span>
+          </span>
+        </td>
+      </ng-container>
 
-            <ng-container matColumnDef="tapped">
-                <th mat-header-cell *matHeaderCellDef> Tapped? </th>
-                <td mat-cell *matCellDef="let element">
-                    <span class="is-tapped" *ngIf="isBeverageTapped(element)">
-                        <ng-template #popupNameDetails>
-                            <div class="associated-taps" *ngFor="let tap of beverageAssocTaps(element)">
-                                <p>Description: {{ tap.description }}</p>
-                                <p>Tap Number: {{ tap.tapNumber }}</p>
-                                <p>Location: {{ tap.location ? tap.location.description : "UNKNOWN" }}</p>
-                            </div>
-                        </ng-template>
-                        <mat-icon [ngbPopover]="popupNameDetails" popoverTitle="Associated taps" triggers="mouseenter:mouseleave" placement="right">check</mat-icon>
-                    </span>
-                </td>
-            </ng-container>
-        
-            <ng-container matColumnDef="type">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header="type" sortActionDescription="Sort by type"> Type </th>
-                <td mat-cell *matCellDef="let element">{{element.type}}</td>
-            </ng-container>
-        
-            <ng-container matColumnDef="brewery">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header="brewery" sortActionDescription="Sort by brewery"> Brewery </th>
-                <td mat-cell *matCellDef="let element">{{element.brewery}}<a href="{{element.breweryLink}}" *ngIf="!isNilOrEmpty(element.breweryLink)" target="_blank">&nbsp;<mat-icon>open_in_new</mat-icon></a></td>
-            </ng-container>
+      <ng-container matColumnDef="batchCount">
+        <th mat-header-cell *matHeaderCellDef># batches</th>
+        <td mat-cell *matCellDef="let element">
+          <span>{{ beverageBatches[element.id].length }}</span>
+        </td>
+      </ng-container>
 
-            <ng-container matColumnDef="roastery">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header="roastery" sortActionDescription="Sort by roastery"> Roastery </th>
-                <td mat-cell *matCellDef="let element">{{element.meta.roastery}}<a href="{{element.meta.roasteryLink}}" *ngIf="!isNilOrEmpty(element.meta.roasteryLink)" target="_blank">&nbsp;<mat-icon>open_in_new</mat-icon></a></td>
-            </ng-container>
+      <ng-container matColumnDef="tapped">
+        <th mat-header-cell *matHeaderCellDef>Tapped?</th>
+        <td mat-cell *matCellDef="let element">
+          <span class="is-tapped" *ngIf="isBeverageTapped(element)">
+            <ng-template #popupNameDetails>
+              <div class="associated-taps" *ngFor="let tap of beverageAssocTaps(element)">
+                <p>Description: {{ tap.description }}</p>
+                <p>Tap Number: {{ tap.tapNumber }}</p>
+                <p>Location: {{ tap.location ? tap.location.description : 'UNKNOWN' }}</p>
+              </div>
+            </ng-template>
+            <mat-icon
+              [ngbPopover]="popupNameDetails"
+              popoverTitle="Associated taps"
+              triggers="mouseenter:mouseleave"
+              placement="right"
+            >
+              check
+            </mat-icon>
+          </span>
+        </td>
+      </ng-container>
 
-            <ng-container matColumnDef="flavor">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header="flavor" sortActionDescription="Sort by flavor"> Flavor </th>
-                <td mat-cell *matCellDef="let element">{{element.flavor}}</td>
-            </ng-container>
+      <ng-container matColumnDef="type">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header="type"
+          sortActionDescription="Sort by type"
+        >
+          Type
+        </th>
+        <td mat-cell *matCellDef="let element">{{ element.type }}</td>
+      </ng-container>
 
-            <ng-container matColumnDef="imgUrl">
-                <th mat-header-cell *matHeaderCellDef> Image URL </th>
-                <td mat-cell *matCellDef="let element">
-                    <span *ngIf="!isNilOrEmpty(element.imgUrl)">
-                        <ng-template #popupContent><div><img class="beverage-image-preview" src="{{ element.imgUrl }}"/></div></ng-template>
-                        <button mat-icon-button color="primary" [ngbPopover]="popupContent" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="left" (click)="openImagePreviewDialog(element.imgUrl)">
-                            <mat-icon>open_in_new</mat-icon>
-                        </button>
-                    </span>
-                </td>
-            </ng-container>
+      <ng-container matColumnDef="brewery">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header="brewery"
+          sortActionDescription="Sort by brewery"
+        >
+          Brewery
+        </th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.brewery }}
+          <a
+            href="{{ element.breweryLink }}"
+            *ngIf="!isNilOrEmpty(element.breweryLink)"
+            target="_blank"
+          >
+            &nbsp;
+            <mat-icon>open_in_new</mat-icon>
+          </a>
+        </td>
+      </ng-container>
 
-            <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef> </th>
-                <td mat-cell *matCellDef="let element"> 
-                    <div class="actions">
-                        <button mat-icon-button color="primary" aria-label="Edit beverage" (click)="editBeverage(element)">
-                            <mat-icon>edit</mat-icon>
-                        </button>
-                        <button mat-icon-button color="warn" aria-label="Delete beverage" (click)="deleteBeverage(element)">
-                            <mat-icon>delete</mat-icon>
-                        </button>
-                    </div> 
-                </td>
-            </ng-container>
+      <ng-container matColumnDef="roastery">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header="roastery"
+          sortActionDescription="Sort by roastery"
+        >
+          Roastery
+        </th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.meta.roastery }}
+          <a
+            href="{{ element.meta.roasteryLink }}"
+            *ngIf="!isNilOrEmpty(element.meta.roasteryLink)"
+            target="_blank"
+          >
+            &nbsp;
+            <mat-icon>open_in_new</mat-icon>
+          </a>
+        </td>
+      </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-    </div>
-</div>
-<div class="beverages-modify" *ngIf="(editingBeverage || addingBeverage) && !(editingBatch || addingBatch)">
-    <div class="heading">
-        <button mat-icon-button color="primary" aria-label="Back to beverage list" title="Back to beverage list" (click)="cancelEditBeverage()" *ngIf="editBeverage">
-            <mat-icon>arrow_back</mat-icon>
-        </button>
-        <p> {{ addingBeverage ? "Add" : "Edit" }} Beverage</p>
-    </div>
-    <div class="modify-form">
-        <form [formGroup]="modifyBeverageFormGroup">
-            <fieldset>
-                <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_name_input"
-                        class="dp-textfield--input"
-                        formControlName="name"
-                        [(ngModel)]="modifyBeverage.editValues.name"
-                        matInput
-                        required />
-                    <mat-label>Name</mat-label>
-                </mat-form-field>
+      <ng-container matColumnDef="flavor">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header="flavor"
+          sortActionDescription="Sort by flavor"
+        >
+          Flavor
+        </th>
+        <td mat-cell *matCellDef="let element">{{ element.flavor }}</td>
+      </ng-container>
 
-                <mat-form-field appearance="fill" class="modify-field">
-                    <textarea id="modify_description_input"
-                        class="dp-textfield--input"
-                        formControlName="description"
-                        [(ngModel)]="modifyBeverage.editValues.description"
-                        matInput></textarea>
-                    <mat-label>Description</mat-label>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill">
-                    <mat-label>Type</mat-label>
-                    <mat-select formControlName="type" name="type" [(ngModel)]="modifyBeverage.editValues.type">
-                        <mat-option *ngFor="let t of supportedTypes" [value]="t">
-                        {{t}}
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_brewery_input"
-                        class="dp-textfield--input"
-                        formControlName="brewery"
-                        [(ngModel)]="modifyBeverage.editValues.brewery"
-                        matInput />
-                    <mat-label>Brewery</mat-label>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_brewery_link_input"
-                        class="dp-textfield--input"
-                        formControlName="breweryLink"
-                        [(ngModel)]="modifyBeverage.editValues.breweryLink"
-                        matInput />
-                    <mat-label>Brewery Link</mat-label>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="modify-field" *ngIf="modifyBeverage.editValues.type === 'cold-brew'">
-                    <input id="modify_roastery_input"
-                        class="dp-textfield--input"
-                        formControlName="roastery"
-                        [(ngModel)]="modifyBeverage.editValues.meta.roastery"
-                        matInput />
-                    <mat-label>Roastery</mat-label>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="modify-field" *ngIf="modifyBeverage.editValues.type === 'cold-brew'">
-                    <input id="modify_roastery_link_input"
-                        class="dp-textfield--input"
-                        formControlName="roasteryLink"
-                        [(ngModel)]="modifyBeverage.editValues.meta.roasteryLink"
-                        matInput />
-                    <mat-label>Roastery Link</mat-label>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_flavor_input"
-                        class="dp-textfield--input"
-                        formControlName="flavor"
-                        [(ngModel)]="modifyBeverage.editValues.flavor"
-                        matInput />
-                    <mat-label>Flavor</mat-label>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_image_url_id_input"
-                        [disabled]="processing"
-                        class="dp-textfield--input"
-                        formControlName="imgUrl"
-                        [(ngModel)]="modifyBeverage.editValues.imgUrl"
-                        matInput />
-                    <mat-label>Image URL</mat-label>
-                    <ng-template #popupContentMod><div><img class="beverage-image-preview" src="{{ modifyBeverage.editValues.imgUrl }}"/></div></ng-template>
-                    <button *ngIf="!isNilOrEmpty(modifyBeverage.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(modifyBeverage.editValues.imgUrl)">
-                        <mat-icon>open_in_new</mat-icon>
-                    </button>
-                    <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog(this.modifyBeverage.editValues, 'imgUrl')">
-                        <mat-icon>photo_library</mat-icon>
-                    </button>
-                    <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog(this.modifyBeverage.editValues, 'imgUrl')">
-                        <mat-icon>upload</mat-icon>
-                    </button>
-
-                    <mat-error *ngIf="modifyForm['imgUrl'].errors && modifyForm['imgUrl'].errors['requiredIfImageTransitionsEnabled']">
-                        Image URL is required if image transitions are enabled
-                    </mat-error>
-                </mat-form-field>
-    
-                <mat-checkbox id="modify_image_transition_enabled"
-                    formControlName="imageTransitionsEnabled" 
-                    [(ngModel)]="modifyBeverage.editValues.imageTransitionsEnabled"
-                    (change)="reRunBeverageValidation()">Enable Image Transitions?</mat-checkbox>
-                
-                <div *ngIf="modifyBeverage.editValues.imageTransitionsEnabled">
-                    <mat-form-field appearance="fill" class="modify-field fs-lg">
-                        <input id="modify_empty_image_url_id_input"
-                            [disabled]="processing"
-                            class="dp-textfield--input"
-                            formControlName="emptyImgUrl"
-                            [(ngModel)]="modifyBeverage.editValues.emptyImgUrl"
-                            matInput />
-                        <mat-label>Empty Keg Image URL</mat-label>
-                        <ng-template #popupContentMod><div><img class="beverage-image-preview" src="{{ modifyBeverage.editValues.emptyImgUrl }}"/></div></ng-template>
-                        <button *ngIf="!isNilOrEmpty(modifyBeverage.editValues.emptyImgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(modifyBeverage.editValues.emptyImgUrl)">
-                            <mat-icon>open_in_new</mat-icon>
-                        </button>
-                        <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog(this.modifyBeverage.editValues, 'emptyImgUrl')">
-                            <mat-icon>photo_library</mat-icon>
-                        </button>
-                        <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog(this.modifyBeverage.editValues, 'emptyImgUrl')">
-                            <mat-icon>upload</mat-icon>
-                        </button>
-                        <mat-error *ngIf="modifyForm['emptyImgUrl'].errors && modifyForm['emptyImgUrl'].errors['requiredIfImageTransitionsEnabled']">
-                            Empty image URL is required if image transitions are enabled
-                        </mat-error>
-                    </mat-form-field>
-
-                    <div class="section">
-                        <button mat-raised-button color="primary" class="add-transition" aria-label="Add new Image Transition" (click)="addImageTransition()" [disabled]="!areImageTransitionsValid">
-                            <mat-icon>add</mat-icon> Add Image Transition
-                        </button>
-
-                        <div class="items" *ngFor="let imageTransition of this.modifyBeverage.imageTransitions">
-                            <mat-form-field appearance="fill" class="modify-field fs-small">
-                                <input id="modify_changePercent_input_{{imageTransition.changePercent}}"
-                                    [disabled]="processing"
-                                    class="dp-textfield--input fs-small"
-                                    [(ngModel)]="imageTransition.editValues.changePercent"
-                                    [ngModelOptions]="{standalone: true}"
-                                    required
-                                    matInput
-                                    type="number" 
-                                    [max]="99"
-                                    [min]="1" />
-                                <mat-label>Change after %</mat-label>
-                            </mat-form-field>
-                            <mat-form-field appearance="fill" class="modify-field fs-med">
-                                <input id="modify_image_transition_image_input_{{imageTransition.changePercent}}"
-                                    [disabled]="processing"
-                                    class="dp-textfield--input fs-med"
-                                    [(ngModel)]="imageTransition.editValues.imgUrl"
-                                    [ngModelOptions]="{standalone: true}"
-                                    required
-                                    matInput />
-                                <mat-label>Empty Keg Image URL</mat-label>
-                                <ng-template #popupContentMod><div><img class="beverage-image-preview" src="{{ imageTransition.editValues.imgUrl }}"/></div></ng-template>
-                                <button *ngIf="!isNilOrEmpty(imageTransition.editValues.imgUrl)" matSuffix mat-icon-button aria-label="Preview image" [ngbPopover]="popupContentMod" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="right" (click)="openImagePreviewDialog(imageTransition.editValues.imgUrl)">
-                                    <mat-icon>open_in_new</mat-icon>
-                                </button>
-                                <button matSuffix mat-icon-button aria-label="Select an existing image" (click)="openImageSelectorDialog(imageTransition.editValues, 'imgUrl')">
-                                    <mat-icon>photo_library</mat-icon>
-                                </button>
-                                <button matSuffix mat-icon-button aria-label="Upload new image" (click)="openUploadDialog(imageTransition.editValues, 'imgUrl')">
-                                    <mat-icon>upload</mat-icon>
-                                </button>
-                            </mat-form-field>
-                            <button mat-icon-button color="warn" aria-label="Delete image transition" (click)="removeImageTransitionItemFromList(imageTransition)">
-                                <mat-icon>delete</mat-icon>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            </fieldset>
-        </form>
-    </div>
-    
-    <div class="modify-actions" *ngIf="addingBeverage">
-        <button mat-raised-button color="primary" (click)="createBeverage()" [disabled]="!modifyBeverageFormGroup.valid || processing || !areImageTransitionsValid"><mat-icon>save</mat-icon> Create</button>
-        <button mat-raised-button color="warn" (click)="cancelAddBeverage()"><mat-icon>cancel</mat-icon> Cancel</button>
-    </div>
-    <div class="modify-actions" *ngIf="editingBeverage">
-        <button mat-raised-button color="primary" (click)="saveBeverage()" [disabled]="!hasBeverageChanges || !modifyBeverageFormGroup.valid || processing || !areImageTransitionsValid"><mat-icon>save</mat-icon> Save</button>
-        <button mat-raised-button color="warn" (click)="cancelEditBeverage()"><mat-icon>cancel</mat-icon> Cancel</button>
-        <button mat-raised-button (click)="addBatch(modifyBeverage)"><mat-icon>add</mat-icon> Add Batch</button>
-    </div>
-    <div *ngIf="editingBeverage && beverageBatches[modifyBeverage.id].length <= 0" class="beverage-batches">
-        <div class="heading">
-            <p>No batches</p>
-        </div>
-    </div>
-    <div *ngIf="editingBeverage && beverageBatches[modifyBeverage.id].length > 0" class="beverage-batches">
-        <div class="heading">
-            <p>Batches</p>
-            <mat-slide-toggle
-              [(ngModel)]="showArchivedBatches"
-              (change)="toggleArchivedBatches()"
+      <ng-container matColumnDef="imgUrl">
+        <th mat-header-cell *matHeaderCellDef>Image URL</th>
+        <td mat-cell *matCellDef="let element">
+          <span *ngIf="!isNilOrEmpty(element.imgUrl)">
+            <ng-template #popupContent>
+              <div>
+                <img
+                  class="beverage-image-preview"
+                  src="{{ element.imgUrl }}"
+                  alt="Beverage Image"
+                />
+              </div>
+            </ng-template>
+            <button
+              mat-icon-button
               color="primary"
-              [disabled]="loadingBatches">
-              Show Archived
-            </mat-slide-toggle>
-        </div>
-        <div class="taps-list-loading" *ngIf="loadingBatches">
-            <mat-spinner></mat-spinner>
-        </div>
-        <div class="batch-list" *ngIf="beverageBatches[this.modifyBeverage.id].length > 0 && !loadingBatches">
-            <table mat-table [dataSource]="beverageBatches[this.modifyBeverage.id]" class="mat-elevation-z8">
-                <ng-container matColumnDef="id">
-                    <th mat-header-cell *matHeaderCellDef> Id </th>
-                    <td mat-cell *matCellDef="let element"> {{element.id}} </td>
-                </ng-container>
+              [ngbPopover]="popupContent"
+              popoverTitle="Image Preview"
+              triggers="mouseenter:mouseleave"
+              placement="left"
+              (click)="openImagePreviewDialog(element.imgUrl)"
+            >
+              <mat-icon>open_in_new</mat-icon>
+            </button>
+          </span>
+        </td>
+      </ng-container>
 
-                <ng-container matColumnDef="tapped">
-                    <th mat-header-cell *matHeaderCellDef> Tapped? </th>
-                    <td mat-cell *matCellDef="let element">
-                        <span class="is-tapped" *ngIf="isBatchTapped(element)">
-                            <ng-template #popupNameDetails>
-                                <div class="associated-taps" *ngFor="let tap of element.taps">
-                                    <p>Description: {{ tap.description }}</p>
-                                    <p>Tap Number: {{ tap.tapNumber }}</p>
-                                    <p>Location: {{ tap.location ? tap.location.description : "UNKNOWN" }}</p>
-                                </div>
-                            </ng-template>
-                            <mat-icon [ngbPopover]="popupNameDetails" popoverTitle="Associated taps" triggers="mouseenter:mouseleave" placement="right">check</mat-icon>
-                        </span>
-                    </td>
-                </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <div class="actions">
+            <button
+              mat-icon-button
+              color="primary"
+              aria-label="Edit beverage"
+              (click)="editBeverage(element)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="warn"
+              aria-label="Delete beverage"
+              (click)="deleteBeverage(element)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
 
-                <ng-container matColumnDef="locations">
-                    <th mat-header-cell *matHeaderCellDef> Locations </th>
-                    <td mat-cell *matCellDef="let element">
-                        <span>
-                            @for(location of element.locations; track location) {
-                                {{location.name}}<br/>
-                            }
-                        </span>
-                    </td>
-                </ng-container>
-
-                <ng-container matColumnDef="batchNumber">
-                    <th mat-header-cell *matHeaderCellDef> Batch Number </th>
-                    <td mat-cell *matCellDef="let element"><span class="{{ isNilOrEmpty(element.batchNumber) ? 'imported-value' : '' }}">{{element.getBatchNumber()}}</span></td>
-                </ng-container>
-
-                <ng-container matColumnDef="brewDate">
-                    <th mat-header-cell *matHeaderCellDef> Brew Date </th>
-                    <td mat-cell *matCellDef="let element"><span class="{{ isNilOrEmpty(element.brewDate) ? 'imported-value' : '' }}">{{element.getBrewDate()}}</span></td>
-                </ng-container>
-
-                <ng-container matColumnDef="kegDate">
-                    <th mat-header-cell *matHeaderCellDef> Keg Date </th>
-                    <td mat-cell *matCellDef="let element"><span class="{{ isNilOrEmpty(element.kegDate) ? 'imported-value' : '' }}">{{element.getKegDate()}}</span></td>
-                </ng-container>
-
-                <ng-container matColumnDef="actions">
-                    <th mat-header-cell *matHeaderCellDef> </th>
-                    <td mat-cell *matCellDef="let element" class="actions"> 
-                        <div class="actions">
-                            @if (isArchivedBatch(element)) {
-                            <button mat-icon-button color="primary" aria-label="Unarchive batch" title="Unarchive" (click)="unarchiveBatch(element)">
-                                <mat-icon>unarchive</mat-icon>
-                            </button>
-                            } @else {
-                            <button mat-icon-button color="primary" aria-label="Edit batch" title="Edit" (click)="editBatch(element, modifyBeverage)">
-                                <mat-icon>edit</mat-icon>
-                            </button>
-                            <button mat-icon-button color="warn" aria-label="Archive batch" title="Archive" (click)="archiveBatch(element)">
-                                <mat-icon>archive</mat-icon>
-                            </button>
-                            }
-                        </div> 
-                    </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="displayedBatchColumns"></tr>
-                <tr mat-row
-                    *matRowDef="let row; columns: displayedBatchColumns;"
-                    [ngClass]="{'archived-batch': isArchivedBatch(row)}"></tr>
-            </table>
-            <br/>
-        </div>
-    </div>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
 </div>
-<div class="beverages-modify" *ngIf="(editingBatch || addingBatch)">
+<div
+  class="beverages-modify"
+  *ngIf="(editingBeverage || addingBeverage) && !(editingBatch || addingBatch)"
+>
+  <div class="heading">
+    <button
+      mat-icon-button
+      color="primary"
+      aria-label="Back to beverage list"
+      title="Back to beverage list"
+      (click)="cancelEditBeverage()"
+      *ngIf="editBeverage"
+    >
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <p>{{ addingBeverage ? 'Add' : 'Edit' }} Beverage</p>
+  </div>
+  <div class="modify-form">
+    <form [formGroup]="modifyBeverageFormGroup">
+      <fieldset>
+        <mat-form-field appearance="fill" class="modify-field">
+          <input
+            id="modify_name_input"
+            class="dp-textfield--input"
+            formControlName="name"
+            [(ngModel)]="modifyBeverage.editValues.name"
+            matInput
+            required
+          />
+          <mat-label>Name</mat-label>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="modify-field">
+          <textarea
+            id="modify_description_input"
+            class="dp-textfield--input"
+            formControlName="description"
+            [(ngModel)]="modifyBeverage.editValues.description"
+            matInput
+          ></textarea>
+          <mat-label>Description</mat-label>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Type</mat-label>
+          <mat-select
+            formControlName="type"
+            name="type"
+            [(ngModel)]="modifyBeverage.editValues.type"
+          >
+            <mat-option *ngFor="let t of supportedTypes" [value]="t">
+              {{ t }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="modify-field">
+          <input
+            id="modify_brewery_input"
+            class="dp-textfield--input"
+            formControlName="brewery"
+            [(ngModel)]="modifyBeverage.editValues.brewery"
+            matInput
+          />
+          <mat-label>Brewery</mat-label>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="modify-field">
+          <input
+            id="modify_brewery_link_input"
+            class="dp-textfield--input"
+            formControlName="breweryLink"
+            [(ngModel)]="modifyBeverage.editValues.breweryLink"
+            matInput
+          />
+          <mat-label>Brewery Link</mat-label>
+        </mat-form-field>
+
+        <mat-form-field
+          appearance="fill"
+          class="modify-field"
+          *ngIf="modifyBeverage.editValues.type === 'cold-brew'"
+        >
+          <input
+            id="modify_roastery_input"
+            class="dp-textfield--input"
+            formControlName="roastery"
+            [(ngModel)]="modifyBeverage.editValues.meta.roastery"
+            matInput
+          />
+          <mat-label>Roastery</mat-label>
+        </mat-form-field>
+
+        <mat-form-field
+          appearance="fill"
+          class="modify-field"
+          *ngIf="modifyBeverage.editValues.type === 'cold-brew'"
+        >
+          <input
+            id="modify_roastery_link_input"
+            class="dp-textfield--input"
+            formControlName="roasteryLink"
+            [(ngModel)]="modifyBeverage.editValues.meta.roasteryLink"
+            matInput
+          />
+          <mat-label>Roastery Link</mat-label>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="modify-field">
+          <input
+            id="modify_flavor_input"
+            class="dp-textfield--input"
+            formControlName="flavor"
+            [(ngModel)]="modifyBeverage.editValues.flavor"
+            matInput
+          />
+          <mat-label>Flavor</mat-label>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="modify-field">
+          <input
+            id="modify_image_url_id_input"
+            [disabled]="processing"
+            class="dp-textfield--input"
+            formControlName="imgUrl"
+            [(ngModel)]="modifyBeverage.editValues.imgUrl"
+            matInput
+          />
+          <mat-label>Image URL</mat-label>
+          <ng-template #popupContentMod>
+            <div>
+              <img
+                class="beverage-image-preview"
+                src="{{ modifyBeverage.editValues.imgUrl }}"
+                alt="Beverage Image"
+              />
+            </div>
+          </ng-template>
+          <button
+            *ngIf="!isNilOrEmpty(modifyBeverage.editValues.imgUrl)"
+            matSuffix
+            mat-icon-button
+            aria-label="Preview image"
+            [ngbPopover]="popupContentMod"
+            popoverTitle="Image Preview"
+            triggers="mouseenter:mouseleave"
+            placement="right"
+            (click)="openImagePreviewDialog(modifyBeverage.editValues.imgUrl)"
+          >
+            <mat-icon>open_in_new</mat-icon>
+          </button>
+          <button
+            matSuffix
+            mat-icon-button
+            aria-label="Select an existing image"
+            (click)="openImageSelectorDialog(this.modifyBeverage.editValues, 'imgUrl')"
+          >
+            <mat-icon>photo_library</mat-icon>
+          </button>
+          <button
+            matSuffix
+            mat-icon-button
+            aria-label="Upload new image"
+            (click)="openUploadDialog(this.modifyBeverage.editValues, 'imgUrl')"
+          >
+            <mat-icon>upload</mat-icon>
+          </button>
+
+          <mat-error
+            *ngIf="
+              modifyForm['imgUrl'].errors &&
+              modifyForm['imgUrl'].errors['requiredIfImageTransitionsEnabled']
+            "
+          >
+            Image URL is required if image transitions are enabled
+          </mat-error>
+        </mat-form-field>
+
+        <mat-checkbox
+          id="modify_image_transition_enabled"
+          formControlName="imageTransitionsEnabled"
+          [(ngModel)]="modifyBeverage.editValues.imageTransitionsEnabled"
+          (change)="reRunBeverageValidation()"
+        >
+          Enable Image Transitions?
+        </mat-checkbox>
+
+        <div *ngIf="modifyBeverage.editValues.imageTransitionsEnabled">
+          <mat-form-field appearance="fill" class="modify-field fs-lg">
+            <input
+              id="modify_empty_image_url_id_input"
+              [disabled]="processing"
+              class="dp-textfield--input"
+              formControlName="emptyImgUrl"
+              [(ngModel)]="modifyBeverage.editValues.emptyImgUrl"
+              matInput
+            />
+            <mat-label>Empty Keg Image URL</mat-label>
+            <ng-template #popupContentMod>
+              <div>
+                <img
+                  class="beverage-image-preview"
+                  src="{{ modifyBeverage.editValues.emptyImgUrl }}"
+                  alt="Empty Keg Image"
+                />
+              </div>
+            </ng-template>
+            <button
+              *ngIf="!isNilOrEmpty(modifyBeverage.editValues.emptyImgUrl)"
+              matSuffix
+              mat-icon-button
+              aria-label="Preview image"
+              [ngbPopover]="popupContentMod"
+              popoverTitle="Image Preview"
+              triggers="mouseenter:mouseleave"
+              placement="right"
+              (click)="openImagePreviewDialog(modifyBeverage.editValues.emptyImgUrl)"
+            >
+              <mat-icon>open_in_new</mat-icon>
+            </button>
+            <button
+              matSuffix
+              mat-icon-button
+              aria-label="Select an existing image"
+              (click)="openImageSelectorDialog(this.modifyBeverage.editValues, 'emptyImgUrl')"
+            >
+              <mat-icon>photo_library</mat-icon>
+            </button>
+            <button
+              matSuffix
+              mat-icon-button
+              aria-label="Upload new image"
+              (click)="openUploadDialog(this.modifyBeverage.editValues, 'emptyImgUrl')"
+            >
+              <mat-icon>upload</mat-icon>
+            </button>
+            <mat-error
+              *ngIf="
+                modifyForm['emptyImgUrl'].errors &&
+                modifyForm['emptyImgUrl'].errors['requiredIfImageTransitionsEnabled']
+              "
+            >
+              Empty image URL is required if image transitions are enabled
+            </mat-error>
+          </mat-form-field>
+
+          <div class="section">
+            <button
+              mat-raised-button
+              color="primary"
+              class="add-transition"
+              aria-label="Add new Image Transition"
+              (click)="addImageTransition()"
+              [disabled]="!areImageTransitionsValid"
+            >
+              <mat-icon>add</mat-icon>
+              Add Image Transition
+            </button>
+
+            <div class="items" *ngFor="let imageTransition of this.modifyBeverage.imageTransitions">
+              <mat-form-field appearance="fill" class="modify-field fs-small">
+                <input
+                  id="modify_changePercent_input_{{ imageTransition.changePercent }}"
+                  [disabled]="processing"
+                  class="dp-textfield--input fs-small"
+                  [(ngModel)]="imageTransition.editValues.changePercent"
+                  [ngModelOptions]="{ standalone: true }"
+                  required
+                  matInput
+                  type="number"
+                  [max]="99"
+                  [min]="1"
+                />
+                <mat-label>Change after %</mat-label>
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="modify-field fs-med">
+                <input
+                  id="modify_image_transition_image_input_{{ imageTransition.changePercent }}"
+                  [disabled]="processing"
+                  class="dp-textfield--input fs-med"
+                  [(ngModel)]="imageTransition.editValues.imgUrl"
+                  [ngModelOptions]="{ standalone: true }"
+                  required
+                  matInput
+                />
+                <mat-label>Empty Keg Image URL</mat-label>
+                <ng-template #popupContentMod>
+                  <div>
+                    <img
+                      class="beverage-image-preview"
+                      src="{{ imageTransition.editValues.imgUrl }}"
+                      alt="Image Transition Image"
+                    />
+                  </div>
+                </ng-template>
+                <button
+                  *ngIf="!isNilOrEmpty(imageTransition.editValues.imgUrl)"
+                  matSuffix
+                  mat-icon-button
+                  aria-label="Preview image"
+                  [ngbPopover]="popupContentMod"
+                  popoverTitle="Image Preview"
+                  triggers="mouseenter:mouseleave"
+                  placement="right"
+                  (click)="openImagePreviewDialog(imageTransition.editValues.imgUrl)"
+                >
+                  <mat-icon>open_in_new</mat-icon>
+                </button>
+                <button
+                  matSuffix
+                  mat-icon-button
+                  aria-label="Select an existing image"
+                  (click)="openImageSelectorDialog(imageTransition.editValues, 'imgUrl')"
+                >
+                  <mat-icon>photo_library</mat-icon>
+                </button>
+                <button
+                  matSuffix
+                  mat-icon-button
+                  aria-label="Upload new image"
+                  (click)="openUploadDialog(imageTransition.editValues, 'imgUrl')"
+                >
+                  <mat-icon>upload</mat-icon>
+                </button>
+              </mat-form-field>
+              <button
+                mat-icon-button
+                color="warn"
+                aria-label="Delete image transition"
+                (click)="removeImageTransitionItemFromList(imageTransition)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+
+  <div class="modify-actions" *ngIf="addingBeverage">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="createBeverage()"
+      [disabled]="!modifyBeverageFormGroup.valid || processing || !areImageTransitionsValid"
+    >
+      <mat-icon>save</mat-icon>
+      Create
+    </button>
+    <button mat-raised-button color="warn" (click)="cancelAddBeverage()">
+      <mat-icon>cancel</mat-icon>
+      Cancel
+    </button>
+  </div>
+  <div class="modify-actions" *ngIf="editingBeverage">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="saveBeverage()"
+      [disabled]="
+        !hasBeverageChanges ||
+        !modifyBeverageFormGroup.valid ||
+        processing ||
+        !areImageTransitionsValid
+      "
+    >
+      <mat-icon>save</mat-icon>
+      Save
+    </button>
+    <button mat-raised-button color="warn" (click)="cancelEditBeverage()">
+      <mat-icon>cancel</mat-icon>
+      Cancel
+    </button>
+  </div>
+  <div class="beverage-batches">
     <div class="heading">
-        <p> {{ addingBatch ? "Add" : "Edit" }} Batch for {{selectedBatchBeverage.name}}</p>
-    </div>
-    <div class="modify-form">
-        <form [formGroup]="modifyBatchFormGroup">
-            <fieldset>
-                <mat-form-field appearance="fill" class="modify-field">
-                    <input id="modify_batch_number_input"
-                        [disabled]="processing"
-                        class="dp-textfield--input"
-                        formControlName="batchNumber"
-                        [(ngModel)]="modifyBatch.editValues.batchNumber"
-                        matInput />
-                    <mat-label>Batch Number</mat-label>
-                    <mat-error *ngIf="modifyBatchForm['batchNumber'].errors">
-                        Batch Number is required if no external brew tool is selected
-                    </mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" [hidden]="locations.length <= 1">
-                    <mat-label>Locations</mat-label>
-                    <mat-select formControlName="locationIds" name="locationIds" [(ngModel)]="modifyBatch.editValues.locationIds" multiple>
-                        <mat-option *ngFor="let location of locations" [value]="location.id">
-                        {{location.name}}
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill">
-                    <mat-label>Brew Date</mat-label>
-                    <input matInput [matDatepicker]="brewDatePicker" formControlName="brewDate" [(ngModel)]="modifyBatch.editValues.brewDateObj" [disabled]="processing">
-                    <mat-datepicker-toggle matSuffix [for]="brewDatePicker"></mat-datepicker-toggle>
-                    <mat-datepicker #brewDatePicker></mat-datepicker>
-                </mat-form-field>
-                
-                <mat-form-field appearance="fill">
-                    <mat-label>Keg Date</mat-label>
-                    <input matInput [matDatepicker]="kegDatePicker" formControlName="kegDate" [(ngModel)]="modifyBatch.editValues.kegDateObj" [disabled]="processing">
-                    <mat-datepicker-toggle matSuffix [for]="kegDatePicker"></mat-datepicker-toggle>
-                    <mat-datepicker #kegDatePicker></mat-datepicker>
-                </mat-form-field>
-            </fieldset>
-        </form>
-    </div>
-    
-    <div class="modify-actions" *ngIf="addingBatch">
-        <button mat-raised-button color="primary" (click)="createBatch()" [disabled]="!modifyBatchFormGroup.valid || processing || !areImageTransitionsValid">
-            <mat-icon *ngIf="processing"><mat-spinner diameter="20"></mat-spinner></mat-icon>
-            <mat-icon *ngIf="!processing">save</mat-icon> Create
+      <p>Batches</p>
+      <div class="heading-actions">
+        <mat-slide-toggle
+          [(ngModel)]="showArchivedBatches"
+          (change)="toggleArchivedBatches()"
+          color="primary"
+          [disabled]="loadingBatches"
+        >
+          Show Archived
+        </mat-slide-toggle>
+        <button mat-raised-button color="primary" (click)="addBatch(modifyBeverage)">
+          <mat-icon>add</mat-icon>
+          Add Batch
         </button>
-        <button mat-raised-button color="warn" (click)="cancelAddBatch()" [disabled]="processing"><mat-icon>cancel</mat-icon> Cancel</button>
+      </div>
     </div>
-    <div class="modify-actions" *ngIf="editingBatch">
-        <button mat-raised-button color="primary" (click)="saveBatch()" [disabled]="!hasBatchChanges || !modifyBatchFormGroup.valid || processing || !areImageTransitionsValid">
-            <mat-icon *ngIf="processing"><mat-spinner diameter="20"></mat-spinner></mat-icon>
-            <mat-icon *ngIf="!processing">save</mat-icon> Save
-        </button>
-        <button mat-raised-button color="warn" (click)="cancelEditBatch()" [disabled]="processing"><mat-icon>cancel</mat-icon> Cancel</button>
+    <div class="taps-list-loading" *ngIf="loadingBatches">
+      <mat-spinner></mat-spinner>
     </div>
+    <div
+      class="batch-list"
+      *ngIf="beverageBatches[this.modifyBeverage.id].length > 0 && !loadingBatches"
+    >
+      <table
+        mat-table
+        [dataSource]="beverageBatches[this.modifyBeverage.id]"
+        class="mat-elevation-z8"
+      >
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>Id</th>
+          <td mat-cell *matCellDef="let element">{{ element.id }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="tapped">
+          <th mat-header-cell *matHeaderCellDef>Tapped?</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="is-tapped" *ngIf="isBatchTapped(element)">
+              <ng-template #popupNameDetails>
+                <div class="associated-taps" *ngFor="let tap of element.taps">
+                  <p>Description: {{ tap.description }}</p>
+                  <p>Tap Number: {{ tap.tapNumber }}</p>
+                  <p>Location: {{ tap.location ? tap.location.description : 'UNKNOWN' }}</p>
+                </div>
+              </ng-template>
+              <mat-icon
+                [ngbPopover]="popupNameDetails"
+                popoverTitle="Associated taps"
+                triggers="mouseenter:mouseleave"
+                placement="right"
+              >
+                check
+              </mat-icon>
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="locations">
+          <th mat-header-cell *matHeaderCellDef>Locations</th>
+          <td mat-cell *matCellDef="let element">
+            <span>
+              @for (location of element.locations; track location) {
+                {{ location.name }}
+                <br />
+              }
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="batchNumber">
+          <th mat-header-cell *matHeaderCellDef>Batch Number</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="{{ isNilOrEmpty(element.batchNumber) ? 'imported-value' : '' }}">
+              {{ element.getBatchNumber() }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="brewDate">
+          <th mat-header-cell *matHeaderCellDef>Brew Date</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="{{ isNilOrEmpty(element.brewDate) ? 'imported-value' : '' }}">
+              {{ element.getBrewDate() }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="kegDate">
+          <th mat-header-cell *matHeaderCellDef>Keg Date</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="{{ isNilOrEmpty(element.kegDate) ? 'imported-value' : '' }}">
+              {{ element.getKegDate() }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let element" class="actions">
+            <div class="actions">
+              @if (isArchivedBatch(element)) {
+                <button
+                  mat-icon-button
+                  color="primary"
+                  aria-label="Unarchive batch"
+                  title="Unarchive"
+                  (click)="unarchiveBatch(element)"
+                >
+                  <mat-icon>unarchive</mat-icon>
+                </button>
+              } @else {
+                <button
+                  mat-icon-button
+                  color="primary"
+                  aria-label="Edit batch"
+                  title="Edit"
+                  (click)="editBatch(element, modifyBeverage)"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  aria-label="Archive batch"
+                  title="Archive"
+                  (click)="archiveBatch(element)"
+                >
+                  <mat-icon>archive</mat-icon>
+                </button>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedBatchColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedBatchColumns"
+          [ngClass]="{ 'archived-batch': isArchivedBatch(row) }"
+        ></tr>
+      </table>
+      <br />
+    </div>
+  </div>
+</div>
+<div class="beverages-modify" *ngIf="editingBatch || addingBatch">
+  <div class="heading">
+    <p>{{ addingBatch ? 'Add' : 'Edit' }} Batch for {{ selectedBatchBeverage.name }}</p>
+  </div>
+  <div class="modify-form">
+    <form [formGroup]="modifyBatchFormGroup">
+      <fieldset>
+        <mat-form-field appearance="fill" class="modify-field">
+          <input
+            id="modify_batch_number_input"
+            [disabled]="processing"
+            class="dp-textfield--input"
+            formControlName="batchNumber"
+            [(ngModel)]="modifyBatch.editValues.batchNumber"
+            matInput
+          />
+          <mat-label>Batch Number</mat-label>
+          <mat-error *ngIf="modifyBatchForm['batchNumber'].errors">
+            Batch Number is required if no external brew tool is selected
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" [hidden]="locations.length <= 1">
+          <mat-label>Locations</mat-label>
+          <mat-select
+            formControlName="locationIds"
+            name="locationIds"
+            [(ngModel)]="modifyBatch.editValues.locationIds"
+            multiple
+          >
+            <mat-option *ngFor="let location of locations" [value]="location.id">
+              {{ location.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Brew Date</mat-label>
+          <input
+            matInput
+            [matDatepicker]="brewDatePicker"
+            formControlName="brewDate"
+            [(ngModel)]="modifyBatch.editValues.brewDateObj"
+            [disabled]="processing"
+          />
+          <mat-datepicker-toggle matSuffix [for]="brewDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #brewDatePicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Keg Date</mat-label>
+          <input
+            matInput
+            [matDatepicker]="kegDatePicker"
+            formControlName="kegDate"
+            [(ngModel)]="modifyBatch.editValues.kegDateObj"
+            [disabled]="processing"
+          />
+          <mat-datepicker-toggle matSuffix [for]="kegDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #kegDatePicker></mat-datepicker>
+        </mat-form-field>
+      </fieldset>
+    </form>
+  </div>
+
+  <div class="modify-actions" *ngIf="addingBatch">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="createBatch()"
+      [disabled]="!modifyBatchFormGroup.valid || processing || !areImageTransitionsValid"
+    >
+      <mat-icon *ngIf="processing"><mat-spinner diameter="20"></mat-spinner></mat-icon>
+      <mat-icon *ngIf="!processing">save</mat-icon>
+      Create
+    </button>
+    <button mat-raised-button color="warn" (click)="cancelAddBatch()" [disabled]="processing">
+      <mat-icon>cancel</mat-icon>
+      Cancel
+    </button>
+  </div>
+  <div class="modify-actions" *ngIf="editingBatch">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="saveBatch()"
+      [disabled]="
+        !hasBatchChanges || !modifyBatchFormGroup.valid || processing || !areImageTransitionsValid
+      "
+    >
+      <mat-icon *ngIf="processing"><mat-spinner diameter="20"></mat-spinner></mat-icon>
+      <mat-icon *ngIf="!processing">save</mat-icon>
+      Save
+    </button>
+    <button mat-raised-button color="warn" (click)="cancelEditBatch()" [disabled]="processing">
+      <mat-icon>cancel</mat-icon>
+      Cancel
+    </button>
+  </div>
 </div>

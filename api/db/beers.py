@@ -1,22 +1,22 @@
 # pylint: disable=wrong-import-position
-_TABLE_NAME = "beers"
-_PKEY = "id"
+TABLE_NAME = "beers"
+PKEY = "id"
 
-from sqlalchemy import Column, Float, ForeignKey, Boolean, String, func
-from sqlalchemy.orm import joinedload, relationship
+from sqlalchemy import Boolean, Column, Float, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail, locations
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, generate_audit_trail
 from db.types.nested import NestedMutableDict
 
 
 @generate_audit_trail
 class Beers(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
 
-    __tablename__ = _TABLE_NAME
+    __tablename__ = TABLE_NAME
 
-    id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
+    id = Column(PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
     name = Column(String, nullable=True)
     description = Column(String, nullable=True)
     brewery = Column(String, nullable=True)
@@ -36,7 +36,7 @@ class Beers(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     __table_args__ = (Index("beer_name_lower_ix", func.lower(name), unique=True),)
 
     @classmethod
-    async def create(cls, session, **kwargs):
+    async def create(cls, session, **kwargs):  # pylint: disable=arguments-differ
         if not kwargs.get("image_transitions_enabled"):
             kwargs["image_transitions_enabled"] = False
         return await super().create(session, **kwargs)

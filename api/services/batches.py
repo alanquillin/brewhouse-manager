@@ -1,12 +1,12 @@
 """Batch service with business logic and transformations"""
 
-import logging
-from datetime import datetime, timedelta, date
+from datetime import date, datetime, timedelta
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.taps import Taps as TapsDB
+from lib import logging
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.external_brew_tools.exceptions import ResourceNotFoundError
@@ -79,9 +79,7 @@ class BatchService:
                     refresh_reason = "Forced refresh requested via query string parameter."
                 elif ex_details.get("_refresh_on_next_check", False):
                     refresh_data = True
-                    refresh_reason = ex_details.get(
-                        "_refresh_reason", "The batch was marked by the external brewing tool for refresh, reason unknown."
-                    )
+                    refresh_reason = ex_details.get("_refresh_reason", "The batch was marked by the external brewing tool for refresh, reason unknown.")
 
                 if not refresh_data:
                     last_refresh = ex_details.get("_last_refreshed_on")
@@ -110,6 +108,7 @@ class BatchService:
                         u_meta = BatchService.store_metadata(meta, ex_details, now=now)
                         LOGGER.debug(f"Updated brew tool metadata: {u_meta}, updating database")
                         from db.batches import Batches as BatchesDB
+
                         await BatchesDB.update(db_session, batch.id, external_brewing_tool_meta=u_meta)
                         data["external_brewing_tool_meta"] = u_meta
                     else:
@@ -145,7 +144,7 @@ class BatchService:
                 return True
 
         return False
-    
+
     @staticmethod
     async def verify_and_update_external_brew_tool_batch(request_data):
         LOGGER.debug("Checking if the beer is associated with an external brew tool and verifying data")
@@ -169,7 +168,7 @@ class BatchService:
                 LOGGER.error(f"{tool_type} returned a 404 for batch id: {batch_id}.")
                 raise HTTPException(status_code=400, detail=f"{tool_type} batch with id '{batch_id}' not found")
         return request_data
-    
+
     @staticmethod
     def store_metadata(metadata, ex_details, now=None):
         if not now:

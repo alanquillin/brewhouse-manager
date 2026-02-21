@@ -1,20 +1,20 @@
 .header-content {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 
-    div.header-title {
-        order: 1;
-        text-align: left;
+  div.header-title {
+    order: 1;
+    text-align: left;
 
-        img {
-            width: auto;
-            height: 56px;
-        }
+    img {
+      width: auto;
+      height: 56px;
     }
+  }
 
-    div.header-nav {
-        order: 2;
-        margin-left: auto;
-        padding-top: 12px;
-    }
+  div.header-nav {
+    order: 2;
+    margin-left: auto;
+    padding-top: 12px;
+  }
 }

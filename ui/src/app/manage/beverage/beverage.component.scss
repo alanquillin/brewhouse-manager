@@ -1,186 +1,191 @@
 .beverages-view {
+  display: flex;
+  flex-direction: column;
+
+  .heading {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
 
-    .heading {
+    p {
+      margin: 0;
+    }
+
+    .heading-actions {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  .beverage-view-filters {
+    padding: 0px 0px 12px;
+    display: flex;
+    flex-direction: row;
+
+    * {
+      margin-right: 12px;
+    }
+
+    .beverage-view-actions {
+      height: fit-content;
+    }
+  }
+
+  .beverages-list {
+    table {
+      .mat-mdc-header-cell,
+      .mat-mdc-cell {
+        padding: 2px 8px;
+      }
+
+      .actions {
+        width: 100%;
         display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 12px;
-
-        p {
-            margin: 0;
-        }
-
-        .heading-actions {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 8px;
-        }
+        justify-content: flex-end;
+      }
     }
-
-    .beverage-view-filters {
-        padding: 0px 0px 12px;
-        display: flex;
-        flex-direction: row;
-
-        * {
-            margin-right: 12px;
-        }
-
-        .beverage-view-actions {
-            height: fit-content;
-        }
-    }
-    
-    .beverages-list {
-        table {
-            .mat-mdc-header-cell,
-            .mat-mdc-cell {
-                padding: 2px 8px;
-            }
-        
-            .actions {
-                width: 100%;
-                display: flex;
-                justify-content: center;
-            }
-        }
-
-    }
+  }
 }
 
 .beverages-modify {
+  display: flex;
+  flex-direction: column;
+
+  .heading {
+    order: 1;
+    display: flex;
+    flex-direction: row;
+
+    p {
+      padding-top: 12px;
+    }
+  }
+
+  .modify-form {
+    order: 2;
+
+    .brewfather-details {
+      padding-left: 25px;
+
+      .brewfather-details-title {
+        font-weight: bolder;
+        padding-right: 12px;
+      }
+    }
+  }
+
+  .section {
     display: flex;
     flex-direction: column;
 
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    margin: 6px 0px 18px 0px;
+    padding: 6px;
+
+    button.add-transition {
+      width: 200px;
+      margin-bottom: 12px;
+    }
+
+    .items {
+      display: flex;
+      flex-direction: row;
+      margin-top: 6px 0px 0px 0px;
+    }
+  }
+
+  .beverage-batches {
+    order: 4;
+    padding-top: 25px;
+
     .heading {
-        order: 1;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+
+      p {
+        margin: 0;
+      }
+
+      .heading-actions {
         display: flex;
         flex-direction: row;
-
-        p {
-            padding-top: 12px;
-        }
+        align-items: center;
+        gap: 12px;
+      }
     }
 
-    .modify-form {
-        order: 2;
+    .archived-batch {
+      td {
+        opacity: 0.6;
+        color: rgba(0, 0, 0, 0.54);
+        text-decoration: line-through;
+      }
 
-        .brewfather-details {
-            padding-left: 25px;
-
-            .brewfather-details-title {
-                font-weight: bolder;
-                padding-right: 12px;;
-            }
-        }
+      td.actions {
+        opacity: 1 !important;
+      }
     }
-
-    .section {
-        display: flex;
-        flex-direction: column;
-
-        border: 1px solid rgba(0,0,0,.2);
-        border-radius: 4px;
-        margin:6px 0px 18px 0px;
-        padding: 6px;
-
-        button.add-transition {
-            width: 200px;
-            margin-bottom: 12px;
-        }
-
-        .items {
-            display: flex;
-            flex-direction: row;
-            margin-top: 6px 0px 0px 0px;
-        }
-    }
-
-    .beverage-batches {
-        order: 4;
-        padding-top: 25px;
-
-        .heading {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 12px;
-
-            p {
-                margin: 0;
-            }
-        }
-
-        .archived-batch {
-            td {
-                opacity: 0.6;
-                color: rgba(0, 0, 0, 0.54);
-                text-decoration: line-through;
-            }
-            
-            td.actions {
-                opacity: 1 !important;
-            }
-        }
-    }
+  }
 }
 
 .modify-actions {
-    order: 3;
-    
-    button {
-        margin: 2px 6px
-    }    
+  order: 3;
+
+  button {
+    margin: 2px 6px;
+  }
 }
 
 fieldset {
-    display: flex;
-    flex-direction: column;
-    border: none;
+  display: flex;
+  flex-direction: column;
+  border: none;
 }
 
 .fs-small {
-    width: 160px;
-    margin-right: 6px;
+  width: 160px;
+  margin-right: 6px;
 }
 
 .fs-med {
-    width: 400px;
+  width: 400px;
 }
 
-fieldset, 
+fieldset,
 .fs-lg {
-    width: 600px;
+  width: 600px;
 }
 
 span.is-tapped {
+  div.associated-taps {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    margin-bottom: 12px;
+  }
 
-    div.associated-taps {
-        border-bottom: 1px solid rgba(0,0,0,.12);
-        margin-bottom: 12px;
-    }
-
-    div.associated-taps:last-child {
-        border-bottom: 0px !important;
-    }
+  div.associated-taps:last-child {
+    border-bottom: 0px !important;
+  }
 }
 
 .beverage-image-preview {
-    max-width: 200px;
-    height: auto;
+  max-width: 200px;
+  height: auto;
 }
 
 button.refresh {
-    min-width: 24px;
-    padding-left: 12px;
-    padding-right: 12px;
+  min-width: 24px;
+  padding-left: 12px;
+  padding-right: 12px;
 
-    .mat-icon {
-        margin: 0px !important;
-    }
+  .mat-icon {
+    margin: 0px !important;
+  }
 }

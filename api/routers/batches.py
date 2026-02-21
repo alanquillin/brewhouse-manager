@@ -1,14 +1,19 @@
 """Batches router for FastAPI"""
 
-import logging
 from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from dependencies.auth import AuthUser, get_db_session, require_user
-from db.batches import Batches as BatchesDB
+
+# isort: off
+# fmt: off
+from db.batches import Batches as BatchesDB  # pylint: disable=wrong-import-position
 from db.batch_locations import BatchLocations as BatchLocationsDB
+# isort: on
+# fmt: on
+from dependencies.auth import AuthUser, get_db_session, require_user
+from lib import logging
 from schemas.batches import BatchCreate, BatchUpdate
 from services.batches import BatchService
 
@@ -22,6 +27,7 @@ class BeerOrBeverageOnlyError(HTTPException):
             status_code=400,
             detail="You can only associate a beer or a beverage to the selected batch, not both",
         )
+
 
 @router.get("", response_model=List[dict])
 async def list_batches(
@@ -42,7 +48,7 @@ async def list_batches(
     if not include_archived:
         kwargs["archived_on"] = None
 
-    LOGGER.debug(f"GET BATCHES KWARGS: {kwargs}")
+    LOGGER.debug("GET BATCHES KWARGS: %s", kwargs)
 
     batches = await BatchesDB.query(db_session, **kwargs)
 
@@ -66,7 +72,7 @@ async def list_batches(
     ]
 
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, status_code=201)
 async def create_batch(
     batch_data: BatchCreate,
     current_user: AuthUser = Depends(require_user),
@@ -195,13 +201,7 @@ async def update_batch(
         if v == "":
             data[k] = None
 
-    # Merge external_brewing_tool_meta if both exist
-    external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
-    if external_brewing_tool_meta and batch.external_brewing_tool_meta:
-        data["external_brewing_tool_meta"] = {**batch.external_brewing_tool_meta, **external_brewing_tool_meta}
-
-    skip_meta_refresh=False
-    # Merge external_brewing_tool_meta if both exist
+    skip_meta_refresh = False
     external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
     if external_brewing_tool_meta:
         if batch.external_brewing_tool_meta:
@@ -209,8 +209,8 @@ async def update_batch(
             old_ext_batch_id = batch.external_brewing_tool_meta.get("batch_id")
             new_ext_batch_id = external_brewing_tool_meta.get("batch_id")
             if new_ext_batch_id != old_ext_batch_id:
-                LOGGER.info(f"external brew tool batch id for batch ({batch_id}) has changed.  Verifying new id.")
-                LOGGER.debug(f"batch ({batch_id}) external brew tool batch id change details: old = {old_ext_batch_id}, new = {new_ext_batch_id}")
+                LOGGER.info("external brew tool batch id for batch (%s) has changed.  Verifying new id.", batch_id)
+                LOGGER.debug("batch (%s) external brew tool batch id change details: old = %s, new = %s", batch_id, old_ext_batch_id, new_ext_batch_id)
                 data = await BatchService.verify_and_update_external_brew_tool_batch(data)
                 skip_meta_refresh = True
 
@@ -223,15 +223,16 @@ async def update_batch(
     LOGGER.debug("Updating batch %s with data: %s", batch_id, data)
 
     if data:
-        batch = await BatchesDB.update(db_session, batch.id, **data)
+        await BatchesDB.update(db_session, batch.id, **data)
 
     # Refresh batch to get updated data
     batch = await BatchesDB.get_by_pkey(db_session, batch_id)
+    await db_session.refresh(batch)
 
     return await BatchService.transform_response(batch, db_session=db_session, skip_meta_refresh=skip_meta_refresh)
 
 
-@router.delete("/{batch_id}")
+@router.delete("/{batch_id}", status_code=204)
 async def delete_batch(
     batch_id: str,
     beer_id: Optional[str] = None,
@@ -257,4 +258,4 @@ async def delete_batch(
         raise HTTPException(status_code=403, detail="Not authorized to delete this batch")
 
     await BatchesDB.delete(db_session, batch.id)
-    return True
+    return

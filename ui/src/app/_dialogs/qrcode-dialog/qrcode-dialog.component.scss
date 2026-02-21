@@ -1,19 +1,19 @@
 .qrcode-container {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 
-    border: none;
-    padding: 0px;
+  border: none;
+  padding: 0px;
 
-    .qrcode-title {
-        order: 1;
-        font-size: 48px;
-        text-align: center;
-        padding-top: 18px;
-    }
+  .qrcode-title {
+    order: 1;
+    font-size: 48px;
+    text-align: center;
+    padding-top: 18px;
+  }
 
-    .qrcode-content {
-        order: 2;
-        align-content: center;
-    }
+  .qrcode-content {
+    order: 2;
+    align-content: center;
+  }
 }

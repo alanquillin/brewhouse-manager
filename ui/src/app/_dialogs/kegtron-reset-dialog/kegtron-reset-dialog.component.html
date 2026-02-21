@@ -1,0 +1,43 @@
+<h1 mat-dialog-title>Reset Kegtron Monitor</h1>
+<div mat-dialog-content>
+  <p>A new keg has been detected. Enter the new keg volume to reset the kegtron monitor.</p>
+  <div class="reset-form">
+    <mat-form-field appearance="fill" class="volume-size-field">
+      <mat-label>Volume Size</mat-label>
+      <input matInput type="number" [(ngModel)]="volumeSize" [disabled]="processing" />
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="volume-unit-field">
+      <mat-label>Unit</mat-label>
+      <mat-select [(ngModel)]="volumeUnit" [disabled]="processing">
+        @for (unit of volumeUnits; track unit.value) {
+          <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>
+<div mat-dialog-actions>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="submit()"
+    [disabled]="isNilOrEmpty(volumeSize) || processing"
+  >
+    @if (processing) {
+      <mat-spinner diameter="20"></mat-spinner>
+    } @else {
+      <mat-icon>save</mat-icon>
+    }
+    Submit
+  </button>
+  @if (showSkip) {
+    <button mat-raised-button (click)="skip()" [disabled]="processing">
+      <mat-icon>skip_next</mat-icon>
+      Skip
+    </button>
+  }
+  <button mat-raised-button color="warn" (click)="cancel()" [disabled]="processing">
+    <mat-icon>cancel</mat-icon>
+    Cancel
+  </button>
+</div>

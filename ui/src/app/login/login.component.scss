@@ -1,48 +1,45 @@
 .login-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .login {
-    fieldset {
-        border: none;
+  fieldset {
+    border: none;
+  }
+
+  .login-card {
+    max-width: 400px;
+    img {
+      padding: 64px;
     }
 
-    .login-card {
-        max-width: 400px;
-        img {
-            padding: 64px;
-    
-        }
-    
-        .login-field {
-            width: 100%;
+    .login-field {
+      width: 100%;
 
-            .mat-icon {
-                color: #2d3e50b5
-            }
-        }
-    
-        .mat-mdc-card-actions {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-    
-        
+      .mat-icon {
+        color: #2d3e50b5;
+      }
     }
+
+    .mat-mdc-card-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
 }
 
 .login-socials {
-    display: flex;
-    margin-top: 20px;
-    .login-google {
-        .mat-icon {
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-        }
+  display: flex;
+  margin-top: 20px;
+  .login-google {
+    .mat-icon {
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
     }
+  }
 }

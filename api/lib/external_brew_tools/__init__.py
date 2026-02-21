@@ -11,11 +11,10 @@ class ExternalBrewToolBase:
 
 
 def _init_tools():
-    global TOOLS
     if not TOOLS:
         from lib.external_brew_tools.brewfather import Brewfather
 
-        TOOLS = {"brewfather": Brewfather()}
+        TOOLS["brewfather"] = Brewfather()
 
 
 def get_types():

@@ -1,5 +1,7 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { environment } from '../../../environments/environment';
 import { FooterComponent } from './footer.component';
 
 describe('FooterComponent', () => {
@@ -8,9 +10,9 @@ describe('FooterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FooterComponent ]
-    })
-    .compileComponents();
+      declarations: [FooterComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   });
 
   beforeEach(() => {
@@ -21,5 +23,32 @@ describe('FooterComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('appVersion', () => {
+    it('should be set from environment', () => {
+      expect(component.appVersion).toBe(environment.appVersion);
+    });
+
+    it('should be defined', () => {
+      expect(component.appVersion).toBeDefined();
+    });
+
+    it('should be a string', () => {
+      expect(typeof component.appVersion).toBe('string');
+    });
+  });
+
+  describe('ngOnInit', () => {
+    it('should be callable', () => {
+      expect(() => component.ngOnInit()).not.toThrow();
+    });
+  });
+
+  describe('template rendering', () => {
+    it('should render component', () => {
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled).toBeTruthy();
+    });
   });
 });

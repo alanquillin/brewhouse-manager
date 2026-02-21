@@ -2,15 +2,23 @@
 
 import argparse
 from datetime import datetime
-import logging
 import os
 import sys
 from time import sleep
 
+from lib import logging
+from lib.config import Config
+
+# Initialize configuration
+config = Config()
+config.setup(config_files=["default.json"])
+
+logging.init(fmt=logging.DEFAULT_LOG_FMT)
+
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.sql import text
 
-from db import Base, beers, beverages, locations, sensors, async_session_scope, taps, users, user_locations, on_tap, batches, batch_locations
+from db import Base, beers, beverages, locations, tap_monitors, async_session_scope, taps, users, user_locations, on_tap, batches, batch_locations
 from lib.config import Config
 
 location1_id = "fb139af3-2905-4006-9196-62f54bb262ab"
@@ -97,19 +105,19 @@ BEERS = [
     }
 ]
 
-sensor_l1s1_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec41"
-sensor_l1s2_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec42"
-sensor_l1s3_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec43"
-sensor_l1s4_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec44"
-sensor_l3s1_id = "7324db56-3ed3-4f9b-bb88-d90d278eeaa8"
-sensor_l3s2_id = "601acc25-3d77-41a2-a4ff-07611fe9d917"
-sensor_l3s3_id = "32e7520f-90e7-4a0a-890a-56833b6b38dd"
-SENSORS=[
+tap_monitor_l1s1_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec41"
+tap_monitor_l1s2_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec42"
+tap_monitor_l1s3_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec43"
+tap_monitor_l1s4_id = "8f3f0e12-70a7-4dba-9728-caafd6b8ec44"
+tap_monitor_l3s1_id = "7324db56-3ed3-4f9b-bb88-d90d278eeaa8"
+tap_monitor_l3s2_id = "601acc25-3d77-41a2-a4ff-07611fe9d917"
+tap_monitor_l3s3_id = "32e7520f-90e7-4a0a-890a-56833b6b38dd"
+TAP_MONITORS=[
     {
-        "id": sensor_l1s1_id,
+        "id": tap_monitor_l1s1_id,
         "name": "OPK - Home 01",
         "location_id": location1_id,
-        "sensor_type": "open-plaato-keg",
+        "monitor_type": "open-plaato-keg",
         "meta": {
             "device_id": "00000000000000000000000000000q01",
             "empty_keg_weight": 4400,
@@ -119,10 +127,10 @@ SENSORS=[
         }
     },
     {
-        "id": sensor_l1s2_id,
+        "id": tap_monitor_l1s2_id,
         "name": "OPK - Home 02",
         "location_id": location1_id,
-        "sensor_type": "open-plaato-keg",
+        "monitor_type": "open-plaato-keg",
         "meta": {
             "device_id": "00000000000000000000000000000q02",
             "empty_keg_weight": 4400,
@@ -132,10 +140,10 @@ SENSORS=[
         }
     },
     {
-        "id": sensor_l1s3_id,
+        "id": tap_monitor_l1s3_id,
         "name": "OPK - Home 03",
         "location_id": location1_id,
-        "sensor_type": "open-plaato-keg",
+        "monitor_type": "open-plaato-keg",
         "meta": {
             "device_id": "00000000000000000000000000000q03",
             "empty_keg_weight": 4400,
@@ -145,10 +153,10 @@ SENSORS=[
         }
     },
     {
-        "id": sensor_l1s4_id,
+        "id": tap_monitor_l1s4_id,
         "name": "OPK - Home 04",
         "location_id": location1_id,
-        "sensor_type": "open-plaato-keg",
+        "monitor_type": "open-plaato-keg",
         "meta": {
             "device_id": "00000000000000000000000000000q04",
             "empty_keg_weight": 4400,
@@ -158,28 +166,28 @@ SENSORS=[
         }
     },
     {
-        "id": sensor_l3s1_id,
+        "id": tap_monitor_l3s1_id,
         "name": "KVM - Black",
         "location_id": location3_id,
-        "sensor_type": "keg-volume-monitor-weight",
+        "monitor_type": "keg-volume-monitor-weight",
         "meta": {
             "device_id": "13353ea9-bf7f-41d3-bd82-97262bf6a97a"
         }
     },
     {
-        "id": sensor_l3s2_id,
+        "id": tap_monitor_l3s2_id,
         "name": "KVM - Orange",
         "location_id": location3_id,
-        "sensor_type": "keg-volume-monitor-weight",
+        "monitor_type": "keg-volume-monitor-weight",
         "meta": {
             "device_id": "022041b5-89af-45ee-87ef-135f68c25f3f"
         }
     },
     {
-        "id": sensor_l3s3_id,
+        "id": tap_monitor_l3s3_id,
         "name": "KVM - Dark Blue",
         "location_id": location3_id,
-        "sensor_type": "keg-volume-monitor-weight",
+        "monitor_type": "keg-volume-monitor-weight",
         "meta": {
             "device_id": "2eba1564-e552-4df6-9056-584d2894d544"
         }
@@ -545,7 +553,7 @@ async def run():
     await seed_db(locations.Locations, LOCATIONS)
     await seed_db(beers.Beers, BEERS)
     await seed_db(beverages.Beverages, BEVERAGES)
-    await seed_db(sensors.Sensors, SENSORS)
+    await seed_db(tap_monitors.TapMonitors, TAP_MONITORS)
     await seed_db(batches.Batches, BATCHES)
     await seed_db(batch_locations.BatchLocations, BATCH_LOCATIONS, q_keys=["batch_id", "location_id"])
     await seed_db(on_tap.OnTap, ON_TAP)
@@ -584,9 +592,6 @@ if __name__ == "__main__":
     log_level = getattr(logging, args.loglevel)
     logging.basicConfig(level=log_level, format="%(levelname)-8s: %(asctime)-15s [%(name)s]: %(message)s")
     logger = logging.getLogger()
-
-    config = Config()
-    config.setup(config_files=["default.json"])
 
     skip_db_seed = config.get("db.seed.skip")
     if skip_db_seed:

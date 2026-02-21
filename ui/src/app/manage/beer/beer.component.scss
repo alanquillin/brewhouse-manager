@@ -1,195 +1,199 @@
 .beers-view {
+  display: flex;
+  flex-direction: column;
+
+  .heading {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
 
-    .heading {
+    p {
+      margin: 0;
+    }
+
+    .heading-actions {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  .beer-view-filters {
+    padding: 0px 0px 12px;
+    display: flex;
+    flex-direction: row;
+
+    * {
+      margin-right: 12px;
+    }
+
+    .beer-view-actions {
+      height: fit-content;
+    }
+  }
+
+  .beers-list {
+    table {
+      .mat-mdc-header-cell,
+      .mat-mdc-cell {
+        padding: 2px 8px;
+      }
+
+      .actions {
+        width: 100%;
         display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 12px;
-
-        p {
-            margin: 0;
-        }
-
-        .heading-actions {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 8px;
-        }
+        justify-content: flex-end;
+      }
     }
-
-    .beer-view-filters {
-        padding: 0px 0px 12px;
-        display: flex;
-        flex-direction: row;
-
-        * {
-            margin-right: 12px;
-        }
-
-        .beer-view-actions {
-            height: fit-content;
-        }
-    }
-    
-    .beers-list {
-
-        table {
-            .mat-mdc-header-cell,
-            .mat-mdc-cell {
-                padding: 2px 8px;
-            }
-        
-            .actions {
-                width: 100%;
-                display: flex;
-                justify-content: center;
-            }
-        }
-
-    }
+  }
 }
 
 .beers-modify {
+  display: flex;
+  flex-direction: column;
+
+  .heading {
+    order: 1;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+
+    p {
+      padding-top: 12px;
+    }
+  }
+
+  .modify-form {
+    order: 2;
+    display: flex;
+    flex-direction: row;
+
+    .section {
+      display: flex;
+      flex-direction: column;
+
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      margin: 6px 0px 18px 0px;
+      padding: 6px;
+
+      button.add-transition {
+        width: 250px;
+        margin-bottom: 12px;
+      }
+
+      .items {
+        display: flex;
+        flex-direction: row;
+        margin-top: 6px 0px 0px 0px;
+      }
+    }
+
+    .brewfather-details {
+      padding-left: 25px;
+
+      .brewfather-details-title {
+        font-weight: bolder;
+        padding-right: 12px;
+      }
+    }
+  }
+
+  .beer-batches {
+    order: 4;
+    padding-top: 25px;
 
     .heading {
-        order: 1;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+
+      p {
+        margin: 0;
+      }
+
+      .heading-actions {
         display: flex;
         flex-direction: row;
-
-        p {
-            padding-top: 12px;
-        }
+        align-items: center;
+        gap: 12px;
+      }
     }
 
-    .modify-form {
-        order: 2;
-        display: flex;
-        flex-direction: row;
+    .archived-batch {
+      td {
+        opacity: 0.6;
+        color: rgba(0, 0, 0, 0.54);
+        text-decoration: line-through;
+      }
 
-        .section {
-            display: flex;
-            flex-direction: column;
-
-            border: 1px solid rgba(0,0,0,.2);
-            border-radius: 4px;
-            margin:6px 0px 18px 0px;
-            padding: 6px;
-
-            button.add-transition {
-                width: 250px;
-                margin-bottom: 12px;
-            }
-
-            .items {
-                display: flex;
-                flex-direction: row;
-                margin-top: 6px 0px 0px 0px;
-            }
-        }
-
-        .brewfather-details {
-            padding-left: 25px;
-
-            .brewfather-details-title {
-                font-weight: bolder;
-                padding-right: 12px;;
-            }
-        }
+      td.actions {
+        opacity: 1 !important;
+      }
     }
-
-    .beer-batches {
-        order: 4;
-        padding-top: 25px;
-
-        .heading {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 12px;
-
-            p {
-                margin: 0;
-            }
-        }
-
-        .archived-batch {
-            td {
-                opacity: 0.6;
-                color: rgba(0, 0, 0, 0.54);
-                text-decoration: line-through;
-            }
-
-            td.actions {
-                opacity: 1 !important;
-            }
-        }
-    }
+  }
 }
 
 .modify-actions {
-    order: 3;
-    
-    button {
-        margin: 2px 6px
-    }    
+  order: 3;
+
+  button {
+    margin: 2px 6px;
+  }
 }
 
 fieldset {
-    display: flex;
-    flex-direction: column;
-    border: none;
+  display: flex;
+  flex-direction: column;
+  border: none;
 }
 
 .fs-small {
-    width: 160px;
-    margin-right: 6px;
+  width: 160px;
+  margin-right: 6px;
 }
 
 .fs-med {
-    width: 400px;
+  width: 400px;
 }
 
-fieldset, 
+fieldset,
 .fs-lg {
-    width: 600px;
+  width: 600px;
 }
 
 .beer-image-preview {
-    max-width: 200px;
-    height: auto;
+  max-width: 200px;
+  height: auto;
 }
 
 .imported-value,
 .hint-value {
-    color: gray;
-    font-style: italic;
+  color: gray;
+  font-style: italic;
 }
 
 span.is-tapped {
+  div.associated-taps {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    margin-bottom: 12px;
+  }
 
-    div.associated-taps {
-        border-bottom: 1px solid rgba(0,0,0,.12);
-        margin-bottom: 12px;
-    }
-
-    div.associated-taps:last-child {
-        border-bottom: 0px !important;
-    }
+  div.associated-taps:last-child {
+    border-bottom: 0px !important;
+  }
 }
 
 button.refresh {
-    min-width: 24px;
-    padding-left: 12px;
-    padding-right: 12px;
+  min-width: 24px;
+  padding-left: 12px;
+  padding-right: 12px;
 
-    .mat-icon {
-        margin: 0px !important;
-    }
+  .mat-icon {
+    margin: 0px !important;
+  }
 }

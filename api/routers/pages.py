@@ -4,10 +4,11 @@ Handles UI routes and redirects.
 """
 
 import os
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse, RedirectResponse
 
-from dependencies.auth import get_optional_user, AuthUser
+from dependencies.auth import AuthUser, get_optional_user
 
 router = APIRouter(tags=["pages"], include_in_schema=False)
 
@@ -35,7 +36,7 @@ async def ui():
 @router.get("/manage")
 @router.get("/manage/beers")
 @router.get("/manage/beverages")
-@router.get("/manage/sensors")
+@router.get("/manage/tap_monitors")
 @router.get("/manage/taps")
 async def auth_required(current_user: AuthUser = Depends(get_optional_user)):
     if current_user and current_user.is_authenticated:
@@ -45,6 +46,7 @@ async def auth_required(current_user: AuthUser = Depends(get_optional_user)):
 
 # Admin pages
 @router.get("/manage/locations")
+@router.get("/manage/plaato_kegs")
 async def admin(current_user: AuthUser = Depends(get_optional_user)):
     if current_user and current_user.is_authenticated and current_user.admin:
         return await serve_spa()

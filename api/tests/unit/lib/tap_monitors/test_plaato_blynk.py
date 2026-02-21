@@ -1,0 +1,151 @@
+"""Tests for lib/tap_monitors/plaato_blynk.py module"""
+
+import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
+from lib.tap_monitors import InvalidDataType
+from lib.tap_monitors.plaato_blynk import PlaatoBlynk
+
+
+def run_async(coro):
+    """Helper to run async functions in sync tests"""
+    return asyncio.get_event_loop().run_until_complete(coro)
+
+
+class TestPlaatoBlynk:
+    """Tests for PlaatoBlynk class"""
+
+    @pytest.fixture
+    def mock_config(self):
+        """Create a mock config"""
+        config = MagicMock()
+        config.get.side_effect = lambda key, default=None: {
+            "tap_monitors.plaato_blynk.base_url": "http://plaato.blynk.cc",
+        }.get(key, default)
+        return config
+
+    @pytest.fixture
+    @patch("lib.tap_monitors.plaato_blynk.TapMonitorBase.__init__")
+    def monitor(self, mock_init, mock_config):
+        """Create a PlaatoBlynk instance with mocked dependencies"""
+        mock_init.return_value = None
+        monitor = PlaatoBlynk.__new__(PlaatoBlynk)
+        monitor.config = mock_config
+        monitor.logger = MagicMock()
+        return monitor
+
+    def test_supports_discovery(self, monitor):
+        """Test supports_discovery returns False"""
+        assert monitor.supports_discovery() is False
+
+    def test_discover_raises(self, monitor):
+        """Test discover raises NotImplementedError"""
+        with pytest.raises(NotImplementedError):
+            run_async(monitor.discover())
+
+    def test_data_type_to_pin_mapping(self, monitor):
+        """Test _data_type_to_pin has expected mappings"""
+        assert monitor._data_type_to_pin["percent_beer_remaining"] == "v48"
+        assert monitor._data_type_to_pin["total_beer_remaining"] == "v51"
+        assert monitor._data_type_to_pin["beer_remaining_unit"] == "v74"
+        assert monitor._data_type_to_pin["firmware_version"] == "v93"
+
+    @patch("lib.tap_monitors.plaato_blynk.AsyncClient")
+    def test_get_success(self, mock_client_cls, monitor):
+        """Test get with successful response"""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = ["75.5"]
+
+        mock_client = AsyncMock()
+        mock_client.get.return_value = mock_response
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
+
+        meta = {"auth_token": "test_token"}
+        result = run_async(monitor.get("percent_beer_remaining", meta=meta))
+
+        assert result == ["75.5"]
+        mock_client.get.assert_called_once()
+
+    @patch("lib.tap_monitors.plaato_blynk.AsyncClient")
+    def test_get_invalid_data_type_raises(self, mock_client_cls, monitor):
+        """Test get raises InvalidDataType for unknown data type"""
+        meta = {"auth_token": "test_token"}
+
+        with pytest.raises(InvalidDataType):
+            run_async(monitor.get("unknown_data_type", meta=meta))
+
+    @patch("lib.tap_monitors.plaato_blynk.AsyncClient")
+    def test_get_non_200_returns_empty_dict(self, mock_client_cls, monitor):
+        """Test _get returns empty dict on non-200 response"""
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+
+        mock_client = AsyncMock()
+        mock_client.get.return_value = mock_response
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
+
+        meta = {"auth_token": "test_token"}
+        result = run_async(monitor._get("v48", meta))
+
+        assert result == {}
+
+    @patch("lib.tap_monitors.plaato_blynk.AsyncClient")
+    def test_get_all(self, mock_client_cls, monitor):
+        """Test get_all returns all data"""
+        responses = [
+            MagicMock(status_code=200, json=MagicMock(return_value=["75.5"])),
+            MagicMock(status_code=200, json=MagicMock(return_value=["10.5"])),
+            MagicMock(status_code=200, json=MagicMock(return_value=["L"])),
+            MagicMock(status_code=200, json=MagicMock(return_value=["1.2.3"])),
+        ]
+
+        mock_client = AsyncMock()
+        mock_client.get.side_effect = responses
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
+
+        meta = {"auth_token": "test_token"}
+        result = run_async(monitor.get_all(meta=meta))
+
+        assert "percentRemaining" in result
+        assert "totalVolumeRemaining" in result
+        assert "displayVolumeUnit" in result
+        assert "firmwareVersion" in result
+
+    def test_get_no_args_raises(self, monitor):
+        """Test get with no args raises exception"""
+        with pytest.raises(Exception):
+            run_async(monitor.get("percent_beer_remaining"))
+
+    def test_get_all_no_args_raises(self, monitor):
+        """Test get_all with no args raises exception"""
+        with pytest.raises(Exception):
+            run_async(monitor.get_all())
+
+    @patch("lib.tap_monitors.plaato_blynk.AsyncClient")
+    def test_get_url_construction(self, mock_client_cls, monitor):
+        """Test _get constructs correct URL"""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = ["data"]
+
+        mock_client = AsyncMock()
+        mock_client.get.return_value = mock_response
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
+
+        meta = {"auth_token": "my_auth_token"}
+        run_async(monitor._get("v48", meta))
+
+        called_url = mock_client.get.call_args[0][0]
+        assert "my_auth_token" in called_url
+        assert "/get/v48" in called_url

@@ -8,64 +8,102 @@ $accent: mat.m2-define-palette(mat.$m2-orange-palette);
 $warn: mat.m2-define-palette(mat.$m2-red-palette);
 $disabled: mat.m2-define-palette(mat.$m2-gray-palette);
 
-$my-theme: mat.m2-define-light-theme((
- color: (
-   primary: $primary,
-   accent: $accent,
-   warn: $warn,
- ),
- typography: mat.m2-define-typography-config(),
- density: 0,
-));
+$my-theme: mat.m2-define-light-theme(
+  (
+    color: (
+      primary: $primary,
+      accent: $accent,
+      warn: $warn,
+    ),
+    typography: mat.m2-define-typography-config(),
+    density: 0,
+  )
+);
 
 @include mat.all-component-themes($my-theme);
 
-$srm1: #FFE699;
-$srm2: #FFD878;
-$srm3: #FFCA5A;
-$srm4: #FFBF42;
-$srm5: #FBB123;
-$srm6: #F8A600;
-$srm7: #F39C00;
-$srm8: #EA8F00;
-$srm9: #E58500;
-$srm10: #DE7C00;
-$srm11: #D77200;
-$srm12: #CF6900;
-$srm13: #CB6200;
-$srm14: #C35900;
-$srm15: #BB5100;
-$srm16: #B54C00;
-$srm17: #B04500;
-$srm18: #A63E00;
-$srm19: #A13700;
-$srm20: #9B3200; 
-$srm21: #952D00; 
-$srm22: #8E2900; 
-$srm23: #882300; 
-$srm24: #821E00; 
-$srm25: #7B1A00;
+$srm1: #ffe699;
+$srm2: #ffd878;
+$srm3: #ffca5a;
+$srm4: #ffbf42;
+$srm5: #fbb123;
+$srm6: #f8a600;
+$srm7: #f39c00;
+$srm8: #ea8f00;
+$srm9: #e58500;
+$srm10: #de7c00;
+$srm11: #d77200;
+$srm12: #cf6900;
+$srm13: #cb6200;
+$srm14: #c35900;
+$srm15: #bb5100;
+$srm16: #b54c00;
+$srm17: #b04500;
+$srm18: #a63e00;
+$srm19: #a13700;
+$srm20: #9b3200;
+$srm21: #952d00;
+$srm22: #8e2900;
+$srm23: #882300;
+$srm24: #821e00;
+$srm25: #7b1a00;
 $srm26: #771900;
 $srm27: #701400;
-$srm28: #6A0E00; 
-$srm29: #660D00; 
-$srm30: #5E0B00; 
-$srm31: #5A0A02; 
-$srm32: #600903; 
+$srm28: #6a0e00;
+$srm29: #660d00;
+$srm30: #5e0b00;
+$srm31: #5a0a02;
+$srm32: #600903;
 $srm33: #520907;
-$srm34: #4C0505;
+$srm34: #4c0505;
 $srm35: #470606;
 $srm36: #440607;
-$srm37: #3F0708;
-$srm38: #3B0607;
-$srm39: #3A070B;
-$srm40: #36080A;
+$srm37: #3f0708;
+$srm38: #3b0607;
+$srm39: #3a070b;
+$srm40: #36080a;
 $srm40plus: #080101;
 
 $srm-color-map: (
-    1: $srm1, 2: $srm2, 3: $srm3, 4: $srm4, 5: $srm5, 6: $srm6, 7: $srm7, 8: $srm8, 9: $srm9,
-    10: $srm10, 11: $srm11, 12: $srm12, 13: $srm13, 14: $srm14, 15: $srm15, 16: $srm16, 17: $srm17, 18: $srm18, 19: $srm19,
-    20: $srm20, 21: $srm21, 22: $srm22, 23: $srm23, 24: $srm24, 25: $srm25, 26: $srm26, 27: $srm27, 28: $srm28, 29: $srm29,
-    30: $srm30, 31: $srm31, 32: $srm32, 33: $srm33, 34: $srm34, 35: $srm35, 36: $srm36, 37: $srm37, 38: $srm38, 39: $srm39,
-    40: $srm40, "40plus": $srm40plus
+  1: $srm1,
+  2: $srm2,
+  3: $srm3,
+  4: $srm4,
+  5: $srm5,
+  6: $srm6,
+  7: $srm7,
+  8: $srm8,
+  9: $srm9,
+  10: $srm10,
+  11: $srm11,
+  12: $srm12,
+  13: $srm13,
+  14: $srm14,
+  15: $srm15,
+  16: $srm16,
+  17: $srm17,
+  18: $srm18,
+  19: $srm19,
+  20: $srm20,
+  21: $srm21,
+  22: $srm22,
+  23: $srm23,
+  24: $srm24,
+  25: $srm25,
+  26: $srm26,
+  27: $srm27,
+  28: $srm28,
+  29: $srm29,
+  30: $srm30,
+  31: $srm31,
+  32: $srm32,
+  33: $srm33,
+  34: $srm34,
+  35: $srm35,
+  36: $srm36,
+  37: $srm37,
+  38: $srm38,
+  39: $srm39,
+  40: $srm40,
+  '40plus': $srm40plus,
 );

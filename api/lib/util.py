@@ -21,15 +21,20 @@ def snake_to_camel(in_str):
     return "".join([element.title() if index > 0 else element.lower() for index, element in enumerate(in_str.split("_"))])
 
 
-def random_string(length):
-
+def random_string(length, include_uppercase=True, include_lowercase=True, include_numbers=True):
     """Return a random string of a certain length."""
+    choices = ""
+    if include_lowercase:
+        choices = choices + string.ascii_lowercase
+    if include_uppercase:
+        choices = choices + string.ascii_uppercase
+    if include_numbers:
+        choices = choices + string.digits
 
-    return "".join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(length))
+    return "".join(random.SystemRandom().choice(choices) for _ in range(length))
 
 
 def flatten_dict(data, parent_name="", sep=".", key_converter=None, skip_key_check=None):
-
     """
     Flattens a dictionary to a single layer with child keys separated by `sep` charactor
 
@@ -52,7 +57,7 @@ def flatten_dict(data, parent_name="", sep=".", key_converter=None, skip_key_che
 
     """
     if not skip_key_check:
-        skip_key_check = lambda *_: False
+        skip_key_check = lambda *_: False  # pylint: disable=unnecessary-lambda-assignment
 
     flattened = {}
 

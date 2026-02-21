@@ -1,17 +1,23 @@
-html, body { height: 100%; }
-body { 
-    margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif !important; 
+@use './variables' as *;
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif !important;
 }
 
 * {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    line-height: 1.7em;
-    font-size: 13px;
+  line-height: 1.7em;
+  font-size: 13px;
 }
 
 h1,
@@ -21,95 +27,95 @@ h4,
 h5,
 h6,
 label {
-    color: #232F34;
+  color: #232f34;
 }
 
 .header {
-    padding: 1em;
-    text-align: center;
-    box-shadow: 0 1px 1px rgba(0,0,0, 0.10);
-    background: #2d3e50;
-    width: 100%;
-    vertical-align: middle;
+  padding: 1em;
+  text-align: center;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  background: #2d3e50;
+  width: 100%;
+  vertical-align: middle;
 }
 
-.header .header-content a.title{
-    color: white;
-    text-decoration: none;
-    text-transform: uppercase;
-    display: inline-block;
-    font-weight: 400;
-    font-size: 160%;
-    padding-top: 6px;
+.header .header-content a.title {
+  color: white;
+  text-decoration: none;
+  text-transform: uppercase;
+  display: inline-block;
+  font-weight: 400;
+  font-size: 160%;
+  padding-top: 6px;
 }
 
 .content {
-    padding: 1em 1em 3em;
+  padding: 1em 1em 3em;
 }
 
 .heading,
 .heading p {
-    font-size: 140%;
-    display: block;
+  font-size: 140%;
+  display: block;
 }
 
 .heading button {
-    margin: 0px 4px;
+  margin: 0px 4px;
 }
 
 .footer {
-    padding: 2px 1em;
-    padding-top: 12px !important;
-    background: #12191c;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    color: #cddfe7;
-    font-size: 12px;
-    line-height: .8em;
+  padding: 2px 1em;
+  padding-top: 12px !important;
+  background: #12191c;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  color: #cddfe7;
+  font-size: 12px;
+  line-height: 0.8em;
 }
 
 @each $srm, $color in $srm-color-map {
-    .srm-#{$srm} {
-        background-color: $color;
-    }
+  .srm-#{$srm} {
+    background-color: $color;
+  }
 
-    .srm-#{$srm}-gauge {
-        background-color: $color;
-        
-        .gauge {
-            .value {
-                stroke: $color;
-                stroke-width: 5;
-            }
-            .value-text {
-                font-size: 10px;
-                transform: translateY(-10px);
+  .srm-#{$srm}-gauge {
+    background-color: $color;
 
-                @if $srm == "40plus" or $srm > 14 {
-                    fill: white;
-                } @else {
-                    fill: black;
-                }
-            }
+    .gauge {
+      .value {
+        stroke: $color;
+        stroke-width: 5;
+      }
+      .value-text {
+        font-size: 10px;
+        transform: translateY(-10px);
+
+        @if $srm == '40plus' or $srm > 14 {
+          fill: white;
+        } @else {
+          fill: black;
         }
+      }
     }
+  }
 }
 
 div.title {
-    p {
-        font-size: 140%;
-        font-weight: bold;
-    }
+  p {
+    font-size: 140%;
+    font-weight: bold;
+  }
 }
 
 div.location-selector {
-    mat-form-field {
-        min-width: 100px;
-        max-width: 300px;
-    
-        .mat-mdc-form-field-infix {
-            width: auto !important;
-        }
+  mat-form-field {
+    min-width: 100px;
+    max-width: 300px;
+
+    .mat-mdc-form-field-infix {
+      width: auto !important;
     }
+  }
 }

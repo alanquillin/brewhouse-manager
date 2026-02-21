@@ -1,9 +1,10 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Component, OnInit } from '@angular/core';
-import { DataService, DataError } from '../_services/data.service';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AbstractControl, UntypedFormGroup, Validators, UntypedFormControl } from '@angular/forms';
+import { CurrentUserService } from '../_services/current-user.service';
+import { DataError, DataService } from '../_services/data.service';
 
 import { UserInfo } from '../models/models';
 import { Validation } from '../utils/form-validators';
@@ -11,15 +12,13 @@ import { isNilOrEmpty } from '../utils/helpers';
 
 import * as _ from 'lodash';
 
-
 @Component({
-    selector: 'app-profile',
-    templateUrl: './profile.component.html',
-    styleUrls: ['./profile.component.scss'],
-    standalone: false
+  selector: 'app-profile',
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.scss'],
+  standalone: false,
 })
 export class ProfileComponent implements OnInit {
-  
   userInfo: UserInfo = new UserInfo();
   editing = false;
   changePassword = false;
@@ -28,51 +27,62 @@ export class ProfileComponent implements OnInit {
   isNilOrEmpty = isNilOrEmpty;
   _ = _;
 
-  newPassword: string= "";
-  confirmNewPassword: string = "";
+  newPassword = '';
+  confirmNewPassword = '';
 
   editFormGroup: UntypedFormGroup = new UntypedFormGroup({
     email: new UntypedFormControl('', [Validators.required, Validators.email]),
     firstName: new UntypedFormControl('', [Validators.required]),
     lastName: new UntypedFormControl('', [Validators.required]),
-    profilePic: new UntypedFormControl('', [])
+    profilePic: new UntypedFormControl('', []),
   });
 
-  changePasswordFormGroup: UntypedFormGroup = new UntypedFormGroup({
-    password: new UntypedFormControl('', [Validators.required, Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&]).{8,}')]),
-    confirmPassword: new UntypedFormControl('', [Validators.required])
-  }, { validators: [Validation.match('password', 'confirmPassword')] });
+  changePasswordFormGroup: UntypedFormGroup = new UntypedFormGroup(
+    {
+      password: new UntypedFormControl('', [
+        Validators.required,
+        Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&]).{8,}'),
+      ]),
+      confirmPassword: new UntypedFormControl('', [Validators.required]),
+    },
+    { validators: [Validation.match('password', 'confirmPassword')] }
+  );
 
-  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) {}
+  constructor(
+    private currentUserService: CurrentUserService,
+    private dataService: DataService,
+    private router: Router,
+    private _snackBar: MatSnackBar
+  ) {}
 
   displayError(errMsg: string) {
-    this._snackBar.open("Error: " + errMsg, "Close");
+    this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  refresh(always?:Function, next?: Function, error?: Function) {
+  refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.processing = true;
-    this.dataService.getCurrentUser().subscribe({
-      next: (userInfo: UserInfo) => {
+    this.currentUserService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo | null) => {
         this.userInfo = new UserInfo(userInfo);
         this.processing = false;
-        if(!_.isNil(next)){
+        if (!_.isNil(next)) {
           next();
         }
-        if(!_.isNil(always)){
+        if (!_.isNil(always)) {
           always();
         }
-      }, 
+      },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-        if(!_.isNil(error)){
-          error();
+        if (!_.isNil(error)) {
+          error(err);
         }
-        if(!_.isNil(always)){
+        if (!_.isNil(always)) {
           always();
         }
-      }
-    })
+      },
+    });
   }
 
   ngOnInit() {
@@ -93,9 +103,9 @@ export class ProfileComponent implements OnInit {
     if (this.editFormGroup.invalid) {
       return;
     }
-    
+
     this.processing = true;
-    
+
     this.dataService.updateUser(this.userInfo.id, this.userInfo.changes).subscribe({
       next: (data: UserInfo) => {
         this.userInfo = new UserInfo(data);
@@ -106,7 +116,7 @@ export class ProfileComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-      }
+      },
     });
   }
 
@@ -115,8 +125,8 @@ export class ProfileComponent implements OnInit {
   }
 
   startChangePassword(): void {
-    this.newPassword = "";
-    this.confirmNewPassword = "";
+    this.newPassword = '';
+    this.confirmNewPassword = '';
     this.changePassword = true;
   }
 
@@ -124,24 +134,29 @@ export class ProfileComponent implements OnInit {
     if (this.changePasswordFormGroup.invalid) {
       return;
     }
-    
+
     this.processing = true;
-    this.dataService.updateUser(this.userInfo.id, {password: this.newPassword}).subscribe({
+    this.dataService.updateUser(this.userInfo.id, { password: this.newPassword }).subscribe({
       next: (data: UserInfo) => {
         this.userInfo = new UserInfo(data);
         this.changePassword = false;
+        this.processing = false;
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-      }
+      },
     });
   }
 
   disablePassword(): void {
-    if(confirm("Are you sure you want to disable your password?  Doing so will prevent you from logging in with username and password.  You will need to log in via Google instead.")) {
+    if (
+      confirm(
+        'Are you sure you want to disable your password?  Doing so will prevent you from logging in with username and password.  You will need to log in via Google instead.'
+      )
+    ) {
       this.processing = true;
-      this.dataService.updateUser(this.userInfo.id, {password: null}).subscribe({
+      this.dataService.updateUser(this.userInfo.id, { password: null }).subscribe({
         next: (data: UserInfo) => {
           this.userInfo = new UserInfo(data);
           this.editing = false;
@@ -150,7 +165,7 @@ export class ProfileComponent implements OnInit {
         error: (err: DataError) => {
           this.displayError(err.message);
           this.processing = false;
-        }
+        },
       });
     }
   }
@@ -158,21 +173,25 @@ export class ProfileComponent implements OnInit {
   _generateAPIKey(user: UserInfo): void {
     this.processing = true;
     this.dataService.generateUserAPIKey(user.id).subscribe({
-      next: (resp: string) => {
-        user.apiKey = resp;
+      next: (resp: any) => {
+        user.apiKey = resp.apiKey;
         this.processing = false;
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-      }
-    })
+      },
+    });
   }
 
   generateAPIKey(): void {
-    let user = this.userInfo;
-    if(!isNilOrEmpty(user.apiKey)) {
-      if(confirm(`Are you sure you want to regenerate your API key?  The previous key will be invalidated.`)) {
+    const user = this.userInfo;
+    if (!isNilOrEmpty(user.apiKey)) {
+      if (
+        confirm(
+          `Are you sure you want to regenerate your API key?  The previous key will be invalidated.`
+        )
+      ) {
         this._generateAPIKey(user);
       }
     } else {
@@ -182,29 +201,32 @@ export class ProfileComponent implements OnInit {
 
   deleteAPIKey(): void {
     this.processing = true;
-    if(confirm(`Are you sure you want to delete your API key?`)) {
+    if (confirm(`Are you sure you want to delete your API key?`)) {
       this.dataService.deleteUserAPIKey(this.userInfo.id).subscribe({
-        next: (resp: string) => {
-          this.userInfo.apiKey = "";
+        next: (_: string) => {
+          this.userInfo.apiKey = '';
           this.processing = false;
         },
         error: (err: DataError) => {
           this.displayError(err.message);
           this.processing = false;
-        }
+        },
       });
     }
   }
 
-  copyToClipboard(data: string) : void {
-    if(isNilOrEmpty(data)) {
+  copyToClipboard(data: string): void {
+    if (isNilOrEmpty(data)) {
       return;
     }
-    navigator.clipboard.writeText(data).then(() => {
-      return;
-    }).catch(err => {
-      this.displayError("Error trying to copy data to clipboard")
-    })
+    navigator.clipboard
+      .writeText(data)
+      .then(() => {
+        return;
+      })
+      .catch(_ => {
+        this.displayError('Error trying to copy data to clipboard');
+      });
   }
 
   copyAPIKeyRaw(): void {
@@ -216,17 +238,17 @@ export class ProfileComponent implements OnInit {
   }
 
   get name(): string {
-    if(_.isNil(this.userInfo)){
-      return "UNKNOWN";
+    if (_.isNil(this.userInfo)) {
+      return 'UNKNOWN';
     }
     return `${this.userInfo.firstName} ${this.userInfo.lastName}`;
   }
 
-  get editForm(): { [key: string]: AbstractControl } {
+  get editForm(): Record<string, AbstractControl> {
     return this.editFormGroup.controls;
   }
 
-  get changePasswordForm(): { [key: string]: AbstractControl } {
+  get changePasswordForm(): Record<string, AbstractControl> {
     return this.changePasswordFormGroup.controls;
   }
 }

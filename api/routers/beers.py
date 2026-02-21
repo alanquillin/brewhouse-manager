@@ -1,14 +1,14 @@
 """Beer router for FastAPI"""
 
-import logging
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import AuthUser, get_db_session, require_user
 from db.beers import Beers as BeersDB
-from schemas.beers import BeerCreate, BeerResponse, BeerUpdate
+from dependencies.auth import AuthUser, get_db_session, require_user
+from lib import logging
+from schemas.beers import BeerCreate, BeerUpdate
 from services.beers import BeerService
 
 router = APIRouter(prefix="/api/v1/beers", tags=["beers"])
@@ -25,12 +25,10 @@ async def list_beers(
     beers = await BeersDB.query(db_session)
     force_refresh = request.query_params.get("force_refresh", "false").lower() in ["true", "yes", "", "1"]
 
-    return [
-        await BeerService.transform_response(b, db_session=db_session, force_refresh=force_refresh) for b in beers
-    ]
+    return [await BeerService.transform_response(b, db_session=db_session, force_refresh=force_refresh) for b in beers]
 
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, status_code=201)
 async def create_beer(
     beer_data: BeerCreate,
     current_user: AuthUser = Depends(require_user),
@@ -48,9 +46,7 @@ async def create_beer(
     # Process image transitions if provided
     image_transitions = None
     if beer_data.image_transitions:
-        image_transitions = await BeerService.process_image_transitions(
-            db_session, beer_data.image_transitions, beer_id=beer.id
-        )
+        image_transitions = await BeerService.process_image_transitions(db_session, beer_data.image_transitions, beer_id=beer.id)
 
     return await BeerService.transform_response(beer, db_session=db_session, image_transitions=image_transitions, skip_meta_refresh=True)
 
@@ -88,7 +84,7 @@ async def update_beer(
     # Extract data, excluding id and image_transitions
     data = beer_data.model_dump(exclude_unset=True, exclude={"id", "image_transitions"})
 
-    skip_meta_refresh=False
+    skip_meta_refresh = False
     # Merge external_brewing_tool_meta if both exist
     external_brewing_tool_meta = data.get("external_brewing_tool_meta", {})
     if external_brewing_tool_meta:
@@ -97,11 +93,11 @@ async def update_beer(
             old_ext_recipe_id = beer.external_brewing_tool_meta.get("recipe_id")
             new_ext_recipe_id = external_brewing_tool_meta.get("recipe_id")
             if new_ext_recipe_id != old_ext_recipe_id:
-                LOGGER.info(f"external brew tool recipe id for beer ({beer_id}) has changed.  Verifying new id.")
-                LOGGER.debug(f"beer ({beer_id}) external brew tool recipe id change details: old = {old_ext_recipe_id}, new = {new_ext_recipe_id}")
+                LOGGER.info("external brew tool recipe id for beer (%s) has changed.  Verifying new id.", beer_id)
+                LOGGER.debug("beer (%s) external brew tool recipe id change details: old = %s, new = %s", beer_id, old_ext_recipe_id, new_ext_recipe_id)
                 data = await BeerService.verify_and_update_external_brew_tool_recipe(data)
                 skip_meta_refresh = True
-    
+
     LOGGER.debug("Updating beer %s with data: %s", beer_id, data)
     # Update beer if there's data
     if data:
@@ -110,17 +106,16 @@ async def update_beer(
     # Process image transitions
     image_transitions = None
     if beer_data.image_transitions:
-        image_transitions = await BeerService.process_image_transitions(
-            db_session, beer_data.image_transitions, beer_id=beer_id
-        )
+        image_transitions = await BeerService.process_image_transitions(db_session, beer_data.image_transitions, beer_id=beer_id)
 
     # Fetch updated beer
     beer = await BeersDB.get_by_pkey(db_session, beer_id)
+    await db_session.refresh(beer)
 
     return await BeerService.transform_response(beer, db_session=db_session, image_transitions=image_transitions, skip_meta_refresh=skip_meta_refresh)
 
 
-@router.delete("/{beer_id}")
+@router.delete("/{beer_id}", status_code=204)
 async def delete_beer(
     beer_id: str,
     current_user: AuthUser = Depends(require_user),
@@ -133,4 +128,4 @@ async def delete_beer(
         raise HTTPException(status_code=404, detail="Beer not found")
 
     await BeersDB.delete(db_session, beer.id)
-    return True
+    return

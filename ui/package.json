@@ -1,6 +1,6 @@
 {
   "name": "brewhouse-manager",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,7 +8,14 @@
     "build:dev": "ng build --configuration=development",
     "build:prod": "ng build --configuration=production",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:ci": "ng test --no-watch --no-progress --browsers=ChromeHeadless --code-coverage",
+    "test:functional": "ng run brewhouse-manager:test-functional --no-watch",
+    "test:functional:watch": "ng run brewhouse-manager:test-functional --browsers=ChromeNoSecurity",
+    "lint": "ng lint",
+    "lint:fix": "ng lint --fix",
+    "format": "prettier --write \"src/**/*.{ts,html,scss,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,scss,css,json}\""
   },
   "private": true,
   "dependencies": {
@@ -46,7 +53,23 @@
     "@angular/compiler-cli": "^21.1.1",
     "@types/jasmine": "~3.10.0",
     "@types/node": "^12.11.1",
-    "jasmine-core": "~3.10.0",
-    "typescript": "~5.9.3"
+    "@angular-eslint/builder": "^19.0.2",
+    "@angular-eslint/eslint-plugin": "^19.0.2",
+    "@angular-eslint/eslint-plugin-template": "^19.0.2",
+    "@angular-eslint/template-parser": "^19.0.2",
+    "angular-eslint": "^19.0.2",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.2",
+    "jasmine-core": "~5.1.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "prettier": "^3.4.2",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.19.0"
   }
 }

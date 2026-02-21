@@ -1,0 +1,328 @@
+"""Tap monitors router for FastAPI"""
+
+from typing import Any, List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy import Integer
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from db.tap_monitors import TapMonitors as TapMonitorsDB
+from db.taps import Taps as TapsDB
+from dependencies.auth import AuthUser, get_db_session, require_user
+from lib import logging
+from lib.tap_monitors import InvalidDataType, get_tap_monitor_lib
+from lib.tap_monitors import get_types as get_tap_monitor_types
+from routers import get_location_id
+from schemas.tap_monitors import TapMonitorCreate, TapMonitorData, TapMonitorResponse, TapMonitorTypeBase, TapMonitorUpdate
+from services.base import transform_dict_to_camel_case
+from services.tap_monitors import TapMonitorService, TapMonitorTypeService
+
+router = APIRouter()
+LOGGER = logging.getLogger(__name__)
+
+KEGTRON_PRO_REQUIRED_META_KEYS = ["port_num", "device_id", "access_token"]
+
+
+def _validate_kegtron_pro_meta(meta: dict, allow_missing=False):
+    """Validate that kegtron-pro tap monitors have required meta fields."""
+    missing = []
+    for k in KEGTRON_PRO_REQUIRED_META_KEYS:
+        if k not in meta:
+            if not allow_missing:
+                missing.append(k)
+        else:
+            if meta[k] is None or meta[k] == "":
+                missing.append(k)
+
+    if missing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"kegtron-pro tap monitors require the following meta fields: {', '.join(missing)}",
+        )
+
+
+@router.get("/types", response_model=List[TapMonitorTypeBase])
+async def list_monitor_types(
+    current_user: AuthUser = Depends(require_user),
+):
+    """List available tap monitor types"""
+    return [await TapMonitorTypeService.transform_response(t) for t in get_tap_monitor_types()]
+
+
+@router.get("/discover", response_model=Any)
+async def discover_tap_monitors(
+    current_user: AuthUser = Depends(require_user),
+):
+    raise HTTPException(status_code=404, detail="Resource not found")
+
+
+@router.get("/discover/{monitor_type}", response_model=List[dict])
+async def discover_tap_monitors_by_type(
+    monitor_type: str,
+    current_user: AuthUser = Depends(require_user),
+):
+    """Discover tap monitors of a specific type"""
+    allowed_types = [t["type"] for t in get_tap_monitor_types()]
+    if monitor_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Invalid monitor type: {monitor_type}")
+
+    tap_monitor_lib = get_tap_monitor_lib(monitor_type)
+
+    if not tap_monitor_lib.supports_discovery():
+        raise HTTPException(status_code=400, detail=f"{monitor_type} tap monitors do not support discovery")
+
+    data = await tap_monitor_lib.discover()
+    return transform_dict_to_camel_case(data)
+
+
+@router.get("", response_model=List[TapMonitorResponse])
+async def list_tap_monitors(
+    request: Request,
+    location: Optional[str] = None,
+    current_user: AuthUser = Depends(require_user),
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    """List tap monitors accessible to the user"""
+    kwargs = {}
+
+    if location:
+        location_id = await get_location_id(location, db_session)
+        if not current_user.admin and location_id not in current_user.locations:
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
+        kwargs["locations"] = [location_id]
+    elif not current_user.admin:
+        kwargs["locations"] = current_user.locations
+
+    tap_monitors = await TapMonitorsDB.query(db_session, **kwargs)
+    include_tap_details = request.query_params.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
+    return [await TapMonitorService.transform_response(s, db_session=db_session, include_tap=include_tap_details) for s in tap_monitors]
+
+
+@router.post("", response_model=TapMonitorResponse, status_code=201)
+async def create_tap_monitor(
+    tap_monitor_data: TapMonitorCreate,
+    location: Optional[str] = None,
+    current_user: AuthUser = Depends(require_user),
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    """Create a new tap monitor"""
+    data = tap_monitor_data.model_dump(exclude_unset=True)
+
+    # Handle location from path parameter
+    if location:
+        location_id = await get_location_id(location, db_session)
+        if not current_user.admin and location_id not in current_user.locations:
+            raise HTTPException(
+                status_code=403,
+                detail="Not authorized to create tap monitor in this location",
+            )
+        data["location_id"] = location_id
+
+    # Check authorization for location in body
+    if not current_user.admin and data.get("location_id") not in current_user.locations:
+        raise HTTPException(status_code=403, detail="Not authorized to create tap monitor in this location")
+
+    # Validate kegtron-pro required meta fields
+    monitor_type = data.get("monitor_type")
+    if monitor_type == "kegtron-pro":
+        _validate_kegtron_pro_meta(data.get("meta") or {})
+
+    # Check for duplicate device_id within the same monitor type
+    device_id = (data.get("meta") or {}).get("device_id")
+    if device_id and monitor_type:
+        err_msg = f"A tap monitor of type '{monitor_type}' already exists for device '{device_id}'"
+        if monitor_type == "kegtron-pro":
+            port_num = (data.get("meta") or {}).get("port_num")
+            err_msg = f"A tap monitor of type '{monitor_type}' already exists for device '{device_id}' and port {port_num}"
+            existing = await TapMonitorsDB.query(
+                db_session,
+                monitor_type=monitor_type,
+                q_fn=lambda q: q.where(TapMonitorsDB.meta["device_id"].astext == device_id, TapMonitorsDB.meta["port_num"].astext.cast(Integer) == port_num),
+            )
+        else:
+            existing = await TapMonitorsDB.query(
+                db_session,
+                monitor_type=monitor_type,
+                q_fn=lambda q: q.where(TapMonitorsDB.meta["device_id"].astext == device_id),
+            )
+        if existing:
+            raise HTTPException(
+                status_code=409,
+                detail=err_msg,
+            )
+
+    LOGGER.debug("Creating tap monitor with: %s", data)
+    tap_monitor = await TapMonitorsDB.create(db_session, **data)
+
+    return await TapMonitorService.transform_response(tap_monitor, db_session=db_session)
+
+
+@router.get("/{tap_monitor_id}", response_model=TapMonitorResponse)
+async def get_tap_monitor(
+    request: Request,
+    tap_monitor_id: str,
+    location: Optional[str] = None,
+    current_user: AuthUser = Depends(require_user),
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    """Get a specific tap monitor"""
+    if location:
+        location_id = await get_location_id(location, db_session)
+        if not current_user.admin and location_id not in current_user.locations:
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
+
+    tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
+    if not tap_monitor:
+        raise HTTPException(status_code=404, detail="Tap monitor not found")
+
+    # Check authorization
+    if not current_user.admin and tap_monitor.location_id not in current_user.locations:
+        raise HTTPException(status_code=403, detail="Not authorized to access this tap monitor")
+    include_tap_details = request.query_params.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
+    return await TapMonitorService.transform_response(tap_monitor, db_session=db_session, include_tap=include_tap_details)
+
+
+@router.patch("/{tap_monitor_id}", response_model=TapMonitorResponse)
+async def update_tap_monitor(
+    tap_monitor_id: str,
+    tap_monitor_data: TapMonitorUpdate,
+    location: Optional[str] = None,
+    current_user: AuthUser = Depends(require_user),
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    """Update a tap monitor"""
+
+    if location:
+        location_id = await get_location_id(location, db_session)
+        if not current_user.admin and location_id not in current_user.locations:
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
+
+    data = tap_monitor_data.model_dump(exclude_unset=True)
+
+    location_id = data.get("location_id")
+    if location_id:
+        if not current_user.admin and location_id not in current_user.locations:
+            raise HTTPException(status_code=403, detail="Not authorized to add tap monitor in this location")
+
+    tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
+    if not tap_monitor:
+        raise HTTPException(status_code=404, detail="Tap monitor not found")
+
+    # Check authorization
+    if not current_user.admin and tap_monitor.location_id not in current_user.locations:
+        raise HTTPException(status_code=403, detail="Not authorized to update this tap monitor")
+
+    # Validate kegtron-pro required meta fields when meta is being updated
+    if "monitor_type" in data:
+        raise HTTPException(status_code=400, detail="You cannot change the type of an existing tap monitor")
+
+    if data.get("meta"):
+        if tap_monitor.monitor_type == "kegtron-pro":
+            _validate_kegtron_pro_meta(data["meta"], allow_missing=True)
+
+    LOGGER.debug("Updating tap monitor %s with data: %s", tap_monitor_id, data)
+
+    if data:
+        await TapMonitorsDB.update(db_session, tap_monitor.id, **data)
+
+    tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
+    await db_session.refresh(tap_monitor)
+    return await TapMonitorService.transform_response(tap_monitor, db_session=db_session)
+
+
+@router.delete("/{tap_monitor_id}", status_code=204)
+async def delete_tap_monitor(
+    tap_monitor_id: str,
+    location: Optional[str] = None,
+    current_user: AuthUser = Depends(require_user),
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    # if location was passed as part of the query, first check that user is associated with location
+    location_id = None
+    if location:
+        location_id = await get_location_id(location, db_session)
+        if not current_user.admin and location_id not in current_user.locations:
+            raise HTTPException(status_code=403, detail="Not authorized to access this location")
+
+    tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
+    if not tap_monitor:
+        raise HTTPException(status_code=404, detail="Tap monitor not found")
+
+    if location_id and (tap_monitor.location_id != location_id):
+        LOGGER.warning("Tap monitor query succeeded but the user passed in a location that the tap monitor was not associated with, returning 404")
+        raise HTTPException(status_code=404, detail="Tap monitor not found")
+
+    if not current_user.admin and tap_monitor.location_id not in current_user.locations:
+        raise HTTPException(status_code=403, detail="Not authorized to access this location")
+
+    # update associated taps
+    taps = await TapsDB.query(db_session, tap_monitor_id=tap_monitor_id)
+    if taps:
+        for tap in taps:
+            await TapsDB.update(db_session, tap.id, tap_monitor_id=None)
+
+    await TapMonitorsDB.delete(db_session, tap_monitor.id)
+    return
+
+
+@router.get("/{tap_monitor_id}/data", response_model=TapMonitorData)
+async def get_tap_monitor_data(
+    tap_monitor_id: str,
+    location: Optional[str] = None,
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    """Get tap monitor data (no authentication required for public access)"""
+    tap_monitor = None
+    if location:
+        location_id = await get_location_id(location, db_session)
+        kwargs = {"location_id": location_id, "id": tap_monitor_id}
+        resp = await TapMonitorsDB.query(db_session, **kwargs)
+        if resp:
+            tap_monitor = resp[0]
+    else:
+        tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
+
+    if not tap_monitor:
+        raise HTTPException(status_code=404, detail="Tap monitor not found")
+
+    tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
+    if not tap_monitor_lib:
+        raise HTTPException(status_code=400, detail="Tap monitor type not supported")
+
+    try:
+        data = await tap_monitor_lib.get_all(monitor=tap_monitor, db_session=db_session)
+        LOGGER.debug("data retrieved: %s", data)
+        return data
+    except InvalidDataType as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@router.get("/{tap_monitor_id}/data/{data_type}")
+async def get_specific_tap_monitor_data(
+    tap_monitor_id: str,
+    data_type: str,
+    location: Optional[str] = None,
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    """Get tap monitor data (no authentication required for public access)"""
+    tap_monitor = None
+    if location:
+        location_id = await get_location_id(location, db_session)
+        kwargs = {"location_id": location_id, "id": tap_monitor_id}
+        resp = await TapMonitorsDB.query(db_session, **kwargs)
+        if resp:
+            tap_monitor = resp[0]
+    else:
+        tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
+
+    if not tap_monitor:
+        raise HTTPException(status_code=404, detail="Tap monitor not found")
+
+    tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
+
+    try:
+        if data_type == "online":
+            return await tap_monitor_lib.is_online(monitor=tap_monitor, db_session=db_session)
+        return await tap_monitor_lib.get(data_type, monitor=tap_monitor, db_session=db_session)
+    except InvalidDataType as e:
+        raise HTTPException(status_code=400, detail=f"Invalid data type: {data_type}") from e

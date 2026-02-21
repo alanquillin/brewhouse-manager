@@ -1,36 +1,61 @@
-import logging
-import re
-from contextlib import contextmanager, asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 from functools import wraps
 from urllib.parse import quote
 
+import asyncpg.exceptions as asyncpg_exc
+import boto3 as aws
 from psycopg2.errors import InvalidTextRepresentation, NotNullViolation, UniqueViolation  # pylint: disable=no-name-in-module
 from psycopg2.extensions import QuotedString, register_adapter
-from sqlalchemy import DDL, Column, DateTime, String, create_engine, event, func, text, select, delete
+from sqlalchemy import DDL, Column, DateTime, String, create_engine, delete, event, func, select, text, update
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.exc import DataError, IntegrityError
+from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from sqlalchemy.ext.asyncio import AsyncAttrs
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.orm.session import Session
 
 from lib import exceptions as local_exc
-from lib import json
+from lib import json, logging
+
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
-__all__ = ["Base", "audit", "beers", "beverages", "locations", "sensors", "taps", "users", "image_transitions", "user_locations", "on_tap", "batches", "batch_overrides", "batch_locations"]
+
+__all__ = [
+    "Base",
+    "audit",
+    "beers",
+    "beverages",
+    "locations",
+    "tap_monitors",
+    "taps",
+    "users",
+    "image_transitions",
+    "user_locations",
+    "on_tap",
+    "batches",
+    "batch_overrides",
+    "batch_locations",
+    "plaato_data",
+]
 
 LOGGER = logging.getLogger(__name__)
+
 
 @event.listens_for(Base.metadata, "before_create")
 def create_extensions(_target, connection, **_):
     connection.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'))
+
+
+_ASYNCPG_MAP = {
+    NotNullViolation: asyncpg_exc.NotNullViolationError,
+    UniqueViolation: asyncpg_exc.UniqueViolationError,
+    InvalidTextRepresentation: asyncpg_exc.InvalidTextRepresentationError,
+}
 
 
 @contextmanager
@@ -51,7 +76,8 @@ def convert_exception(sqla, psycopg2=None, new=None, param_names=None, str_match
         if psycopg2 is None:
             raise new() from exc
 
-        if isinstance(exc.orig, psycopg2):
+        asyncpg_type = _ASYNCPG_MAP.get(psycopg2)
+        if isinstance(exc.orig, psycopg2) or (asyncpg_type and isinstance(exc.orig, asyncpg_type)):
             if not param_names:
                 args = [str(exc.orig)]
             raise new(*args) from exc
@@ -90,11 +116,14 @@ def session_scope(config, **kwargs):
     try:
         yield session
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
     finally:
         session.close()
+
+
+_async_engines = {}
 
 
 async def create_async_session(config, **kwargs):
@@ -113,16 +142,16 @@ async def create_async_session(config, **kwargs):
         # For now, require password for async connections
         raise ValueError("Password required for async database connections")
 
-    app_name = config.get("app_id", f"UNKNOWN=>({__name__})")
     # Use postgresql+asyncpg:// driver for async connections
-    engine = create_async_engine(
-        (
-            "postgresql+asyncpg://"
-            f"{quote(config.get('db.username'))}:{quote(password)}@{quote(config.get('db.host'))}:"
-            f"{config.get('db.port')}/{quote(config.get('db.name'))}"
-        ),
-        **engine_kwargs,
+    conn_str = (
+        "postgresql+asyncpg://"
+        f"{quote(config.get('db.username'))}:{quote(password)}@{quote(config.get('db.host'))}:"
+        f"{config.get('db.port')}/{quote(config.get('db.name'))}"
     )
+
+    if conn_str not in _async_engines:
+        _async_engines[conn_str] = create_async_engine(conn_str, **engine_kwargs)
+    engine = _async_engines[conn_str]
 
     return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)()
 
@@ -134,7 +163,7 @@ async def async_session_scope(config, **kwargs):
     try:
         yield session
         await session.commit()
-    except:
+    except Exception:
         await session.rollback()
         raise
     finally:
@@ -201,7 +230,7 @@ class DictifiableMixin:
 class DictMethodsMixin:
     def get(self, key, default=None):
         try:
-            return self.__getitem__(key)
+            return self.__getitem__(key)  # pylint: disable=unnecessary-dunder-call
         except AttributeError:
             return default
 
@@ -214,49 +243,62 @@ class DictMethodsMixin:
     def __contains__(self, key):
         return hasattr(self, key)
 
-audit_column_names = [
-    "created_app",
-    "created_user",
-    "created_on",
-    "updated_app",
-    "updated_user",
-    "updated_on"
-]
+
+audit_column_names = ["created_app", "created_user", "created_on", "updated_app", "updated_user", "updated_on"]
+
+# Default values for audit columns on UPDATE (Core DML does not trigger Column.onupdate)
+_audit_onupdate_values = {
+    "updated_app": func.current_setting("application_name"),
+    "updated_user": func.current_user(),  # pylint: disable=not-callable
+    "updated_on": func.current_timestamp(),  # pylint: disable=not-callable
+}
+
+
+def _audit_update_values(cls):
+    """Return audit column update values for Core DML when the model has audit columns."""
+    if not hasattr(cls, "__table__"):
+        return {}
+    table_c = cls.__table__.c
+    return {k: v for k, v in _audit_onupdate_values.items() if k in table_c}
+
 
 audit_columns = [
     Column("created_app", String, server_default=func.current_setting("application_name"), nullable=False),
-    Column("created_user", String, server_default=func.current_user(), nullable=False),
-    Column("created_on", DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False),
-    Column("updated_app",
+    Column("created_user", String, server_default=func.current_user(), nullable=False),  # pylint: disable=not-callable
+    Column("created_on", DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False),  # pylint: disable=not-callable
+    Column(
+        "updated_app",
         String,
         server_default=func.current_setting("application_name"),
         onupdate=func.current_setting("application_name"),
         nullable=False,
     ),
-    Column("updated_user", String, server_default=func.current_user(), onupdate=func.current_user(), nullable=False),
-    Column("updated_on", 
+    Column("updated_user", String, server_default=func.current_user(), onupdate=func.current_user(), nullable=False),  # pylint: disable=not-callable
+    Column(
+        "updated_on",
         DateTime(timezone=True),
-        server_default=func.current_timestamp(),
-        onupdate=func.current_timestamp(),
+        server_default=func.current_timestamp(),  # pylint: disable=not-callable
+        onupdate=func.current_timestamp(),  # pylint: disable=not-callable
         nullable=False,
-    )
+    ),
 ]
+
 
 class AuditedMixin:
     created_app = Column(String, server_default=func.current_setting("application_name"), nullable=False)
-    created_user = Column(String, server_default=func.current_user(), nullable=False)
-    created_on = Column(DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False)
+    created_user = Column(String, server_default=func.current_user(), nullable=False)  # pylint: disable=not-callable
+    created_on = Column(DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False)  # pylint: disable=not-callable
     updated_app = Column(
         String,
         server_default=func.current_setting("application_name"),
         onupdate=func.current_setting("application_name"),
         nullable=False,
     )
-    updated_user = Column(String, server_default=func.current_user(), onupdate=func.current_user(), nullable=False)
+    updated_user = Column(String, server_default=func.current_user(), onupdate=func.current_user(), nullable=False)  # pylint: disable=not-callable
     updated_on = Column(
         DateTime(timezone=True),
-        server_default=func.current_timestamp(),
-        onupdate=func.current_timestamp(),
+        server_default=func.current_timestamp(),  # pylint: disable=not-callable
+        onupdate=func.current_timestamp(),  # pylint: disable=not-callable
         nullable=False,
     )
 
@@ -417,7 +459,7 @@ class QueryMethodsMixin:
                     IntegrityError, psycopg2=UniqueViolation, new=local_exc.ItemAlreadyExists, str_match="_pkey"
                 ):
                     session.commit()
-            except:
+            except Exception:
                 session.rollback()
                 raise
 
@@ -449,7 +491,7 @@ class QueryMethodsMixin:
         if autocommit:
             try:
                 session.commit()
-            except:
+            except Exception:
                 session.rollback()
                 raise
 
@@ -462,10 +504,10 @@ class QueryMethodsMixin:
         if autocommit:
             try:
                 session.commit()
-            except:
+            except Exception:
                 session.rollback()
                 raise
-    
+
     @classmethod
     def delete_by(cls, session, autocommit=True, **kwargs):
         session.query(cls).filter_by(**kwargs).delete()
@@ -473,7 +515,7 @@ class QueryMethodsMixin:
         if autocommit:
             try:
                 session.commit()
-            except:
+            except Exception:
                 session.rollback()
                 raise
 
@@ -496,7 +538,7 @@ class AsyncQueryMethodsMixin:
         if ids:
             LOGGER.debug("filtering query by ids: %s", ids)
             q = q.where(cls.id.in_(ids))
-        
+
         if q_fn:
             q = q_fn(q)
 
@@ -504,7 +546,7 @@ class AsyncQueryMethodsMixin:
             result = await session.execute(q)
             return result.unique().scalars().all()
         except DataError as err:
-            if not isinstance(err.orig, InvalidTextRepresentation):
+            if not isinstance(err.orig, (InvalidTextRepresentation, asyncpg_exc.InvalidTextRepresentationError)):
                 raise
             if "invalid input value for enum" not in str(err.orig):
                 raise
@@ -538,74 +580,78 @@ class AsyncQueryMethodsMixin:
                 ):
                     await session.commit()
                     await session.refresh(row)
-            except:
+            except Exception:
                 await session.rollback()
                 raise
 
         return row
 
     @classmethod
-    async def update_query(cls, session, filters=None, **updates):
+    async def update_query(cls, session, autocommit=True, filters=None, **updates) -> int:
         if filters is None:
             filters = {}
 
-        q = select(cls).filter_by(**filters)
+        # Core DML does not trigger Column.onupdate; set audit columns explicitly when present
+        values = {**_audit_update_values(cls), **updates}
+        q = update(cls).filter_by(**filters).values(**values)
         result = await session.execute(q)
-        rows = result.scalars().all()
-
-        for row in rows:
-            for key, value in updates.items():
-                setattr(row, key, value)
-
-    @classmethod
-    async def update(cls, session, pkey, merge_nested=False, autocommit=True, **kwargs):
-        merge_fields = getattr(cls, _MERGEABLE_FIELDS_LIST, [])
-        row = await cls.get_by_pkey(session, pkey)
-
-        for key, value in kwargs.items():
-            if not hasattr(cls, key):
-                raise local_exc.InvalidParameter(key)
-
-            if merge_nested and key in merge_fields:
-                current = getattr(row, key, {})
-                value = _merge_into(current, value)
-
-            setattr(row, key, value)
-
-        session.add(row)
-        if autocommit:
-            try:
-                await session.commit()
-                await session.refresh(row)
-            except:
-                await session.rollback()
-                raise
-
-        return row
-
-    @classmethod
-    async def delete(cls, session, pkey, autocommit=True):
-        row = await cls.get_by_pkey(session, pkey)
-        await session.delete(row)
+        rowcnt = result.rowcount
 
         if autocommit:
             try:
                 await session.commit()
-            except:
+            except Exception:
                 await session.rollback()
                 raise
 
+        return rowcnt
+
     @classmethod
-    async def delete_by(cls, session, autocommit=True, **kwargs):
+    async def update(cls, session, pkey, autocommit=True, **kwargs) -> int:
+        # Core DML does not trigger Column.onupdate; set audit columns explicitly when present
+        values = {**_audit_update_values(cls), **kwargs}
+        stmt = update(cls).where(cls.id == pkey).values(**values)
+        result = await session.execute(stmt)
+        rowcnt = result.rowcount
+
+        if autocommit:
+            try:
+                LOGGER.debug("Committing update for %s with id %s and data %s", cls.__name__, pkey, kwargs)
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+        LOGGER.debug("Rows affected for update: %s. (%s with id %s and data %s)", rowcnt, cls.__name__, pkey, kwargs)
+        return rowcnt
+
+    @classmethod
+    async def delete(cls, session, pkey, autocommit=True) -> int:
+        stmt = delete(cls).where(cls.id == pkey)
+        res = await session.execute(stmt)
+        rowcnt = res.rowcount
+
+        if autocommit:
+            try:
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+        return rowcnt
+
+    @classmethod
+    async def delete_by(cls, session, autocommit=True, **kwargs) -> int:
         q = delete(cls).filter_by(**kwargs)
-        await session.execute(q)
+        res = await session.execute(q)
+        rowcnt = res.rowcount
 
         if autocommit:
             try:
                 await session.commit()
-            except:
+            except Exception:
                 await session.rollback()
                 raise
+
+        return rowcnt
 
 
 from .audit import setup_trigger  # pylint: disable=wrong-import-position,cyclic-import

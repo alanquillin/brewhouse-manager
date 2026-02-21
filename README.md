@@ -1,24 +1,68 @@
-# Brewhouse Manager
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/img/logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="./docs/img/logo-light.png">
+    <img alt="Brewhouse Manager Logo" src="./docs/img/logo-light.png" width="400">
+  </picture>
+</div>
 
 The Brewhouse Manager is an open source application designed for the home/micro brewer to help track what they have
 brewed and what they have on tap.  In order to make tracking your beer better, the Brewhouse Manager optionally
-integrates with 3rd party brew systems and sensors to pull in your batch details and track the beer levels in your kegs.
+integrates with 3rd party brew systems and tap monitors to pull in your batch details and track the beer levels in your kegs.
 
-<img src="./docs/img/preview.png" style="max-width: 1200px; height: auto" />
+<div align="center">
+  <img src="./docs/img/preview.png" style="max-width: 1200px; height: auto" />
+</div>
 
 ## Supported Third Party Integrations
+
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/img/brewfather-white.png">
+    <source media="(prefers-color-scheme: light)" srcset="./docs/img/brewfather-black.png">
+    <img alt="Brewfather" src="./docs/img/brewfather-black.png" height="40" style="padding-right: 24px; padding-left: 24px;">
+  </picture>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/img/plaato-white.png">
+    <source media="(prefers-color-scheme: light)" srcset="./docs/img/plaato-black.png">
+    <img alt="Plaato" src="./docs/img/plaato-black.png" height="40" style="padding-right: 24px; padding-left: 24px">
+  </picture>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/img/kegtron-white.png">
+    <source media="(prefers-color-scheme: light)" srcset="./docs/img/kegtron-black.png">
+    <img alt="Kegtron" src="./docs/img/kegtron-black.png" height="40" style="padding-right: 24px; padding-left: 24px">
+  </picture>
+</div>
 
 ### Brew tracking applications
 
 - [brewfather](https://brewfather.app/): The brewfather integration allows you to associate a batch with a beer to auto
 import details.  These details will refresh automatically until the batch is marked as completed.
 
-### Sensors
+### Tap Monitoring Sensors
 
-- [Plaato Keg (via open-plaato-keg)](https://github.com/sklopivo/open-plaato-keg):  **These sensors have been discontinued and no longer supported by the manufacturer**
-however, like us, I know there are many die hard fans out there taking theirs to the grave.  Since their services have
-been discontinued a few open source options have become available to support them.  Currently we have added support for
-open-plaato-keg.  **open-plaato-keg version 0.0.11 is required**.
+#### Plaato Keg
+
+**These devices have been discontinued and are no longer supported by the manufacturer.** However, like us, we know there are many die-hard fans out there taking theirs to the grave. Since their services have been discontinued, open source options have become available to support them.
+
+Brewhouse Manager now supports **two integration methods** for Plaato Keg devices:
+
+1. **Native Integration (Recommended)**: Direct TCP connection with Plaato Keg devices
+   - No external services required
+   - Full device configuration capabilities (mode, units, calibration)
+   - Real-time sensor data streaming
+   - Device management UI at `/manage/plaato_kegs`
+   - Configuration required: See [Tap Monitor configuration](./docs/configs.md#tap-monitor-settings)
+
+2. **[Open-Plaato-Keg Service](https://github.com/sklopivo/open-plaato-keg)**: HTTP-based integration
+   - Requires separate open-plaato-keg service (version 0.0.11+)
+   - Read-only sensor data access
+   - Useful if you already have open-plaato-keg running
+
+#### Other Tap Monitoring Sensors
+
 - [Kegtron Pro](https://kegtron.com/pro/)
 - [DIY Keg Volume Monitors](https://github.com/alanquillin/keg-volume-monitors)
 

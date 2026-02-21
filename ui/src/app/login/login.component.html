@@ -3,57 +3,61 @@
     <form [formGroup]="loginFormGroup" (ngSubmit)="submit()">
       <fieldset>
         <mat-card appearance="outlined" class="login-card">
-          <img mat-card-image src="../../assets/login logo.png" alt="avatar">
+          <img mat-card-image src="../../assets/login logo.png" alt="avatar" />
           <mat-card-content>
-
             <mat-form-field appearance="fill" class="login-field">
-              <input id="login_email_input"
+              <input
+                id="login_email_input"
                 class="dp-textfield--input"
                 formControlName="email"
                 [(ngModel)]="email"
                 matInput
-                required />
+                required
+              />
               <mat-label>Email</mat-label>
               <mat-icon matPrefix>person</mat-icon>
               <!-- <mat-error *ngIf="loginForm.email.hasError('required')">
               Email is required.
             </mat-error> -->
-          </mat-form-field>
+            </mat-form-field>
 
-          <mat-form-field appearance="fill" class="login-field">
-            <input type="password"
-              id="login_password_input"
-              class="dp-textfield--input"
-              formControlName="password"
-              [(ngModel)]="password"
-              matInput
-              required />
-            <mat-label>Password</mat-label>
-            <mat-icon matPrefix>lock</mat-icon>
-            <!-- <mat-error *ngIf="loginForm.password.hasError('required')">
+            <mat-form-field appearance="fill" class="login-field">
+              <input
+                type="password"
+                id="login_password_input"
+                class="dp-textfield--input"
+                formControlName="password"
+                [(ngModel)]="password"
+                matInput
+                required
+              />
+              <mat-label>Password</mat-label>
+              <mat-icon matPrefix>lock</mat-icon>
+              <!-- <mat-error *ngIf="loginForm.password.hasError('required')">
             Password is required.
           </mat-error> -->
-        </mat-form-field>
-
-      </mat-card-content>
-      <mat-card-actions>
-        <button
-          mat-raised-button
-          color="primary"
-          class="btn btn-primary btn-block"
-          [disabled]="!loginFormGroup.valid || processing">
-          Login
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  </fieldset>
-</form>
-</div>
-@if (settings.googleSSOEnabled) {
-  <div class="login-socials">
-    <button mat-raised-button class="login-google" (click)="loginWithGoogle()">
-      <mat-icon svgIcon="logo"></mat-icon> Login With Google
-    </button>
+            </mat-form-field>
+          </mat-card-content>
+          <mat-card-actions>
+            <button
+              mat-raised-button
+              color="primary"
+              class="btn btn-primary btn-block"
+              [disabled]="!loginFormGroup.valid || processing"
+            >
+              Login
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </fieldset>
+    </form>
   </div>
-}
+  @if (googleSSOEnabled) {
+    <div class="login-socials">
+      <button mat-raised-button class="login-google" (click)="loginWithGoogle()">
+        <mat-icon svgIcon="logo"></mat-icon>
+        Login With Google
+      </button>
+    </div>
+  }
 </div>

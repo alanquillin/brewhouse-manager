@@ -1,28 +1,32 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { DataService, DataError } from '../../_services/data.service';
-import { Router } from '@angular/router';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSort, Sort} from '@angular/material/sort';
-import { UntypedFormControl, AbstractControl, Validators, UntypedFormGroup } from '@angular/forms';
+import { MatSort, Sort } from '@angular/material/sort';
+import { Router } from '@angular/router';
+import { CurrentUserService } from '../../_services/current-user.service';
+import { DataError, DataService } from '../../_services/data.service';
+import { SettingsService } from '../../_services/settings.service';
 
-import { Beer, Beverage, Location, Tap, Sensor, UserInfo, Batch } from '../../models/models';
+import { KegtronResetDialogComponent } from '../../_dialogs/kegtron-reset-dialog/kegtron-reset-dialog.component';
+
+import { Batch, Beer, Beverage, Location, Tap, TapMonitor, UserInfo } from '../../models/models';
 
 import * as _ from 'lodash';
 import { isNilOrEmpty } from 'src/app/utils/helpers';
 
 @Component({
-    selector: 'app-taps',
-    templateUrl: './taps.component.html',
-    styleUrls: ['./taps.component.scss'],
-    standalone: false
+  selector: 'app-taps',
+  templateUrl: './taps.component.html',
+  styleUrls: ['./taps.component.scss'],
+  standalone: false,
 })
 export class ManageTapsComponent implements OnInit {
-
-  taps: Tap[] = []
+  taps: Tap[] = [];
   filteredTaps: Tap[] = [];
   locations: Location[] = [];
   beers: Beer[] = [];
-  sensors: Sensor[] = [];
+  tapMonitors: TapMonitor[] = [];
   beverages: Beverage[] = [];
   batches: Batch[] = [];
   loading = false;
@@ -41,44 +45,51 @@ export class ManageTapsComponent implements OnInit {
     description: new UntypedFormControl('', [Validators.required]),
     locationId: new UntypedFormControl('', [Validators.required]),
     beerBatchId: new UntypedFormControl(''),
-    tapNumber: new UntypedFormControl('', [Validators.required, Validators.pattern("^[0-9]*$")]),
-    sensorId: new UntypedFormControl(''),
+    tapNumber: new UntypedFormControl('', [Validators.required, Validators.pattern('^[0-9]*$')]),
+    tapMonitorId: new UntypedFormControl(''),
     beverageBatchId: new UntypedFormControl(''),
     namePrefix: new UntypedFormControl('', []),
-    nameSuffix: new UntypedFormControl('', [])
+    nameSuffix: new UntypedFormControl('', []),
   });
 
   get displayedColumns() {
-    var cols = ['displayName', 'description', 'tapNumber'];
+    const cols = ['displayName', 'description', 'tapNumber'];
 
-    if(this.locations.length > 1) {
+    if (this.locations.length > 1) {
       cols.push('location');
     }
 
-    return _.concat(cols, ['beer', 'beverage', 'sensor', 'actions']);
+    return _.concat(cols, ['beer', 'beverage', 'tapMonitor', 'actions']);
   }
 
-  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) { }
+  constructor(
+    private currentUserService: CurrentUserService,
+    private dataService: DataService,
+    private settingsService: SettingsService,
+    private router: Router,
+    private _snackBar: MatSnackBar,
+    private dialog: MatDialog
+  ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
 
   displayError(errMsg: string) {
-    this._snackBar.open("Error: " + errMsg, "Close");
+    this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
-  refresh(always?:Function, next?: Function, error?: Function) {
+  refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.dataService.getTaps().subscribe({
       next: (taps: Tap[]) => {
         this.taps = [];
-        _.forEach(taps, (tap) => {
-          var _tap = new Tap(tap)
+        _.forEach(taps, tap => {
+          const _tap = new Tap(tap);
           if (!isNilOrEmpty(_tap.beer)) {
             _tap.beer = new Beer(_tap.beer);
           }
           if (isNilOrEmpty(_tap.beer) && !isNilOrEmpty(_tap.beerId)) {
             _tap.beer = this.findBeer(_tap.beerId);
           }
-          
+
           if (!isNilOrEmpty(_tap.beverage)) {
             _tap.beverage = new Beverage(_tap.beverage);
           }
@@ -90,158 +101,164 @@ export class ManageTapsComponent implements OnInit {
             _tap.batch = this.findBatch(_tap.batchId);
           }
 
-          this.taps.push(_tap)
+          this.taps.push(_tap);
         });
         this.filter();
-      }, 
+      },
       error: (err: DataError) => {
         this.displayError(err.message);
-        if(!_.isNil(error)){
-          error();
+        if (!_.isNil(error)) {
+          error(err);
         }
-        if(!_.isNil(always)){
+        if (!_.isNil(always)) {
           always();
         }
       },
       complete: () => {
-        if(!_.isNil(next)){
+        if (!_.isNil(next)) {
           next();
         }
-        if(!_.isNil(always)){
+        if (!_.isNil(always)) {
           always();
         }
-      }
-    })
+      },
+    });
   }
 
-  _refreshAll(always?:Function, next?: Function, error?: Function) {
+  _refreshAll(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
     this.dataService.getLocations().subscribe({
       next: (locations: Location[]) => {
-        this.locations = _.sortBy(locations, [(l:Location) => {return l.description}]);
+        this.locations = _.sortBy(locations, [
+          (l: Location) => {
+            return l.description;
+          },
+        ]);
         this.dataService.getBeers().subscribe({
           next: (beers: Beer[]) => {
-            this.beers = []
-            _.forEach(beers, (beer) => {
+            this.beers = [];
+            _.forEach(beers, beer => {
               this.beers.push(new Beer(beer));
             });
-            this.beers = _.sortBy(this.beers, (beer) => { return beer.getName(); });
-            this.dataService.getSensors().subscribe({
-              next: (sensors: Sensor[]) => {
-                this.sensors = sensors;
+            this.beers = _.sortBy(this.beers, beer => {
+              return beer.getName();
+            });
+            this.dataService.getTapMonitors().subscribe({
+              next: (tapMonitors: TapMonitor[]) => {
+                this.tapMonitors = tapMonitors;
                 this.dataService.getBeverages().subscribe({
                   next: (beverages: Beverage[]) => {
                     this.beverages = [];
-                    _.forEach(_.sortBy(beverages, ["name"]), (beverage) => {
+                    _.forEach(_.sortBy(beverages, ['name']), beverage => {
                       this.beverages.push(new Beverage(beverage));
                     });
                     this.dataService.getBatches().subscribe({
                       next: (batches: Batch[]) => {
                         this.batches = [];
-                        _.forEach(batches, (batch) => {
-                          var b = new Batch(batch);
+                        _.forEach(batches, batch => {
+                          const b = new Batch(batch);
                           if (isNilOrEmpty(b.beer) && !isNilOrEmpty(b.beerId)) {
                             b.beer = this.findBeer(b.beerId);
                           }
                           if (isNilOrEmpty(b.beverage) && !isNilOrEmpty(b.beverageId)) {
                             b.beverage = this.findBeverage(b.beverageId);
                           }
-                          this.batches.push(b)
+                          this.batches.push(b);
                         });
 
-                        this.refresh(always, next, error);  
+                        this.refresh(always, next, error);
                       },
-                      error: (err:DataError) => {
+                      error: (err: DataError) => {
                         this.displayError(err.message);
-                        if(!_.isNil(error)){
-                          error();
+                        if (!_.isNil(error)) {
+                          error(err);
                         }
-                        if(!_.isNil(always)){
+                        if (!_.isNil(always)) {
                           always();
                         }
-                      }
-                    })
+                      },
+                    });
                   },
-                  error: (err:DataError) => {
+                  error: (err: DataError) => {
                     this.displayError(err.message);
-                    if(!_.isNil(error)){
-                      error();
+                    if (!_.isNil(error)) {
+                      error(err);
                     }
-                    if(!_.isNil(always)){
+                    if (!_.isNil(always)) {
                       always();
                     }
-                  }
-                })
+                  },
+                });
               },
-              error: (err:DataError) => {
+              error: (err: DataError) => {
                 this.displayError(err.message);
-                if(!_.isNil(error)){
-                  error();
+                if (!_.isNil(error)) {
+                  error(err);
                 }
-                if(!_.isNil(always)){
+                if (!_.isNil(always)) {
                   always();
                 }
-              }
-            })
+              },
+            });
           },
-          error: (err:DataError) => {
+          error: (err: DataError) => {
             this.displayError(err.message);
-            if(!_.isNil(error)){
-              error();
+            if (!_.isNil(error)) {
+              error(err);
             }
-            if(!_.isNil(always)){
+            if (!_.isNil(always)) {
               always();
             }
-          }
+          },
         });
       },
-      error: (err:DataError) => {
+      error: (err: DataError) => {
         this.displayError(err.message);
-        if(!_.isNil(error)){
-          error();
+        if (!_.isNil(error)) {
+          error(err);
         }
-        if(!_.isNil(always)){
+        if (!_.isNil(always)) {
           always();
         }
-      }
+      },
     });
   }
 
   ngOnInit(): void {
     this.loading = true;
-    
-    this.dataService.getCurrentUser().subscribe({
-      next: (userInfo: UserInfo) => {
-        this.userInfo = userInfo;
 
-        if(this.userInfo.locations && this.userInfo.admin) {
-          for(let l of this.userInfo.locations) {
+    this.currentUserService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo | null) => {
+        this.userInfo = userInfo!;
+
+        if (this.userInfo?.locations && this.userInfo?.admin) {
+          for (const l of this.userInfo.locations) {
             this.selectedLocationFilters.push(l.id);
           }
         }
-        this._refreshAll(()=> {
+        this._refreshAll(() => {
           this.loading = false;
         });
       },
       error: (err: DataError) => {
-        if(err.statusCode !== 401) {
+        if (err.statusCode !== 401) {
           this.displayError(err.message);
         }
-      }
+      },
     });
   }
 
   refreshAll(): void {
     this.loading = true;
-    this._refreshAll(()=> {
+    this._refreshAll(() => {
       this.loading = false;
     });
   }
 
   add(): void {
     this.modifyFormGroup.reset();
-    var data:any = {}
-    if(this.locations.length === 1) {
-      data["locationId"] = this.locations[0].id;
+    const data: any = {};
+    if (this.locations.length === 1) {
+      data['locationId'] = this.locations[0].id;
     }
     this.modifyTap = new Tap(data);
     this.modifyTap.editValues = data;
@@ -249,36 +266,49 @@ export class ManageTapsComponent implements OnInit {
   }
 
   create(): void {
-    var data: any = {
+    const data: any = {
       description: this.modifyTap.editValues.description,
       tapNumber: this.modifyTap.editValues.tapNumber,
       locationId: this.modifyTap.editValues.locationId,
       namePrefix: this.modifyTap.editValues.namePrefix,
-      nameSuffix: this.modifyTap.editValues.nameSuffix
+      nameSuffix: this.modifyTap.editValues.nameSuffix,
+    };
+
+    if (!_.isNil(this.modifyTap.editValues.beerId) && this.modifyTap.editValues.beerId !== '-1') {
+      data['beerId'] = this.modifyTap.editValues.beerId;
     }
 
-    if(!_.isNil(this.modifyTap.editValues.beerId) && this.modifyTap.editValues.beerId !== "-1") {
-      data["beerId"] = this.modifyTap.editValues.beerId;
+    if (
+      !_.isNil(this.modifyTap.editValues.tapMonitorId) &&
+      this.modifyTap.editValues.tapMonitorId !== '-1'
+    ) {
+      data['tapMonitorId'] = this.modifyTap.editValues.tapMonitorId;
     }
 
-    if(!_.isNil(this.modifyTap.editValues.sensorId) && this.modifyTap.editValues.sensorId !== "-1") {
-      data["sensorId"] = this.modifyTap.editValues.sensorId;
-    }
-
-    if(!_.isNil(this.modifyTap.editValues.beverageId) && this.modifyTap.editValues.beverageId !== "-1") {
-      data["beverageId"] = this.modifyTap.editValues.beverageId;
+    if (
+      !_.isNil(this.modifyTap.editValues.beverageId) &&
+      this.modifyTap.editValues.beverageId !== '-1'
+    ) {
+      data['beverageId'] = this.modifyTap.editValues.beverageId;
     }
 
     this.processing = true;
     this.dataService.createTap(data).subscribe({
-      next: (tap: Tap) => {
-        this.refresh(() => {this.processing = false;}, () => {this.adding = false;});
+      next: (_: Tap) => {
+        this.refresh(
+          () => {
+            this.processing = false;
+          },
+          () => {
+            this.adding = false;
+          }
+        );
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-      }
-    })
+      },
+    });
   }
 
   cancelAdd(): void {
@@ -293,29 +323,108 @@ export class ManageTapsComponent implements OnInit {
   }
 
   save(): void {
-    var updateData:any = _.cloneDeep(this.modifyTap.changes);
+    const updateData: any = _.cloneDeep(this.modifyTap.changes);
 
-    if(_.has(updateData, "batchId") && (updateData.batchId === "-1" || _.isNil(updateData.batchId))){
+    if (
+      _.has(updateData, 'batchId') &&
+      (updateData.batchId === '-1' || _.isNil(updateData.batchId))
+    ) {
       updateData.batchId = null;
     }
 
-    if(_.has(updateData, "sensorId") && (updateData.sensorId === "-1" || _.isNil(updateData.sensorId))){
-      updateData.sensorId = null;
+    if (
+      _.has(updateData, 'tapMonitorId') &&
+      (updateData.tapMonitorId === '-1' || _.isNil(updateData.tapMonitorId))
+    ) {
+      updateData.tapMonitorId = null;
     }
+    if (
+      !_.has(updateData, 'tapMonitorId') &&
+      _.has(updateData, 'batchId') &&
+      this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro'
+    ) {
+      if (isNilOrEmpty(updateData.batchId)) {
+        this.processing = true;
+        this.dataService
+          .clearKegtronPort(
+            this.modifyTap.tapMonitor.meta.deviceId,
+            this.modifyTap.tapMonitor.meta.portNum
+          )
+          .subscribe({
+            next: (_: any) => {
+              this._executeSave(updateData);
+            },
+            error: (err: DataError) => {
+              this.displayError(
+                'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+                  err.message
+              );
+              this._executeSave(updateData);
+            },
+          });
+      } else {
+        const batch = updateData.batchId ? this.findBatch(updateData.batchId) : undefined;
+        const dialogRef = this.dialog.open(KegtronResetDialogComponent, {
+          data: {
+            deviceId: this.modifyTap.tapMonitor.meta.deviceId,
+            portNum: this.modifyTap.tapMonitor.meta.portNum,
+            showSkip: true,
+            updateDateTapped: true,
+            batchId: batch?.id,
+          },
+        });
+        dialogRef.afterClosed().subscribe(result => {
+          if (result === 'submit' || result === 'skip') {
+            this._executeSave(updateData);
+          }
+        });
+      }
+    } else if (
+      _.has(updateData, 'tapMonitorId') &&
+      this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro'
+    ) {
+      this.processing = true;
+      this.dataService
+        .clearKegtronPort(
+          this.modifyTap.tapMonitor.meta.deviceId,
+          this.modifyTap.tapMonitor.meta.portNum
+        )
+        .subscribe({
+          next: (_: any) => {
+            this._executeSave(updateData);
+          },
+          error: (err: DataError) => {
+            this.displayError(
+              'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+                err.message
+            );
+            this._executeSave(updateData);
+          },
+        });
+    } else {
+      this._executeSave(updateData);
+    }
+  }
 
+  private _executeSave(updateData: any): void {
     this.processing = true;
     this.dataService.updateTap(this.modifyTap.id, updateData).subscribe({
-      next: (tap: Tap) => {
+      next: (_: Tap) => {
         this.modifyTap.disableEditing();
-        this.refresh(()=> {this.processing = false;}, () => {
-          this.editing = false;
-        })
+        this.refresh(
+          () => {
+            this.processing = false;
+          },
+          () => {
+            this.editing = false;
+          }
+        );
       },
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-      }
-    })
+      },
+    });
   }
 
   cancelEdit(): void {
@@ -324,92 +433,112 @@ export class ManageTapsComponent implements OnInit {
   }
 
   delete(tap: Tap): void {
-    if(confirm(`Are you sure you want to delete tap #${tap.tapNumber} (${tap.description}) from '${_.isNil(tap.location) ? 'UNKNOWN' : tap.location.name}'?`)) {
+    if (
+      confirm(
+        `Are you sure you want to delete tap #${tap.tapNumber} (${tap.description}) from '${_.isNil(tap.location) ? 'UNKNOWN' : tap.location.name}'?`
+      )
+    ) {
       this.processing = true;
       this.dataService.deleteTap(tap.id).subscribe({
-        next: (resp: any) => {
+        next: (_: any) => {
           this.processing = false;
           this.loading = true;
-          this.refresh(()=>{ this.loading = false; });
+          this.refresh(() => {
+            this.loading = false;
+          });
         },
         error: (err: DataError) => {
           this.displayError(err.message);
           this.processing = false;
-        }
-      })
+        },
+      });
     }
   }
 
   filter(sort?: Sort): void {
-    var sortBy:string = "tapNumber";
-    var asc: boolean = true;
-    if(!_.isNil(sort) && !_.isEmpty(this.sort.active) && !_.isEmpty(this.sort.direction)) {
+    let sortBy = 'tapNumber';
+    let asc = true;
+    if (!_.isNil(sort) && !_.isEmpty(this.sort.active) && !_.isEmpty(this.sort.direction)) {
       sortBy = this.sort.active;
       asc = this.sort.direction == 'asc';
     }
 
-    var filteredData: Tap[] = this.taps;
-    if(!_.isEmpty(this.selectedLocationFilters)){
-      filteredData = <Tap[]>_.filter(this.taps, (s) => { return this.selectedLocationFilters.includes(s.locationId) });
+    let filteredData: Tap[] = this.taps;
+    if (!_.isEmpty(this.selectedLocationFilters)) {
+      filteredData = _.filter(this.taps, s => {
+        return this.selectedLocationFilters.includes(s.locationId);
+      }) as Tap[];
     }
-  
-    filteredData = _.sortBy(filteredData, [(d: Tap) => {
-        if(sortBy === "location"){
-          return _.isNil(d.location) ? "" : d.location.name
+
+    filteredData = _.sortBy(filteredData, [
+      (d: Tap) => {
+        if (sortBy === 'location') {
+          return _.isNil(d.location) ? '' : d.location.name;
         }
-        if(sortBy === "sensor"){
-          return _.isNil(d.sensor) ? "" : d.sensor.name
+        if (sortBy === 'tapMonitor') {
+          return _.isNil(d.tapMonitor) ? '' : d.tapMonitor.name;
         }
-        if(sortBy === "beer"){
-          return _.isNil(d.beer) ? "" : d.beer.getName();
+        if (sortBy === 'beer') {
+          return _.isNil(d.beer) ? '' : d.beer.getName();
         }
         return _.get(d, sortBy);
-      }]);
-    if(!asc){
+      },
+    ]);
+    if (!asc) {
       _.reverse(filteredData);
     }
     this.filteredTaps = filteredData;
   }
 
-  getSensorName(sensor: Sensor | undefined, sensorId?: string): string {
-    if(_.isNil(sensor) && !_.isNil(sensorId)){
-      sensor = _.find(this.sensors, (s) => {return s.id === sensorId});
+  getTapMonitorName(tapMonitor: TapMonitor | undefined, tapMonitorId?: string): string {
+    if (_.isNil(tapMonitor) && !_.isNil(tapMonitorId)) {
+      tapMonitor = _.find(this.tapMonitors, s => {
+        return s.id === tapMonitorId;
+      });
     }
-    if(_.isNil(sensor)) {
-      return "";
+    if (_.isNil(tapMonitor)) {
+      return '';
     }
-    var name = sensor.name
-    if(_.isEmpty(name)) {
-      name = "UNNAMED";
+    let name = tapMonitor.name;
+    if (_.isEmpty(name)) {
+      name = 'UNNAMED';
     }
-    return `${name} (${sensor.sensorType})`
+    return `${name} (${tapMonitor.monitorType})`;
   }
 
   findBeer(beerId: string) {
-    return _.find(this.beers, (b) => {return b.id == beerId});
+    return _.find(this.beers, b => {
+      return b.id == beerId;
+    });
   }
 
   findBeverage(beverageId: string) {
-    return _.find(this.beverages, (b) => {return b.id == beverageId});
+    return _.find(this.beverages, b => {
+      return b.id == beverageId;
+    });
   }
 
   findBatch(batchId: string) {
-    return _.find(this.batches, (b) => {return b.id == batchId});
+    return _.find(this.batches, b => {
+      return b.id == batchId;
+    });
   }
 
-  getSensorsForLocation(locationId: string | undefined): Sensor[] {
-    if(_.isNil(locationId)) {
+  getTapMonitorsForLocation(locationId: string | undefined): TapMonitor[] {
+    if (_.isNil(locationId)) {
       return [];
     }
 
-    var sensors = _.filter(this.sensors, (s) => { return s.locationId === locationId});
-    if(_.isNil(sensors)){
+    const tapMonitors = _.filter(this.tapMonitors, s => {
+      return s.locationId === locationId;
+    });
+    if (_.isNil(tapMonitors)) {
       return [];
     }
-    return sensors;
+    return tapMonitors;
   }
 
-  get modifyForm(): { [key: string]: AbstractControl } {
+  get modifyForm(): Record<string, AbstractControl> {
     return this.modifyFormGroup.controls;
   }
 
@@ -418,27 +547,50 @@ export class ManageTapsComponent implements OnInit {
   }
 
   clear(tap: Tap) {
-    if(confirm(`Are you sure you want to clear the tap?`)) {
+    if (confirm(`Are you sure you want to clear the tap?`)) {
       this.processing = true;
-      this.dataService.clearTap(tap.id).subscribe({
-        next: (resp: any) => {
-          this.processing = false;
-          this.loading = true;
-          this.refresh(()=>{ this.loading = false; });
-        },
-        error: (err: DataError) => {
-          this.displayError(err.message);
-          this.processing = false;
-        }
-      })
+      if (tap.tapMonitor?.monitorType === 'kegtron-pro') {
+        this.dataService
+          .clearKegtronPort(tap.tapMonitor.meta.deviceId, tap.tapMonitor.meta.portNum)
+          .subscribe({
+            next: (_: any) => {
+              this.clearTap(tap);
+            },
+            error: (err: DataError) => {
+              this.displayError(
+                'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+                  err.message
+              );
+              this.clearTap(tap);
+            },
+          });
+      } else {
+        this.clearTap(tap);
+      }
     }
   }
 
-  getBeerBatches(locationId: string): Batch[]{
-    var b: Batch[] = [];
-    _.forEach(this.batches, (batch) => {
-      if(!isNilOrEmpty(batch.beerId) && !isNilOrEmpty(batch.beer)) {
-        if(batch?.locationIds.includes(locationId)){
+  clearTap(tap: Tap) {
+    this.dataService.clearTap(tap.id).subscribe({
+      next: (_: any) => {
+        this.processing = false;
+        this.loading = true;
+        this.refresh(() => {
+          this.loading = false;
+        });
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      },
+    });
+  }
+
+  getBeerBatches(locationId: string): Batch[] {
+    const b: Batch[] = [];
+    _.forEach(this.batches, batch => {
+      if (!isNilOrEmpty(batch.beerId) && !isNilOrEmpty(batch.beer)) {
+        if (batch?.locationIds.includes(locationId)) {
           b.push(batch);
         }
       }
@@ -447,11 +599,11 @@ export class ManageTapsComponent implements OnInit {
     return b;
   }
 
-  getBeverageBatches(locationId: string): Batch[]{
-    var b: Batch[] = [];
-    _.forEach(this.batches, (batch) => {
-      if(!isNilOrEmpty(batch.beverageId) && !isNilOrEmpty(batch.beverage)) {
-        if(batch?.locationIds.includes(locationId)) {
+  getBeverageBatches(locationId: string): Batch[] {
+    const b: Batch[] = [];
+    _.forEach(this.batches, batch => {
+      if (!isNilOrEmpty(batch.beverageId) && !isNilOrEmpty(batch.beverage)) {
+        if (batch?.locationIds.includes(locationId)) {
           b.push(batch);
         }
       }
@@ -461,54 +613,54 @@ export class ManageTapsComponent implements OnInit {
   }
 
   getBeerBatchName(batch?: Batch): string {
-    if(isNilOrEmpty(batch)) {
-      return "";
+    if (isNilOrEmpty(batch)) {
+      return '';
     }
 
-    if(isNilOrEmpty(batch?.beer)) {
-      return "";
+    if (isNilOrEmpty(batch?.beer)) {
+      return '';
     }
 
     return this.getBatchDisplayName(batch);
   }
 
   getBeverageBatchName(batch?: Batch): string {
-    if(isNilOrEmpty(batch)) {
-      return "";
+    if (isNilOrEmpty(batch)) {
+      return '';
     }
 
-    if(isNilOrEmpty(batch?.beverage)) {
-      return "";
+    if (isNilOrEmpty(batch?.beverage)) {
+      return '';
     }
 
     return this.getBatchDisplayName(batch);
   }
 
   getBatchDisplayName(batch?: Batch): string {
-    if(isNilOrEmpty(batch)) {
-      return "";
+    if (isNilOrEmpty(batch)) {
+      return '';
     }
 
-    var name : string | undefined = "";
+    let name: string | undefined = '';
 
-    if(!isNilOrEmpty(batch?.beer)) {
+    if (!isNilOrEmpty(batch?.beer)) {
       name = batch?.getName();
       if (isNilOrEmpty(name)) {
         name = batch?.beer?.getName();
       }
     }
-    if(!isNilOrEmpty(batch?.beverage)) {
+    if (!isNilOrEmpty(batch?.beverage)) {
       name = batch?.name;
       if (isNilOrEmpty(name)) {
         name = batch?.beverage?.name;
       }
     }
-    
-    if(isNilOrEmpty(name)) {
-      return "";
+
+    if (isNilOrEmpty(name)) {
+      return '';
     }
 
-    name = `${name} (batch #${batch?.getBatchNumber()})`
+    name = `${name} (batch #${batch?.getBatchNumber()})`;
 
     return name;
   }

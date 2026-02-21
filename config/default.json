@@ -17,13 +17,20 @@
     "uploads.images.allowed_file_extensions": "list",
     "particle.device_services.enabled": "bool",
     "dashboard.refresh_sec": "int",
-    "sensors.plaato_keg.enabled": "bool",
-    "sensors.keg_volume_monitors.enabled": "bool",
-    "sensors.keg_volume_monitors.weight.enabled": "bool",
-    "sensors.keg_volume_monitors.flow.enabled": "bool",
-    "sensors.kegtron.pro.enabled": "bool",
-    "sensors.open_plaato_keg.enabled": "bool",
-    "sensors.open_plaato_keg.insecure": "bool"
+    "tap_monitors.plaato.enabled": "bool",
+    "tap_monitors.plaato.port": "int",
+    "tap_monitors.plaato.device_config_overrides.port": "int",
+    "tap_monitors.plaato_blynk.enabled": "bool",
+    "tap_monitors.keg_volume_monitors.enabled": "bool",
+    "tap_monitors.keg_volume_monitors.weight.enabled": "bool",
+    "tap_monitors.keg_volume_monitors.flow.enabled": "bool",
+    "tap_monitors.kegtron.pro.enabled": "bool",
+    "tap_monitors.open_plaato_keg.enabled": "bool",
+    "tap_monitors.open_plaato_keg.insecure": "bool",
+    "tap_monitors.plaato_keg.enabled": "bool",
+    "tap_monitors.plaato_keg.port": "int",
+    "logging.colored": "bool",
+    "logging.json": "bool"
   },
   "api": {
     "host": "localhost",
@@ -67,6 +74,8 @@
     }
   },
   "logging": {
+    "colored": true,
+    "json": false,
     "levels": {
       "sqlalchemy.engine": "WARNING"
     }
@@ -84,9 +93,9 @@
       "allowed_file_extensions": ["jpg","jpeg","png.","gif","svg"]
     }
   },
-  "sensors": {
+  "tap_monitors": {
     "preferred_vol_unit": "gal",
-    "plaato_keg": {
+    "plaato_blynk": {
       "enabled": false
     },
     "keg_volume_monitors": {
@@ -106,6 +115,15 @@
     "open_plaato_keg": {
       "enabled": false,
       "insecure": false
+    },
+    "plaato_keg": {
+      "enabled": false,
+      "host": "localhost",
+      "port": 5001,
+      "device_config": {
+        "host": "localhost",
+        "port": 5001
+      }
     }
   }
 }

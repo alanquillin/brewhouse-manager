@@ -1,22 +1,21 @@
 # pylint: disable=wrong-import-position
-_TABLE_NAME = "locations"
-_PKEY = "id"
+TABLE_NAME = "locations"
+PKEY = "id"
 
 import re
 
-from psycopg2.errors import UniqueViolation  # pylint: disable=no-name-in-module
 from sqlalchemy import Column, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import Index
 
-from db import AuditedMixin, Base, DictifiableMixin, AsyncQueryMethodsMixin, generate_audit_trail
+from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, generate_audit_trail
 
 
 @generate_audit_trail
 class Locations(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
-    __tablename__ = _TABLE_NAME
+    __tablename__ = TABLE_NAME
 
-    id = Column(_PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
+    id = Column(PKEY, UUID, server_default=func.uuid_generate_v4(), primary_key=True)
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
 
@@ -29,11 +28,11 @@ class Locations(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
         return data
 
     @classmethod
-    async def create(cls, session, **kwargs):
+    async def create(cls, session, **kwargs):  # pylint: disable=arguments-differ
         kwargs = cls._replace_name(kwargs)
         return await super().create(session, **kwargs)
 
     @classmethod
-    async def update(cls, session, pkey, **kwargs):
+    async def update(cls, session, pkey, **kwargs):  # pylint: disable=arguments-differ
         kwargs = cls._replace_name(kwargs)
         return await super().update(session, pkey, **kwargs)

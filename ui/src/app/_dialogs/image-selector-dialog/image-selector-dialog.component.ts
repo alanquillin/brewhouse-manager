@@ -1,37 +1,38 @@
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Component, Inject, OnInit } from '@angular/core';
-import { DataService, DataError } from '../../_services/data.service';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { DataError, DataService } from '../../_services/data.service';
 
-import * as _ from 'lodash';
 import { isNilOrEmpty } from '../../utils/helpers';
 
-
-
 @Component({
-    selector: 'app-image-selector-dialog',
-    templateUrl: './image-selector-dialog.component.html',
-    styleUrls: ['./image-selector-dialog.component.scss'],
-    standalone: false
+  selector: 'app-image-selector-dialog',
+  templateUrl: './image-selector-dialog.component.html',
+  styleUrls: ['./image-selector-dialog.component.scss'],
+  standalone: false,
 })
 export class ImageSelectorDialogComponent implements OnInit {
-
   selectedImage: string | undefined;
-  currentImage: string
+  currentImage: string;
   imageType: string;
-  images: string[] = []
-  processing: boolean = false;
+  images: string[] = [];
+  processing = false;
 
-  isNilOrEmpty: Function = isNilOrEmpty;
+  isNilOrEmpty = isNilOrEmpty;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<ImageSelectorDialogComponent>, private dataService: DataService, private _snackBar: MatSnackBar) {
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    public dialogRef: MatDialogRef<ImageSelectorDialogComponent>,
+    private dataService: DataService,
+    private _snackBar: MatSnackBar
+  ) {
     this.currentImage = data.currentImage;
     this.imageType = data.imageType;
     this.processing = false;
   }
 
   displayError(errMsg: string) {
-    this._snackBar.open("Error: " + errMsg, "Close");
+    this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
   ngOnInit(): void {
@@ -44,8 +45,8 @@ export class ImageSelectorDialogComponent implements OnInit {
       error: (err: DataError) => {
         this.displayError(err.message);
         this.processing = false;
-      }
-    })
+      },
+    });
   }
 
   closeWithSelectedImage(): void {
@@ -61,7 +62,7 @@ export class ImageSelectorDialogComponent implements OnInit {
     this.closeWithSelectedImage();
   }
 
-  select(){
+  select() {
     this.closeWithSelectedImage();
   }
 }

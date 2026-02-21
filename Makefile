@@ -60,9 +60,11 @@ endif
 
 
 .PHONY: build build-db-seed build-dev clean clean-all clean-image clean-images \
-	clean-seed-image depends docker-build format-py lint-py lint-ts publish \
+	clean-seed-image depends docker-build format-py format-ui lint-py lint-ui publish \
 	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends \
-	clean-local-uploads
+	clean-local-uploads test test-py test-unit test-unit-no-coverage test-api test-api-verbose \
+	test-api-clean test-ui test-ui-unit test-ui-functional test-ui-functional-only \
+	update-version ui-depends
 
 # dependency targets
 
@@ -116,24 +118,76 @@ run-db-migrations:
 
 lint-py:
 	$(ISORT) --check-only api
-	pushd ./api && $(PYLINT) .	 && popd
+	$(PYLINT) api
 	$(BLACK) --check api
 
-lint-ts:
-	yarn run lint
+lint-ui:
+	cd ui && npm run lint && npm run format:check
 
-lint: lint-py lint-ts
+lint: lint-py lint-ui
 
 format-py:
 	$(ISORT) api
 	$(BLACK) api
 
-format: format-py
+format-ui:
+	cd ui && npm run format && npm run lint:fix
+
+format: format-py format-ui
+
+ui-depends:
+	cd ui && yarn install
+
+# Unit tests
+
+test: test-py test-ui
+
+test-py: test-unit test-api
+
+test-unit:
+	$(PYTEST)
+
+test-no-coverage:
+	$(PYTEST) --no-cov
+
+# UI tests (Angular/Karma)
+test-ui: test-ui-unit test-ui-functional
+
+test-ui-unit:
+	cd ui && npm run test:ci
+
+test-ui-functional: build-dev
+	$(DOCKER) compose -f api/tests/api/docker-compose.yml up -d --wait
+	-cd ui && npm run test:functional
+	$(DOCKER) compose -f api/tests/api/docker-compose.yml down -v --remove-orphans
+
+test-ui-functional-only:
+	cd ui && npm run test:functional
+
+
+# Functional API tests (requires Docker)
+
+test-api: build-dev
+	cd api/tests/api && $(PYTEST) -v
+
+test-api-verbose: build-dev
+	cd api/tests/api && $(PYTEST) -v -s --log-cli-level=INFO
+
+test-api-clean:
+	$(DOCKER) compose -f api/tests/api/docker-compose.yml down -v --remove-orphans
 
 # Migrations
 
-create-migration: 
+create-migration:
 	pushd ./api && ./migrate.sh create $@ && popd
+
+# Version management
+
+update-version:
+ifeq ($(VERSION),)
+	$(error VERSION argument is required. Usage: make update-version VERSION=x.y.z)
+endif
+	./scripts/update-version.sh $(VERSION)
 
 # Clean up targets
 

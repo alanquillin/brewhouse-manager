@@ -1,27 +1,25 @@
 """Users router for FastAPI"""
 
-import logging
-from typing import List
 import uuid
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import AuthUser, get_db_session, require_user, require_admin
-from db.users import Users as UsersDB
 from db.user_locations import UserLocations as UserLocationsDB
-from services.users import UserService
+from db.users import Users as UsersDB
+from dependencies.auth import AuthUser, get_db_session, require_admin, require_user
+from lib import logging
+from schemas.users import UserCreate, UserLocationsUpdate, UserUpdate
 from services.locations import LocationService
-from schemas.users import UserCreate, UserUpdate, UserLocationsUpdate
+from services.users import UserService
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 LOGGER = logging.getLogger(__name__)
 
 
 @router.get("/current", response_model=dict)
-async def get_current_user(
-    current_user: AuthUser = Depends(require_user), db_session: AsyncSession = Depends(get_db_session)
-):
+async def get_current_user(current_user: AuthUser = Depends(require_user), db_session: AsyncSession = Depends(get_db_session)):
     """Get current authenticated user"""
     user = await UsersDB.get_by_pkey(db_session, current_user.id)
     if not user:
@@ -31,15 +29,13 @@ async def get_current_user(
 
 
 @router.get("", response_model=List[dict])
-async def list_users(
-    current_user: AuthUser = Depends(require_admin), db_session: AsyncSession = Depends(get_db_session)
-):
+async def list_users(current_user: AuthUser = Depends(require_admin), db_session: AsyncSession = Depends(get_db_session)):
     """List all users (admin only)"""
     users = await UsersDB.query(db_session)
     return [await UserService.transform_response(u, current_user) for u in users]
 
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, status_code=201)
 async def create_user(
     user_data: UserCreate,
     current_user: AuthUser = Depends(require_admin),
@@ -93,12 +89,14 @@ async def update_user(
     LOGGER.debug("Updating user %s with data: %s", user_id, data)
 
     if data:
-        user = await UsersDB.update(db_session, user_id, **data)
+        await UsersDB.update(db_session, user_id, **data)
 
+    user = await UsersDB.get_by_pkey(db_session, user_id)
+    await db_session.refresh(user)
     return await UserService.transform_response(user, current_user)
 
 
-@router.delete("/{user_id}")
+@router.delete("/{user_id}", status_code=204)
 async def delete_user(
     user_id: str,
     current_user: AuthUser = Depends(require_admin),
@@ -110,7 +108,7 @@ async def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     await UsersDB.delete(db_session, user.id)
-    return True
+    return
 
 
 @router.get("/{user_id}/api_key", response_model=dict)
@@ -148,9 +146,9 @@ async def generate_user_api_key(
 
     # Generate new API key
     new_api_key = str(uuid.uuid4())
-    user = await UsersDB.update(db_session, user_id, api_key=new_api_key)
+    await UsersDB.update(db_session, user_id, api_key=new_api_key)
 
-    return {"apiKey": user.api_key}
+    return {"apiKey": new_api_key}
 
 
 @router.delete("/{user_id}/api_key")

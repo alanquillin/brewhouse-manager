@@ -1,0 +1,18 @@
+/* TypeScript configuration for functional tests */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/functional",
+    "types": [
+      "jasmine"
+    ]
+  },
+  "files": [
+    "src/test-functional.ts",
+    "src/polyfills.ts"
+  ],
+  "include": [
+    "src/**/*.functional.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

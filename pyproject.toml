@@ -14,16 +14,19 @@ use_parentheses = true
 [tool.black]
 line-length = 160
 
-[tool.pylint.'MESSAGES CONTROL']
+[tool.pylint.main]
+init-hook="import sys; import os; sys.path.append(os.path.join(os.getcwd(), 'api'))"
+ignore-paths = ["api/tests", "api/db_migrations"]
+
+[tool.pylint.design]
+max-args = 6
+
+[tool.pylint."messages control"]
 max-line-length = 160
 disable = [
-    "bad-continuation",
-    "bad-whitespace",
-    "fixme",
     "invalid-name",
     "missing-docstring",
     "missing-module-docstring",
-    "no-member",  # disabling until this issue is resolved: https://github.com/PyCQA/pylint/issues/533
     "too-few-public-methods",
     "too-many-ancestors",
     "too-many-branches",
@@ -33,7 +36,14 @@ disable = [
     "too-many-public-methods",
     "too-many-return-statements",
     "too-many-statements",
-    "wrong-import-order"
+    "wrong-import-position",
+    "unused-argument",
+    "import-outside-toplevel",
+    "broad-exception-caught",
+    "broad-exception-raised",
+    "too-many-positional-arguments",
+    "too-many-arguments",
+    "duplicate-code"
 ]
 
 [tool.pylint.'FORMAT']
@@ -42,11 +52,17 @@ max-line-length = 160
 max-statements = 60
 
 [tool.pytest.ini_options]
-addopts = "--cov api --cov-report term-missing --cov-fail-under 80 --log-level DEBUG"
+addopts = "-v --cov api/ --cov-report term-missing --cov-fail-under 80 --log-level DEBUG --ignore=api/tests/api --import-mode=importlib"
+norecursedirs = ["api/db_migrations", ".git", ".tox", "node_modules", "__pycache__", "api/tests/api"]
+testpaths = ["api/tests/unit"]
+pythonpath = ["api"]
+markers = [
+    "functional: marks tests as functional tests requiring Docker (deselect with '-m \"not functional\"')"
+]
 
 [tool.poetry]
 name = "brewhouse-manager"
-version = "0.6.0"
+version = "0.8.0"
 authors = ["alanquillin"]
 description = "Brewhouse Manager"
 
@@ -80,6 +96,8 @@ uvicorn = {extras = ["standard"], version = "^0.40.0"}
 httpx = "^0.28.1"
 google-api-python-client = "^2.188.0"
 google-auth-oauthlib = "^1.2.4"
+colorlog = "^6.9.0"
+python-json-logger = "^3.2.0"
 
 
 [tool.poetry.dev-dependencies]
@@ -87,7 +105,7 @@ bandit = "^1.9.3"
 black = "^26.1.0"
 freezegun = "^1.5.5"
 isort = "^7.0.0"
-pdbpp = "^0.10.2"
+pdbpp = "^0.11.7"
 py = "^1.10.0"
 pylint = "^4.0.4"
 pytest = "^9.0.2"
@@ -95,4 +113,4 @@ pytest-cov = "^7.0.0"
 pytest-docker-tools = "^3.1.9"
 requests_mock = "^1.8.0"
 responses = "<0.25.8" # remove this one responses fixes their bug
-wrapt = "^2.0.1" # required by pylint (badly)
+wrapt = "^2.1.1" # required by pylint (badly)

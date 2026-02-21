@@ -1,5 +1,6 @@
-from lib.assets import AssetManagerBase
 from lib import aws
+from lib.assets import AssetManagerBase
+
 
 class S3AssetManager(AssetManagerBase):
     def __init__(self):
@@ -17,15 +18,15 @@ class S3AssetManager(AssetManagerBase):
 
     def _get(self, obj):
         return f"https://{self.bucket}.s3.amazonaws.com/{obj}"
-    
+
     def get(self, image_type, filename):
         return self._get(self._get_object_path(image_type, filename))
 
     def list(self, image_type):
         urls = []
-        
-        s3 = aws.client('s3')
-        
+
+        s3 = aws.client("s3")
+
         pull_more = True
         prefix = f"{image_type}/"
         data = {"Bucket": self.bucket, "Prefix": prefix}
@@ -43,21 +44,20 @@ class S3AssetManager(AssetManagerBase):
                     if url:
                         urls.append(url)
             data["ContinuationToken"] = resp.get("NextContinuationToken")
-        
+
         return urls
- 
 
     def save(self, image_type, file):
         old_filename = file.filename
         filename = self.generate_random_filename(old_filename)
         obj = self._get_object_path(image_type, filename)
 
-        s3 = aws.client('s3')
-        #extra_args = {'ACL': 'public-read'}
+        s3 = aws.client("s3")
+        # extra_args = {'ACL': 'public-read'}
         extra_args = {}
 
         # Handle both werkzeug FileStorage (Flask) and FastAPI UploadFile
-        if hasattr(file, 'file'):
+        if hasattr(file, "file"):
             # FastAPI UploadFile - use the .file attribute
             file_obj = file.file
         else:

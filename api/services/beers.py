@@ -1,6 +1,5 @@
 """Beer service with business logic and transformations"""
 
-import logging
 from datetime import timedelta
 
 from fastapi import HTTPException
@@ -8,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.beers import Beers as BeersDB
 from db.image_transitions import ImageTransitions as ImageTransitionsDB
+from lib import logging
 from lib.config import Config
 from lib.external_brew_tools import get_tool as get_external_brewing_tool
 from lib.external_brew_tools.exceptions import ResourceNotFoundError
@@ -113,9 +113,7 @@ class BeerService:
                     if ex_details:
                         u_meta = BeerService.store_metadata(meta, ex_details, now=now)
                         LOGGER.debug(f"Updated brew tool metadata: {u_meta}, updating database")
-                        await BeersDB.update(
-                            db_session, beer.id, external_brewing_tool_meta=u_meta
-                        )
+                        await BeersDB.update(db_session, beer.id, external_brewing_tool_meta=u_meta)
                         data["external_brewing_tool_meta"] = u_meta
                     else:
                         LOGGER.warning(
@@ -147,13 +145,17 @@ class BeerService:
             if transition_dict.get("id"):
                 transition_id = transition_dict.pop("id")
                 LOGGER.debug("Updating image transition %s with: %s", transition_id, transition_dict)
-                ret_data.append(await ImageTransitionsDB.update(db_session, transition_id, **transition_dict))
+                res = await ImageTransitionsDB.update(db_session, transition_id, **transition_dict)
+                if res:
+                    it = await ImageTransitionsDB.get_by_pkey(db_session, transition_id)
+                    await db_session.refresh(it)
+                    ret_data.append(it)
             else:
                 LOGGER.debug("Creating image transition with: %s", transition_dict)
                 ret_data.append(await ImageTransitionsDB.create(db_session, **transition_dict))
 
         return ret_data
-    
+
     @staticmethod
     async def verify_and_update_external_brew_tool_recipe(request_data):
         LOGGER.debug("Checking if the beer is associated with an external brew tool and verifying data")
@@ -176,11 +178,10 @@ class BeerService:
                 LOGGER.error(f"{tool_type} returned a 404 for recipe id: {recipe_id}.")
                 raise HTTPException(status_code=400, detail=f"{tool_type} recipe with id '{recipe_id}' not found")
         return request_data
-    
+
     @staticmethod
     def store_metadata(metadata, ex_details, now=None):
         if not now:
             now = utcnow_aware()
         ex_details["_last_refreshed_on"] = now.isoformat()
         return {**metadata, "details": ex_details}
-    

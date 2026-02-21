@@ -4,8 +4,13 @@
       <p>Edit Users</p>
       @if (!loading) {
         <div class="heading-actions">
-          <button mat-raised-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add User</button>
-          <button matButton="elevated" class="refresh" (click)="refresh()" aria-label="Refresh"><mat-icon>refresh</mat-icon></button>
+          <button mat-raised-button color="primary" (click)="add()">
+            <mat-icon>add</mat-icon>
+            Add User
+          </button>
+          <button matButton="elevated" class="refresh" (click)="refresh()" aria-label="Refresh">
+            <mat-icon>refresh</mat-icon>
+          </button>
         </div>
       }
     </div>
@@ -16,25 +21,52 @@
     }
     @if (!loading) {
       <div class="users-list">
-        <table mat-table matSort [dataSource]="filteredUsers" class="mat-elevation-z8" (matSortChange)="filter($event)">
+        <table
+          mat-table
+          matSort
+          [dataSource]="filteredUsers"
+          class="mat-elevation-z8"
+          (matSortChange)="filter($event)"
+        >
           <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef> Id </th>
-            <td mat-cell *matCellDef="let element"> {{ element.id }} </td>
+            <th mat-header-cell *matHeaderCellDef>Id</th>
+            <td mat-cell *matCellDef="let element">{{ element.id }}</td>
           </ng-container>
           <ng-container matColumnDef="email">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="email" sortActionDescription="Sort by email"> Email </th>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="email"
+              sortActionDescription="Sort by email"
+            >
+              Email
+            </th>
             <td mat-cell *matCellDef="let element">{{ element.email }}</td>
           </ng-container>
           <ng-container matColumnDef="firstName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="firstName" sortActionDescription="Sort by first name"> First Name </th>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="firstName"
+              sortActionDescription="Sort by first name"
+            >
+              First Name
+            </th>
             <td mat-cell *matCellDef="let element">{{ element.firstName }}</td>
           </ng-container>
           <ng-container matColumnDef="lastName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="lastName" sortActionDescription="Sort by last name"> Last Name </th>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="lastName"
+              sortActionDescription="Sort by last name"
+            >
+              Last Name
+            </th>
             <td mat-cell *matCellDef="let element">{{ element.lastName }}</td>
           </ng-container>
           <ng-container matColumnDef="admin">
-            <th mat-header-cell *matHeaderCellDef> Admin? </th>
+            <th mat-header-cell *matHeaderCellDef>Admin?</th>
             <td mat-cell *matCellDef="let element">
               @if (element.admin) {
                 <mat-icon>check_mark</mat-icon>
@@ -42,11 +74,13 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="locationCount">
-            <th mat-header-cell *matHeaderCellDef> # Locations </th>
-            <td mat-cell *matCellDef="let element">{{ isNilOrEmpty(element.locations) ? 0 : element.locations.length }}</td>
+            <th mat-header-cell *matHeaderCellDef># Locations</th>
+            <td mat-cell *matCellDef="let element">
+              {{ isNilOrEmpty(element.locations) ? 0 : element.locations.length }}
+            </td>
           </ng-container>
           <ng-container matColumnDef="isPasswordEnabled">
-            <th mat-header-cell *matHeaderCellDef> Password Enabled? </th>
+            <th mat-header-cell *matHeaderCellDef>Password Enabled?</th>
             <td mat-cell *matCellDef="let element">
               @if (element.passwordEnabled) {
                 <mat-icon>check_mark</mat-icon>
@@ -54,12 +88,34 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="profilePic">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="profilePic" sortActionDescription="Sort by profile"> Profile Pic </th>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header="profilePic"
+              sortActionDescription="Sort by profile"
+            >
+              Profile Pic
+            </th>
             <td mat-cell *matCellDef="let element">
               @if (!_.isEmpty(element.profilePic)) {
                 <span>
-                  <ng-template #popupContent><div><img class="user-image-preview" src="{{ element.profilePic }}"/></div></ng-template>
-                  <button mat-icon-button color="primary" [ngbPopover]="popupContent" popoverTitle="Image Preview" triggers="mouseenter:mouseleave" placement="left">
+                  <ng-template #popupContent>
+                    <div>
+                      <img
+                        class="user-image-preview"
+                        src="{{ element.profilePic }}"
+                        alt="Profile Pic"
+                      />
+                    </div>
+                  </ng-template>
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    [ngbPopover]="popupContent"
+                    popoverTitle="Image Preview"
+                    triggers="mouseenter:mouseleave"
+                    placement="left"
+                  >
                     <mat-icon>open_in_new</mat-icon>
                   </button>
                 </span>
@@ -67,24 +123,33 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef> </th>
+            <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let element">
               <div class="actions">
                 @if (me.id === element.id || me.admin) {
-                  <button mat-icon-button color="primary" aria-label="Edit user" (click)="edit(element)">
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    aria-label="Edit user"
+                    (click)="edit(element)"
+                  >
                     <mat-icon>edit</mat-icon>
                   </button>
                 }
-                @if (me.id !== element.id && me.admin) {
-                  <button mat-icon-button color="warn" aria-label="Delete user" (click)="delete(element)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                }
+                <button
+                  mat-icon-button
+                  color="warn"
+                  aria-label="Delete user"
+                  (click)="delete(element)"
+                  [disabled]="me.id === element.id || !me.admin"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
               </div>
             </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
       </div>
     }
@@ -92,57 +157,79 @@
 }
 @if ((editing || adding) && !changePassword) {
   <div class="users-modify">
-    <div class="heading"><p> {{ adding ? "Add" : "Edit" }} User</p></div>
+    <div class="heading">
+      <p>{{ adding ? 'Add' : 'Edit' }} User</p>
+    </div>
     <div class="modify-form">
       <form [formGroup]="modifyFormGroup">
         <fieldset>
           <mat-form-field appearance="fill" class="modify-field">
-            <input id="modify_email_input"
+            <input
+              id="modify_email_input"
               class="dp-textfield--input"
               formControlName="email"
               [(ngModel)]="modifyUser.editValues.email"
               matInput
-              required />
+              required
+            />
             <mat-label>Email</mat-label>
           </mat-form-field>
           <mat-form-field appearance="fill" class="modify-field">
-            <input id="modify_first_name_input"
+            <input
+              id="modify_first_name_input"
               class="dp-textfield--input"
               formControlName="firstName"
               [(ngModel)]="modifyUser.editValues.firstName"
-              matInput />
+              matInput
+            />
             <mat-label>First Name</mat-label>
           </mat-form-field>
           <mat-form-field appearance="fill" class="modify-field">
-            <input id="modify_last_name_input"
+            <input
+              id="modify_last_name_input"
               class="dp-textfield--input"
               formControlName="lastName"
               [(ngModel)]="modifyUser.editValues.lastName"
-              matInput />
+              matInput
+            />
             <mat-label>Last Name</mat-label>
           </mat-form-field>
-          <mat-checkbox id="modify_admin"
+          <mat-checkbox
+            id="modify_admin"
             formControlName="admin"
             [(ngModel)]="modifyUser.editValues.admin"
-          (change)="reRunValidation()">Admin</mat-checkbox>
+            (change)="reRunValidation()"
+          >
+            Admin
+          </mat-checkbox>
           <mat-form-field appearance="fill" class="modify-field">
-            <input id="modify_profile_pic_input"
+            <input
+              id="modify_profile_pic_input"
               class="dp-textfield--input"
               formControlName="profilePic"
               [(ngModel)]="modifyUser.editValues.profilePic"
-              matInput />
+              matInput
+            />
             <mat-label>Profile Pic URL</mat-label>
           </mat-form-field>
           @if (adding) {
             <mat-form-field appearance="fill" class="modify-field">
-              <input id="modify_password_input"
+              <input
+                id="modify_password_input"
                 class="dp-textfield--input"
                 formControlName="password"
                 matInput
-                [type]="hidePassword ? 'password' : 'text'" />
+                [type]="hidePassword ? 'password' : 'text'"
+              />
               <mat-label>Initial Password (optional)</mat-label>
-              <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidePassword">
-                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              <button
+                mat-icon-button
+                matSuffix
+                (click)="hidePassword = !hidePassword"
+                [attr.aria-label]="'Hide password'"
+                [attr.aria-pressed]="hidePassword"
+              >
+                <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </mat-form-field>
           }
@@ -152,25 +239,55 @@
     <div class="user-location-list">
       @for (location of locations; track location) {
         <div class="user-location">
-          <mat-checkbox id="modify_locations_{{location.id}}"
+          <mat-checkbox
+            id="modify_locations_{{ location.id }}"
             [checked]="selectedLocations[location.id]"
-          (change)="changeLocationsSelection($event.checked, location)">{{ location.description }}</mat-checkbox>
+            (change)="changeLocationsSelection($event.checked, location)"
+          >
+            {{ location.description }}
+          </mat-checkbox>
         </div>
       }
     </div>
     @if (adding) {
       <div class="modify-actions">
-        <button mat-raised-button color="primary" (click)="create()" [disabled]="!modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Create</button>
-        <button mat-raised-button color="warn" (click)="cancelAdd()"><mat-icon>cancel</mat-icon> Cancel</button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="create()"
+          [disabled]="!modifyFormGroup.valid || processing"
+        >
+          <mat-icon>save</mat-icon>
+          Create
+        </button>
+        <button mat-raised-button color="warn" (click)="cancelAdd()">
+          <mat-icon>cancel</mat-icon>
+          Cancel
+        </button>
       </div>
     }
     @if (editing) {
       <div class="modify-actions">
-        <button mat-raised-button color="primary" (click)="save()" [disabled]="!changes || !modifyFormGroup.valid || processing"><mat-icon>save</mat-icon> Save</button>
-        <button mat-raised-button color="warn" (click)="cancelEdit()"><mat-icon>cancel</mat-icon> Cancel</button>
-        <button mat-raised-button (click)="startChangePassword()" [disabled]="processing">{{ modifyUser.passwordEnabled ? "Change" : "Set" }} Password</button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="save()"
+          [disabled]="!changes || !modifyFormGroup.valid || processing"
+        >
+          <mat-icon>save</mat-icon>
+          Save
+        </button>
+        <button mat-raised-button color="warn" (click)="cancelEdit()">
+          <mat-icon>cancel</mat-icon>
+          Cancel
+        </button>
+        <button mat-raised-button (click)="startChangePassword()" [disabled]="processing">
+          {{ modifyUser.passwordEnabled ? 'Change' : 'Set' }} Password
+        </button>
         @if (modifyUser.passwordEnabled) {
-          <button mat-raised-button color="accent" (click)="disablePassword()">Disable Password</button>
+          <button mat-raised-button color="accent" (click)="disablePassword()">
+            Disable Password
+          </button>
         }
       </div>
     }
@@ -184,38 +301,60 @@
       <form [formGroup]="changePasswordFormGroup">
         <fieldset>
           <mat-form-field appearance="fill" class="change-password-field">
-            <input type="password"
+            <input
+              type="password"
               id="change_password_password_input"
               class="dp-textfield--input"
               formControlName="password"
               [(ngModel)]="newPassword"
               matInput
-              required />
+              required
+            />
             <mat-label>Password</mat-label>
-            @if (changePasswordForm['password'].errors && changePasswordForm['password'].errors['pattern']) {
+            @if (
+              changePasswordForm['password'].errors &&
+              changePasswordForm['password'].errors['pattern']
+            ) {
               <mat-error>
-                Password must be at least 8 characters and contain at least 1 lowercase letter, uppercase letter, number and a special character
+                Password must be at least 8 characters and contain at least 1 lowercase letter,
+                uppercase letter, number and a special character
               </mat-error>
             }
           </mat-form-field>
           <mat-form-field appearance="fill" class="change-password-field">
-            <input type="password"
+            <input
+              type="password"
               id="change_password_confirm_password_input"
               class="dp-textfield--input"
               formControlName="confirmPassword"
               [(ngModel)]="confirmNewPassword"
               matInput
-              required />
+              required
+            />
             <mat-label>Confirm Password</mat-label>
           </mat-form-field>
         </fieldset>
       </form>
     </div>
     <div class="profile-actions">
-      <button mat-raised-button color="primary" (click)="savePassword()" [disabled]="!changePasswordFormGroup.valid || processing">
-        <mat-icon>save</mat-icon> Save
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="savePassword()"
+        [disabled]="!changePasswordFormGroup.valid || processing"
+      >
+        <mat-icon>save</mat-icon>
+        Save
       </button>
-      <button mat-raised-button color="warn" (click)="cancelChangePassword()" [disabled]="processing"><mat-icon>cancel</mat-icon> Cancel</button>
+      <button
+        mat-raised-button
+        color="warn"
+        (click)="cancelChangePassword()"
+        [disabled]="processing"
+      >
+        <mat-icon>cancel</mat-icon>
+        Cancel
+      </button>
     </div>
   </div>
 }

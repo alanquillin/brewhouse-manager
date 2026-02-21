@@ -1,14 +1,14 @@
-import { Injectable, EventEmitter } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConfigService {
   updated = new EventEmitter<any>();
-  
-  constructor() { }
+
+  constructor() {}
 
   update(data: any): void {
-    this.updated.emit(data)
+    this.updated.emit(data);
   }
 }

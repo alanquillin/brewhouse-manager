@@ -1,10 +1,10 @@
 """Beverage service with business logic and transformations"""
 
-import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.beverages import Beverages as BeveragesDB
 from db.image_transitions import ImageTransitions as ImageTransitionsDB
+from lib import logging
 from services.base import transform_dict_to_camel_case
 
 LOGGER = logging.getLogger(__name__)
@@ -34,12 +34,7 @@ class BeverageService:
             if beverage.batches:
                 from services.batches import BatchService
 
-                data["batches"] = [
-                    await BatchService.transform_response(
-                        b, db_session=db_session, include_location=include_location
-                    )
-                    for b in beverage.batches
-                ]
+                data["batches"] = [await BatchService.transform_response(b, db_session=db_session, include_location=include_location) for b in beverage.batches]
 
         # Add image transitions
         if not image_transitions:
@@ -64,7 +59,11 @@ class BeverageService:
             if transition_dict.get("id"):
                 transition_id = transition_dict.pop("id")
                 LOGGER.debug("Updating image transition %s with: %s", transition_id, transition_dict)
-                ret_data.append(await ImageTransitionsDB.update(db_session, transition_id, **transition_dict))
+                res = await ImageTransitionsDB.update(db_session, transition_id, **transition_dict)
+                if res:
+                    it = await ImageTransitionsDB.get_by_pkey(db_session, transition_id)
+                    await db_session.refresh(it)
+                    ret_data.append(it)
             else:
                 LOGGER.debug("Creating image transition with: %s", transition_dict)
                 ret_data.append(await ImageTransitionsDB.create(db_session, **transition_dict))

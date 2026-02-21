@@ -1,14 +1,14 @@
 """Beverage router for FastAPI"""
 
-import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import AuthUser, get_db_session, require_user
 from db.beverages import Beverages as BeveragesDB
-from schemas.beverages import BeverageCreate, BeverageResponse, BeverageUpdate
+from dependencies.auth import AuthUser, get_db_session, require_user
+from lib import logging
+from schemas.beverages import BeverageCreate, BeverageUpdate
 from services.beverages import BeverageService
 
 router = APIRouter(prefix="/api/v1/beverages", tags=["beverages"])
@@ -25,7 +25,7 @@ async def list_beverages(
     return [await BeverageService.transform_response(b, db_session=db_session) for b in beverages]
 
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, status_code=201)
 async def create_beverage(
     beverage_data: BeverageCreate,
     current_user: AuthUser = Depends(require_user),
@@ -41,13 +41,9 @@ async def create_beverage(
     # Process image transitions if provided
     image_transitions = None
     if beverage_data.image_transitions:
-        image_transitions = await BeverageService.process_image_transitions(
-            db_session, beverage_data.image_transitions, beverage_id=beverage.id
-        )
+        image_transitions = await BeverageService.process_image_transitions(db_session, beverage_data.image_transitions, beverage_id=beverage.id)
 
-    return await BeverageService.transform_response(
-        beverage, db_session=db_session, image_transitions=image_transitions
-    )
+    return await BeverageService.transform_response(beverage, db_session=db_session, image_transitions=image_transitions)
 
 
 @router.get("/{beverage_id}", response_model=dict)
@@ -90,19 +86,16 @@ async def update_beverage(
     # Process image transitions
     image_transitions = None
     if beverage_data.image_transitions:
-        image_transitions = await BeverageService.process_image_transitions(
-            db_session, beverage_data.image_transitions, beverage_id=beverage_id
-        )
+        image_transitions = await BeverageService.process_image_transitions(db_session, beverage_data.image_transitions, beverage_id=beverage_id)
 
     # Fetch updated beverage
     beverage = await BeveragesDB.get_by_pkey(db_session, beverage_id)
+    await db_session.refresh(beverage)
 
-    return await BeverageService.transform_response(
-        beverage, db_session=db_session, image_transitions=image_transitions
-    )
+    return await BeverageService.transform_response(beverage, db_session=db_session, image_transitions=image_transitions)
 
 
-@router.delete("/{beverage_id}")
+@router.delete("/{beverage_id}", status_code=204)
 async def delete_beverage(
     beverage_id: str,
     current_user: AuthUser = Depends(require_user),
@@ -115,4 +108,4 @@ async def delete_beverage(
         raise HTTPException(status_code=404, detail="Beverage not found")
 
     await BeveragesDB.delete(db_session, beverage.id)
-    return True
+    return

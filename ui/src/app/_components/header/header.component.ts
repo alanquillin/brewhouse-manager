@@ -1,40 +1,44 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Component, Input, OnInit } from '@angular/core';
-import { DataService, DataError } from '../../_services/data.service';
 import { Router } from '@angular/router';
+import { CurrentUserService } from '../../_services/current-user.service';
+import { DataError } from '../../_services/data.service';
+import { SettingsService } from '../../_services/settings.service';
 import { UserInfo } from '../../models/models';
 
 import * as _ from 'lodash';
 import { isNilOrEmpty } from '../../utils/helpers';
 
 @Component({
-    selector: 'app-header',
-    templateUrl: './header.component.html',
-    styleUrls: ['./header.component.scss'],
-    standalone: false
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.scss'],
+  standalone: false,
 })
 export class HeaderComponent implements OnInit {
+  userInfo!: UserInfo | null;
 
-  userInfo!: UserInfo;
-
-  constructor(private dataService: DataService, private router: Router, private _snackBar: MatSnackBar) {}
-  @Input() title: string = "";
+  constructor(
+    private currentUserService: CurrentUserService,
+    private settingsService: SettingsService,
+    private router: Router,
+    private _snackBar: MatSnackBar
+  ) {}
+  @Input() title = '';
 
   displayError(errMsg: string) {
-    this._snackBar.open("Error: " + errMsg, "Close");
+    this._snackBar.open('Error: ' + errMsg, 'Close');
   }
 
   ngOnInit() {
-    this.dataService.getCurrentUser().subscribe({
-      next: (userInfo: UserInfo) => {
+    this.currentUserService.getCurrentUser().subscribe({
+      next: (userInfo: UserInfo | null) => {
         this.userInfo = userInfo;
       },
       error: (err: DataError) => {
-        if(err.statusCode !== 401) {
-          this.displayError(err.message);
-        }
-      }
+        this.displayError(err.message);
+      },
     });
   }
 
@@ -45,19 +49,23 @@ export class HeaderComponent implements OnInit {
   goto(path: string): void {
     window.location.href = `/${path}`;
   }
-  
+
   get name(): string {
-    if(_.isNil(this.userInfo)){
-      return "UNKNOWN";
+    if (_.isNil(this.userInfo)) {
+      return 'UNKNOWN';
     }
     return `${this.userInfo.firstName} ${this.userInfo.lastName}`;
   }
 
   get admin(): boolean {
-    if(isNilOrEmpty(this.userInfo)) {
-      return false
+    if (isNilOrEmpty(this.userInfo)) {
+      return false;
     }
 
-    return this.userInfo.admin;
+    return this.userInfo!.admin;
+  }
+
+  get plaatoKegEnabled(): boolean {
+    return this.settingsService.getSetting<boolean>('plaato_keg_devices.enabled') || false;
   }
 }

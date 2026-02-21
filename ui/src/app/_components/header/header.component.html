@@ -1,27 +1,37 @@
 <div class="header-content">
   <div class="header-title">
-    <a class="title" href="/"><img src="../../../assets/header logo - dark.png" /></a>
+    <a class="title" href="/"><img src="../../../assets/header logo - dark.png" alt="logo" /></a>
   </div>
   <div class="header-nav">
     <span tabindex="-1">
-      <button id="nav_toggle_user_menu"
-        mat-mini-fab
-        [matMenuTriggerFor]="navMenu">
+      <button id="nav_toggle_user_menu" mat-mini-fab [matMenuTriggerFor]="navMenu">
         <mat-icon>menu</mat-icon>
       </button>
       <mat-menu #navMenu="matMenu" xPosition="before" class="override">
         @if (userInfo) {
           <button mat-menu-item id="nav_signed_in_as" disabled>Signed in as {{ name }}</button>
         }
-        <button mat-menu-item id="nav_dashboard" (click)="goto('')"><mat-icon>home</mat-icon>Home</button>
+        <button mat-menu-item id="nav_dashboard" (click)="goto('')">
+          <mat-icon>home</mat-icon>
+          Home
+        </button>
         @if (userInfo) {
-          <button mat-menu-item [matMenuTriggerFor]="managementOptions"><mat-icon>settings</mat-icon>Manage</button>
+          <button mat-menu-item [matMenuTriggerFor]="managementOptions">
+            <mat-icon>settings</mat-icon>
+            Manage
+          </button>
         }
         @if (userInfo) {
-          <button mat-menu-item [matMenuTriggerFor]="toolsOptions"><mat-icon>build</mat-icon>Tools</button>
+          <button mat-menu-item [matMenuTriggerFor]="toolsOptions">
+            <mat-icon>build</mat-icon>
+            Tools
+          </button>
         }
         @if (userInfo) {
-          <button mat-menu-item id="nav_account_profile" (click)="goto('me')"><mat-icon>person</mat-icon>Account Profile</button>
+          <button mat-menu-item id="nav_account_profile" (click)="goto('me')">
+            <mat-icon>person</mat-icon>
+            Account Profile
+          </button>
         }
         @if (userInfo) {
           <button mat-menu-item id="nav_sign_out" (click)="logout()">Sign Out</button>
@@ -32,21 +42,55 @@
       </mat-menu>
 
       <mat-menu #managementOptions="matMenu">
-        <button mat-menu-item id="nav_manage_dashboard" (click)="goto('manage')"><mat-icon>home</mat-icon>Dashboard</button>
+        <button mat-menu-item id="nav_manage_dashboard" (click)="goto('manage')">
+          <mat-icon>home</mat-icon>
+          Dashboard
+        </button>
         @if (admin) {
-          <button mat-menu-item id="nav_manage_locations" (click)="goto('manage/locations')"><mat-icon>store</mat-icon>Locations</button>
+          <button mat-menu-item id="nav_manage_locations" (click)="goto('manage/locations')">
+            <mat-icon>store</mat-icon>
+            Locations
+          </button>
         }
-        <button mat-menu-item id="nav_manage_taps" (click)="goto('manage/taps')"><mat-icon>kitchen</mat-icon>Taps</button>
-        <button mat-menu-item id="nav_manage_beers" (click)="goto('manage/beers')"><mat-icon>local_drink</mat-icon>Beers</button>
-        <button mat-menu-item id="nav_manage_beers" (click)="goto('manage/beverages')"><mat-icon>local_drink</mat-icon>Beverages</button>
-        <button mat-menu-item id="nav_manage_sensors" (click)="goto('manage/sensors')"><mat-icon>gps_fixed</mat-icon>Sensors</button>
+        <button mat-menu-item id="nav_manage_taps" (click)="goto('manage/taps')">
+          <mat-icon>kitchen</mat-icon>
+          Taps
+        </button>
+        <button mat-menu-item id="nav_manage_beers" (click)="goto('manage/beers')">
+          <mat-icon>local_drink</mat-icon>
+          Beers
+        </button>
+        <button mat-menu-item id="nav_manage_beers" (click)="goto('manage/beverages')">
+          <mat-icon>local_drink</mat-icon>
+          Beverages
+        </button>
+        <button mat-menu-item id="nav_manage_tap_monitors" (click)="goto('manage/tap-monitors')">
+          <mat-icon>sensors</mat-icon>
+          Tap Monitors
+        </button>
+        @if (admin && plaatoKegEnabled) {
+          <button mat-menu-item id="nav_manage_plaato_keg" (click)="goto('manage/plaato_kegs')">
+            <mat-icon>gps_fixed</mat-icon>
+            Plaato Kegs
+          </button>
+        }
         @if (admin) {
-          <button mat-menu-item id="nav_manage_users" (click)="goto('manage/users')"><mat-icon>group</mat-icon>Users</button>
+          <button mat-menu-item id="nav_manage_users" (click)="goto('manage/users')">
+            <mat-icon>group</mat-icon>
+            Users
+          </button>
         }
       </mat-menu>
 
       <mat-menu #toolsOptions="matMenu">
-        <button mat-menu-item id="nav_tools_volume_calculator" (click)="goto('tools/volume_calculator')"><mat-icon>calculate</mat-icon>Volume Calculator</button>
+        <button
+          mat-menu-item
+          id="nav_tools_volume_calculator"
+          (click)="goto('tools/volume_calculator')"
+        >
+          <mat-icon>calculate</mat-icon>
+          Volume Calculator
+        </button>
       </mat-menu>
     </span>
   </div>

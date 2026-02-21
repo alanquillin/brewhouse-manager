@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 from lib.util import camel_to_snake
 
+
 def to_camel(string: str) -> str:
     """Convert snake_case to camelCase"""
     components = string.split("_")
@@ -31,7 +32,7 @@ class CamelCaseModel(BaseModel):
 
         if not isinstance(original_data, dict):
             return original_data
-        
+
         data = {}
         for k, v in original_data.items():
             if isinstance(v, dict):

@@ -1,8 +1,8 @@
 """Tap service with business logic and transformations"""
 
-import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from lib import logging
 from services.base import transform_dict_to_camel_case
 
 LOGGER = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class TapService:
         if tap.on_tap:
             from services.batches import BatchService
 
-            on_tap = tap.on_tap 
+            on_tap = tap.on_tap
             await on_tap.awaitable_attrs.batch
             batch = on_tap.batch
             data["batch"] = await BatchService.transform_response(batch, db_session=db_session, include_location=False)
@@ -49,11 +49,7 @@ class TapService:
                 from services.beers import BeerService
 
                 data["beer"] = await BeerService.transform_response(
-                    batch.beer,
-                    db_session=db_session,
-                    skip_meta_refresh=True,
-                    include_batches=False,
-                    include_location=False
+                    batch.beer, db_session=db_session, skip_meta_refresh=True, include_batches=False, include_location=False
                 )
                 data["beer_id"] = batch.beer_id
 
@@ -74,12 +70,12 @@ class TapService:
 
                 data["location"] = await LocationService.transform_response(tap.location, db_session=db_session)
 
-        # Include sensor
-        await tap.awaitable_attrs.sensor
-        if tap.sensor:
-            from services.sensors import SensorService
+        # Include tap monitor
+        await tap.awaitable_attrs.tap_monitor
+        if tap.tap_monitor:
+            from services.tap_monitors import TapMonitorService
 
-            data["sensor"] = await SensorService.transform_response(tap.sensor, db_session=db_session, include_location=False)
+            data["tap_monitor"] = await TapMonitorService.transform_response(tap.tap_monitor, db_session=db_session, include_location=False)
 
         # Remove on_tap_id from response
         if "on_tap_id" in data:

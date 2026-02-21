@@ -1,13 +1,11 @@
-import base64
+from httpx import AsyncClient, BasicAuth, TimeoutException
 
-import httpx
-from httpx import BasicAuth, AsyncClient, TimeoutException
-
-from db import session_scope
+from db import async_session_scope
 from db.batches import Batches as BatchesDB
 from db.beers import Beers as BeersDB
 from lib.external_brew_tools import ExternalBrewToolBase
 from lib.external_brew_tools.exceptions import ResourceNotFoundError
+
 
 class Brewfather(ExternalBrewToolBase):
     async def get_batch_details(self, batch_id=None, batch=None, meta=None):
@@ -16,8 +14,8 @@ class Brewfather(ExternalBrewToolBase):
 
         if not meta:
             if not batch:
-                with session_scope as session:
-                    batch = BatchesDB.get_by_pkey(session, batch_id)
+                async with async_session_scope(self.config) as session:
+                    batch = await BatchesDB.get_by_pkey(session, batch_id)
             meta = batch.external_brewing_tool_meta
 
         fields = [
@@ -53,31 +51,22 @@ class Brewfather(ExternalBrewToolBase):
         complete_statuses = self.config.get("external_brew_tools.brewfather.completed_statuses")
         if not status.lower() in [s.lower() for s in complete_statuses]:
             details["_refresh_on_next_check"] = True
-            details["_refresh_reason"] = "The batch was not in a completed status: %s." % ", ".join(complete_statuses)
+            statuses_str = ", ".join(complete_statuses)
+            details["_refresh_reason"] = f"The batch was not in a completed status: {statuses_str}."
 
         return details
-    
+
     async def get_recipe_details(self, beer_id=None, beer=None, meta=None):
         if not beer_id and not beer and not meta:
             raise Exception("WTH!!")
 
         if not meta:
             if not beer:
-                with session_scope as session:
-                    beer = BeersDB.get_by_pkey(session, beer_id)
+                async with async_session_scope(self.config) as session:
+                    beer = await BeersDB.get_by_pkey(session, beer_id)
             meta = beer.external_brewing_tool_meta
 
-        fields = [
-            "measuredAbv",
-            "status",
-            "ibu",
-            "color",
-            "name",
-            "img_url",
-            "style.name",
-            "style.type",
-            "abv"
-        ]
+        fields = ["measuredAbv", "status", "ibu", "color", "name", "img_url", "style.name", "style.type", "abv"]
         recipe = await self._get_recipe(meta=meta, params={"include": ",".join(fields)})
 
         details = {
@@ -95,7 +84,7 @@ class Brewfather(ExternalBrewToolBase):
         return await self._get_batches(meta=meta)
 
     async def _get_batches(self, meta=None):
-        data, _ = await self._get(f"v2/batches", meta)
+        data, _ = await self._get("v2/batches", meta)
         return data
 
     async def _get_batch(self, batch_id=None, meta=None, params=None):
@@ -107,11 +96,11 @@ class Brewfather(ExternalBrewToolBase):
         data, status_code = await self._get(f"v2/batches/{batch_id}", meta, params=params)
         if status_code == 404:
             raise ResourceNotFoundError(batch_id)
-        
+
         return data
-    
+
     async def _get_recipes(self, meta=None):
-        data, _ = await self._get(f"v2/recipes", meta)
+        data, _ = await self._get("v2/recipes", meta)
         return data
 
     async def _get_recipe(self, recipe_id=None, meta=None, params=None):
@@ -123,9 +112,9 @@ class Brewfather(ExternalBrewToolBase):
         data, status_code = await self._get(f"v2/recipes/{recipe_id}", meta, params=params)
         if status_code == 404:
             raise ResourceNotFoundError(recipe_id)
-        
+
         return data
-    
+
     async def _get(self, path, meta, params=None):
         url = f"https://api.brewfather.app/{path}"
         self.logger.debug("GET Request: %s, params: %s", url, params)
@@ -143,7 +132,7 @@ class Brewfather(ExternalBrewToolBase):
                     return j, resp.status_code
                 return None, resp.status_code
             except TimeoutException:
-                self.logger.error(f"brewfather timeout calling {path}")
+                self.logger.error("brewfather timeout calling %s", path)
                 raise
 
     def _get_auth(self, meta=None):
@@ -160,8 +149,8 @@ class Brewfather(ExternalBrewToolBase):
         if not api_key:
             api_key = self.config.get(f"{config_prefix}.api_key")
         self.logger.debug("username: %s", username)
-        self.logger.debug("api key: %s", api_key)
+        self.logger.debug("api key present: %s", bool(api_key))
         return BasicAuth(username, api_key)
 
-    def _say_hello(self):
+    def say_hello(self):
         return "hello"

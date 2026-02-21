@@ -1,6 +1,6 @@
 @use '@angular/material' as mat;
-@import "bootstrap/scss/bootstrap";
-@import 'styles/main';
+@use 'bootstrap/scss/bootstrap';
+@use 'styles/main';
 
 // TODO(v15): As of v15 mat.legacy-core no longer includes default typography styles.
 //  The following line adds:

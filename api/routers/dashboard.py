@@ -1,38 +1,26 @@
 """Dashboard router for FastAPI"""
 
-import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies.auth import get_db_session
-from db.locations import Locations as LocationsDB
-from db.taps import Taps as TapsDB
 from db.beers import Beers as BeersDB
 from db.beverages import Beverages as BeveragesDB
-from db.sensors import Sensors as SensorsDB
-from services.locations import LocationService
-from services.taps import TapService
+from db.locations import Locations as LocationsDB
+from db.tap_monitors import TapMonitors as TapMonitorsDB
+from db.taps import Taps as TapsDB
+from dependencies.auth import get_db_session
+from lib import logging
+from routers import get_location_id
 from services.beers import BeerService
 from services.beverages import BeverageService
-from services.sensors import SensorService
-from lib import util
+from services.locations import LocationService
+from services.tap_monitors import TapMonitorService
+from services.taps import TapService
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
 LOGGER = logging.getLogger(__name__)
-
-
-async def get_location_id(location_identifier: str, db_session: AsyncSession) -> str:
-    """Get location ID from name or UUID"""
-    if util.is_valid_uuid(location_identifier):
-        return location_identifier
-
-    locations = await LocationsDB.query(db_session, name=location_identifier)
-    if locations:
-        return locations[0].id
-
-    return None
 
 
 @router.get("/locations", response_model=List[dict])
@@ -83,17 +71,17 @@ async def get_dashboard_beverage(
     return await BeverageService.transform_response(beverage, db_session=db_session)
 
 
-@router.get("/sensors/{sensor_id}", response_model=dict)
-async def get_dashboard_sensor(
-    sensor_id: str,
+@router.get("/tap_monitors/{tap_monitor_id}", response_model=dict)
+async def get_dashboard_tap_monitor(
+    tap_monitor_id: str,
     db_session: AsyncSession = Depends(get_db_session),
 ):
-    """Get a specific sensor for dashboard"""
-    sensor = await SensorsDB.get_by_pkey(db_session, sensor_id)
-    if not sensor:
-        raise HTTPException(status_code=404, detail="Sensor not found")
+    """Get a specific tap monitor for dashboard"""
+    tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
+    if not tap_monitor:
+        raise HTTPException(status_code=404, detail="Tap monitor not found")
 
-    return await SensorService.transform_response(sensor, db_session=db_session)
+    return await TapMonitorService.transform_response(tap_monitor, db_session=db_session)
 
 
 @router.get("/locations/{location}", response_model=dict)
@@ -122,5 +110,5 @@ async def get_dashboard(
     return {
         "taps": [await TapService.transform_response(t, db_session=db_session, include_location=False) for t in taps],
         "locations": [await LocationService.transform_response(l, db_session=db_session) for l in locations],
-        "location": await LocationService.transform_response(current_location, db_session=db_session) if current_location else None
+        "location": await LocationService.transform_response(current_location, db_session=db_session) if current_location else None,
     }

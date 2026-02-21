@@ -45,10 +45,10 @@ class InvalidExternalBrewingTool(Error):
         self.name = name
 
 
-class InvalidSensorType(Error):
-    def __init__(self, sensor_type, message=None):
+class InvalidTapMonitorType(Error):
+    def __init__(self, monitor_type, message=None):
         if not message:
-            message = f"Invalid sensor type: {sensor_type}"
+            message = f"Invalid tap monitor type: {monitor_type}"
 
         super().__init__(message)
-        self.sensor_type = sensor_type
+        self.monitor_type = monitor_type

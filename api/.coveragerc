@@ -1,0 +1,9 @@
+[run]
+omit =
+    db_migrations/*
+    */db_migrations/*
+
+[report]
+omit =
+    db_migrations/*
+    */db_migrations/*
