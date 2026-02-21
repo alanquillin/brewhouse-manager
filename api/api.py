@@ -189,8 +189,9 @@ async def serve_spa(full_path: str):
     """
     # Check if it's a file in static directory
     static_file_path = os.path.join(STATIC_DIR, full_path)
-    if os.path.isfile(static_file_path):
-        return FileResponse(static_file_path)
+    resolved = os.path.realpath(static_file_path)
+    if resolved.startswith(os.path.realpath(STATIC_DIR) + os.sep) and os.path.isfile(resolved):
+        return FileResponse(resolved)
 
     # Otherwise serve index.html (Angular will handle routing)
     index_path = os.path.join(STATIC_DIR, "index.html")

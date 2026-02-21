@@ -60,7 +60,7 @@ class Application:
                 LOGGER.info("No users exist, creating initial user: %s", data)
                 if set_init_user_pass:
                     data["password"] = CONFIG.get("auth.initial_user.password")
-                    LOGGER.warning("Creating initial user with password: %s", data["password"])
+                    LOGGER.warning("Creating initial user with a pre-configured password.")
                     LOGGER.warning("PLEASE REMEMBER TO LOG IN AND CHANGE IT ASAP!!")
 
                 await UsersDB.create(db_session, **data)

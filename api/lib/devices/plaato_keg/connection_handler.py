@@ -32,6 +32,7 @@ class ConnectionHandler:
         self.connections: Dict[str, ConnectionState] = {}
         self.socket_registry: Dict[str, ConnectionState] = {}
         self._running = False
+        self._server: Optional[asyncio.Server] = None
 
     async def handle_connection(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """Handle a new device connection"""
@@ -47,7 +48,7 @@ class ConnectionHandler:
         try:
             while True:
                 LOGGER.debug("Reading data...")
-                data = await reader.read(1024)
+                data = await asyncio.wait_for(reader.read(1024), timeout=300)
                 LOGGER.debug(f"data read: {data}")
 
                 if not data:
@@ -62,6 +63,8 @@ class ConnectionHandler:
                 if self._register_new_socket(data, state):
                     await self._send_user_override_commands(state.device_id)
 
+        except asyncio.TimeoutError:
+            LOGGER.warning(f"Connection timed out: {addr}")
         except asyncio.CancelledError:
             LOGGER.info(f"Connection cancelled: {addr}")
         except Exception as e:
@@ -183,15 +186,19 @@ class ConnectionHandler:
         LOGGER.info(f"Starting TCP server on {host}:{port}")
         self._running = True
 
-        server = await asyncio.start_server(self.handle_connection, host, port)
+        self._server = await asyncio.start_server(self.handle_connection, host, port)
 
-        async with server:
-            await server.serve_forever()
+        async with self._server:
+            await self._server.serve_forever()
 
     async def stop_server(self):
         """Stop the TCP server"""
         LOGGER.info("Stopping TCP server")
         self._running = False
+
+        if self._server:
+            self._server.close()
+            await self._server.wait_closed()
 
         for connection_id, state in list(self.connections.items()):
             await self._cleanup_connection(connection_id, state)

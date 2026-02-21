@@ -85,5 +85,7 @@ class KegVolumeMonitor(TapMonitorBase):
             self.logger.debug("GET response JSON: %s", j)
 
             if resp.status_code == 401:
-                raise TapMonitorDependencyError("keg-volume-monitor-weight", "Keg Volume Monitor returned a 401 Unauthorized.  Check your credencials in the config.")
+                raise TapMonitorDependencyError(
+                    "keg-volume-monitor-weight", "Keg Volume Monitor returned a 401 Unauthorized.  Check your credencials in the config."
+                )
             return j

@@ -1,7 +1,7 @@
 """Tests for lib/tap_monitors/plaato_blynk.py module"""
 
 import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -52,42 +52,52 @@ class TestPlaatoBlynk:
         assert monitor._data_type_to_pin["beer_remaining_unit"] == "v74"
         assert monitor._data_type_to_pin["firmware_version"] == "v93"
 
-    @patch("lib.tap_monitors.plaato_blynk.requests")
-    def test_get_success(self, mock_requests, monitor):
+    @patch("lib.tap_monitors.plaato_blynk.AsyncClient")
+    def test_get_success(self, mock_client_cls, monitor):
         """Test get with successful response"""
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = ["75.5"]
-        mock_requests.get.return_value = mock_response
+
+        mock_client = AsyncMock()
+        mock_client.get.return_value = mock_response
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
 
         meta = {"auth_token": "test_token"}
         result = run_async(monitor.get("percent_beer_remaining", meta=meta))
 
         assert result == ["75.5"]
-        mock_requests.get.assert_called_once()
+        mock_client.get.assert_called_once()
 
-    @patch("lib.tap_monitors.plaato_blynk.requests")
-    def test_get_invalid_data_type_raises(self, mock_requests, monitor):
+    @patch("lib.tap_monitors.plaato_blynk.AsyncClient")
+    def test_get_invalid_data_type_raises(self, mock_client_cls, monitor):
         """Test get raises InvalidDataType for unknown data type"""
         meta = {"auth_token": "test_token"}
 
         with pytest.raises(InvalidDataType):
             run_async(monitor.get("unknown_data_type", meta=meta))
 
-    @patch("lib.tap_monitors.plaato_blynk.requests")
-    def test_get_non_200_returns_empty_dict(self, mock_requests, monitor):
+    @patch("lib.tap_monitors.plaato_blynk.AsyncClient")
+    def test_get_non_200_returns_empty_dict(self, mock_client_cls, monitor):
         """Test _get returns empty dict on non-200 response"""
         mock_response = MagicMock()
         mock_response.status_code = 500
-        mock_requests.get.return_value = mock_response
+
+        mock_client = AsyncMock()
+        mock_client.get.return_value = mock_response
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
 
         meta = {"auth_token": "test_token"}
         result = run_async(monitor._get("v48", meta))
 
         assert result == {}
 
-    @patch("lib.tap_monitors.plaato_blynk.requests")
-    def test_get_all(self, mock_requests, monitor):
+    @patch("lib.tap_monitors.plaato_blynk.AsyncClient")
+    def test_get_all(self, mock_client_cls, monitor):
         """Test get_all returns all data"""
         responses = [
             MagicMock(status_code=200, json=MagicMock(return_value=["75.5"])),
@@ -95,7 +105,12 @@ class TestPlaatoBlynk:
             MagicMock(status_code=200, json=MagicMock(return_value=["L"])),
             MagicMock(status_code=200, json=MagicMock(return_value=["1.2.3"])),
         ]
-        mock_requests.get.side_effect = responses
+
+        mock_client = AsyncMock()
+        mock_client.get.side_effect = responses
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
 
         meta = {"auth_token": "test_token"}
         result = run_async(monitor.get_all(meta=meta))
@@ -115,17 +130,22 @@ class TestPlaatoBlynk:
         with pytest.raises(Exception):
             run_async(monitor.get_all())
 
-    @patch("lib.tap_monitors.plaato_blynk.requests")
-    def test_get_url_construction(self, mock_requests, monitor):
+    @patch("lib.tap_monitors.plaato_blynk.AsyncClient")
+    def test_get_url_construction(self, mock_client_cls, monitor):
         """Test _get constructs correct URL"""
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = ["data"]
-        mock_requests.get.return_value = mock_response
+
+        mock_client = AsyncMock()
+        mock_client.get.return_value = mock_response
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
 
         meta = {"auth_token": "my_auth_token"}
         run_async(monitor._get("v48", meta))
 
-        called_url = mock_requests.get.call_args[0][0]
+        called_url = mock_client.get.call_args[0][0]
         assert "my_auth_token" in called_url
         assert "/get/v48" in called_url

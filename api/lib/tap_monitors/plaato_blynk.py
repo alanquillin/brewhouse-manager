@@ -1,6 +1,6 @@
 from httpx import AsyncClient
 
-from db import session_scope
+from db import async_session_scope
 from db.tap_monitors import TapMonitors as TapMonitorsDB
 from lib.tap_monitors import InvalidDataType, TapMonitorBase
 
@@ -34,8 +34,8 @@ class PlaatoBlynk(TapMonitorBase):
 
         if not meta:
             if not monitor:
-                with session_scope(self.config) as session:
-                    monitor = TapMonitorsDB.get_by_pkey(session, monitor_id)
+                async with async_session_scope(self.config) as session:
+                    monitor = await TapMonitorsDB.get_by_pkey(session, monitor_id)
             meta = monitor.meta
 
         pin = self._data_type_to_pin.get(data_type)
@@ -50,8 +50,8 @@ class PlaatoBlynk(TapMonitorBase):
 
         if not meta:
             if not monitor:
-                with session_scope(self.config) as session:
-                    monitor = TapMonitorsDB.get_by_pkey(session, monitor_id)
+                async with async_session_scope(self.config) as session:
+                    monitor = await TapMonitorsDB.get_by_pkey(session, monitor_id)
             meta = monitor.meta
 
         return {

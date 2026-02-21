@@ -66,12 +66,12 @@ def to_dict(val, *args):
         sep = ","
         if args:
             sep = args[0]
-        for item in val.trim().split(sep):
+        for item in val.strip().split(sep):
             sep2 = "="
             if args and len(args) > 1:
                 sep2 = args[1]
-            parts = item.trim().split(sep2)
-            data[parts[0].trim()] = parts[1].trim()
+            parts = item.strip().split(sep2)
+            data[parts[0].strip()] = parts[1].strip()
         return data
 
     return dict(val)
