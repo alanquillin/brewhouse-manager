@@ -140,6 +140,7 @@ class TestBeverageServiceProcessImageTransitions:
 
         with patch("services.beverages.ImageTransitionsDB") as mock_it_db:
             mock_it_db.update = AsyncMock(return_value=MagicMock())
+            mock_it_db.get_by_pkey = AsyncMock(return_value=MagicMock())
             result = run_async(BeverageService.process_image_transitions(mock_session, transitions))
 
         mock_it_db.update.assert_called_once()
