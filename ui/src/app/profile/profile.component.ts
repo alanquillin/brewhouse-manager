@@ -140,6 +140,7 @@ export class ProfileComponent implements OnInit {
       next: (data: UserInfo) => {
         this.userInfo = new UserInfo(data);
         this.changePassword = false;
+        this.processing = false;
       },
       error: (err: DataError) => {
         this.displayError(err.message);
