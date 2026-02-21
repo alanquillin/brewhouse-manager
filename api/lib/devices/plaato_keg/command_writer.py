@@ -97,7 +97,3 @@ class CommandWriter:
 
         LOGGER.debug(f"Sending device command: {command}, data: {value}")
         return await self._send_hardware_command(device_id, command_info["pin"], str(value))
-
-    def get_connected_kegs(self):
-        """Get list of currently connected kegs"""
-        return self.connection_handler.get_connected_kegs()

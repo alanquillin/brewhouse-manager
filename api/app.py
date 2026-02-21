@@ -126,9 +126,6 @@ class Application:
             except asyncio.CancelledError:
                 pass
 
-        if self.plaato_service:
-            await self.plaato_service.connection_handler.stop_server()
-
         LOGGER.info("Application shutdown complete")
 
 

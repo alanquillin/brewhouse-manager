@@ -123,7 +123,6 @@ class TestCommandWriter:
         """Create a mock connection handler"""
         handler = MagicMock()
         handler.send_command_to_keg = AsyncMock(return_value=True)
-        handler.get_connected_kegs = MagicMock(return_value=["keg1", "keg2"])
         return handler
 
     @pytest.fixture
@@ -147,11 +146,6 @@ class TestCommandWriter:
         command_writer.msg_id_counter = 65535
         assert command_writer._get_next_msg_id() == 65535
         assert command_writer._get_next_msg_id() == 1  # Wraps
-
-    def test_get_connected_kegs(self, command_writer):
-        """Test getting connected kegs"""
-        kegs = command_writer.get_connected_kegs()
-        assert kegs == ["keg1", "keg2"]
 
     def test_send_hardware_command(self, command_writer, mock_connection_handler):
         """Test sending hardware command"""

@@ -6,6 +6,7 @@ from db.plaato_data import PlaatoData as PlaatoDataDB
 from lib import logging, time
 from lib.config import Config
 from lib.devices.plaato_keg import blynk_protocol, plaato_data, plaato_protocol
+from lib.devices.plaato_keg.command_writer import command_from_pin
 
 LOGGER = logging.getLogger(__name__)
 CONFIG = Config()
@@ -77,7 +78,7 @@ class DataProcessor:
                 command_writer = service_handler.command_writer
                 LOGGER.info(f"Sending user override commands to keg {self.device_id}: {commands}")
                 for pin, val in commands.items():
-                    cmd = plaato_data.command_from_pin(pin)
+                    cmd = command_from_pin(pin)
                     await command_writer.send_command(self.device_id, cmd, val)
 
         LOGGER.debug(f"Decoded keg data: {decoded_data}")
