@@ -280,9 +280,37 @@ export class ManageTapMonitorsComponent implements OnInit {
   }
 
   save(): void {
+    const changes = this.modifyTapMonitor.changes;
+    const tap = this.modifyTapMonitor.tap;
+
+    if (changes.locationId && !isNilOrEmpty(tap) && tap.locationId !== changes.locationId) {
+      if (!confirm(
+        `This monitor is connected to Tap #${tap.tapNumber} (${tap.description}) at a different location. ` +
+        `Changing the location will disconnect the monitor from this tap. Continue?`
+      )) {
+        return;
+      }
+
+      this.processing = true;
+      this.dataService.updateTap(tap.id, { tapMonitorId: null }).subscribe({
+        next: () => {
+          this._executeSave(changes);
+        },
+        error: (err: DataError) => {
+          this.displayError(err.message);
+          this.processing = false;
+        },
+      });
+      return;
+    }
+
+    this._executeSave(changes);
+  }
+
+  private _executeSave(changes: any): void {
     this.processing = true;
     this.dataService
-      .updateTapMonitor(this.modifyTapMonitor.id, this.modifyTapMonitor.changes)
+      .updateTapMonitor(this.modifyTapMonitor.id, changes)
       .subscribe({
         next: (_: any) => {
           this.modifyTapMonitor.disableEditing();
