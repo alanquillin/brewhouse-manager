@@ -2,9 +2,12 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
+from lib import logging
 from schemas.base import CamelCaseModel
+
+LOGGER = logging.getLogger(__name__)
 
 
 class TapMonitorBase(CamelCaseModel):
@@ -17,16 +20,6 @@ class TapMonitorBase(CamelCaseModel):
             meta = self.transform_meta(meta)
             data["meta"] = meta
         return data
-
-
-class TapMonitorResponse(TapMonitorBase):
-    id: uuid.UUID
-    name: str
-    monitor_type: str
-    location_id: Optional[uuid.UUID] = None
-    location: Optional[dict] = None
-    reports_online_status: Optional[bool] = None
-    tap: Optional[dict] = None
 
 
 class TapMonitorCreate(TapMonitorBase):

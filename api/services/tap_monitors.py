@@ -30,6 +30,7 @@ class TapMonitorService:
                 data["location"] = await LocationService.transform_response(tap_monitor.location, db_session=db_session)
 
         if include_tap:
+            data["tap"] = None
             from db.taps import Taps as TapsDB
             from services.taps import TapService
 

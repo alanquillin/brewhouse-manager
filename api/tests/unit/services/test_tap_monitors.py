@@ -108,7 +108,7 @@ class TestTapMonitorServiceTransformResponse:
         mock_tap_monitor_lib.reports_online_status.return_value = False
 
         with patch("db.taps.Taps.query", new_callable=AsyncMock) as mock_taps_query, patch(
-            "services.taps.TapService.transform_response", new_callable=AsyncMock
+            "services.taps.TapService.transform_tap_response", new_callable=AsyncMock
         ) as mock_tap_transform, patch("lib.tap_monitors.get_tap_monitor_lib", return_value=mock_tap_monitor_lib):
             mock_taps_query.return_value = [mock_tap]
             mock_tap_transform.return_value = {"id": "tap-1", "tapNumber": 1}

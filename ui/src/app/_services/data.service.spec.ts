@@ -428,6 +428,104 @@ describe('DataService', () => {
       req.flush({});
     });
 
+    it('should not append include_tap_details param when false', () => {
+      service.getTapMonitors(undefined, false).subscribe();
+
+      const req = httpMock.expectOne('https://example.com/api/v1/tap_monitors');
+      expect(req.request.method).toBe('GET');
+      expect(req.request.url).not.toContain('include_tap_details');
+      req.flush([]);
+    });
+
+    it('should not append include_tap_details param for single monitor when false', () => {
+      service.getTapMonitor('mon1', false).subscribe();
+
+      const req = httpMock.expectOne('https://example.com/api/v1/tap_monitors/mon1');
+      expect(req.request.method).toBe('GET');
+      expect(req.request.url).not.toContain('include_tap_details');
+      req.flush({});
+    });
+
+    it('should return tap monitors with tap object when include_tap_details is true', () => {
+      const mockResponse = [
+        {
+          id: 'mon1',
+          name: 'Monitor 1',
+          monitorType: 'open-plaato-keg',
+          locationId: 'loc1',
+          tap: { id: 'tap1', tapNumber: 1, description: 'Tap 1' },
+        },
+        {
+          id: 'mon2',
+          name: 'Monitor 2',
+          monitorType: 'open-plaato-keg',
+          locationId: 'loc1',
+          tap: null,
+        },
+      ];
+
+      let result: any[] = [];
+      service.getTapMonitors(undefined, true).subscribe(data => {
+        result = data;
+      });
+
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/tap_monitors?include_tap_details=true'
+      );
+      req.flush(mockResponse);
+
+      expect(result.length).toBe(2);
+      expect(result[0].tap).toBeTruthy();
+      expect(result[0].tap.id).toBe('tap1');
+      expect(result[1].tap).toBeNull();
+    });
+
+    it('should return single tap monitor with tap object when include_tap_details is true', () => {
+      const mockResponse = {
+        id: 'mon1',
+        name: 'Monitor 1',
+        monitorType: 'open-plaato-keg',
+        locationId: 'loc1',
+        tap: { id: 'tap1', tapNumber: 1, description: 'Tap 1' },
+      };
+
+      let result: any = {};
+      service.getTapMonitor('mon1', true).subscribe(data => {
+        result = data;
+      });
+
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/tap_monitors/mon1?include_tap_details=true'
+      );
+      req.flush(mockResponse);
+
+      expect(result.tap).toBeTruthy();
+      expect(result.tap.id).toBe('tap1');
+      expect(result.tap.tapNumber).toBe(1);
+    });
+
+    it('should return single tap monitor with null tap when not connected', () => {
+      const mockResponse = {
+        id: 'mon2',
+        name: 'Monitor 2',
+        monitorType: 'open-plaato-keg',
+        locationId: 'loc1',
+        tap: null,
+      };
+
+      let result: any = {};
+      service.getTapMonitor('mon2', true).subscribe(data => {
+        result = data;
+      });
+
+      const req = httpMock.expectOne(
+        'https://example.com/api/v1/tap_monitors/mon2?include_tap_details=true'
+      );
+      req.flush(mockResponse);
+
+      expect(result.tap).toBeNull();
+    });
+
     it('should POST new tap monitor', () => {
       service.createTapMonitor({ name: 'Monitor 1' }).subscribe();
 

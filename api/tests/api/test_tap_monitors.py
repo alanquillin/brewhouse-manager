@@ -7,7 +7,7 @@ import requests
 
 pytestmark = pytest.mark.functional
 
-from .seed_data import LOCATION_MAIN_ID, LOCATION_SECONDARY_ID, TAP_MONITOR_1_ID, TAP_MONITOR_2_ID, TAP_MONITOR_3_ID, TAP_MONITOR_SECONDARY_ID, TAP_MONITORS
+from .seed_data import LOCATION_MAIN_ID, LOCATION_SECONDARY_ID, TAP_1_ID, TAP_MONITOR_1_ID, TAP_MONITOR_2_ID, TAP_MONITOR_3_ID, TAP_MONITOR_SECONDARY_ID, TAP_MONITORS
 
 
 class TestGetTapMonitors:
@@ -79,6 +79,41 @@ class TestGetTapMonitors:
         assert data["monitorType"] == "open-plaato-keg"
         assert data["locationId"] == LOCATION_MAIN_ID
 
+    def test_returns_tap_details_when_requested(self, api_client: requests.Session, api_base_url: str):
+        """Test that tap details are included when include_tap_details=true."""
+        response = api_client.get(f"{api_base_url}/tap_monitors", params={"include_tap_details": "true"})
+
+        assert response.status_code == 200
+        monitors = response.json()
+
+        # Find monitor 1 which is connected to tap 1
+        monitor_1 = next(m for m in monitors if m["id"] == TAP_MONITOR_1_ID)
+        assert "tap" in monitor_1
+        assert monitor_1["tap"] is not None
+        assert monitor_1["tap"]["id"] == TAP_1_ID
+
+    @pytest.mark.parametrize("param_value", ["true", "yes", "1", "True", "YES"])
+    def test_include_tap_details_truthy_values(self, api_client: requests.Session, api_base_url: str, param_value: str):
+        """Test that various truthy values for include_tap_details return tap objects."""
+        response = api_client.get(f"{api_base_url}/tap_monitors", params={"include_tap_details": param_value})
+
+        assert response.status_code == 200
+        monitors = response.json()
+
+        monitor_1 = next(m for m in monitors if m["id"] == TAP_MONITOR_1_ID)
+        assert "tap" in monitor_1
+        assert monitor_1["tap"] is not None
+
+    def test_does_not_include_tap_when_not_requested(self, api_client: requests.Session, api_base_url: str):
+        """Test that tap details are not included by default."""
+        response = api_client.get(f"{api_base_url}/tap_monitors")
+
+        assert response.status_code == 200
+        monitors = response.json()
+
+        monitor_1 = next(m for m in monitors if m["id"] == TAP_MONITOR_1_ID)
+        assert "tap" not in monitor_1
+
 
 class TestGetTapMonitorById:
     """Tests for GET /tap_monitors/{id} endpoint."""
@@ -114,6 +149,66 @@ class TestGetTapMonitorById:
         response = api_client.get(f"{api_base_url}/tap_monitors/{fake_id}")
 
         assert response.status_code == 404
+
+    def test_returns_tap_details_when_requested(self, api_client: requests.Session, api_base_url: str):
+        """Test that tap details are included for a monitor connected to a tap."""
+        response = api_client.get(
+            f"{api_base_url}/tap_monitors/{TAP_MONITOR_1_ID}",
+            params={"include_tap_details": "true"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+
+        assert "tap" in data
+        assert data["tap"] is not None
+        assert data["tap"]["id"] == TAP_1_ID
+        assert "tapNumber" in data["tap"]
+        assert "description" in data["tap"]
+
+    @pytest.mark.parametrize("param_value", ["true", "yes", "1", "True", "YES"])
+    def test_include_tap_details_truthy_values(self, api_client: requests.Session, api_base_url: str, param_value: str):
+        """Test that various truthy values for include_tap_details return the tap object."""
+        response = api_client.get(
+            f"{api_base_url}/tap_monitors/{TAP_MONITOR_1_ID}",
+            params={"include_tap_details": param_value},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "tap" in data
+        assert data["tap"] is not None
+
+    def test_returns_null_tap_when_monitor_not_connected(self, api_client: requests.Session, api_base_url: str):
+        """Test that tap is null when monitor is not connected to any tap."""
+        # Create a monitor with no tap association
+        new_monitor = {
+            "name": "Unconnected Monitor",
+            "monitorType": "open-plaato-keg",
+            "locationId": LOCATION_SECONDARY_ID,
+            "meta": {"deviceId": "unconnected-device-001"},
+        }
+        create_response = api_client.post(f"{api_base_url}/tap_monitors", json=new_monitor)
+        assert create_response.status_code == 201
+        monitor_id = create_response.json()["id"]
+
+        # Get with include_tap_details - tap should be null
+        response = api_client.get(
+            f"{api_base_url}/tap_monitors/{monitor_id}",
+            params={"include_tap_details": "true"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "tap" not in data or data.get("tap") is None
+
+    def test_does_not_include_tap_when_not_requested(self, api_client: requests.Session, api_base_url: str):
+        """Test that tap details are not included by default."""
+        response = api_client.get(f"{api_base_url}/tap_monitors/{TAP_MONITOR_1_ID}")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "tap" not in data
 
 
 class TestGetTapMonitorTypes:

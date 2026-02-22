@@ -13,7 +13,7 @@ from lib import logging
 from lib.tap_monitors import InvalidDataType, get_tap_monitor_lib
 from lib.tap_monitors import get_types as get_tap_monitor_types
 from routers import get_location_id
-from schemas.tap_monitors import TapMonitorCreate, TapMonitorData, TapMonitorResponse, TapMonitorTypeBase, TapMonitorUpdate
+from schemas.tap_monitors import TapMonitorCreate, TapMonitorData, TapMonitorTypeBase, TapMonitorUpdate
 from services.base import transform_dict_to_camel_case
 from services.tap_monitors import TapMonitorService, TapMonitorTypeService
 
@@ -75,7 +75,7 @@ async def discover_tap_monitors_by_type(
     return transform_dict_to_camel_case(data)
 
 
-@router.get("", response_model=List[TapMonitorResponse])
+@router.get("", response_model=List[dict])
 async def list_tap_monitors(
     request: Request,
     location: Optional[str] = None,
@@ -98,7 +98,7 @@ async def list_tap_monitors(
     return [await TapMonitorService.transform_response(s, db_session=db_session, include_tap=include_tap_details) for s in tap_monitors]
 
 
-@router.post("", response_model=TapMonitorResponse, status_code=201)
+@router.post("", response_model=dict, status_code=201)
 async def create_tap_monitor(
     tap_monitor_data: TapMonitorCreate,
     location: Optional[str] = None,
@@ -157,7 +157,7 @@ async def create_tap_monitor(
     return await TapMonitorService.transform_response(tap_monitor, db_session=db_session)
 
 
-@router.get("/{tap_monitor_id}", response_model=TapMonitorResponse)
+@router.get("/{tap_monitor_id}", response_model=dict)
 async def get_tap_monitor(
     request: Request,
     tap_monitor_id: str,
@@ -182,7 +182,7 @@ async def get_tap_monitor(
     return await TapMonitorService.transform_response(tap_monitor, db_session=db_session, include_tap=include_tap_details)
 
 
-@router.patch("/{tap_monitor_id}", response_model=TapMonitorResponse)
+@router.patch("/{tap_monitor_id}", response_model=dict)
 async def update_tap_monitor(
     tap_monitor_id: str,
     tap_monitor_data: TapMonitorUpdate,

@@ -219,6 +219,59 @@ class TestListTapMonitors:
 
             mock_service.transform_response.assert_called_with(mock_monitor, db_session=mock_session, include_tap=True)
 
+    @pytest.mark.parametrize("param_value", ["true", "yes", "", "1", "True", "YES", "TRUE"])
+    def test_include_tap_details_truthy_values(self, param_value):
+        """Test that various truthy values for include_tap_details pass include_tap=True"""
+        from routers.tap_monitors import list_tap_monitors
+
+        mock_request = create_mock_request(query_params={"include_tap_details": param_value})
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.query = AsyncMock(return_value=[mock_monitor])
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            run_async(list_tap_monitors(mock_request, None, mock_auth_user, mock_session))
+
+            mock_service.transform_response.assert_called_with(mock_monitor, db_session=mock_session, include_tap=True)
+
+    @pytest.mark.parametrize("param_value", ["false", "no", "0", "random"])
+    def test_include_tap_details_falsy_values(self, param_value):
+        """Test that non-truthy values for include_tap_details pass include_tap=False"""
+        from routers.tap_monitors import list_tap_monitors
+
+        mock_request = create_mock_request(query_params={"include_tap_details": param_value})
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.query = AsyncMock(return_value=[mock_monitor])
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            run_async(list_tap_monitors(mock_request, None, mock_auth_user, mock_session))
+
+            mock_service.transform_response.assert_called_with(mock_monitor, db_session=mock_session, include_tap=False)
+
+    def test_include_tap_details_defaults_to_false(self):
+        """Test that include_tap_details defaults to False when not provided"""
+        from routers.tap_monitors import list_tap_monitors
+
+        mock_request = create_mock_request()
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.query = AsyncMock(return_value=[mock_monitor])
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            run_async(list_tap_monitors(mock_request, None, mock_auth_user, mock_session))
+
+            mock_service.transform_response.assert_called_with(mock_monitor, db_session=mock_session, include_tap=False)
+
 
 class TestCreateTapMonitor:
     """Tests for create_tap_monitor endpoint"""
@@ -674,6 +727,76 @@ class TestGetTapMonitor:
                 run_async(get_tap_monitor(mock_request, "monitor-1", None, mock_auth_user, mock_session))
 
             assert exc_info.value.status_code == 403
+
+    def test_include_tap_details(self):
+        """Test includes tap details when requested"""
+        from routers.tap_monitors import get_tap_monitor
+
+        mock_request = create_mock_request(query_params={"include_tap_details": "true"})
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            run_async(get_tap_monitor(mock_request, "monitor-1", None, mock_auth_user, mock_session))
+
+            mock_service.transform_response.assert_called_with(mock_monitor, db_session=mock_session, include_tap=True)
+
+    @pytest.mark.parametrize("param_value", ["true", "yes", "", "1", "True", "YES", "TRUE"])
+    def test_include_tap_details_truthy_values(self, param_value):
+        """Test that various truthy values for include_tap_details pass include_tap=True"""
+        from routers.tap_monitors import get_tap_monitor
+
+        mock_request = create_mock_request(query_params={"include_tap_details": param_value})
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            run_async(get_tap_monitor(mock_request, "monitor-1", None, mock_auth_user, mock_session))
+
+            mock_service.transform_response.assert_called_with(mock_monitor, db_session=mock_session, include_tap=True)
+
+    @pytest.mark.parametrize("param_value", ["false", "no", "0", "random"])
+    def test_include_tap_details_falsy_values(self, param_value):
+        """Test that non-truthy values for include_tap_details pass include_tap=False"""
+        from routers.tap_monitors import get_tap_monitor
+
+        mock_request = create_mock_request(query_params={"include_tap_details": param_value})
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            run_async(get_tap_monitor(mock_request, "monitor-1", None, mock_auth_user, mock_session))
+
+            mock_service.transform_response.assert_called_with(mock_monitor, db_session=mock_session, include_tap=False)
+
+    def test_include_tap_details_defaults_to_false(self):
+        """Test that include_tap_details defaults to False when not provided"""
+        from routers.tap_monitors import get_tap_monitor
+
+        mock_request = create_mock_request()
+        mock_auth_user = create_mock_auth_user(admin=True)
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+            mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
+
+            run_async(get_tap_monitor(mock_request, "monitor-1", None, mock_auth_user, mock_session))
+
+            mock_service.transform_response.assert_called_with(mock_monitor, db_session=mock_session, include_tap=False)
 
 
 class TestUpdateTapMonitor:
