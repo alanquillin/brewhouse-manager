@@ -18,3 +18,7 @@
 ui/node_modules
 ui/dist
 ui/.angular
+
+#tests
+api/tests
+ui/**/*.spec.ts
