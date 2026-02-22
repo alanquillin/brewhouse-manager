@@ -284,10 +284,12 @@ export class ManageTapMonitorsComponent implements OnInit {
     const tap = this.modifyTapMonitor.tap;
 
     if (changes.locationId && !isNilOrEmpty(tap) && tap.locationId !== changes.locationId) {
-      if (!confirm(
-        `This monitor is connected to Tap #${tap.tapNumber} (${tap.description}) at a different location. ` +
-        `Changing the location will disconnect the monitor from this tap. Continue?`
-      )) {
+      if (
+        !confirm(
+          `This monitor is connected to Tap #${tap.tapNumber} (${tap.description}) at a different location. ` +
+            `Changing the location will disconnect the monitor from this tap. Continue?`
+        )
+      ) {
         return;
       }
 
@@ -309,25 +311,23 @@ export class ManageTapMonitorsComponent implements OnInit {
 
   private _executeSave(changes: any): void {
     this.processing = true;
-    this.dataService
-      .updateTapMonitor(this.modifyTapMonitor.id, changes)
-      .subscribe({
-        next: (_: any) => {
-          this.modifyTapMonitor.disableEditing();
-          this._refresh(
-            () => {
-              this.processing = false;
-            },
-            () => {
-              this.editing = false;
-            }
-          );
-        },
-        error: (err: DataError) => {
-          this.displayError(err.message);
-          this.processing = false;
-        },
-      });
+    this.dataService.updateTapMonitor(this.modifyTapMonitor.id, changes).subscribe({
+      next: (_: any) => {
+        this.modifyTapMonitor.disableEditing();
+        this._refresh(
+          () => {
+            this.processing = false;
+          },
+          () => {
+            this.editing = false;
+          }
+        );
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      },
+    });
   }
 
   cancelEdit(): void {

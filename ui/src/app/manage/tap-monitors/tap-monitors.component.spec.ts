@@ -493,7 +493,9 @@ describe('ManageTapMonitorsComponent', () => {
 
       expect(window.confirm).toHaveBeenCalled();
       expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', { tapMonitorId: null });
-      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', { locationId: 'loc-2' });
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        locationId: 'loc-2',
+      });
     });
 
     it('should not save when location changes and tap is at different location and user cancels', () => {
@@ -555,7 +557,9 @@ describe('ManageTapMonitorsComponent', () => {
       component.save();
 
       expect(mockDataService.updateTap).not.toHaveBeenCalled();
-      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', { locationId: 'loc-2' });
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        locationId: 'loc-2',
+      });
     });
 
     it('should save directly when location is not changed', () => {
@@ -575,7 +579,9 @@ describe('ManageTapMonitorsComponent', () => {
       component.save();
 
       expect(mockDataService.updateTap).not.toHaveBeenCalled();
-      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', { name: 'Updated Name' });
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        name: 'Updated Name',
+      });
     });
   });
 

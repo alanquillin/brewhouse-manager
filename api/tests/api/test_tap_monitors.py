@@ -7,7 +7,16 @@ import requests
 
 pytestmark = pytest.mark.functional
 
-from .seed_data import LOCATION_MAIN_ID, LOCATION_SECONDARY_ID, TAP_1_ID, TAP_MONITOR_1_ID, TAP_MONITOR_2_ID, TAP_MONITOR_3_ID, TAP_MONITOR_SECONDARY_ID, TAP_MONITORS
+from .seed_data import (
+    LOCATION_MAIN_ID,
+    LOCATION_SECONDARY_ID,
+    TAP_1_ID,
+    TAP_MONITOR_1_ID,
+    TAP_MONITOR_2_ID,
+    TAP_MONITOR_3_ID,
+    TAP_MONITOR_SECONDARY_ID,
+    TAP_MONITORS,
+)
 
 
 class TestGetTapMonitors:
