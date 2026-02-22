@@ -26,6 +26,7 @@ class TapMonitorResponse(TapMonitorBase):
     location_id: Optional[uuid.UUID] = None
     location: Optional[dict] = None
     reports_online_status: Optional[bool] = None
+    tap: Optional[dict] = None
 
 
 class TapMonitorCreate(TapMonitorBase):

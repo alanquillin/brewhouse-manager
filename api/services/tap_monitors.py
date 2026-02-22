@@ -33,10 +33,12 @@ class TapMonitorService:
             from db.taps import Taps as TapsDB
             from services.taps import TapService
 
+            LOGGER.debug("include_tap is true, search for tap associated with tap monitor: %s", tap_monitor.id)
             taps = await TapsDB.query(db_session, tap_monitor_id=tap_monitor.id)
             if taps:
                 tap = taps[0]  # Only one tap can be associated with a tap monitor
-                data["tap"] = await TapService.transform_response(tap, db_session, include_location=False)
+                LOGGER.debug("tap found: %s", tap.id)
+                data["tap"] = await TapService.transform_tap_response(tap, db_session, include_location=False)
 
         data["reports_online_status"] = False
         monitor_type = data.get("monitor_type")

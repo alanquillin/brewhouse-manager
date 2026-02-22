@@ -13,7 +13,7 @@ class TapService:
 
     @staticmethod
     async def transform_tap_response(tap, db_session: AsyncSession, include_location=True):
-        """Transform tap for inclusion in batch response"""
+        """Transform tap for inclusion in dependent object response"""
         data = tap.to_dict()
 
         if include_location:
