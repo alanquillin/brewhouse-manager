@@ -1075,7 +1075,9 @@ export class ManageBeerComponent implements OnInit {
       return;
     }
 
-    const affectedTaps = this._getAffectedTaps(changes);
+    const affectedTaps = changes.locationIds
+      ? this.dataService.getAffectedTaps(this.modifyBatch, changes.locationIds)
+      : [];
     if (!_.isEmpty(affectedTaps)) {
       const tapDescriptions = affectedTaps
         .map(t => `Tap #${t.tapNumber} (${t.description})`)
@@ -1089,71 +1091,20 @@ export class ManageBeerComponent implements OnInit {
         return;
       }
 
-      this._processAffectedTaps(affectedTaps, 0, () => {
-        this._executeSaveBatch(changes);
-      });
-      return;
-    }
-
-    this._executeSaveBatch(changes);
-  }
-
-  private _getAffectedTaps(changes: any): Tap[] {
-    if (!changes.locationIds || isNilOrEmpty(this.modifyBatch.taps)) {
-      return [];
-    }
-
-    const newLocationIds: string[] = changes.locationIds;
-    const removedLocationIds = (this.modifyBatch.locationIds || []).filter(
-      (id: string) => !newLocationIds.includes(id)
-    );
-
-    if (_.isEmpty(removedLocationIds)) {
-      return [];
-    }
-
-    return this.modifyBatch.taps!.filter((tap: Tap) => removedLocationIds.includes(tap.locationId));
-  }
-
-  private _processAffectedTaps(taps: Tap[], index: number, next: () => void): void {
-    if (index >= taps.length) {
-      next();
-      return;
-    }
-
-    const tap = taps[index];
-
-    const proceedAfterKegtron = () => {
-      this.dataService.clearTap(tap.id).subscribe({
-        next: () => {
-          this._processAffectedTaps(taps, index + 1, next);
+      this.dataService.processAffectedTaps(affectedTaps).subscribe({
+        next: (warnings: string[]) => {
+          warnings.forEach(w => this.displayError(w));
+          this._executeSaveBatch(changes);
         },
         error: (err: DataError) => {
           this.displayError(err.message);
           this.processing = false;
         },
       });
-    };
-
-    const meta = tap.tapMonitor?.meta;
-    const hasKegtronMeta =
-      meta != null && meta.deviceId != null && typeof meta.portNum === 'number';
-    if (tap.tapMonitor?.monitorType === 'kegtron-pro' && hasKegtronMeta) {
-      this.dataService.clearKegtronPort(meta!.deviceId, meta!.portNum).subscribe({
-        next: () => {
-          proceedAfterKegtron();
-        },
-        error: (err: DataError) => {
-          this.displayError(
-            'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
-              err.message
-          );
-          proceedAfterKegtron();
-        },
-      });
-    } else {
-      proceedAfterKegtron();
+      return;
     }
+
+    this._executeSaveBatch(changes);
   }
 
   private _executeSaveBatch(changes: any): void {

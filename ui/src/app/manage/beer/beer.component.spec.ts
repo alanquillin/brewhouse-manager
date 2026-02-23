@@ -75,6 +75,8 @@ describe('ManageBeerComponent', () => {
       'clearTap',
       'clearKegtronPort',
       'deleteImageTransition',
+      'getAffectedTaps',
+      'processAffectedTaps',
     ]);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
@@ -893,30 +895,34 @@ describe('ManageBeerComponent', () => {
       component.modifyBatch = batch;
       component.editingBatch = true;
 
+      mockDataService.getAffectedTaps.and.returnValue([]);
       mockDataService.updateBatch.and.returnValue(of({} as any));
       mockDataService.getBeers.and.returnValue(of(mockBeers as any));
       mockDataService.getBeerBatches.and.returnValue(of(mockBatches as any));
 
       component.saveBatch();
 
+      expect(mockDataService.getAffectedTaps).toHaveBeenCalled();
       expect(mockDataService.updateBatch).toHaveBeenCalled();
-      expect(mockDataService.clearTap).not.toHaveBeenCalled();
+      expect(mockDataService.processAffectedTaps).not.toHaveBeenCalled();
     });
 
-    it('should clear taps and save when user confirms removal of taps at removed locations', () => {
+    it('should process affected taps and save when user confirms', () => {
       spyOn(window, 'confirm').and.returnValue(true);
 
+      const affectedTap = { id: 'tap-1', tapNumber: 1, description: 'Tap 1', locationId: 'loc-2' };
       const batch = new Batch({
         id: 'batch-1',
         locationIds: ['loc-1', 'loc-2'],
-        taps: [{ id: 'tap-1', tapNumber: 1, description: 'Tap 1', locationId: 'loc-2' }],
+        taps: [affectedTap],
       } as any);
       batch.enableEditing();
       batch.editValues.locationIds = ['loc-1'];
       component.modifyBatch = batch;
       component.editingBatch = true;
 
-      mockDataService.clearTap.and.returnValue(of({} as any));
+      mockDataService.getAffectedTaps.and.returnValue([affectedTap] as any);
+      mockDataService.processAffectedTaps.and.returnValue(of([]));
       mockDataService.updateBatch.and.returnValue(of({} as any));
       mockDataService.getBeers.and.returnValue(of(mockBeers as any));
       mockDataService.getBeerBatches.and.returnValue(of(mockBatches as any));
@@ -924,130 +930,100 @@ describe('ManageBeerComponent', () => {
       component.saveBatch();
 
       expect(window.confirm).toHaveBeenCalled();
-      expect(mockDataService.clearTap).toHaveBeenCalledWith('tap-1');
+      expect(mockDataService.processAffectedTaps).toHaveBeenCalledWith([affectedTap] as any);
       expect(mockDataService.updateBatch).toHaveBeenCalled();
     });
 
     it('should not make API calls when user cancels confirmation', () => {
       spyOn(window, 'confirm').and.returnValue(false);
 
+      const affectedTap = { id: 'tap-1', tapNumber: 1, description: 'Tap 1', locationId: 'loc-2' };
       const batch = new Batch({
         id: 'batch-1',
         locationIds: ['loc-1', 'loc-2'],
-        taps: [{ id: 'tap-1', tapNumber: 1, description: 'Tap 1', locationId: 'loc-2' }],
+        taps: [affectedTap],
       } as any);
       batch.enableEditing();
       batch.editValues.locationIds = ['loc-1'];
       component.modifyBatch = batch;
       component.editingBatch = true;
+
+      mockDataService.getAffectedTaps.and.returnValue([affectedTap] as any);
 
       component.saveBatch();
 
       expect(window.confirm).toHaveBeenCalled();
-      expect(mockDataService.clearTap).not.toHaveBeenCalled();
+      expect(mockDataService.processAffectedTaps).not.toHaveBeenCalled();
       expect(mockDataService.updateBatch).not.toHaveBeenCalled();
       expect(component.processing).toBe(false);
     });
 
-    it('should call clearKegtronPort then clearTap for kegtron-pro tap at removed location', () => {
+    it('should display warnings from processAffectedTaps and still save', () => {
       spyOn(window, 'confirm').and.returnValue(true);
 
+      const affectedTap = {
+        id: 'tap-1',
+        tapNumber: 1,
+        description: 'Tap 1',
+        locationId: 'loc-2',
+        tapMonitor: { monitorType: 'kegtron-pro', meta: { deviceId: 'dev-1', portNum: 0 } },
+      };
       const batch = new Batch({
         id: 'batch-1',
         locationIds: ['loc-1', 'loc-2'],
-        taps: [
-          {
-            id: 'tap-1',
-            tapNumber: 1,
-            description: 'Tap 1',
-            locationId: 'loc-2',
-            tapMonitor: { monitorType: 'kegtron-pro', meta: { deviceId: 'dev-1', portNum: 0 } },
-          },
-        ],
+        taps: [affectedTap],
       } as any);
       batch.enableEditing();
       batch.editValues.locationIds = ['loc-1'];
       component.modifyBatch = batch;
       component.editingBatch = true;
 
-      mockDataService.clearKegtronPort.and.returnValue(of({} as any));
-      mockDataService.clearTap.and.returnValue(of({} as any));
-      mockDataService.updateBatch.and.returnValue(of({} as any));
-      mockDataService.getBeers.and.returnValue(of(mockBeers as any));
-      mockDataService.getBeerBatches.and.returnValue(of(mockBatches as any));
-
-      component.saveBatch();
-
-      expect(mockDataService.clearKegtronPort).toHaveBeenCalledWith('dev-1', 0);
-      expect(mockDataService.clearTap).toHaveBeenCalledWith('tap-1');
-      expect(mockDataService.updateBatch).toHaveBeenCalled();
-    });
-
-    it('should still clear tap and save when clearKegtronPort fails', () => {
-      spyOn(window, 'confirm').and.returnValue(true);
-
-      const batch = new Batch({
-        id: 'batch-1',
-        locationIds: ['loc-1', 'loc-2'],
-        taps: [
-          {
-            id: 'tap-1',
-            tapNumber: 1,
-            description: 'Tap 1',
-            locationId: 'loc-2',
-            tapMonitor: { monitorType: 'kegtron-pro', meta: { deviceId: 'dev-1', portNum: 0 } },
-          },
-        ],
-      } as any);
-      batch.enableEditing();
-      batch.editValues.locationIds = ['loc-1'];
-      component.modifyBatch = batch;
-      component.editingBatch = true;
-
-      mockDataService.clearKegtronPort.and.returnValue(
-        throwError(() => new DataError('Kegtron error', 500))
+      mockDataService.getAffectedTaps.and.returnValue([affectedTap] as any);
+      mockDataService.processAffectedTaps.and.returnValue(
+        of([
+          'There was an error trying to clear the Kegtron port, skipping...  Error: Device unreachable',
+        ])
       );
-      mockDataService.clearTap.and.returnValue(of({} as any));
       mockDataService.updateBatch.and.returnValue(of({} as any));
       mockDataService.getBeers.and.returnValue(of(mockBeers as any));
       mockDataService.getBeerBatches.and.returnValue(of(mockBatches as any));
 
       component.saveBatch();
 
-      expect(mockDataService.clearKegtronPort).toHaveBeenCalled();
       expect(mockSnackBar.open).toHaveBeenCalledWith(
         jasmine.stringContaining('Kegtron port'),
         'Close'
       );
-      expect(mockDataService.clearTap).toHaveBeenCalledWith('tap-1');
       expect(mockDataService.updateBatch).toHaveBeenCalled();
     });
 
-    it('should not save when clearTap fails', () => {
+    it('should not save when processAffectedTaps errors', () => {
       spyOn(window, 'confirm').and.returnValue(true);
 
+      const affectedTap = { id: 'tap-1', tapNumber: 1, description: 'Tap 1', locationId: 'loc-2' };
       const batch = new Batch({
         id: 'batch-1',
         locationIds: ['loc-1', 'loc-2'],
-        taps: [{ id: 'tap-1', tapNumber: 1, description: 'Tap 1', locationId: 'loc-2' }],
+        taps: [affectedTap],
       } as any);
       batch.enableEditing();
       batch.editValues.locationIds = ['loc-1'];
       component.modifyBatch = batch;
       component.editingBatch = true;
 
-      mockDataService.clearTap.and.returnValue(
+      mockDataService.getAffectedTaps.and.returnValue([affectedTap] as any);
+      mockDataService.processAffectedTaps.and.returnValue(
         throwError(() => new DataError('Clear tap error', 500))
       );
 
       component.saveBatch();
 
-      expect(mockDataService.clearTap).toHaveBeenCalledWith('tap-1');
       expect(mockDataService.updateBatch).not.toHaveBeenCalled();
       expect(mockSnackBar.open).toHaveBeenCalledWith(
         jasmine.stringContaining('Clear tap error'),
         'Close'
       );
+      expect(component.processing).toBe(false);
     });
   });
 });

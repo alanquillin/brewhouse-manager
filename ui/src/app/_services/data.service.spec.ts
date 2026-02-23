@@ -1,6 +1,7 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
+import { Batch, Tap } from '../models/models';
 import { WINDOW } from '../window.provider';
 import { DataError, DataService } from './data.service';
 
@@ -1383,6 +1384,196 @@ describe('DataService', () => {
 
       const req = httpMock.expectOne('https://example.com/api/v1/batches/batch1');
       expect(req.request.method).toBe('DELETE');
+      req.flush({});
+    });
+  });
+
+  describe('getAffectedTaps', () => {
+    it('should return empty array when batch has no taps', () => {
+      const batch = new Batch({ locationIds: ['loc-1', 'loc-2'] } as any);
+      batch.taps = undefined;
+      const result = service.getAffectedTaps(batch, ['loc-1']);
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array when batch has empty taps', () => {
+      const batch = new Batch({ locationIds: ['loc-1', 'loc-2'], taps: [] } as any);
+      const result = service.getAffectedTaps(batch, ['loc-1']);
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array when no locations are removed', () => {
+      const batch = new Batch({
+        locationIds: ['loc-1', 'loc-2'],
+        taps: [{ id: 'tap-1', locationId: 'loc-1' }],
+      } as any);
+      const result = service.getAffectedTaps(batch, ['loc-1', 'loc-2']);
+      expect(result).toEqual([]);
+    });
+
+    it('should return taps at removed locations', () => {
+      const tap1 = { id: 'tap-1', tapNumber: 1, description: 'Tap 1', locationId: 'loc-2' };
+      const batch = new Batch({
+        locationIds: ['loc-1', 'loc-2'],
+        taps: [{ id: 'tap-0', tapNumber: 0, description: 'Tap 0', locationId: 'loc-1' }, tap1],
+      } as any);
+      const result = service.getAffectedTaps(batch, ['loc-1']);
+      expect(result.length).toBe(1);
+      expect(result[0].id).toBe('tap-1');
+    });
+
+    it('should return multiple taps at removed locations', () => {
+      const batch = new Batch({
+        locationIds: ['loc-1', 'loc-2', 'loc-3'],
+        taps: [
+          { id: 'tap-1', locationId: 'loc-2' },
+          { id: 'tap-2', locationId: 'loc-3' },
+          { id: 'tap-3', locationId: 'loc-1' },
+        ],
+      } as any);
+      const result = service.getAffectedTaps(batch, ['loc-1']);
+      expect(result.length).toBe(2);
+      expect(result.map(t => t.id)).toEqual(['tap-1', 'tap-2']);
+    });
+
+    it('should handle batch with undefined locationIds', () => {
+      const batch = new Batch({
+        taps: [{ id: 'tap-1', locationId: 'loc-1' }],
+      } as any);
+      batch.locationIds = undefined as any;
+      const result = service.getAffectedTaps(batch, ['loc-1']);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('processAffectedTaps', () => {
+    it('should return empty warnings for empty taps array', (done: DoneFn) => {
+      service.processAffectedTaps([]).subscribe({
+        next: (warnings: string[]) => {
+          expect(warnings).toEqual([]);
+          done();
+        },
+      });
+    });
+
+    it('should clear a simple tap with no kegtron', (done: DoneFn) => {
+      const tap = new Tap({ id: 'tap-1', locationId: 'loc-1' } as any);
+
+      service.processAffectedTaps([tap]).subscribe({
+        next: (warnings: string[]) => {
+          expect(warnings).toEqual([]);
+          done();
+        },
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/taps/tap-1');
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body).toEqual({ batchId: null });
+      req.flush({});
+    });
+
+    it('should clear kegtron port then clear tap for kegtron-pro', (done: DoneFn) => {
+      const tap = new Tap({
+        id: 'tap-1',
+        locationId: 'loc-1',
+        tapMonitor: { monitorType: 'kegtron-pro', meta: { deviceId: 'dev-1', portNum: 0 } },
+      } as any);
+
+      service.processAffectedTaps([tap]).subscribe({
+        next: (warnings: string[]) => {
+          expect(warnings).toEqual([]);
+          done();
+        },
+      });
+
+      const kegtronReq = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/dev-1/0/clear'
+      );
+      expect(kegtronReq.request.method).toBe('POST');
+      kegtronReq.flush(true);
+
+      const tapReq = httpMock.expectOne('https://example.com/api/v1/taps/tap-1');
+      expect(tapReq.request.method).toBe('PATCH');
+      tapReq.flush({});
+    });
+
+    it('should collect warning and continue when clearKegtronPort fails', (done: DoneFn) => {
+      const tap = new Tap({
+        id: 'tap-1',
+        locationId: 'loc-1',
+        tapMonitor: { monitorType: 'kegtron-pro', meta: { deviceId: 'dev-1', portNum: 0 } },
+      } as any);
+
+      service.processAffectedTaps([tap]).subscribe({
+        next: (warnings: string[]) => {
+          expect(warnings.length).toBe(1);
+          expect(warnings[0]).toContain('Kegtron port');
+          done();
+        },
+      });
+
+      const kegtronReq = httpMock.expectOne(
+        'https://example.com/api/v1/devices/kegtron/dev-1/0/clear'
+      );
+      kegtronReq.flush(
+        { message: 'Device unreachable' },
+        { status: 502, statusText: 'Bad Gateway' }
+      );
+
+      const tapReq = httpMock.expectOne('https://example.com/api/v1/taps/tap-1');
+      tapReq.flush({});
+    });
+
+    it('should error when clearTap fails', (done: DoneFn) => {
+      const tap = new Tap({ id: 'tap-1', locationId: 'loc-1' } as any);
+
+      service.processAffectedTaps([tap]).subscribe({
+        error: (err: DataError) => {
+          expect(err.statusCode).toBe(500);
+          done();
+        },
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/taps/tap-1');
+      req.flush(
+        { message: 'Clear tap failed' },
+        { status: 500, statusText: 'Internal Server Error' }
+      );
+    });
+
+    it('should process multiple taps sequentially', (done: DoneFn) => {
+      const tap1 = new Tap({ id: 'tap-1', locationId: 'loc-1' } as any);
+      const tap2 = new Tap({ id: 'tap-2', locationId: 'loc-2' } as any);
+
+      service.processAffectedTaps([tap1, tap2]).subscribe({
+        next: (warnings: string[]) => {
+          expect(warnings).toEqual([]);
+          done();
+        },
+      });
+
+      const req1 = httpMock.expectOne('https://example.com/api/v1/taps/tap-1');
+      req1.flush({});
+
+      const req2 = httpMock.expectOne('https://example.com/api/v1/taps/tap-2');
+      req2.flush({});
+    });
+
+    it('should skip kegtron clear when monitor type is not kegtron-pro', (done: DoneFn) => {
+      const tap = new Tap({
+        id: 'tap-1',
+        locationId: 'loc-1',
+        tapMonitor: { monitorType: 'open-plaato-keg', meta: { deviceId: 'dev-1' } },
+      } as any);
+
+      service.processAffectedTaps([tap]).subscribe({
+        next: (warnings: string[]) => {
+          expect(warnings).toEqual([]);
+          done();
+        },
+      });
+
+      const req = httpMock.expectOne('https://example.com/api/v1/taps/tap-1');
       req.flush({});
     });
   });

@@ -167,6 +167,8 @@ async def update_tap(
         current_batch_id = tap.on_tap.batch_id
 
     # check tap monitor id exists and is supported
+    # Use effective location (request body overrides current tap location) so moving tap + assigning monitor in one request is valid
+    effective_location_id = data.get("location_id") if "location_id" in data else tap.location_id
     if data.get("tap_monitor_id"):
         tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, data["tap_monitor_id"])
         if not tap_monitor:
@@ -174,9 +176,11 @@ async def update_tap(
         if not get_tap_monitor_lib(tap_monitor.monitor_type):
             LOGGER.warning("User tried to update tap with unsupported tap monitor type: %s", tap_monitor.monitor_type)
             raise HTTPException(status_code=400, detail=f"Unsupported tap monitor type: {tap_monitor.monitor_type}")
-        if str(tap_monitor.location_id) != str(tap.location_id):
+        if str(tap_monitor.location_id) != str(effective_location_id):
             LOGGER.warning(
-                "User tried to update tap with tap monitor from different tap location: %s, monitor location: %s", tap.location_id, tap_monitor.location_id
+                "User tried to update tap with tap monitor from different tap location: %s, monitor location: %s",
+                effective_location_id,
+                tap_monitor.location_id,
             )
             raise HTTPException(status_code=400, detail="Tap monitor is not associated with this location")
 

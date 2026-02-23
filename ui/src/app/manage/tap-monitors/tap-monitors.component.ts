@@ -296,24 +296,22 @@ export class ManageTapMonitorsComponent implements OnInit {
       this.processing = true;
       this.dataService.updateTap(tap.id, { tapMonitorId: null }).subscribe({
         next: () => {
-          if (this.modifyTapMonitor.monitorType === 'kegtron-pro') {
-            this.dataService
-              .clearKegtronPort(
-                this.modifyTapMonitor.meta.deviceId,
-                this.modifyTapMonitor.meta.portNum
-              )
-              .subscribe({
-                next: () => {
-                  this._executeSave(changes);
-                },
-                error: (err: DataError) => {
-                  this.displayError(
-                    'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
-                      err.message
-                  );
-                  this._executeSave(changes);
-                },
-              });
+          const meta = this.modifyTapMonitor.meta;
+          const hasKegtronMeta =
+            meta != null && meta.deviceId != null && typeof meta.portNum === 'number';
+          if (this.modifyTapMonitor.monitorType === 'kegtron-pro' && hasKegtronMeta) {
+            this.dataService.clearKegtronPort(meta.deviceId, meta.portNum).subscribe({
+              next: () => {
+                this._executeSave(changes);
+              },
+              error: (err: DataError) => {
+                this.displayError(
+                  'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+                    err.message
+                );
+                this._executeSave(changes);
+              },
+            });
           } else {
             this._executeSave(changes);
           }
