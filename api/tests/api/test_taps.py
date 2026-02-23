@@ -199,7 +199,7 @@ class TestCreateTap:
         assert response.status_code == 201
         data = response.json()
         assert data["tapMonitorId"] == TAP_MONITOR_1_ID
-        
+
         # clean up
         response = api_client.delete(f"{api_base_url}/taps/{data['id']}")
         assert response.status_code == 204

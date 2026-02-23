@@ -9,7 +9,7 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
-import { Batch, Beverage, ImageTransition, Location, Tap, TapMonitor } from '../../models/models';
+import { Batch, Beverage, ImageTransition, Location } from '../../models/models';
 import { ManageBeverageComponent } from './beverage.component';
 
 describe('ManageBeverageComponent', () => {
@@ -895,7 +895,10 @@ describe('ManageBeverageComponent', () => {
 
       component.saveBatch();
 
-      expect(mockDataService.updateBatch).toHaveBeenCalledWith('batch-1', jasmine.objectContaining({ name: 'New Name' }));
+      expect(mockDataService.updateBatch).toHaveBeenCalledWith(
+        'batch-1',
+        jasmine.objectContaining({ name: 'New Name' })
+      );
     });
 
     it('should save directly when locations removed but no taps at removed locations', () => {

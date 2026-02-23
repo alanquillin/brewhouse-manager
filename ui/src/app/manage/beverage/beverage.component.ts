@@ -849,9 +849,7 @@ export class ManageBeverageComponent implements OnInit {
       return [];
     }
 
-    return this.modifyBatch.taps!.filter((tap: Tap) =>
-      removedLocationIds.includes(tap.locationId)
-    );
+    return this.modifyBatch.taps!.filter((tap: Tap) => removedLocationIds.includes(tap.locationId));
   }
 
   private _processAffectedTaps(taps: Tap[], index: number, next: () => void): void {

@@ -10,13 +10,7 @@ import requests
 
 pytestmark = pytest.mark.functional
 
-from .seed_data import (
-    LOCATION_MAIN_ID,
-    TAP_1_ID,
-    TAP_MONITOR_1_ID,
-    TAP_MONITOR_UNSUPPORTED_ID,
-    TAP_UNSUPPORTED_MONITOR_ID,
-)
+from .seed_data import LOCATION_MAIN_ID, TAP_1_ID, TAP_MONITOR_1_ID, TAP_MONITOR_UNSUPPORTED_ID, TAP_UNSUPPORTED_MONITOR_ID
 
 
 class TestGetDashboardTapMonitor:

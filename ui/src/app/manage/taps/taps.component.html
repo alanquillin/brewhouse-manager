@@ -140,7 +140,8 @@
               {{ getTapMonitorName(element.tapMonitor, element.tapMonitorId) }}
               @if (getTapMonitorError(element.tapMonitor, element.tapMonitorId)) {
                 <div class="tap-monitor-error">
-                  <mat-icon>warning</mat-icon><span>{{ getTapMonitorError(element.tapMonitor, element.tapMonitorId) }}</span>
+                  <mat-icon>warning</mat-icon>
+                  <span>{{ getTapMonitorError(element.tapMonitor, element.tapMonitorId) }}</span>
                 </div>
               }
             </td>

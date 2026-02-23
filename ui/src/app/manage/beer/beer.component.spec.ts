@@ -8,7 +8,7 @@ import { of, throwError } from 'rxjs';
 
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
-import { Batch, Beer, ImageTransition, Location, Tap, TapMonitor } from '../../models/models';
+import { Batch, Beer, ImageTransition, Location } from '../../models/models';
 import { ManageBeerComponent } from './beer.component';
 
 describe('ManageBeerComponent', () => {
@@ -876,7 +876,10 @@ describe('ManageBeerComponent', () => {
 
       component.saveBatch();
 
-      expect(mockDataService.updateBatch).toHaveBeenCalledWith('batch-1', jasmine.objectContaining({ name: 'New Name' }));
+      expect(mockDataService.updateBatch).toHaveBeenCalledWith(
+        'batch-1',
+        jasmine.objectContaining({ name: 'New Name' })
+      );
     });
 
     it('should save directly when locations removed but no taps at removed locations', () => {

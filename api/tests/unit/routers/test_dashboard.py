@@ -130,9 +130,7 @@ class TestGetDashboardTap:
 
             run_async(get_dashboard_tap("tap-1", mock_session))
 
-            mock_service.transform_response.assert_called_once_with(
-                mock_tap, db_session=mock_session, filter_unsupported_tap_monitor=True
-            )
+            mock_service.transform_response.assert_called_once_with(mock_tap, db_session=mock_session, filter_unsupported_tap_monitor=True)
 
 
 class TestGetDashboardBeer:
@@ -211,7 +209,9 @@ class TestGetDashboardTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.dashboard.TapMonitorsDB") as mock_db, patch("routers.dashboard.TapMonitorService") as mock_service, patch("routers.dashboard.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.dashboard.TapMonitorsDB") as mock_db, patch("routers.dashboard.TapMonitorService") as mock_service, patch(
+            "routers.dashboard.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 

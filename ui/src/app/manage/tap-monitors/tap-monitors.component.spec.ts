@@ -584,7 +584,9 @@ describe('ManageTapMonitorsComponent', () => {
 
       expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', { tapMonitorId: null });
       expect(mockDataService.clearKegtronPort).toHaveBeenCalledWith('kegtron-dev-1', 0);
-      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', { locationId: 'loc-2' });
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        locationId: 'loc-2',
+      });
     });
 
     it('should still save when kegtron clear fails', () => {
@@ -612,7 +614,9 @@ describe('ManageTapMonitorsComponent', () => {
         'Error: There was an error trying to clear the Kegtron port, skipping...  Error: Clear failed',
         'Close'
       );
-      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', { locationId: 'loc-2' });
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        locationId: 'loc-2',
+      });
     });
 
     it('should not clear kegtron port for non-kegtron monitor types', () => {
@@ -635,7 +639,9 @@ describe('ManageTapMonitorsComponent', () => {
 
       expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', { tapMonitorId: null });
       expect(mockDataService.clearKegtronPort).not.toHaveBeenCalled();
-      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', { locationId: 'loc-2' });
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        locationId: 'loc-2',
+      });
     });
 
     it('should save directly when location is not changed', () => {

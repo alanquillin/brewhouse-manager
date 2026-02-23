@@ -71,7 +71,10 @@
             <td mat-cell *matCellDef="let element">
               {{ element.monitorType }}
               @if (!_.isEmpty(element.error)) {
-                <div class="tap-monitor-error"><mat-icon>warning</mat-icon><span>{{ element.error }}</span></div>
+                <div class="tap-monitor-error">
+                  <mat-icon>warning</mat-icon>
+                  <span>{{ element.error }}</span>
+                </div>
               }
             </td>
           </ng-container>

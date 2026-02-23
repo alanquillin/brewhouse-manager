@@ -72,7 +72,11 @@ async def create_tap(
             LOGGER.warning("User tried to create tap with unsupported tap monitor type: %s", tap_monitor.monitor_type)
             raise HTTPException(status_code=400, detail=f"Unsupported tap monitor type: {tap_monitor.monitor_type}")
         if str(tap_monitor.location_id) != str(data.get("location_id")):
-            LOGGER.warning("User tried to create tap with tap monitor from different tap location: %s, monitor location: %s", data.get("location_id"), tap_monitor.location_id)
+            LOGGER.warning(
+                "User tried to create tap with tap monitor from different tap location: %s, monitor location: %s",
+                data.get("location_id"),
+                tap_monitor.location_id,
+            )
             raise HTTPException(status_code=400, detail="Tap monitor is not associated with this location")
 
     # Handle batch_id and create on_tap entry
@@ -171,7 +175,9 @@ async def update_tap(
             LOGGER.warning("User tried to update tap with unsupported tap monitor type: %s", tap_monitor.monitor_type)
             raise HTTPException(status_code=400, detail=f"Unsupported tap monitor type: {tap_monitor.monitor_type}")
         if str(tap_monitor.location_id) != str(tap.location_id):
-            LOGGER.warning("User tried to update tap with tap monitor from different tap location: %s, monitor location: %s", tap.location_id, tap_monitor.location_id)
+            LOGGER.warning(
+                "User tried to update tap with tap monitor from different tap location: %s, monitor location: %s", tap.location_id, tap_monitor.location_id
+            )
             raise HTTPException(status_code=400, detail="Tap monitor is not associated with this location")
 
     # Handle batch_id updates

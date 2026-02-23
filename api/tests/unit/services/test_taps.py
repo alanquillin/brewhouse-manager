@@ -78,7 +78,6 @@ class TestTapServiceTransformTapResponse:
         assert "location" in result
         assert result["location"]["name"] == "Test Location"
 
-
     def test_includes_tap_monitor_when_requested(self):
         """Test includes tap monitor when include_tap_monitor=True"""
         mock_monitor = MagicMock(id="monitor-1")

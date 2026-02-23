@@ -267,7 +267,11 @@ export class DataService {
     );
   }
 
-  getTapMonitors(locationId?: string, includeTapDetails = false, includeUnsupported = false): Observable<TapMonitor[]> {
+  getTapMonitors(
+    locationId?: string,
+    includeTapDetails = false,
+    includeUnsupported = false
+  ): Observable<TapMonitor[]> {
     let url: string;
     if (_.isNil(locationId)) {
       url = `${this.apiBaseUrl}/tap_monitors`;
@@ -288,7 +292,11 @@ export class DataService {
     );
   }
 
-  getTapMonitor(tapMonitorId: string, includeTapDetails = false, includeUnsupported = false): Observable<TapMonitor> {
+  getTapMonitor(
+    tapMonitorId: string,
+    includeTapDetails = false,
+    includeUnsupported = false
+  ): Observable<TapMonitor> {
     const params = [];
     if (includeTapDetails) params.push('include_tap_details=true');
     if (includeUnsupported) params.push('include_unsupported=true');

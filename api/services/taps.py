@@ -29,9 +29,7 @@ class TapService:
             if tap.tap_monitor:
                 from services.tap_monitors import TapMonitorService
 
-                data["tap_monitor"] = await TapMonitorService.transform_response(
-                    tap.tap_monitor, db_session=db_session, include_location=False
-                )
+                data["tap_monitor"] = await TapMonitorService.transform_response(tap.tap_monitor, db_session=db_session, include_location=False)
 
         return transform_dict_to_camel_case(data)
 
@@ -84,6 +82,7 @@ class TapService:
         await tap.awaitable_attrs.tap_monitor
         if tap.tap_monitor:
             from services.tap_monitors import TapMonitorService
+
             tap_monitor_resp = await TapMonitorService.transform_response(tap.tap_monitor, db_session=db_session, include_location=False)
             tap_monitor_lib = get_tap_monitor_lib(tap.tap_monitor.monitor_type)
             if filter_unsupported_tap_monitor:

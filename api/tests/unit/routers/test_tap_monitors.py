@@ -176,7 +176,9 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.query = AsyncMock(return_value=[mock_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -194,7 +196,9 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.query = AsyncMock(return_value=[mock_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -211,7 +215,9 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.query = AsyncMock(return_value=[mock_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -229,7 +235,9 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.query = AsyncMock(return_value=[mock_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -247,7 +255,9 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.query = AsyncMock(return_value=[mock_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -264,7 +274,9 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.query = AsyncMock(return_value=[mock_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -282,7 +294,9 @@ class TestListTapMonitors:
         supported_monitor = create_mock_tap_monitor(id_="monitor-1", monitor_type="open-plaato-keg")
         unsupported_monitor = create_mock_tap_monitor(id_="monitor-2", monitor_type="unsupported-type")
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib") as mock_get_lib:
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib"
+        ) as mock_get_lib:
             mock_db.query = AsyncMock(return_value=[supported_monitor, unsupported_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
             mock_get_lib.side_effect = lambda t: MagicMock() if t == "open-plaato-keg" else None
@@ -338,7 +352,9 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         unsupported_monitor = create_mock_tap_monitor(id_="monitor-1", monitor_type="unsupported-type")
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=None):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=None
+        ):
             mock_db.query = AsyncMock(return_value=[unsupported_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -356,7 +372,9 @@ class TestListTapMonitors:
         mock_session = AsyncMock()
         unsupported_monitor = create_mock_tap_monitor(id_="monitor-1", monitor_type="unsupported-type")
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=None):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=None
+        ):
             mock_db.query = AsyncMock(return_value=[unsupported_monitor])
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -378,7 +396,9 @@ class TestCreateTapMonitor:
         mock_monitor = create_mock_tap_monitor()
         monitor_data = TapMonitorCreate(name="New Monitor", monitor_type="plaato_keg", location_id="loc-1")
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.create = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -440,7 +460,9 @@ class TestCreateTapMonitor:
             meta={"deviceId": "device-1"},
         )
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.query = AsyncMock(return_value=[])
             mock_db.create = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
@@ -464,7 +486,9 @@ class TestCreateTapMonitor:
             meta={"emptyKegWeight": 4400},
         )
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.create = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -487,7 +511,9 @@ class TestCreateTapMonitor:
             location_id="loc-1",
         )
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.create = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -580,7 +606,9 @@ class TestCreateKegtronProValidation:
             meta={"portNum": 0, "deviceId": "dev-1", "accessToken": "tok123"},
         )
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.query = AsyncMock(return_value=[])
             mock_db.create = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
@@ -604,7 +632,9 @@ class TestCreateKegtronProValidation:
             meta={"deviceId": "dev-1"},
         )
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.query = AsyncMock(return_value=[])
             mock_db.create = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
@@ -782,7 +812,9 @@ class TestGetTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor(location_id="loc-1")
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -832,7 +864,9 @@ class TestGetTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -850,7 +884,9 @@ class TestGetTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -868,7 +904,9 @@ class TestGetTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -885,7 +923,9 @@ class TestGetTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch("routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()):
+        with patch("routers.tap_monitors.TapMonitorsDB") as mock_db, patch("routers.tap_monitors.TapMonitorService") as mock_service, patch(
+            "routers.tap_monitors.get_tap_monitor_lib", return_value=MagicMock()
+        ):
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 

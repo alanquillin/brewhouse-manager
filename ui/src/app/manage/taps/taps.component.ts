@@ -490,7 +490,10 @@ export class ManageTapsComponent implements OnInit {
     this.filteredTaps = filteredData;
   }
 
-  resolveTapMonitor(tapMonitor: TapMonitor | undefined, tapMonitorId?: string): TapMonitor | undefined {
+  resolveTapMonitor(
+    tapMonitor: TapMonitor | undefined,
+    tapMonitorId?: string
+  ): TapMonitor | undefined {
     if (_.isNil(tapMonitor) && !_.isNil(tapMonitorId)) {
       tapMonitor = _.find(this.tapMonitors, s => {
         return s.id === tapMonitorId;

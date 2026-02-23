@@ -188,7 +188,6 @@ async def get_tap_monitor(
     if not tap_monitor:
         raise HTTPException(status_code=404, detail="Tap monitor not found")
 
-
     include_unsupported = request.query_params.get("include_unsupported", "false").lower() in ["true", "yes", "", "1"]
     if not include_unsupported:
         tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)

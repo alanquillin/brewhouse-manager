@@ -669,7 +669,12 @@ describe('ManageTapsComponent', () => {
     });
 
     it('should return error string when monitor has an error', () => {
-      const monitor = { id: 'tm-err', name: 'Error Monitor', monitorType: 'test', error: 'Device offline' } as TapMonitor;
+      const monitor = {
+        id: 'tm-err',
+        name: 'Error Monitor',
+        monitorType: 'test',
+        error: 'Device offline',
+      } as TapMonitor;
       const result = component.getTapMonitorError(monitor);
       expect(result).toBe('Device offline');
     });
@@ -687,7 +692,13 @@ describe('ManageTapsComponent', () => {
 
     it('should find monitor by id and return its error', () => {
       component.tapMonitors = [
-        { id: 'tm-1', name: 'Monitor 1', monitorType: 'plaato-blynk', locationId: 'loc-1', error: 'Connection lost' },
+        {
+          id: 'tm-1',
+          name: 'Monitor 1',
+          monitorType: 'plaato-blynk',
+          locationId: 'loc-1',
+          error: 'Connection lost',
+        },
       ] as any;
       const result = component.getTapMonitorError(undefined, 'tm-1');
       expect(result).toBe('Connection lost');

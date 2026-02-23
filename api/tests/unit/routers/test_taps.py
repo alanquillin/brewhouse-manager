@@ -294,9 +294,7 @@ class TestCreateTapMonitorValidation:
         mock_tap = create_mock_tap()
         tap_data = TapCreate(tap_number=1, location_id="loc-1")
 
-        with patch("routers.taps.TapMonitorsDB") as mock_monitors_db, patch("routers.taps.TapsDB") as mock_db, patch(
-            "routers.taps.TapService"
-        ) as mock_service:
+        with patch("routers.taps.TapMonitorsDB") as mock_monitors_db, patch("routers.taps.TapsDB") as mock_db, patch("routers.taps.TapService") as mock_service:
             mock_db.create = AsyncMock(return_value=mock_tap)
             mock_service.transform_response = AsyncMock(return_value={"id": "tap-1"})
 
@@ -503,9 +501,7 @@ class TestUpdateTapMonitorValidation:
         mock_tap = create_mock_tap(location_id="loc-1")
         update_data = TapUpdate(description="Updated description")
 
-        with patch("routers.taps.TapsDB") as mock_db, patch("routers.taps.TapMonitorsDB") as mock_monitors_db, patch(
-            "routers.taps.TapService"
-        ) as mock_service:
+        with patch("routers.taps.TapsDB") as mock_db, patch("routers.taps.TapMonitorsDB") as mock_monitors_db, patch("routers.taps.TapService") as mock_service:
             mock_db.query = AsyncMock(return_value=[mock_tap])
             mock_db.update = AsyncMock()
             mock_db.get_by_pkey = AsyncMock(return_value=mock_tap)
