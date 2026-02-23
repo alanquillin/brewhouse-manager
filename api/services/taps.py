@@ -88,6 +88,8 @@ class TapService:
             tap_monitor_lib = get_tap_monitor_lib(tap.tap_monitor.monitor_type)
             if filter_unsupported_tap_monitor:
                 if not tap_monitor_lib:
+                    if "tap_monitor_id" in data:
+                        del data["tap_monitor_id"]
                     LOGGER.warning("Unsupported tap monitor type: %s", tap.tap_monitor.monitor_type)
                 else:
                     data["tap_monitor"] = tap_monitor_resp

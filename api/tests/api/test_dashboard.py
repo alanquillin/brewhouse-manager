@@ -57,6 +57,7 @@ class TestGetDashboardTap:
         data = response.json()
         assert data["id"] == TAP_1_ID
         assert "tapMonitor" in data
+        assert "tapMonitorId" in data
         assert data["tapMonitor"] is not None
 
     def test_excludes_tap_monitor_for_unsupported_type(self, api_client: requests.Session, api_base_url: str):
@@ -67,6 +68,7 @@ class TestGetDashboardTap:
         data = response.json()
         assert data["id"] == TAP_UNSUPPORTED_MONITOR_ID
         assert "tapMonitor" not in data
+        assert "tapMonitorId" not in data
 
     def test_returns_404_for_nonexistent_tap(self, api_client: requests.Session, api_base_url: str):
         """Test that a non-existent tap returns 404."""
@@ -91,6 +93,7 @@ class TestGetDashboardLocation:
         tap_1 = next((t for t in data["taps"] if t["id"] == TAP_1_ID), None)
         assert tap_1 is not None
         assert "tapMonitor" in tap_1
+        assert "tapMonitorId" in tap_1
         assert tap_1["tapMonitor"] is not None
 
     def test_excludes_tap_monitors_for_unsupported_types(self, api_client: requests.Session, api_base_url: str):
@@ -104,6 +107,7 @@ class TestGetDashboardLocation:
         unsupported_tap = next((t for t in data["taps"] if t["id"] == TAP_UNSUPPORTED_MONITOR_ID), None)
         assert unsupported_tap is not None
         assert "tapMonitor" not in unsupported_tap
+        assert "tapMonitorId" not in unsupported_tap
 
     def test_returns_location_data(self, api_client: requests.Session, api_base_url: str):
         """Test that location dashboard returns expected structure."""
