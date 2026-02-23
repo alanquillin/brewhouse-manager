@@ -70,6 +70,8 @@ describe('ManageTapMonitorsComponent', () => {
       'getTapMonitors',
       'createTapMonitor',
       'updateTapMonitor',
+      'updateTap',
+      'clearKegtronPort',
       'deleteTapMonitor',
       'discoverTapMonitors',
     ]);
@@ -470,6 +472,198 @@ describe('ManageTapMonitorsComponent', () => {
       component.save();
 
       expect(mockSnackBar.open).toHaveBeenCalledWith('Error: Update failed', 'Close');
+    });
+
+    it('should disconnect tap and save when location changes and tap is at different location and user confirms', () => {
+      component.modifyTapMonitor = new TapMonitor({
+        id: 'tm-1',
+        name: 'Monitor 1',
+        monitorType: 'plaato-blynk',
+        locationId: 'loc-1',
+        meta: {},
+        tap: { id: 'tap-1', tapNumber: 1, description: 'Test Tap', locationId: 'loc-1' },
+      } as any);
+      component.modifyTapMonitor.enableEditing();
+      component.modifyTapMonitor.editValues.locationId = 'loc-2';
+
+      mockDataService.updateTap.and.returnValue(of({} as any));
+      mockDataService.updateTapMonitor.and.returnValue(of({} as any));
+      spyOn(window, 'confirm').and.returnValue(true);
+
+      component.save();
+
+      expect(window.confirm).toHaveBeenCalled();
+      expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', { tapMonitorId: null });
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        locationId: 'loc-2',
+      });
+    });
+
+    it('should not save when location changes and tap is at different location and user cancels', () => {
+      component.modifyTapMonitor = new TapMonitor({
+        id: 'tm-1',
+        name: 'Monitor 1',
+        monitorType: 'plaato-blynk',
+        locationId: 'loc-1',
+        meta: {},
+        tap: { id: 'tap-1', tapNumber: 1, description: 'Test Tap', locationId: 'loc-1' },
+      } as any);
+      component.modifyTapMonitor.enableEditing();
+      component.modifyTapMonitor.editValues.locationId = 'loc-2';
+
+      spyOn(window, 'confirm').and.returnValue(false);
+
+      component.save();
+
+      expect(window.confirm).toHaveBeenCalled();
+      expect(mockDataService.updateTap).not.toHaveBeenCalled();
+      expect(mockDataService.updateTapMonitor).not.toHaveBeenCalled();
+    });
+
+    it('should show error and not save when disconnect fails', () => {
+      component.modifyTapMonitor = new TapMonitor({
+        id: 'tm-1',
+        name: 'Monitor 1',
+        monitorType: 'plaato-blynk',
+        locationId: 'loc-1',
+        meta: {},
+        tap: { id: 'tap-1', tapNumber: 1, description: 'Test Tap', locationId: 'loc-1' },
+      } as any);
+      component.modifyTapMonitor.enableEditing();
+      component.modifyTapMonitor.editValues.locationId = 'loc-2';
+
+      const error: DataError = { message: 'Disconnect failed' } as DataError;
+      mockDataService.updateTap.and.returnValue(throwError(() => error));
+      spyOn(window, 'confirm').and.returnValue(true);
+
+      component.save();
+
+      expect(mockSnackBar.open).toHaveBeenCalledWith('Error: Disconnect failed', 'Close');
+      expect(mockDataService.updateTapMonitor).not.toHaveBeenCalled();
+    });
+
+    it('should save directly when location changes but no tap is connected', () => {
+      component.modifyTapMonitor = new TapMonitor({
+        id: 'tm-1',
+        name: 'Monitor 1',
+        monitorType: 'plaato-blynk',
+        locationId: 'loc-1',
+        meta: {},
+      } as any);
+      component.modifyTapMonitor.enableEditing();
+      component.modifyTapMonitor.editValues.locationId = 'loc-2';
+
+      mockDataService.updateTapMonitor.and.returnValue(of({} as any));
+
+      component.save();
+
+      expect(mockDataService.updateTap).not.toHaveBeenCalled();
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        locationId: 'loc-2',
+      });
+    });
+
+    it('should clear kegtron port after disconnect when monitor is kegtron-pro', () => {
+      component.modifyTapMonitor = new TapMonitor({
+        id: 'tm-1',
+        name: 'Kegtron Monitor',
+        monitorType: 'kegtron-pro',
+        locationId: 'loc-1',
+        meta: { deviceId: 'kegtron-dev-1', portNum: 0, accessToken: 'tok' },
+        tap: { id: 'tap-1', tapNumber: 1, description: 'Test Tap', locationId: 'loc-1' },
+      } as any);
+      component.modifyTapMonitor.enableEditing();
+      component.modifyTapMonitor.editValues.locationId = 'loc-2';
+
+      mockDataService.updateTap.and.returnValue(of({} as any));
+      mockDataService.clearKegtronPort.and.returnValue(of(true as any));
+      mockDataService.updateTapMonitor.and.returnValue(of({} as any));
+      spyOn(window, 'confirm').and.returnValue(true);
+
+      component.save();
+
+      expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', { tapMonitorId: null });
+      expect(mockDataService.clearKegtronPort).toHaveBeenCalledWith('kegtron-dev-1', 0);
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        locationId: 'loc-2',
+      });
+    });
+
+    it('should still save when kegtron clear fails', () => {
+      component.modifyTapMonitor = new TapMonitor({
+        id: 'tm-1',
+        name: 'Kegtron Monitor',
+        monitorType: 'kegtron-pro',
+        locationId: 'loc-1',
+        meta: { deviceId: 'kegtron-dev-1', portNum: 0, accessToken: 'tok' },
+        tap: { id: 'tap-1', tapNumber: 1, description: 'Test Tap', locationId: 'loc-1' },
+      } as any);
+      component.modifyTapMonitor.enableEditing();
+      component.modifyTapMonitor.editValues.locationId = 'loc-2';
+
+      const clearError: DataError = { message: 'Clear failed' } as DataError;
+      mockDataService.updateTap.and.returnValue(of({} as any));
+      mockDataService.clearKegtronPort.and.returnValue(throwError(() => clearError));
+      mockDataService.updateTapMonitor.and.returnValue(of({} as any));
+      spyOn(window, 'confirm').and.returnValue(true);
+
+      component.save();
+
+      expect(mockDataService.clearKegtronPort).toHaveBeenCalledWith('kegtron-dev-1', 0);
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Error: There was an error trying to clear the Kegtron port, skipping...  Error: Clear failed',
+        'Close'
+      );
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        locationId: 'loc-2',
+      });
+    });
+
+    it('should not clear kegtron port for non-kegtron monitor types', () => {
+      component.modifyTapMonitor = new TapMonitor({
+        id: 'tm-1',
+        name: 'Monitor 1',
+        monitorType: 'plaato-blynk',
+        locationId: 'loc-1',
+        meta: {},
+        tap: { id: 'tap-1', tapNumber: 1, description: 'Test Tap', locationId: 'loc-1' },
+      } as any);
+      component.modifyTapMonitor.enableEditing();
+      component.modifyTapMonitor.editValues.locationId = 'loc-2';
+
+      mockDataService.updateTap.and.returnValue(of({} as any));
+      mockDataService.updateTapMonitor.and.returnValue(of({} as any));
+      spyOn(window, 'confirm').and.returnValue(true);
+
+      component.save();
+
+      expect(mockDataService.updateTap).toHaveBeenCalledWith('tap-1', { tapMonitorId: null });
+      expect(mockDataService.clearKegtronPort).not.toHaveBeenCalled();
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        locationId: 'loc-2',
+      });
+    });
+
+    it('should save directly when location is not changed', () => {
+      component.modifyTapMonitor = new TapMonitor({
+        id: 'tm-1',
+        name: 'Monitor 1',
+        monitorType: 'plaato-blynk',
+        locationId: 'loc-1',
+        meta: {},
+        tap: { id: 'tap-1', tapNumber: 1, description: 'Test Tap', locationId: 'loc-1' },
+      } as any);
+      component.modifyTapMonitor.enableEditing();
+      component.modifyTapMonitor.editValues.name = 'Updated Name';
+
+      mockDataService.updateTapMonitor.and.returnValue(of({} as any));
+
+      component.save();
+
+      expect(mockDataService.updateTap).not.toHaveBeenCalled();
+      expect(mockDataService.updateTapMonitor).toHaveBeenCalledWith('tm-1', {
+        name: 'Updated Name',
+      });
     });
   });
 

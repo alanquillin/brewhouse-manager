@@ -12,6 +12,7 @@ from db.tap_monitors import TapMonitors as TapMonitorsDB
 from db.taps import Taps as TapsDB
 from dependencies.auth import get_db_session
 from lib import logging
+from lib.tap_monitors import get_tap_monitor_lib
 from routers import get_location_id
 from services.beers import BeerService
 from services.beverages import BeverageService
@@ -42,7 +43,7 @@ async def get_dashboard_tap(
     if not tap:
         raise HTTPException(status_code=404, detail="Tap not found")
 
-    return await TapService.transform_response(tap, db_session=db_session)
+    return await TapService.transform_response(tap, db_session=db_session, filter_unsupported_tap_monitor=True)
 
 
 @router.get("/beers/{beer_id}", response_model=dict)
@@ -81,6 +82,10 @@ async def get_dashboard_tap_monitor(
     if not tap_monitor:
         raise HTTPException(status_code=404, detail="Tap monitor not found")
 
+    tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
+    if not tap_monitor_lib:
+        raise HTTPException(status_code=400, detail="Tap monitor type not supported")
+
     return await TapMonitorService.transform_response(tap_monitor, db_session=db_session)
 
 
@@ -108,7 +113,7 @@ async def get_dashboard(
         current_location = await LocationsDB.get_by_pkey(db_session, location_id)
 
     return {
-        "taps": [await TapService.transform_response(t, db_session=db_session, include_location=False) for t in taps],
+        "taps": [await TapService.transform_response(t, db_session=db_session, include_location=False, filter_unsupported_tap_monitor=True) for t in taps],
         "locations": [await LocationService.transform_response(l, db_session=db_session) for l in locations],
         "location": await LocationService.transform_response(current_location, db_session=db_session) if current_location else None,
     }

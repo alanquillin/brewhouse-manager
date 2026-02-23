@@ -351,7 +351,7 @@ describe('DataService Functional Tests', () => {
       const taps = await firstValueFrom(service.getTaps(LOCATION_MAIN_ID));
 
       expect(taps).toBeTruthy();
-      expect(taps.length).toBe(3);
+      expect(taps.length).toBe(4);
 
       const tap1 = taps.find(t => t.id === TAP_1_ID);
       expect(tap1).toBeTruthy();
@@ -615,7 +615,7 @@ describe('DataService Functional Tests', () => {
       expect(dashboard.location).toBeTruthy();
       expect(dashboard.location.id).toBe(LOCATION_MAIN_ID);
       expect(dashboard.taps).toBeTruthy();
-      expect(dashboard.taps.length).toBe(3);
+      expect(dashboard.taps.length).toBe(4);
     });
 
     it('should get dashboard tap', async () => {

@@ -2,8 +2,8 @@
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { EventEmitter, Inject, Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 
 import {
   Batch,
@@ -267,7 +267,11 @@ export class DataService {
     );
   }
 
-  getTapMonitors(locationId?: string, includeTapDetails = false): Observable<TapMonitor[]> {
+  getTapMonitors(
+    locationId?: string,
+    includeTapDetails = false,
+    includeUnsupported = false
+  ): Observable<TapMonitor[]> {
     let url: string;
     if (_.isNil(locationId)) {
       url = `${this.apiBaseUrl}/tap_monitors`;
@@ -277,6 +281,7 @@ export class DataService {
 
     const params = [];
     if (includeTapDetails) params.push('include_tap_details=true');
+    if (includeUnsupported) params.push('include_unsupported=true');
     const queryString = params.length > 0 ? `?${params.join('&')}` : '';
     url = `${url}${queryString}`;
 
@@ -287,9 +292,14 @@ export class DataService {
     );
   }
 
-  getTapMonitor(tapMonitorId: string, includeTapDetails = false): Observable<TapMonitor> {
+  getTapMonitor(
+    tapMonitorId: string,
+    includeTapDetails = false,
+    includeUnsupported = false
+  ): Observable<TapMonitor> {
     const params = [];
     if (includeTapDetails) params.push('include_tap_details=true');
+    if (includeUnsupported) params.push('include_unsupported=true');
     const queryString = params.length > 0 ? `?${params.join('&')}` : '';
 
     const url = `${this.apiBaseUrl}/tap_monitors/${tapMonitorId}${queryString}`;
@@ -458,6 +468,59 @@ export class DataService {
       catchError(err => {
         return this.getError(err);
       })
+    );
+  }
+
+  getAffectedTaps(batch: Batch, newLocationIds: string[]): Tap[] {
+    if (isNilOrEmpty(batch.taps)) {
+      return [];
+    }
+
+    const removedLocationIds = (batch.locationIds || []).filter(
+      (id: string) => !newLocationIds.includes(id)
+    );
+
+    if (_.isEmpty(removedLocationIds)) {
+      return [];
+    }
+
+    return batch.taps!.filter((tap: Tap) => removedLocationIds.includes(tap.locationId));
+  }
+
+  processAffectedTaps(taps: Tap[]): Observable<string[]> {
+    if (_.isEmpty(taps)) {
+      return of([]);
+    }
+
+    return taps.reduce(
+      (acc$: Observable<string[]>, tap: Tap) =>
+        acc$.pipe(
+          switchMap((accWarnings: string[]) => {
+            const meta = tap.tapMonitor?.meta;
+            const hasKegtronMeta =
+              meta != null && meta.deviceId != null && typeof meta.portNum === 'number';
+
+            const clearKegtron$: Observable<string[]> =
+              tap.tapMonitor?.monitorType === 'kegtron-pro' && hasKegtronMeta
+                ? this.clearKegtronPort(meta!.deviceId, meta!.portNum).pipe(
+                    switchMap(() => of([] as string[])),
+                    catchError((err: DataError) =>
+                      of([
+                        'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+                          err.message,
+                      ])
+                    )
+                  )
+                : of([] as string[]);
+
+            return clearKegtron$.pipe(
+              switchMap((newWarnings: string[]) =>
+                this.clearTap(tap.id).pipe(switchMap(() => of([...accWarnings, ...newWarnings])))
+              )
+            );
+          })
+        ),
+      of([] as string[])
     );
   }
 

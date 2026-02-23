@@ -56,7 +56,7 @@ class BatchService:
             if taps:
                 from services.taps import TapService
 
-                data["taps"] = [await TapService.transform_tap_response(tap, db_session=db_session) for tap in taps]
+                data["taps"] = [await TapService.transform_tap_response(tap, db_session=db_session, include_tap_monitor=True) for tap in taps]
 
         # Refresh external brewing tool metadata if needed
         if not skip_meta_refresh:

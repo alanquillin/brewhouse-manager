@@ -50,6 +50,13 @@
         padding: 2px 8px;
       }
 
+      .tap-monitor-error {
+        display: flex;
+        align-items: center;
+        color: red;
+        font-size: 0.85em;
+      }
+
       .actions {
         width: 100%;
         display: flex;

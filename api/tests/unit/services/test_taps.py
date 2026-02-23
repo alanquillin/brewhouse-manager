@@ -78,6 +78,30 @@ class TestTapServiceTransformTapResponse:
         assert "location" in result
         assert result["location"]["name"] == "Test Location"
 
+    def test_includes_tap_monitor_when_requested(self):
+        """Test includes tap monitor when include_tap_monitor=True"""
+        mock_monitor = MagicMock(id="monitor-1")
+        mock_tap = create_mock_tap(tap_monitor=mock_monitor)
+        mock_session = AsyncMock()
+
+        with patch("services.tap_monitors.TapMonitorService.transform_response", new_callable=AsyncMock) as mock_monitor_transform:
+            mock_monitor_transform.return_value = {"id": "monitor-1", "monitorType": "kegtron-pro"}
+
+            result = run_async(TapService.transform_tap_response(mock_tap, mock_session, include_location=False, include_tap_monitor=True))
+
+        assert "tapMonitor" in result
+        assert result["tapMonitor"]["monitorType"] == "kegtron-pro"
+
+    def test_excludes_tap_monitor_by_default(self):
+        """Test excludes tap monitor by default"""
+        mock_monitor = MagicMock(id="monitor-1")
+        mock_tap = create_mock_tap(tap_monitor=mock_monitor)
+        mock_session = AsyncMock()
+
+        result = run_async(TapService.transform_tap_response(mock_tap, mock_session, include_location=False))
+
+        assert "tapMonitor" not in result
+
 
 class TestTapServiceTransformResponse:
     """Tests for TapService.transform_response method"""
@@ -179,3 +203,51 @@ class TestTapServiceTransformResponse:
 
         assert "location" in result
         assert result["location"]["name"] == "Test Location"
+
+    def test_includes_error_for_unsupported_tap_monitor(self):
+        """Test tap monitor includes error field when type is unsupported"""
+        mock_monitor = MagicMock(id="monitor-1", monitor_type="unsupported-type")
+        mock_tap = create_mock_tap(tap_monitor=mock_monitor)
+        mock_session = AsyncMock()
+
+        with patch("services.tap_monitors.TapMonitorService.transform_response", new_callable=AsyncMock) as mock_monitor_transform, patch(
+            "services.taps.get_tap_monitor_lib", return_value=None
+        ):
+            mock_monitor_transform.return_value = {"id": "monitor-1", "monitorType": "unsupported-type"}
+
+            result = run_async(TapService.transform_response(mock_tap, mock_session, include_location=False))
+
+        assert "tapMonitor" in result
+        assert "error" in result["tapMonitor"]
+        assert "unsupported-type" in result["tapMonitor"]["error"].lower()
+
+    def test_no_error_for_supported_tap_monitor(self):
+        """Test tap monitor does not include error field when type is supported"""
+        mock_monitor = MagicMock(id="monitor-1", monitor_type="open-plaato-keg")
+        mock_tap = create_mock_tap(tap_monitor=mock_monitor)
+        mock_session = AsyncMock()
+
+        with patch("services.tap_monitors.TapMonitorService.transform_response", new_callable=AsyncMock) as mock_monitor_transform, patch(
+            "services.taps.get_tap_monitor_lib", return_value=MagicMock()
+        ):
+            mock_monitor_transform.return_value = {"id": "monitor-1", "monitorType": "open-plaato-keg"}
+
+            result = run_async(TapService.transform_response(mock_tap, mock_session, include_location=False))
+
+        assert "tapMonitor" in result
+        assert "error" not in result["tapMonitor"]
+
+    def test_filter_unsupported_excludes_monitor_no_error(self):
+        """Test filter_unsupported_tap_monitor=True excludes unsupported monitors entirely (no error field)"""
+        mock_monitor = MagicMock(id="monitor-1", monitor_type="unsupported-type")
+        mock_tap = create_mock_tap(tap_monitor=mock_monitor)
+        mock_session = AsyncMock()
+
+        with patch("services.tap_monitors.TapMonitorService.transform_response", new_callable=AsyncMock) as mock_monitor_transform, patch(
+            "services.taps.get_tap_monitor_lib", return_value=None
+        ):
+            mock_monitor_transform.return_value = {"id": "monitor-1", "monitorType": "unsupported-type"}
+
+            result = run_async(TapService.transform_response(mock_tap, mock_session, include_location=False, filter_unsupported_tap_monitor=True))
+
+        assert "tapMonitor" not in result

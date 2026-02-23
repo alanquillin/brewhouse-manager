@@ -1061,7 +1061,9 @@ export class ManageBeerComponent implements OnInit {
 
   saveBatch(): void {
     this.processing = true;
-    if (isNilOrEmpty(this.batchChanges)) {
+    const changes = this.batchChanges;
+
+    if (isNilOrEmpty(changes)) {
       this._refresh(
         () => {
           this.processing = false;
@@ -1070,24 +1072,58 @@ export class ManageBeerComponent implements OnInit {
           this.editingBatch = false;
         }
       );
-    } else {
-      this.dataService.updateBatch(this.modifyBatch.id, this.batchChanges).subscribe({
-        next: (_: Batch) => {
-          this._refresh(
-            () => {
-              this.processing = false;
-            },
-            () => {
-              this.editingBatch = false;
-            }
-          );
+      return;
+    }
+
+    const affectedTaps = changes.locationIds
+      ? this.dataService.getAffectedTaps(this.modifyBatch, changes.locationIds)
+      : [];
+    if (!_.isEmpty(affectedTaps)) {
+      const tapDescriptions = affectedTaps
+        .map(t => `Tap #${t.tapNumber} (${t.description})`)
+        .join(', ');
+      if (
+        !confirm(
+          `The following taps are at locations being removed from this batch and will be disconnected: ${tapDescriptions}. Continue?`
+        )
+      ) {
+        this.processing = false;
+        return;
+      }
+
+      this.dataService.processAffectedTaps(affectedTaps).subscribe({
+        next: (warnings: string[]) => {
+          warnings.forEach(w => this.displayError(w));
+          this._executeSaveBatch(changes);
         },
         error: (err: DataError) => {
           this.displayError(err.message);
           this.processing = false;
         },
       });
+      return;
     }
+
+    this._executeSaveBatch(changes);
+  }
+
+  private _executeSaveBatch(changes: any): void {
+    this.dataService.updateBatch(this.modifyBatch.id, changes).subscribe({
+      next: (_: Batch) => {
+        this._refresh(
+          () => {
+            this.processing = false;
+          },
+          () => {
+            this.editingBatch = false;
+          }
+        );
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      },
+    });
   }
 
   cancelEditBatch(): void {

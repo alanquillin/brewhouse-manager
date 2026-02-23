@@ -82,7 +82,7 @@ export class ManageTapMonitorsComponent implements OnInit {
   }
 
   _refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
-    this.dataService.getTapMonitors(undefined, true).subscribe({
+    this.dataService.getTapMonitors(undefined, true, true).subscribe({
       next: (tapMonitors: TapMonitor[]) => {
         this.tapMonitors = [];
         _.forEach(tapMonitors, tapMonitor => {
@@ -280,26 +280,72 @@ export class ManageTapMonitorsComponent implements OnInit {
   }
 
   save(): void {
-    this.processing = true;
-    this.dataService
-      .updateTapMonitor(this.modifyTapMonitor.id, this.modifyTapMonitor.changes)
-      .subscribe({
-        next: (_: any) => {
-          this.modifyTapMonitor.disableEditing();
-          this._refresh(
-            () => {
-              this.processing = false;
-            },
-            () => {
-              this.editing = false;
-            }
-          );
+    const changes = this.modifyTapMonitor.changes;
+    const tap = this.modifyTapMonitor.tap;
+
+    if (changes.locationId && !isNilOrEmpty(tap) && tap.locationId !== changes.locationId) {
+      if (
+        !confirm(
+          `This monitor is connected to Tap #${tap.tapNumber} (${tap.description}) at a different location. ` +
+            `Changing the location will disconnect the monitor from this tap. Continue?`
+        )
+      ) {
+        return;
+      }
+
+      this.processing = true;
+      this.dataService.updateTap(tap.id, { tapMonitorId: null }).subscribe({
+        next: () => {
+          const meta = this.modifyTapMonitor.meta;
+          const hasKegtronMeta =
+            meta != null && meta.deviceId != null && typeof meta.portNum === 'number';
+          if (this.modifyTapMonitor.monitorType === 'kegtron-pro' && hasKegtronMeta) {
+            this.dataService.clearKegtronPort(meta.deviceId, meta.portNum).subscribe({
+              next: () => {
+                this._executeSave(changes);
+              },
+              error: (err: DataError) => {
+                this.displayError(
+                  'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+                    err.message
+                );
+                this._executeSave(changes);
+              },
+            });
+          } else {
+            this._executeSave(changes);
+          }
         },
         error: (err: DataError) => {
           this.displayError(err.message);
           this.processing = false;
         },
       });
+      return;
+    }
+
+    this._executeSave(changes);
+  }
+
+  private _executeSave(changes: any): void {
+    this.processing = true;
+    this.dataService.updateTapMonitor(this.modifyTapMonitor.id, changes).subscribe({
+      next: (_: any) => {
+        this.modifyTapMonitor.disableEditing();
+        this._refresh(
+          () => {
+            this.processing = false;
+          },
+          () => {
+            this.editing = false;
+          }
+        );
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      },
+    });
   }
 
   cancelEdit(): void {

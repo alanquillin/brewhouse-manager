@@ -639,6 +639,72 @@ describe('ManageTapsComponent', () => {
     });
   });
 
+  describe('resolveTapMonitor', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+      component.tapMonitors = mockTapMonitors as any;
+    });
+
+    it('should return the tap monitor when provided directly', () => {
+      const monitor = mockTapMonitors[0] as TapMonitor;
+      const result = component.resolveTapMonitor(monitor);
+      expect(result).toBe(monitor);
+    });
+
+    it('should find monitor by id when not provided directly', () => {
+      const result = component.resolveTapMonitor(undefined, 'tm-1');
+      expect(result?.id).toBe('tm-1');
+    });
+
+    it('should return undefined when neither provided', () => {
+      const result = component.resolveTapMonitor(undefined);
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('getTapMonitorError', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+      component.tapMonitors = mockTapMonitors as any;
+    });
+
+    it('should return error string when monitor has an error', () => {
+      const monitor = {
+        id: 'tm-err',
+        name: 'Error Monitor',
+        monitorType: 'test',
+        error: 'Device offline',
+      } as TapMonitor;
+      const result = component.getTapMonitorError(monitor);
+      expect(result).toBe('Device offline');
+    });
+
+    it('should return empty string when monitor has no error', () => {
+      const monitor = mockTapMonitors[0] as TapMonitor;
+      const result = component.getTapMonitorError(monitor);
+      expect(result).toBe('');
+    });
+
+    it('should return empty string for undefined monitor', () => {
+      const result = component.getTapMonitorError(undefined);
+      expect(result).toBe('');
+    });
+
+    it('should find monitor by id and return its error', () => {
+      component.tapMonitors = [
+        {
+          id: 'tm-1',
+          name: 'Monitor 1',
+          monitorType: 'plaato-blynk',
+          locationId: 'loc-1',
+          error: 'Connection lost',
+        },
+      ] as any;
+      const result = component.getTapMonitorError(undefined, 'tm-1');
+      expect(result).toBe('Connection lost');
+    });
+  });
+
   describe('modifyForm getter', () => {
     it('should return form controls', () => {
       const controls = component.modifyForm;

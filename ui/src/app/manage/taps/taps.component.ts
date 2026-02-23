@@ -490,12 +490,20 @@ export class ManageTapsComponent implements OnInit {
     this.filteredTaps = filteredData;
   }
 
-  getTapMonitorName(tapMonitor: TapMonitor | undefined, tapMonitorId?: string): string {
+  resolveTapMonitor(
+    tapMonitor: TapMonitor | undefined,
+    tapMonitorId?: string
+  ): TapMonitor | undefined {
     if (_.isNil(tapMonitor) && !_.isNil(tapMonitorId)) {
       tapMonitor = _.find(this.tapMonitors, s => {
         return s.id === tapMonitorId;
       });
     }
+    return tapMonitor;
+  }
+
+  getTapMonitorName(tapMonitor: TapMonitor | undefined, tapMonitorId?: string): string {
+    tapMonitor = this.resolveTapMonitor(tapMonitor, tapMonitorId);
     if (_.isNil(tapMonitor)) {
       return '';
     }
@@ -504,6 +512,14 @@ export class ManageTapsComponent implements OnInit {
       name = 'UNNAMED';
     }
     return `${name} (${tapMonitor.monitorType})`;
+  }
+
+  getTapMonitorError(tapMonitor: TapMonitor | undefined, tapMonitorId?: string): string {
+    tapMonitor = this.resolveTapMonitor(tapMonitor, tapMonitorId);
+    if (_.isNil(tapMonitor) || _.isEmpty(tapMonitor.error)) {
+      return '';
+    }
+    return tapMonitor.error;
   }
 
   findBeer(beerId: string) {
