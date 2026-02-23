@@ -12,7 +12,7 @@ class TapService:
     """Service for tap-related operations"""
 
     @staticmethod
-    async def transform_tap_response(tap, db_session: AsyncSession, include_location=True):
+    async def transform_tap_response(tap, db_session: AsyncSession, include_location=True, include_tap_monitor=False):
         """Transform tap for inclusion in dependent object response"""
         data = tap.to_dict()
 
@@ -22,6 +22,15 @@ class TapService:
                 from services.locations import LocationService
 
                 data["location"] = await LocationService.transform_response(tap.location, db_session=db_session)
+
+        if include_tap_monitor:
+            await tap.awaitable_attrs.tap_monitor
+            if tap.tap_monitor:
+                from services.tap_monitors import TapMonitorService
+
+                data["tap_monitor"] = await TapMonitorService.transform_response(
+                    tap.tap_monitor, db_session=db_session, include_location=False
+                )
 
         return transform_dict_to_camel_case(data)
 

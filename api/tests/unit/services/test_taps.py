@@ -79,6 +79,31 @@ class TestTapServiceTransformTapResponse:
         assert result["location"]["name"] == "Test Location"
 
 
+    def test_includes_tap_monitor_when_requested(self):
+        """Test includes tap monitor when include_tap_monitor=True"""
+        mock_monitor = MagicMock(id="monitor-1")
+        mock_tap = create_mock_tap(tap_monitor=mock_monitor)
+        mock_session = AsyncMock()
+
+        with patch("services.tap_monitors.TapMonitorService.transform_response", new_callable=AsyncMock) as mock_monitor_transform:
+            mock_monitor_transform.return_value = {"id": "monitor-1", "monitorType": "kegtron-pro"}
+
+            result = run_async(TapService.transform_tap_response(mock_tap, mock_session, include_location=False, include_tap_monitor=True))
+
+        assert "tapMonitor" in result
+        assert result["tapMonitor"]["monitorType"] == "kegtron-pro"
+
+    def test_excludes_tap_monitor_by_default(self):
+        """Test excludes tap monitor by default"""
+        mock_monitor = MagicMock(id="monitor-1")
+        mock_tap = create_mock_tap(tap_monitor=mock_monitor)
+        mock_session = AsyncMock()
+
+        result = run_async(TapService.transform_tap_response(mock_tap, mock_session, include_location=False))
+
+        assert "tapMonitor" not in result
+
+
 class TestTapServiceTransformResponse:
     """Tests for TapService.transform_response method"""
 

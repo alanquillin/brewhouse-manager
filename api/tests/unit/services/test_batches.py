@@ -106,6 +106,27 @@ class TestBatchServiceTransformResponse:
         assert len(result["locations"]) == 1
         assert result["locations"][0]["name"] == "Test Location"
 
+    def test_includes_tap_monitor_in_tap_details(self):
+        """Test includes tap monitor when include_tap_details=True"""
+        mock_batch = create_mock_batch()
+        mock_session = AsyncMock()
+        mock_tap = MagicMock(id="tap-1")
+
+        with patch("db.taps.Taps.get_by_batch", new_callable=AsyncMock) as mock_get_by_batch, patch(
+            "services.taps.TapService.transform_tap_response", new_callable=AsyncMock
+        ) as mock_tap_transform:
+            mock_get_by_batch.return_value = [mock_tap]
+            mock_tap_transform.return_value = {"id": "tap-1", "tapNumber": 1, "tapMonitor": {"monitorType": "kegtron-pro"}}
+
+            result = run_async(
+                BatchService.transform_response(mock_batch, mock_session, skip_meta_refresh=True, include_location=False, include_tap_details=True)
+            )
+
+        assert "taps" in result
+        assert len(result["taps"]) == 1
+        assert result["taps"][0]["tapMonitor"]["monitorType"] == "kegtron-pro"
+        mock_tap_transform.assert_called_once_with(mock_tap, db_session=mock_session, include_tap_monitor=True)
+
     def test_converts_dates_to_timestamps(self):
         """Test converts date fields to timestamps"""
         brew = date(2024, 1, 15)

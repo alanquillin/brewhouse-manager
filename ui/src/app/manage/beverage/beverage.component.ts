@@ -798,7 +798,9 @@ export class ManageBeverageComponent implements OnInit {
 
   saveBatch(): void {
     this.processing = true;
-    if (isNilOrEmpty(this.batchChanges)) {
+    const changes = this.batchChanges;
+
+    if (isNilOrEmpty(changes)) {
       this._refresh(
         () => {
           this.processing = false;
@@ -807,24 +809,108 @@ export class ManageBeverageComponent implements OnInit {
           this.editingBatch = false;
         }
       );
-    } else {
-      this.dataService.updateBatch(this.modifyBatch.id, this.batchChanges).subscribe({
-        next: (_: Batch) => {
-          this._refresh(
-            () => {
-              this.processing = false;
-            },
-            () => {
-              this.editingBatch = false;
-            }
-          );
+      return;
+    }
+
+    const affectedTaps = this._getAffectedTaps(changes);
+    if (!_.isEmpty(affectedTaps)) {
+      const tapDescriptions = affectedTaps
+        .map(t => `Tap #${t.tapNumber} (${t.description})`)
+        .join(', ');
+      if (
+        !confirm(
+          `The following taps are at locations being removed from this batch and will be disconnected: ${tapDescriptions}. Continue?`
+        )
+      ) {
+        this.processing = false;
+        return;
+      }
+
+      this._processAffectedTaps(affectedTaps, 0, () => {
+        this._executeSaveBatch(changes);
+      });
+      return;
+    }
+
+    this._executeSaveBatch(changes);
+  }
+
+  private _getAffectedTaps(changes: any): Tap[] {
+    if (!changes.locationIds || isNilOrEmpty(this.modifyBatch.taps)) {
+      return [];
+    }
+
+    const newLocationIds: string[] = changes.locationIds;
+    const removedLocationIds = (this.modifyBatch.locationIds || []).filter(
+      (id: string) => !newLocationIds.includes(id)
+    );
+
+    if (_.isEmpty(removedLocationIds)) {
+      return [];
+    }
+
+    return this.modifyBatch.taps!.filter((tap: Tap) =>
+      removedLocationIds.includes(tap.locationId)
+    );
+  }
+
+  private _processAffectedTaps(taps: Tap[], index: number, next: () => void): void {
+    if (index >= taps.length) {
+      next();
+      return;
+    }
+
+    const tap = taps[index];
+
+    const proceedAfterKegtron = () => {
+      this.dataService.clearTap(tap.id).subscribe({
+        next: () => {
+          this._processAffectedTaps(taps, index + 1, next);
         },
         error: (err: DataError) => {
           this.displayError(err.message);
           this.processing = false;
         },
       });
+    };
+
+    if (tap.tapMonitor?.monitorType === 'kegtron-pro') {
+      this.dataService
+        .clearKegtronPort(tap.tapMonitor.meta.deviceId, tap.tapMonitor.meta.portNum)
+        .subscribe({
+          next: () => {
+            proceedAfterKegtron();
+          },
+          error: (err: DataError) => {
+            this.displayError(
+              'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+                err.message
+            );
+            proceedAfterKegtron();
+          },
+        });
+    } else {
+      proceedAfterKegtron();
     }
+  }
+
+  private _executeSaveBatch(changes: any): void {
+    this.dataService.updateBatch(this.modifyBatch.id, changes).subscribe({
+      next: (_: Batch) => {
+        this._refresh(
+          () => {
+            this.processing = false;
+          },
+          () => {
+            this.editingBatch = false;
+          }
+        );
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+        this.processing = false;
+      },
+    });
   }
 
   cancelEditBatch(): void {
