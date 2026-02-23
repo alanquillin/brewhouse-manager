@@ -82,7 +82,7 @@ export class ManageTapMonitorsComponent implements OnInit {
   }
 
   _refresh(always?: () => void, next?: () => void, error?: (err: DataError) => void) {
-    this.dataService.getTapMonitors(undefined, true).subscribe({
+    this.dataService.getTapMonitors(undefined, true, true).subscribe({
       next: (tapMonitors: TapMonitor[]) => {
         this.tapMonitors = [];
         _.forEach(tapMonitors, tapMonitor => {
