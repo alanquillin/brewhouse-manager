@@ -8,9 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.batches import Batches as BatchesDB
 from db.on_tap import OnTap as OnTapDB
+from db.tap_monitors import TapMonitors as TapMonitorsDB
 from db.taps import Taps as TapsDB
 from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
+from lib.tap_monitors import get_tap_monitor_lib
 from routers import get_location_id
 from schemas.taps import TapCreate, TapUpdate
 from services.taps import TapService
@@ -60,6 +62,18 @@ async def create_tap(
     # Check authorization for location in body
     if not current_user.admin and data.get("location_id") not in current_user.locations:
         raise HTTPException(status_code=403, detail="Not authorized to create tap in this location")
+
+    # check tap monitor id exists and is supported
+    if data.get("tap_monitor_id"):
+        tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, data["tap_monitor_id"])
+        if not tap_monitor:
+            raise HTTPException(status_code=404, detail="Tap monitor not found")
+        if not get_tap_monitor_lib(tap_monitor.monitor_type):
+            LOGGER.warning("User tried to create tap with unsupported tap monitor type: %s", tap_monitor.monitor_type)
+            raise HTTPException(status_code=400, detail=f"Unsupported tap monitor type: {tap_monitor.monitor_type}")
+        if str(tap_monitor.location_id) != str(data.get("location_id")):
+            LOGGER.warning("User tried to create tap with tap monitor from different tap location: %s, monitor location: %s", data.get("location_id"), tap_monitor.location_id)
+            raise HTTPException(status_code=400, detail="Tap monitor is not associated with this location")
 
     # Handle batch_id and create on_tap entry
     batch_id = data.get("batch_id")
@@ -147,6 +161,18 @@ async def update_tap(
     await tap.awaitable_attrs.on_tap
     if tap.on_tap:
         current_batch_id = tap.on_tap.batch_id
+
+    # check tap monitor id exists and is supported
+    if data.get("tap_monitor_id"):
+        tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, data["tap_monitor_id"])
+        if not tap_monitor:
+            raise HTTPException(status_code=404, detail="Tap monitor not found")
+        if not get_tap_monitor_lib(tap_monitor.monitor_type):
+            LOGGER.warning("User tried to update tap with unsupported tap monitor type: %s", tap_monitor.monitor_type)
+            raise HTTPException(status_code=400, detail=f"Unsupported tap monitor type: {tap_monitor.monitor_type}")
+        if str(tap_monitor.location_id) != str(tap.location_id):
+            LOGGER.warning("User tried to update tap with tap monitor from different tap location: %s, monitor location: %s", tap.location_id, tap_monitor.location_id)
+            raise HTTPException(status_code=400, detail="Tap monitor is not associated with this location")
 
     # Handle batch_id updates
     new_batch_id = data.get("batch_id")

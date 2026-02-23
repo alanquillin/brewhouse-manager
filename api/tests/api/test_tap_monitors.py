@@ -15,6 +15,7 @@ from .seed_data import (
     TAP_MONITOR_2_ID,
     TAP_MONITOR_3_ID,
     TAP_MONITOR_SECONDARY_ID,
+    TAP_MONITOR_UNSUPPORTED_ID,
     TAP_MONITORS,
 )
 
@@ -22,22 +23,22 @@ from .seed_data import (
 class TestGetTapMonitors:
     """Tests for GET /tap_monitors endpoint."""
 
-    def test_returns_all_tap_monitors(self, api_client: requests.Session, api_base_url: str):
-        """Test that all seeded tap monitors are returned."""
+    def test_returns_all_supported_tap_monitors(self, api_client: requests.Session, api_base_url: str):
+        """Test that all supported seeded tap monitors are returned (unsupported filtered by default)."""
         response = api_client.get(f"{api_base_url}/tap_monitors")
 
         assert response.status_code == 200
         monitors = response.json()
 
-        # Should have at least the seeded tap monitors
-        assert len(monitors) >= len(TAP_MONITORS)
-
-        # Check that all seeded monitors are present
+        # Check that all supported seeded monitors are present
         monitor_ids = [m["id"] for m in monitors]
         assert TAP_MONITOR_1_ID in monitor_ids
         assert TAP_MONITOR_2_ID in monitor_ids
         assert TAP_MONITOR_3_ID in monitor_ids
         assert TAP_MONITOR_SECONDARY_ID in monitor_ids
+
+        # Unsupported monitor should not be present by default
+        assert TAP_MONITOR_UNSUPPORTED_ID not in monitor_ids
 
     def test_filters_by_query_string_location(self, api_client: requests.Session, api_base_url: str):
         """Test filtering tap monitors by location."""
@@ -122,6 +123,53 @@ class TestGetTapMonitors:
 
         monitor_1 = next(m for m in monitors if m["id"] == TAP_MONITOR_1_ID)
         assert "tap" not in monitor_1
+
+    def test_filters_unsupported_monitors_by_default(self, api_client: requests.Session, api_base_url: str):
+        """Test that monitors with unsupported types are filtered out by default."""
+        response = api_client.get(f"{api_base_url}/tap_monitors")
+
+        assert response.status_code == 200
+        monitors = response.json()
+
+        monitor_ids = [m["id"] for m in monitors]
+        assert TAP_MONITOR_UNSUPPORTED_ID not in monitor_ids
+
+    def test_include_unsupported_returns_all_monitors(self, api_client: requests.Session, api_base_url: str):
+        """Test that include_unsupported=true returns monitors with unsupported types."""
+        response = api_client.get(f"{api_base_url}/tap_monitors", params={"include_unsupported": "true"})
+
+        assert response.status_code == 200
+        monitors = response.json()
+
+        monitor_ids = [m["id"] for m in monitors]
+        assert TAP_MONITOR_UNSUPPORTED_ID in monitor_ids
+
+        # Verify the unsupported monitor has the expected data
+        unsupported = next(m for m in monitors if m["id"] == TAP_MONITOR_UNSUPPORTED_ID)
+        assert unsupported["monitorType"] == "unsupported-test-type"
+        assert unsupported["name"] == "Unsupported Monitor"
+
+    @pytest.mark.parametrize("param_value", ["true", "yes", "1", "True", "YES"])
+    def test_include_unsupported_truthy_values(self, api_client: requests.Session, api_base_url: str, param_value: str):
+        """Test that various truthy values for include_unsupported return unsupported monitors."""
+        response = api_client.get(f"{api_base_url}/tap_monitors", params={"include_unsupported": param_value})
+
+        assert response.status_code == 200
+        monitors = response.json()
+
+        monitor_ids = [m["id"] for m in monitors]
+        assert TAP_MONITOR_UNSUPPORTED_ID in monitor_ids
+
+    @pytest.mark.parametrize("param_value", ["false", "no", "0", "random"])
+    def test_include_unsupported_falsy_values(self, api_client: requests.Session, api_base_url: str, param_value: str):
+        """Test that non-truthy values for include_unsupported filter out unsupported monitors."""
+        response = api_client.get(f"{api_base_url}/tap_monitors", params={"include_unsupported": param_value})
+
+        assert response.status_code == 200
+        monitors = response.json()
+
+        monitor_ids = [m["id"] for m in monitors]
+        assert TAP_MONITOR_UNSUPPORTED_ID not in monitor_ids
 
 
 class TestGetTapMonitorById:
@@ -218,6 +266,57 @@ class TestGetTapMonitorById:
         assert response.status_code == 200
         data = response.json()
         assert "tap" not in data
+
+    def test_returns_400_for_unsupported_monitor_by_default(self, api_client: requests.Session, api_base_url: str):
+        """Test that getting an unsupported monitor returns 400 by default."""
+        response = api_client.get(f"{api_base_url}/tap_monitors/{TAP_MONITOR_UNSUPPORTED_ID}")
+
+        assert response.status_code == 400
+        assert "unsupported" in response.json()["message"].lower()
+
+    def test_include_unsupported_returns_unsupported_monitor(self, api_client: requests.Session, api_base_url: str):
+        """Test that include_unsupported=true returns an unsupported monitor."""
+        response = api_client.get(
+            f"{api_base_url}/tap_monitors/{TAP_MONITOR_UNSUPPORTED_ID}",
+            params={"include_unsupported": "true"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == TAP_MONITOR_UNSUPPORTED_ID
+        assert data["monitorType"] == "unsupported-test-type"
+        assert data["name"] == "Unsupported Monitor"
+
+    @pytest.mark.parametrize("param_value", ["true", "yes", "1", "True", "YES"])
+    def test_include_unsupported_truthy_values(self, api_client: requests.Session, api_base_url: str, param_value: str):
+        """Test that various truthy values for include_unsupported return the unsupported monitor."""
+        response = api_client.get(
+            f"{api_base_url}/tap_monitors/{TAP_MONITOR_UNSUPPORTED_ID}",
+            params={"include_unsupported": param_value},
+        )
+
+        assert response.status_code == 200
+        assert response.json()["id"] == TAP_MONITOR_UNSUPPORTED_ID
+
+    @pytest.mark.parametrize("param_value", ["false", "no", "0", "random"])
+    def test_include_unsupported_falsy_values(self, api_client: requests.Session, api_base_url: str, param_value: str):
+        """Test that non-truthy values for include_unsupported return 400 for unsupported monitors."""
+        response = api_client.get(
+            f"{api_base_url}/tap_monitors/{TAP_MONITOR_UNSUPPORTED_ID}",
+            params={"include_unsupported": param_value},
+        )
+
+        assert response.status_code == 400
+
+    def test_include_unsupported_does_not_affect_supported_monitors(self, api_client: requests.Session, api_base_url: str):
+        """Test that include_unsupported has no effect on supported monitors."""
+        response = api_client.get(
+            f"{api_base_url}/tap_monitors/{TAP_MONITOR_1_ID}",
+            params={"include_unsupported": "true"},
+        )
+
+        assert response.status_code == 200
+        assert response.json()["id"] == TAP_MONITOR_1_ID
 
 
 class TestGetTapMonitorTypes:

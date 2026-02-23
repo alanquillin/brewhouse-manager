@@ -468,6 +468,7 @@ export class TapMonitor extends EditableBase {
   meta!: any;
   tap!: Tap;
   reportsOnlineStatus!: boolean;
+  error!: string;
 
   constructor(from?: any) {
     super(['name', 'locationId', 'monitorType', 'meta'], from);

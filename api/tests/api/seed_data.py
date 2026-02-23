@@ -92,6 +92,7 @@ TAP_MONITOR_1_ID = "0a72afcc-b69c-40ce-a0f5-4667db9bbeba"
 TAP_MONITOR_2_ID = "e109ec22-fd2c-4143-b971-9c8cdc180a17"
 TAP_MONITOR_3_ID = "06dd916b-1e19-4ebd-b5ff-cd9535e19245"
 TAP_MONITOR_SECONDARY_ID = "f4eb799f-7a39-4f89-8835-09de1da28bff"
+TAP_MONITOR_UNSUPPORTED_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 
 TAP_MONITORS = [
     {
@@ -121,6 +122,13 @@ TAP_MONITORS = [
         "location_id": LOCATION_SECONDARY_ID,
         "monitor_type": "open-plaato-keg",
         "meta": {"device_id": "test-device-004", "empty_keg_weight": 4400, "empty_keg_weight_unit": "g", "max_keg_volume": 5, "max_keg_volume_unit": "gal"},
+    },
+    {
+        "id": TAP_MONITOR_UNSUPPORTED_ID,
+        "name": "Unsupported Monitor",
+        "location_id": LOCATION_MAIN_ID,
+        "monitor_type": "unsupported-test-type",
+        "meta": {"device_id": "test-device-unsupported"},
     },
 ]
 
@@ -201,6 +209,7 @@ TAP_2_ID = "bef890f4-4f0a-4f13-9999-567a49f1de7f"
 TAP_3_ID = "cc5277fd-4e30-46c3-a28a-b82e9aed9f04"
 TAP_SECONDARY_1_ID = "4c175438-8511-4191-a537-1a8ec7236767"
 TAP_SECONDARY_2_ID = "af976792-a2ce-4d0c-b7dc-8b9cfe6e8c64"
+TAP_UNSUPPORTED_MONITOR_ID = "c3d4e5f6-a7b8-9012-cdef-345678901234"
 
 TAPS = [
     {
@@ -240,6 +249,13 @@ TAPS = [
         "tap_number": 2,
         "description": "Tap 2 - Empty",
         "location_id": LOCATION_SECONDARY_ID,
+    },
+    {
+        "id": TAP_UNSUPPORTED_MONITOR_ID,
+        "tap_number": 4,
+        "description": "Tap 4 - Unsupported Monitor",
+        "location_id": LOCATION_MAIN_ID,
+        "tap_monitor_id": TAP_MONITOR_UNSUPPORTED_ID,
     },
 ]
 
@@ -347,6 +363,7 @@ __all__ = [
     "TAP_MONITOR_2_ID",
     "TAP_MONITOR_3_ID",
     "TAP_MONITOR_SECONDARY_ID",
+    "TAP_MONITOR_UNSUPPORTED_ID",
     # Batch IDs
     "BATCH_IPA_ID",
     "BATCH_STOUT_ID",
@@ -364,6 +381,7 @@ __all__ = [
     "TAP_3_ID",
     "TAP_SECONDARY_1_ID",
     "TAP_SECONDARY_2_ID",
+    "TAP_UNSUPPORTED_MONITOR_ID",
     # User IDs
     "USER_ADMIN_ID",
     "USER_REGULAR_ID",

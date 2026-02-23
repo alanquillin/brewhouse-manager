@@ -117,6 +117,23 @@ class TestGetDashboardTap:
 
             assert exc_info.value.status_code == 404
 
+    def test_passes_filter_unsupported_tap_monitor(self):
+        """Test passes filter_unsupported_tap_monitor=True to TapService"""
+        from routers.dashboard import get_dashboard_tap
+
+        mock_session = AsyncMock()
+        mock_tap = create_mock_tap()
+
+        with patch("routers.dashboard.TapsDB") as mock_db, patch("routers.dashboard.TapService") as mock_service:
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_tap)
+            mock_service.transform_response = AsyncMock(return_value={"id": "tap-1"})
+
+            run_async(get_dashboard_tap("tap-1", mock_session))
+
+            mock_service.transform_response.assert_called_once_with(
+                mock_tap, db_session=mock_session, filter_unsupported_tap_monitor=True
+            )
+
 
 class TestGetDashboardBeer:
     """Tests for get_dashboard_beer endpoint"""
@@ -194,7 +211,7 @@ class TestGetDashboardTapMonitor:
         mock_session = AsyncMock()
         mock_monitor = create_mock_tap_monitor()
 
-        with patch("routers.dashboard.TapMonitorsDB") as mock_db, patch("routers.dashboard.TapMonitorService") as mock_service:
+        with patch("routers.dashboard.TapMonitorsDB") as mock_db, patch("routers.dashboard.TapMonitorService") as mock_service, patch("routers.dashboard.get_tap_monitor_lib", return_value=MagicMock()):
             mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
             mock_service.transform_response = AsyncMock(return_value={"id": "monitor-1"})
 
@@ -215,6 +232,23 @@ class TestGetDashboardTapMonitor:
                 run_async(get_dashboard_tap_monitor("unknown", mock_session))
 
             assert exc_info.value.status_code == 404
+
+    def test_raises_400_for_unsupported_monitor_type(self):
+        """Test raises 400 when tap monitor has an unsupported type"""
+        from routers.dashboard import get_dashboard_tap_monitor
+
+        mock_session = AsyncMock()
+        mock_monitor = create_mock_tap_monitor()
+        mock_monitor.monitor_type = "unsupported-type"
+
+        with patch("routers.dashboard.TapMonitorsDB") as mock_db, patch("routers.dashboard.get_tap_monitor_lib", return_value=None):
+            mock_db.get_by_pkey = AsyncMock(return_value=mock_monitor)
+
+            with pytest.raises(HTTPException) as exc_info:
+                run_async(get_dashboard_tap_monitor("monitor-1", mock_session))
+
+            assert exc_info.value.status_code == 400
+            assert "not supported" in exc_info.value.detail.lower()
 
 
 class TestGetDashboard:
@@ -281,3 +315,28 @@ class TestGetDashboard:
 
             # Verify taps query was called with location filter
             mock_taps_db.query.assert_called_once_with(mock_session, locations=["loc-1"])
+
+    def test_passes_filter_unsupported_tap_monitor_for_taps(self):
+        """Test passes filter_unsupported_tap_monitor=True when transforming taps"""
+        from routers.dashboard import get_dashboard
+
+        mock_session = AsyncMock()
+        mock_location = create_mock_location(id_="loc-1")
+        mock_tap = create_mock_tap()
+
+        with patch("routers.dashboard.get_location_id", new_callable=AsyncMock) as mock_get_loc, patch("routers.dashboard.LocationsDB") as mock_loc_db, patch(
+            "routers.dashboard.TapsDB"
+        ) as mock_taps_db, patch("routers.dashboard.LocationService") as mock_loc_service, patch("routers.dashboard.TapService") as mock_tap_service:
+            mock_get_loc.return_value = "loc-1"
+            mock_loc_db.query = AsyncMock(return_value=[mock_location])
+            mock_loc_db.get_by_pkey = AsyncMock(return_value=mock_location)
+            mock_taps_db.query = AsyncMock(return_value=[mock_tap])
+            mock_loc_service.transform_response = AsyncMock(return_value={"id": "loc-1"})
+            mock_tap_service.transform_response = AsyncMock(return_value={"id": "tap-1"})
+
+            run_async(get_dashboard("loc-1", mock_session))
+
+            # Verify filter_unsupported_tap_monitor=True is passed
+            mock_tap_service.transform_response.assert_called_once_with(
+                mock_tap, db_session=mock_session, include_location=False, filter_unsupported_tap_monitor=True
+            )

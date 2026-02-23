@@ -95,7 +95,16 @@ async def list_tap_monitors(
 
     tap_monitors = await TapMonitorsDB.query(db_session, **kwargs)
     include_tap_details = request.query_params.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
-    return [await TapMonitorService.transform_response(s, db_session=db_session, include_tap=include_tap_details) for s in tap_monitors]
+    include_unsupported = request.query_params.get("include_unsupported", "false").lower() in ["true", "yes", "", "1"]
+    res = []
+    for s in tap_monitors:
+        if not include_unsupported:
+            tap_monitor_lib = get_tap_monitor_lib(s.monitor_type)
+            if not tap_monitor_lib:
+                LOGGER.warning("Unsupported tap monitor type found in DB, skipping: %s", s.monitor_type)
+                continue
+        res.append(await TapMonitorService.transform_response(s, db_session=db_session, include_tap=include_tap_details))
+    return res
 
 
 @router.post("", response_model=dict, status_code=201)
@@ -124,6 +133,10 @@ async def create_tap_monitor(
 
     # Validate kegtron-pro required meta fields
     monitor_type = data.get("monitor_type")
+    tap_monitor_lib = get_tap_monitor_lib(monitor_type)
+    if not tap_monitor_lib:
+        raise HTTPException(status_code=400, detail=f"Unsupported tap monitor type: {monitor_type}")
+
     if monitor_type == "kegtron-pro":
         _validate_kegtron_pro_meta(data.get("meta") or {})
 
@@ -174,6 +187,14 @@ async def get_tap_monitor(
     tap_monitor = await TapMonitorsDB.get_by_pkey(db_session, tap_monitor_id)
     if not tap_monitor:
         raise HTTPException(status_code=404, detail="Tap monitor not found")
+
+
+    include_unsupported = request.query_params.get("include_unsupported", "false").lower() in ["true", "yes", "", "1"]
+    if not include_unsupported:
+        tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
+        if not tap_monitor_lib:
+            LOGGER.warning("Unsupported tap monitor type found in DB, skipping: %s", tap_monitor.monitor_type)
+            raise HTTPException(status_code=400, detail=f"Requested tap monitor has an unsupported monitor type: {tap_monitor.monitor_type}")
 
     # Check authorization
     if not current_user.admin and tap_monitor.location_id not in current_user.locations:
