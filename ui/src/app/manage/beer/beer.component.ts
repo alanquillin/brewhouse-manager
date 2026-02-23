@@ -1135,21 +1135,22 @@ export class ManageBeerComponent implements OnInit {
       });
     };
 
-    if (tap.tapMonitor?.monitorType === 'kegtron-pro') {
-      this.dataService
-        .clearKegtronPort(tap.tapMonitor.meta.deviceId, tap.tapMonitor.meta.portNum)
-        .subscribe({
-          next: () => {
-            proceedAfterKegtron();
-          },
-          error: (err: DataError) => {
-            this.displayError(
-              'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
-                err.message
-            );
-            proceedAfterKegtron();
-          },
-        });
+    const meta = tap.tapMonitor?.meta;
+    const hasKegtronMeta =
+      meta != null && meta.deviceId != null && typeof meta.portNum === 'number';
+    if (tap.tapMonitor?.monitorType === 'kegtron-pro' && hasKegtronMeta) {
+      this.dataService.clearKegtronPort(meta!.deviceId, meta!.portNum).subscribe({
+        next: () => {
+          proceedAfterKegtron();
+        },
+        error: (err: DataError) => {
+          this.displayError(
+            'There was an error trying to clear the Kegtron port, skipping...  Error: ' +
+              err.message
+          );
+          proceedAfterKegtron();
+        },
+      });
     } else {
       proceedAfterKegtron();
     }

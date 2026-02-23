@@ -188,16 +188,16 @@ async def get_tap_monitor(
     if not tap_monitor:
         raise HTTPException(status_code=404, detail="Tap monitor not found")
 
+    # Check authorization before revealing monitor type or existence details
+    if not current_user.admin and tap_monitor.location_id not in current_user.locations:
+        raise HTTPException(status_code=403, detail="Not authorized to access this tap monitor")
+
     include_unsupported = request.query_params.get("include_unsupported", "false").lower() in ["true", "yes", "", "1"]
     if not include_unsupported:
         tap_monitor_lib = get_tap_monitor_lib(tap_monitor.monitor_type)
         if not tap_monitor_lib:
             LOGGER.warning("Unsupported tap monitor type found in DB, skipping: %s", tap_monitor.monitor_type)
             raise HTTPException(status_code=400, detail=f"Requested tap monitor has an unsupported monitor type: {tap_monitor.monitor_type}")
-
-    # Check authorization
-    if not current_user.admin and tap_monitor.location_id not in current_user.locations:
-        raise HTTPException(status_code=403, detail="Not authorized to access this tap monitor")
     include_tap_details = request.query_params.get("include_tap_details", "false").lower() in ["true", "yes", "", "1"]
     return await TapMonitorService.transform_response(tap_monitor, db_session=db_session, include_tap=include_tap_details)
 
