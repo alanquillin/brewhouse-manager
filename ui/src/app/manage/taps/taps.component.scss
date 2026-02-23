@@ -51,6 +51,8 @@
       }
 
       .tap-monitor-error {
+        display: flex;
+        align-items: center;
         color: red;
         font-size: 0.85em;
       }
