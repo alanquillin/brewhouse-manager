@@ -118,7 +118,7 @@ run-db-migrations:
 
 lint-py:
 	$(ISORT) --check-only api
-	$(PYLINT) api
+	$(PYLINT) --output-format=colorized api
 	$(BLACK) --check api
 
 lint-ui:

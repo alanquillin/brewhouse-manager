@@ -8,11 +8,10 @@ from lib import logging
 from lib.config import Config
 
 # Initialize configuration
-CONFIG = Config()
-CONFIG.setup(config_files=["default.json"])
+CONFIG = Config(config_files=["default.json"])
 
 # Initialize logging
-logging.init(fmt=logging.DEFAULT_LOG_FMT)
+logging.init(config=CONFIG, fmt=logging.DEFAULT_LOG_FMT)
 
 import asyncio
 

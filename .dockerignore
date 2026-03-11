@@ -22,3 +22,7 @@ ui/.angular
 #tests
 api/tests
 ui/**/*.spec.ts
+
+#tests
+api/tests
+ui/**/*.spec.ts

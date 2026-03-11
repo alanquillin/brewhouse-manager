@@ -98,7 +98,7 @@ class Config(metaclass=ThreadSafeSingleton):
             data,
             self.env_prefix,
             key_converter=lambda k: k.replace(".", "_").upper(),
-            skip_key_check=lambda k: self.gen_key(k) in self.conversion_schema,
+            skip_key_check=lambda k: self.fmt_key(k) in self.conversion_schema,
         )
 
     def _load_conf(self, data):
@@ -136,8 +136,11 @@ class Config(metaclass=ThreadSafeSingleton):
 
         return {self.gen_key(k): v for k, v in schema.items()}
 
-    def gen_key(self, key):
-        return f"{self.key_prefix}{key}".replace(".", "_").replace("-", "_").upper()
+    def fmt_key(self, key: str) -> str:
+        return key.replace(".", "_").replace("-", "_").upper()
+
+    def gen_key(self, key: str) -> str:
+        return self.fmt_key(f"{self.key_prefix}{key}")
 
     def setup(  # pylint: disable=too-many-arguments
         self,
