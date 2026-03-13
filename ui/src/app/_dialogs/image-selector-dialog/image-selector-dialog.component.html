@@ -8,7 +8,9 @@
       @for (image of images; track image) {
         <mat-grid-tile>
           <div
-            class="image-list-item {{ selectedImage === image ? 'image-list-item-selected' : '' }}"
+            class="image-list-item"
+            [class.image-list-item-selected]="selectedImage === image"
+            [class.image-list-item-current]="!selectedImage && currentImage === image"
             (click)="onClick(image)"
             (dblclick)="onDoubleClick(image)"
           >
