@@ -50,4 +50,5 @@ class TapMonitorData(CamelCaseModel):
     display_volume_unit: Optional[str] = None
     firmware_version: Optional[str] = None
     last_updated_on: Optional[float] = None
+    online_status_type: Optional[str] = None
     online: Optional[bool] = None

@@ -380,6 +380,10 @@ export class DataService {
     return this.getTapMonitorData(tapMonitorId, 'firmware_version');
   }
 
+  getTapMonitorOnline(tapMonitorId: string): Observable<boolean> {
+    return this.getTapMonitorData(tapMonitorId, 'online');
+  }
+
   discoverTapMonitors(monitorType: string): Observable<TapMonitorDiscoveryData[]> {
     const url = `${this.apiBaseUrl}/tap_monitors/discover/${monitorType}`;
     return this.http.get<TapMonitorDiscoveryData[]>(url).pipe(
@@ -465,6 +469,19 @@ export class DataService {
   clearKegtronPort(deviceId: string, portNum: number): Observable<boolean> {
     const url = `${this.apiBaseUrl}/devices/kegtron/${deviceId}/${portNum}/clear`;
     return this.http.post<boolean>(url, {}).pipe(
+      catchError(err => {
+        return this.getError(err);
+      })
+    );
+  }
+
+  resetKegtronGen1Port(
+    deviceId: string,
+    portIndex: number,
+    data: any
+  ): Observable<boolean> {
+    const url = `${this.apiBaseUrl}/devices/kegtron_gen1/${deviceId}/${portIndex}/reset`;
+    return this.http.post<boolean>(url, data).pipe(
       catchError(err => {
         return this.getError(err);
       })

@@ -251,3 +251,14 @@ div.tap-logo img {
     margin-right: 6px;
   }
 }
+
+.online-checking-status {
+  color: orange;
+  display: flex;
+  flex-direction: row;
+  vertical-align: middle;
+
+  .mat-icon {
+    margin-right: 6px;
+  }
+}

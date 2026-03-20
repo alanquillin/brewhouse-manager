@@ -110,6 +110,17 @@
                     <mat-icon>restart_alt</mat-icon>
                   </button>
                 }
+                @if (element.monitorType === 'kegtron-gen1') {
+                  <button
+                    mat-icon-button
+                    color="accent"
+                    aria-label="Reset kegtron gen1 monitor"
+                    (click)="resetKegtronGen1(element)"
+                    [disabled]="!_.isEmpty(element.error)"
+                  >
+                    <mat-icon>restart_alt</mat-icon>
+                  </button>
+                }
                 <button
                   mat-icon-button
                   color="primary"
@@ -213,6 +224,7 @@
               'keg-volume-monitor-weight',
               'keg-volume-monitor-flow',
               'kegtron-pro',
+              'kegtron-gen1',
               'open-plaato-keg',
               'plaato-keg',
             ].includes(modifyTapMonitor.editValues.monitorType)
@@ -228,6 +240,10 @@
               >
                 @for (s of tapMonitorDiscoveryData; track s) {
                   @if (modifyTapMonitor.editValues.monitorType === 'kegtron-pro') {
+                    <mat-option value="{{ s.id }}|{{ s.portNum }}">
+                      {{ s.name }} - {{ s.id }} ({{ s.model }}) : Port {{ s.portNum + 1 }}
+                    </mat-option>
+                  } @else if (modifyTapMonitor.editValues.monitorType === 'kegtron-gen1') {
                     <mat-option value="{{ s.id }}|{{ s.portNum }}">
                       {{ s.name }} - {{ s.id }} ({{ s.model }}) : Port {{ s.portNum + 1 }}
                     </mat-option>

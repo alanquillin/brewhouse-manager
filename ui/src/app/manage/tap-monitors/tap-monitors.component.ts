@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 
+import { KegtronGen1ResetDialogComponent } from '../../_dialogs/kegtron-gen1-reset-dialog/kegtron-gen1-reset-dialog.component';
 import { KegtronResetDialogComponent } from '../../_dialogs/kegtron-reset-dialog/kegtron-reset-dialog.component';
 
 import {
@@ -207,6 +208,7 @@ export class ManageTapMonitorsComponent implements OnInit {
         'keg-volume-monitor-weight',
         'keg-volume-monitor-flow',
         'kegtron-pro',
+        'kegtron-gen1',
         'open-plaato-keg',
         'plaato-keg',
       ].includes(this.modifyTapMonitor.editValues.monitorType)
@@ -218,6 +220,11 @@ export class ManageTapMonitorsComponent implements OnInit {
       meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
       meta.portNum = _.toInteger(this.modifyTapMonitor.editValues.meta.portNum);
       meta.accessToken = this.modifyTapMonitor.editValues.meta.accessToken;
+    }
+
+    if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-gen1') {
+      meta.deviceId = this.modifyTapMonitor.editValues.meta.deviceId;
+      meta.portIndex = _.toInteger(this.modifyTapMonitor.editValues.meta.portIndex);
     }
 
     const data: any = {
@@ -268,6 +275,10 @@ export class ManageTapMonitorsComponent implements OnInit {
             const deviceId = _.get(this.modifyTapMonitor.editValues.meta, 'deviceId');
             const portNum = _.get(this.modifyTapMonitor.editValues.meta, 'portNum');
             this.selectedDiscoveredTapMonitorId = deviceId + '|' + portNum;
+          } else if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-gen1') {
+            const deviceId = _.get(this.modifyTapMonitor.editValues.meta, 'deviceId');
+            const portIndex = _.get(this.modifyTapMonitor.editValues.meta, 'portIndex');
+            this.selectedDiscoveredTapMonitorId = deviceId + '|' + portIndex;
           } else if (this.modifyTapMonitor.editValues.monitorType == 'open-plaato-keg') {
             this.selectedDiscoveredTapMonitorId = _.get(
               this.modifyTapMonitor.editValues.meta,
@@ -472,6 +483,12 @@ export class ManageTapMonitorsComponent implements OnInit {
         }
       });
     }
+
+    if (this.modifyTapMonitor.editValues.monitorType == 'kegtron-gen1') {
+      const parts = _.split(this.selectedDiscoveredTapMonitorId, '|');
+      this.modifyTapMonitor.editValues.meta.deviceId = parts[0];
+      this.modifyTapMonitor.editValues.meta.portIndex = _.toInteger(parts[1]);
+    }
   }
 
   get modifyForm(): Record<string, AbstractControl> {
@@ -483,6 +500,15 @@ export class ManageTapMonitorsComponent implements OnInit {
       data: {
         deviceId: tapMonitor.meta.deviceId,
         portNum: tapMonitor.meta.portNum,
+      },
+    });
+  }
+
+  resetKegtronGen1(tapMonitor: TapMonitor): void {
+    this.dialog.open(KegtronGen1ResetDialogComponent, {
+      data: {
+        deviceId: tapMonitor.meta.deviceId,
+        portIndex: tapMonitor.meta.portIndex,
       },
     });
   }
