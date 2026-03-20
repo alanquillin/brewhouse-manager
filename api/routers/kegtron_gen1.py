@@ -65,7 +65,14 @@ async def reset_volume(
 
     monitor = await get_monitor_from_device_and_port(device_id, port_index, db_session)
 
-    LOGGER.debug("Resetting volume for kegtron gen1 device %s on port %d. Keg size: %s, start volume: %s %s", device_id, port_index, request_data.keg_size, request_data.start_volume, request_data.volume_unit)
+    LOGGER.debug(
+        "Resetting volume for kegtron gen1 device %s on port %d. Keg size: %s, start volume: %s %s",
+        device_id,
+        port_index,
+        request_data.keg_size,
+        request_data.start_volume,
+        request_data.volume_unit,
+    )
 
     result = await kegtron_gen1_lib.reset_volume(
         keg_size=request_data.keg_size,

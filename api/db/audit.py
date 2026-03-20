@@ -24,7 +24,9 @@ class DataChanges(Base, DictifiableMixin, AuditedMixin, QueryMethodsMixin):
 
 @event.listens_for(Base.metadata, "before_create")
 def create_audit_trigger(_target, connection, **_):
-    connection.execute(text(f"""
+    connection.execute(
+        text(
+            f"""
 CREATE OR REPLACE FUNCTION {FUNC_NAME}() RETURNS trigger AS $$
     BEGIN
         IF TG_OP = 'INSERT'
@@ -45,7 +47,9 @@ CREATE OR REPLACE FUNCTION {FUNC_NAME}() RETURNS trigger AS $$
         END IF;
     END;
 $$ LANGUAGE 'plpgsql'
-"""))
+"""
+        )
+    )
 
 
 @event.listens_for(Base.metadata, "after_drop")

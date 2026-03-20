@@ -475,11 +475,7 @@ export class DataService {
     );
   }
 
-  resetKegtronGen1Port(
-    deviceId: string,
-    portIndex: number,
-    data: any
-  ): Observable<boolean> {
+  resetKegtronGen1Port(deviceId: string, portIndex: number, data: any): Observable<boolean> {
     const url = `${this.apiBaseUrl}/devices/kegtron_gen1/${deviceId}/${portIndex}/reset`;
     return this.http.post<boolean>(url, data).pipe(
       catchError(err => {

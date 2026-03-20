@@ -23,7 +23,7 @@ class KegtronGen1(TapMonitorBase):
         self.default_vol_unit = self.config.get("tap_monitors.preferred_vol_unit")
         self.base_url = self.config.get("tap_monitors.kegtron.gen1.base_url")
         api_key = self.config.get("tap_monitors.kegtron.gen1.api_key")
-        self.bearer_token = base64.b64encode(api_key.encode('ascii')).decode('ascii')
+        self.bearer_token = base64.b64encode(api_key.encode("ascii")).decode("ascii")
         self.insecure = self.config.get("tap_monitors.kegtron.gen1.insecure")
         self.client_args = {}
         if self.insecure and self.base_url.startswith("https"):
@@ -65,7 +65,6 @@ class KegtronGen1(TapMonitorBase):
             self.logger.debug("GET response JSON: %s", j)
             return j.get("online", False)
 
-
     async def get(self, data_type, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> any:
         if not meta:
             meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
@@ -92,7 +91,7 @@ class KegtronGen1(TapMonitorBase):
             "percentRemaining": self._calc_percent_remaining(port),
             "totalVolumeRemaining": self._calc_total_remaining(port),
             "displayVolumeUnit": self._get_display_unit(port),
-            "onlineStatusType": "async"
+            "onlineStatusType": "async",
         }
 
     async def discover(self, params=None, **kwargs) -> List[Dict]:
@@ -100,7 +99,7 @@ class KegtronGen1(TapMonitorBase):
         result = []
         for device in devices:
             ports = device.get("ports", {})
-            for port_index_str, port in ports.items():
+            for port_index_str, _ in ports.items():
                 port_index = int(port_index_str)
                 result.append(
                     {

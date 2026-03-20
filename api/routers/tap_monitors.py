@@ -180,7 +180,9 @@ async def create_tap_monitor(
             existing = await TapMonitorsDB.query(
                 db_session,
                 monitor_type=monitor_type,
-                q_fn=lambda q: q.where(TapMonitorsDB.meta["device_id"].astext == device_id, TapMonitorsDB.meta["port_index"].astext.cast(Integer) == port_index),
+                q_fn=lambda q: q.where(
+                    TapMonitorsDB.meta["device_id"].astext == device_id, TapMonitorsDB.meta["port_index"].astext.cast(Integer) == port_index
+                ),
             )
         else:
             existing = await TapMonitorsDB.query(

@@ -6,8 +6,8 @@ from lib.tap_monitors import TapMonitorBase
 from lib.tap_monitors.exceptions import TapMonitorDependencyError
 from lib.units import from_ml
 
-
 MONITOR_TYPE = "kegtron-pro"
+
 
 class KegtronPro(TapMonitorBase):
     supported_device_keys = ["beaconEna", "cleanEna"]
@@ -134,7 +134,7 @@ class KegtronPro(TapMonitorBase):
         url = "https://mdash.net/api/v2/m/device"
         self.logger.debug("Retrieving device data. GET Request: %s", url)
         async with AsyncClient() as client:
-            resp = await client.get(url, params=params, **self.args)
+            resp = await client.get(url, params=params)
             self.logger.debug("GET response code: %s", resp.status_code)
             if resp.status_code == 401:
                 self.logger.error("Kegtron API returned a 401")
