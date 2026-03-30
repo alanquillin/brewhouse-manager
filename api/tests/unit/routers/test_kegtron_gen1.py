@@ -230,77 +230,69 @@ class TestResetVolumeRequest:
         assert req.keg_size == 5.0
         assert req.start_volume == 5.0
         assert req.volume_unit == "gal"
-        assert req.batch_id is None
-
-    def test_creates_with_batch_id(self):
-        from routers.kegtron_gen1 import ResetVolumeRequest
-
-        req = ResetVolumeRequest(keg_size=5.0, start_volume=5.0, volume_unit="gal", batch_id="batch-123")
-        assert req.batch_id == "batch-123"
 
     def test_accepts_camel_case_aliases(self):
         from routers.kegtron_gen1 import ResetVolumeRequest
 
-        req = ResetVolumeRequest(**{"kegSize": 5.0, "startVolume": 5.0, "volumeUnit": "gal", "batchId": "batch-1"})
+        req = ResetVolumeRequest(**{"kegSize": 5.0, "startVolume": 5.0, "volumeUnit": "gal"})
         assert req.keg_size == 5.0
         assert req.start_volume == 5.0
         assert req.volume_unit == "gal"
-        assert req.batch_id == "batch-1"
 
 
-class TestValidateKegtronGen1Meta:
-    """Tests for _validate_kegtron_gen1_meta helper"""
+class TestValidateTapMonitorMetaKeysKegtronGen1:
+    """Tests for _validate_tap_monitor_meta_keys with kegtron-gen1 keys."""
 
     def test_all_fields_present(self):
-        from routers.tap_monitors import _validate_kegtron_gen1_meta
+        from routers.tap_monitors import KEGTRON_GEN1_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
-        _validate_kegtron_gen1_meta({"device_id": "dev-1", "port_index": 0})
+        _validate_tap_monitor_meta_keys({"device_id": "dev-1", "port_index": 0}, KEGTRON_GEN1_REQUIRED_META_KEYS, "kegtron-gen1")
 
     def test_empty_meta_raises(self):
-        from routers.tap_monitors import _validate_kegtron_gen1_meta
+        from routers.tap_monitors import KEGTRON_GEN1_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
         with pytest.raises(HTTPException) as exc_info:
-            _validate_kegtron_gen1_meta({})
+            _validate_tap_monitor_meta_keys({}, KEGTRON_GEN1_REQUIRED_META_KEYS, "kegtron-gen1")
 
         assert exc_info.value.status_code == 400
         assert "device_id" in exc_info.value.detail
         assert "port_index" in exc_info.value.detail
 
     def test_partial_meta_lists_only_missing(self):
-        from routers.tap_monitors import _validate_kegtron_gen1_meta
+        from routers.tap_monitors import KEGTRON_GEN1_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
         with pytest.raises(HTTPException) as exc_info:
-            _validate_kegtron_gen1_meta({"device_id": "dev-1"})
+            _validate_tap_monitor_meta_keys({"device_id": "dev-1"}, KEGTRON_GEN1_REQUIRED_META_KEYS, "kegtron-gen1")
 
         assert exc_info.value.status_code == 400
         assert "device_id" not in exc_info.value.detail
         assert "port_index" in exc_info.value.detail
 
     def test_empty_string_treated_as_missing(self):
-        from routers.tap_monitors import _validate_kegtron_gen1_meta
+        from routers.tap_monitors import KEGTRON_GEN1_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
         with pytest.raises(HTTPException) as exc_info:
-            _validate_kegtron_gen1_meta({"device_id": "", "port_index": None})
+            _validate_tap_monitor_meta_keys({"device_id": "", "port_index": None}, KEGTRON_GEN1_REQUIRED_META_KEYS, "kegtron-gen1")
 
         assert exc_info.value.status_code == 400
         assert "device_id" in exc_info.value.detail
         assert "port_index" in exc_info.value.detail
 
     def test_zero_port_index_is_valid(self):
-        from routers.tap_monitors import _validate_kegtron_gen1_meta
+        from routers.tap_monitors import KEGTRON_GEN1_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
-        _validate_kegtron_gen1_meta({"device_id": "dev-1", "port_index": 0})
+        _validate_tap_monitor_meta_keys({"device_id": "dev-1", "port_index": 0}, KEGTRON_GEN1_REQUIRED_META_KEYS, "kegtron-gen1")
 
     def test_allow_missing_skips_absent_keys(self):
-        from routers.tap_monitors import _validate_kegtron_gen1_meta
+        from routers.tap_monitors import KEGTRON_GEN1_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
-        _validate_kegtron_gen1_meta({"device_id": "dev-1"}, allow_missing=True)
+        _validate_tap_monitor_meta_keys({"device_id": "dev-1"}, KEGTRON_GEN1_REQUIRED_META_KEYS, "kegtron-gen1", allow_missing=True)
 
     def test_allow_missing_still_rejects_empty_values(self):
-        from routers.tap_monitors import _validate_kegtron_gen1_meta
+        from routers.tap_monitors import KEGTRON_GEN1_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
         with pytest.raises(HTTPException) as exc_info:
-            _validate_kegtron_gen1_meta({"device_id": "", "port_index": 0}, allow_missing=True)
+            _validate_tap_monitor_meta_keys({"device_id": "", "port_index": 0}, KEGTRON_GEN1_REQUIRED_META_KEYS, "kegtron-gen1", allow_missing=True)
 
         assert exc_info.value.status_code == 400
         assert "device_id" in exc_info.value.detail

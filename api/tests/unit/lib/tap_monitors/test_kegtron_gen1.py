@@ -44,6 +44,36 @@ class TestKegtronGen1Constants:
         assert MONITOR_TYPE == "kegtron-gen1"
 
 
+class TestKegtronGen1Init:
+    """Tests for KegtronGen1.__init__ when optional config keys are absent."""
+
+    @patch("lib.tap_monitors.Config")
+    def test_init_missing_api_key_sets_bearer_token_none(self, mock_config_class):
+        cfg = MagicMock()
+        cfg.get.side_effect = lambda key, default=None: {
+            "tap_monitors.preferred_vol_unit": "gal",
+            "tap_monitors.kegtron.gen1.base_url": "http://localhost:8080",
+            "tap_monitors.kegtron.gen1.api_key": None,
+            "tap_monitors.kegtron.gen1.insecure": False,
+        }.get(key, default)
+        mock_config_class.return_value = cfg
+        kg = KegtronGen1()
+        assert kg.bearer_token is None
+
+    @patch("lib.tap_monitors.Config")
+    def test_init_missing_base_url_with_insecure_true_does_not_crash(self, mock_config_class):
+        cfg = MagicMock()
+        cfg.get.side_effect = lambda key, default=None: {
+            "tap_monitors.preferred_vol_unit": "gal",
+            "tap_monitors.kegtron.gen1.base_url": None,
+            "tap_monitors.kegtron.gen1.api_key": "k",
+            "tap_monitors.kegtron.gen1.insecure": True,
+        }.get(key, default)
+        mock_config_class.return_value = cfg
+        kg = KegtronGen1()
+        assert kg.client_args == {}
+
+
 class TestKegtronGen1:
     """Tests for KegtronGen1 class"""
 
@@ -219,6 +249,11 @@ class TestKegtronGen1:
         with pytest.raises(TapMonitorDependencyError):
             run_async(monitor.is_online(meta={"device_id": "dev-1"}))
 
+    def test_is_online_missing_base_url_raises(self, monitor):
+        monitor.base_url = None
+        with pytest.raises(TapMonitorDependencyError, match="base URL"):
+            run_async(monitor.is_online(meta={"device_id": "dev-1"}))
+
     # ------------------------------------------------------------------
     # get
     # ------------------------------------------------------------------
@@ -363,6 +398,11 @@ class TestKegtronGen1:
     def test_reset_volume_missing_port_index_raises(self, monitor):
         with pytest.raises(ValueError, match="device_id and port_index"):
             run_async(monitor.reset_volume(5.0, 5.0, "gal", meta={"device_id": "dev-1"}))
+
+    def test_reset_volume_missing_api_key_raises(self, monitor):
+        monitor.bearer_token = None
+        with pytest.raises(TapMonitorDependencyError, match="API key"):
+            run_async(monitor.reset_volume(5.0, 5.0, "gal", meta={"device_id": "dev-1", "port_index": 0}))
 
     # ------------------------------------------------------------------
     # _get_device

@@ -9,6 +9,14 @@ from lib.tap_monitors.exceptions import TapMonitorDependencyError
 MONITOR_TYPE = "kegtron-gen1"
 
 
+def _require_gen1_base_url(base_url: str | None) -> None:
+    if not base_url:
+        raise TapMonitorDependencyError(
+            MONITOR_TYPE,
+            message="Kegtron Gen1 API base URL is not configured (tap_monitors.kegtron.gen1.base_url).",
+        )
+
+
 class KegtronGen1(TapMonitorBase):
     def __init__(self) -> None:
         super().__init__()
@@ -23,10 +31,12 @@ class KegtronGen1(TapMonitorBase):
         self.default_vol_unit = self.config.get("tap_monitors.preferred_vol_unit")
         self.base_url = self.config.get("tap_monitors.kegtron.gen1.base_url")
         api_key = self.config.get("tap_monitors.kegtron.gen1.api_key")
-        self.bearer_token = base64.b64encode(api_key.encode("ascii")).decode("ascii")
+        self.bearer_token = (
+            base64.b64encode(api_key.encode("ascii")).decode("ascii") if api_key else None
+        )
         self.insecure = self.config.get("tap_monitors.kegtron.gen1.insecure")
         self.client_args = {}
-        if self.insecure and self.base_url.startswith("https"):
+        if self.insecure and self.base_url and self.base_url.startswith("https"):
             self.client_args["verify"] = False
 
     @staticmethod
@@ -40,6 +50,8 @@ class KegtronGen1(TapMonitorBase):
     async def is_online(self, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> bool:
         if not meta:
             meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
+
+        _require_gen1_base_url(self.base_url)
 
         device_id = meta.get("device_id")
         url = f"{self.base_url}/api/v1/devices/{device_id}/online"
@@ -121,6 +133,13 @@ class KegtronGen1(TapMonitorBase):
         if device_id is None or port_index is None:
             raise ValueError("device_id and port_index must be in tap monitor metadata")
 
+        _require_gen1_base_url(self.base_url)
+        if not self.bearer_token:
+            raise TapMonitorDependencyError(
+                MONITOR_TYPE,
+                message="Kegtron Gen1 API key is not configured (tap_monitors.kegtron.gen1.api_key).",
+            )
+
         url = f"{self.base_url}/api/v1/devices/{device_id}/port/{port_index}/rpc/Kegtron.ResetVolume"
         data = {
             "kegSize": keg_size,
@@ -149,6 +168,8 @@ class KegtronGen1(TapMonitorBase):
             return True
 
     async def _list_devices(self) -> List[Dict]:
+        _require_gen1_base_url(self.base_url)
+
         url = f"{self.base_url}/api/v1/devices"
         self.logger.debug("GET Request: %s", url)
 
@@ -168,6 +189,8 @@ class KegtronGen1(TapMonitorBase):
             return j
 
     async def _get_device(self, meta) -> Dict:
+        _require_gen1_base_url(self.base_url)
+
         device_id = meta.get("device_id")
         url = f"{self.base_url}/api/v1/devices/{device_id}"
         self.logger.debug("GET Request: %s", url)

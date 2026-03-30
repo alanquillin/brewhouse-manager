@@ -1,7 +1,5 @@
 """Kegtron Gen1 Device Management Router for FastAPI"""
 
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import Integer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +20,6 @@ class ResetVolumeRequest(CamelCaseModel):
     keg_size: float
     start_volume: float
     volume_unit: str
-    batch_id: Optional[str] = None
 
 
 async def get_monitor_from_device_and_port(device_id: str, port_index: int, db_session) -> TapMonitorsDB:
