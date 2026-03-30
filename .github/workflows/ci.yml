@@ -20,7 +20,7 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Install UI dependencies
-        run: cd ui && npm ci
+        run: cd ui && yarn install --non-interactive
 
       - name: Build dev Docker image
         run: make build-dev
