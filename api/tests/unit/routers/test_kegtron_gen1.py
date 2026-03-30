@@ -57,19 +57,19 @@ class TestGetMonitorFromDeviceAndPort:
         assert exc_info.value.status_code == 404
         assert "not found" in exc_info.value.detail.lower()
 
-    def test_raises_404_when_port_index_does_not_match(self):
+    def test_returns_monitor_when_port_index_stored_as_string_in_meta(self):
+        """SQL matches port via cast; meta may still have port_index as JSON string."""
         from routers.kegtron_gen1 import get_monitor_from_device_and_port
 
         mock_monitor = MagicMock()
-        mock_monitor.meta = {"device_id": "dev-1", "port_index": 1}
+        mock_monitor.meta = {"device_id": "dev-1", "port_index": "0"}
 
         mock_session = AsyncMock()
         with patch("routers.kegtron_gen1.TapMonitorsDB") as mock_db:
             mock_db.query = AsyncMock(return_value=[mock_monitor])
-            with pytest.raises(HTTPException) as exc_info:
-                run_async(get_monitor_from_device_and_port("dev-1", 0, mock_session))
+            result = run_async(get_monitor_from_device_and_port("dev-1", 0, mock_session))
 
-        assert exc_info.value.status_code == 404
+        assert result == mock_monitor
 
 
 class TestResetVolume:

@@ -32,16 +32,10 @@ async def get_monitor_from_device_and_port(device_id: str, port_index: int, db_s
         ),
     )
 
-    monitor = None
-    for m in monitors:
-        if m.meta.get("port_index") == port_index:
-            monitor = m
-            break
-
-    if not monitor:
+    if not monitors:
         raise HTTPException(status_code=404, detail=f"Kegtron Gen1 tap monitor not found for device '{device_id}' port {port_index}")
 
-    return monitor
+    return monitors[0]
 
 
 @router.post("/{device_id}/{port_index}/reset", response_model=bool)

@@ -233,8 +233,9 @@ class KegtronGen1(TapMonitorBase):
         return round((remaining / keg_size) * 100, 2)
 
     def _calc_total_remaining(self, port) -> float:
+        keg_size = port.get("kegSize", 0)
         volume_dispensed = port.get("volumeDispensed", 0)
-        start_volume = port.get("startVolume", 0)
+        start_volume = port.get("startVolume", keg_size)
         remaining = start_volume - volume_dispensed
         return round(remaining, 2)
 

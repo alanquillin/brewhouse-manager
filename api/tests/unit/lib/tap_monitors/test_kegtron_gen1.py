@@ -167,6 +167,12 @@ class TestKegtronGen1:
         result = monitor._calc_total_remaining(port)
         assert result == 5.0
 
+    def test_calc_total_remaining_omitted_start_volume_matches_percent_semantics(self, monitor):
+        """When startVolume is absent, default to kegSize like _calc_percent_remaining."""
+        port = {"kegSize": 5.0, "volumeDispensed": 1.0}
+        assert monitor._calc_total_remaining(port) == 4.0
+        assert monitor._calc_percent_remaining(port) == 80.0
+
     # ------------------------------------------------------------------
     # _get_display_unit
     # ------------------------------------------------------------------
