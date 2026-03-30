@@ -1,5 +1,5 @@
 import base64
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from httpx import AsyncClient
 
@@ -65,7 +65,7 @@ class KegtronGen1(TapMonitorBase):
             self.logger.debug("GET response JSON: %s", j)
             return j.get("online", False)
 
-    async def get(self, data_type, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> any:
+    async def get(self, data_type, monitor_id=None, monitor=None, meta=None, db_session=None, **kwargs) -> Any:
         if not meta:
             meta = await self.extract_meta(monitor_id, monitor, meta, db_session)
 

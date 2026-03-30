@@ -271,7 +271,7 @@ async def update_tap_monitor(
     if data.get("meta"):
         if tap_monitor.monitor_type == "kegtron-pro":
             _validate_kegtron_pro_meta(data["meta"], allow_missing=True)
-        if tap_monitor.monitor_type == "kegtron-gen1":
+        elif tap_monitor.monitor_type == "kegtron-gen1":
             _validate_kegtron_gen1_meta(data["meta"], allow_missing=True)
 
     LOGGER.debug("Updating tap monitor %s with data: %s", tap_monitor_id, data)
