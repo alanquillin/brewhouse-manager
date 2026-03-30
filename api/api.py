@@ -135,6 +135,7 @@ from routers import (
     external_brew_tools,
     image_transitions,
     kegtron,
+    kegtron_gen1,
     locations,
     pages,
     plaato_keg,
@@ -153,6 +154,7 @@ api.include_router(batches.router, prefix="/api/v1/beers/{beer_id}/batches", tag
 api.include_router(batches.router, prefix="/api/v1/beverages/{beverage_id}/batches", tags=["beverage_batches"])
 api.include_router(locations.router)
 api.include_router(kegtron.router)
+api.include_router(kegtron_gen1.router)
 api.include_router(plaato_keg.router)
 api.include_router(tap_monitors.router, prefix="/api/v1/tap_monitors", tags=["tap_monitors"])
 api.include_router(tap_monitors.router, prefix="/api/v1/locations/{location}/tap_monitors", tags=["location_tap_monitors"])

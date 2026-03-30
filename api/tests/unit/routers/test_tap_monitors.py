@@ -748,21 +748,21 @@ class TestUpdateKegtronProValidation:
             mock_db.update.assert_called_once()
 
 
-class TestValidateKegtronProMeta:
-    """Direct tests for _validate_kegtron_pro_meta helper"""
+class TestValidateTapMonitorMetaKeysKegtronPro:
+    """Direct tests for _validate_tap_monitor_meta_keys with kegtron-pro keys."""
 
     def test_all_fields_present(self):
         """No exception when all required fields are present"""
-        from routers.tap_monitors import _validate_kegtron_pro_meta
+        from routers.tap_monitors import KEGTRON_PRO_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
-        _validate_kegtron_pro_meta({"port_num": 0, "device_id": "dev", "access_token": "tok"})
+        _validate_tap_monitor_meta_keys({"port_num": 0, "device_id": "dev", "access_token": "tok"}, KEGTRON_PRO_REQUIRED_META_KEYS, "kegtron-pro")
 
     def test_empty_meta_raises(self):
         """Raises HTTPException for empty meta"""
-        from routers.tap_monitors import _validate_kegtron_pro_meta
+        from routers.tap_monitors import KEGTRON_PRO_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
         with pytest.raises(HTTPException) as exc_info:
-            _validate_kegtron_pro_meta({})
+            _validate_tap_monitor_meta_keys({}, KEGTRON_PRO_REQUIRED_META_KEYS, "kegtron-pro")
 
         assert exc_info.value.status_code == 400
         assert "port_num" in exc_info.value.detail
@@ -771,10 +771,10 @@ class TestValidateKegtronProMeta:
 
     def test_partial_meta_lists_only_missing(self):
         """Only missing fields are listed in the error"""
-        from routers.tap_monitors import _validate_kegtron_pro_meta
+        from routers.tap_monitors import KEGTRON_PRO_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
         with pytest.raises(HTTPException) as exc_info:
-            _validate_kegtron_pro_meta({"port_num": 0})
+            _validate_tap_monitor_meta_keys({"port_num": 0}, KEGTRON_PRO_REQUIRED_META_KEYS, "kegtron-pro")
 
         assert exc_info.value.status_code == 400
         assert "port_num" not in exc_info.value.detail
@@ -783,10 +783,10 @@ class TestValidateKegtronProMeta:
 
     def test_empty_string_treated_as_missing(self):
         """Empty string values are treated as missing"""
-        from routers.tap_monitors import _validate_kegtron_pro_meta
+        from routers.tap_monitors import KEGTRON_PRO_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
         with pytest.raises(HTTPException) as exc_info:
-            _validate_kegtron_pro_meta({"port_num": 0, "device_id": "", "access_token": None})
+            _validate_tap_monitor_meta_keys({"port_num": 0, "device_id": "", "access_token": None}, KEGTRON_PRO_REQUIRED_META_KEYS, "kegtron-pro")
 
         assert exc_info.value.status_code == 400
         assert "port_num" not in exc_info.value.detail
@@ -795,9 +795,9 @@ class TestValidateKegtronProMeta:
 
     def test_zero_port_num_is_valid(self):
         """port_num of 0 is a valid value"""
-        from routers.tap_monitors import _validate_kegtron_pro_meta
+        from routers.tap_monitors import KEGTRON_PRO_REQUIRED_META_KEYS, _validate_tap_monitor_meta_keys
 
-        _validate_kegtron_pro_meta({"port_num": 0, "device_id": "dev", "access_token": "tok"})
+        _validate_tap_monitor_meta_keys({"port_num": 0, "device_id": "dev", "access_token": "tok"}, KEGTRON_PRO_REQUIRED_META_KEYS, "kegtron-pro")
 
 
 class TestGetTapMonitor:

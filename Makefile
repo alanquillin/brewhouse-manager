@@ -77,9 +77,9 @@ update-depends:
 # Targets for building containers
 
 # prod
-build: docker-build
+build: docker-build ## Build the Docker image for production
 
-docker-build:
+docker-build: ## Build the Docker image
 ifeq ($(VERSION),)
 	$(error Cannot build docker image(s), VERSION argument was not provided.  EX: make build -e VERSION=<version>)
 endif
@@ -87,7 +87,7 @@ endif
 
 # dev
 
-build-dev:
+build-dev: ## Build the development Docker image
 	$(DOCKER) build $(DOCKER_BUILD_ARGS) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV) .
 
 build-db-seed:
@@ -98,14 +98,14 @@ rebuild-db-seed:
 
 # Targets for publishing containers
 
-publish:
+publish: ## Build and publish the Docker images
 	$(MAKE) build DOCKER_BUILD_ARGS+="--push"
 
 # Targets for running the app
 
-run-dev: build-dev build-db-seed run-dev-no-build
+run-dev: build-dev build-db-seed run-dev-no-build ## Run the development environment
 
-run-dev-no-build:
+run-dev-no-build: ## Run the development environment without building the Docker image
 	docker compose --project-directory deploy/docker-local up
 
 run-web-local:
@@ -116,47 +116,47 @@ run-db-migrations:
 
 # Testing and Syntax targets
 
-lint-py:
+lint-py: ## Run Python linting
 	$(ISORT) --check-only api
 	$(PYLINT) --output-format=colorized api
 	$(BLACK) --check api
 
-lint-ui:
+lint-ui: ## Run UI linting
 	cd ui && npm run lint && npm run format:check
 
 lint: lint-py lint-ui
 
-format-py:
+format-py: ## Run Python formatters
 	$(ISORT) api
 	$(BLACK) api
 
-format-ui:
+format-ui: ## Run UI formatters
 	cd ui && npm run format && npm run lint:fix
 
-format: format-py format-ui
+format: format-py format-ui ## Run all formatters
 
-ui-depends:
+ui-depends: ## Install UI dependencies
 	cd ui && yarn install
 
 # Unit tests
 
-test: test-py test-ui
+test: test-py test-ui ## Run all tests
 
-test-py: test-unit test-api
+test-py: test-unit test-api ## Run Python tests
 
-test-unit:
+test-unit: ## Run python unit tests
 	$(PYTEST)
 
-test-no-coverage:
+test-no-coverage: ## Run python unit tests without coverage
 	$(PYTEST) --no-cov
 
 # UI tests (Angular/Karma)
-test-ui: test-ui-unit test-ui-functional
+test-ui: test-ui-unit test-ui-functional ## Run all UI tests
 
-test-ui-unit:
+test-ui-unit: ## Run UI unit tests
 	cd ui && npm run test:ci
 
-test-ui-functional: build-dev
+test-ui-functional: build-dev ## Run UI functional tests
 	$(DOCKER) compose -f api/tests/api/docker-compose.yml up -d --wait
 	-cd ui && npm run test:functional
 	$(DOCKER) compose -f api/tests/api/docker-compose.yml down -v --remove-orphans
@@ -167,23 +167,23 @@ test-ui-functional-only:
 
 # Functional API tests (requires Docker)
 
-test-api: build-dev
+test-api: build-dev ## Run API integration tests
 	cd api/tests/api && $(PYTEST) -v
 
-test-api-verbose: build-dev
+test-api-verbose: build-dev ## Run API integration tests with verbose output
 	cd api/tests/api && $(PYTEST) -v -s --log-cli-level=INFO
 
-test-api-clean:
+test-api-clean: ## Clean up API integration tests
 	$(DOCKER) compose -f api/tests/api/docker-compose.yml down -v --remove-orphans
 
 # Migrations
 
-create-migration:
+create-migration: ## Create a new migration
 	pushd ./api && ./migrate.sh create $@ && popd
 
 # Version management
 
-update-version:
+update-version: ## Update the version number
 ifeq ($(VERSION),)
 	$(error VERSION argument is required. Usage: make update-version VERSION=x.y.z)
 endif
@@ -191,22 +191,27 @@ endif
 
 # Clean up targets
 
-clean:
+clean: ## Stop and remove the Docker containers
 	docker compose --project-directory deploy/docker-local down --volumes
 
-clean-image:
+clean-image: ## Remove the Docker image
 	docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
 
-clean-seed-image:
+clean-seed-image: ## Remove the seed Docker image
 	docker rmi $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
 
-clean-images: clean-image clean-seed-image
+clean-images: clean-image clean-seed-image ## Remove all Docker images
 
-clean-local-uploads:
+clean-local-uploads: ## Remove the local uploads directory
 	rm -r ./deploy/docker-local/uploads/*
 
-clean-db:
+clean-db: ## Remove the database file
 	rm -rf ./deploy/docker-local/data
 
-clean-all: clean clean-images clean-local-uploads clean-db
+clean-all: clean clean-images clean-local-uploads clean-db ## Remove all Docker images, local uploads and database file
 
+
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-24s\033[0m %s\n", $$1, $$2}'
+
+.DEFAULT_GOAL := help

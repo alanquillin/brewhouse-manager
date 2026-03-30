@@ -1,0 +1,17 @@
+[mat-dialog-actions] {
+  justify-content: center;
+}
+
+.reset-form {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+}
+
+.volume-size-field {
+  flex: 1;
+}
+
+.volume-unit-field {
+  width: 150px;
+}

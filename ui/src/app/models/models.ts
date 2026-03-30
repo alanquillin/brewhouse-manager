@@ -670,6 +670,7 @@ export class TapMonitorType {
 }
 
 export class TapMonitorData {
+  onlineStatusType!: string;
   percentRemaining!: number;
   totalVolumeRemaining!: number;
   displayVolumeUnit!: string;

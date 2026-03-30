@@ -6,15 +6,10 @@ from lib.tap_monitors import TapMonitorBase
 from lib.tap_monitors.exceptions import TapMonitorDependencyError
 from lib.units import from_ml
 
-
-class KegtronBase(TapMonitorBase):
-    pass
-
-
 MONITOR_TYPE = "kegtron-pro"
 
 
-class KegtronPro(KegtronBase):
+class KegtronPro(TapMonitorBase):
     supported_device_keys = ["beaconEna", "cleanEna"]
     supported_port_keys = ["abv", "beaconEna", "userName", "userDesc", "ibu", "maker", "style", "volSize", "srm", "labelUrl"]
     supported_port_user_override_keys = ["dateTapped", "dateCleaned", "volStart"]

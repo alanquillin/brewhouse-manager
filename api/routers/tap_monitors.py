@@ -21,12 +21,13 @@ router = APIRouter()
 LOGGER = logging.getLogger(__name__)
 
 KEGTRON_PRO_REQUIRED_META_KEYS = ["port_num", "device_id", "access_token"]
+KEGTRON_GEN1_REQUIRED_META_KEYS = ["device_id", "port_index"]
 
 
-def _validate_kegtron_pro_meta(meta: dict, allow_missing=False):
-    """Validate that kegtron-pro tap monitors have required meta fields."""
+def _validate_tap_monitor_meta_keys(meta: dict, required_keys: List[str], monitor_type_name: str, allow_missing: bool = False) -> None:
+    """Validate that tap monitor meta contains required keys for the given monitor type."""
     missing = []
-    for k in KEGTRON_PRO_REQUIRED_META_KEYS:
+    for k in required_keys:
         if k not in meta:
             if not allow_missing:
                 missing.append(k)
@@ -37,7 +38,7 @@ def _validate_kegtron_pro_meta(meta: dict, allow_missing=False):
     if missing:
         raise HTTPException(
             status_code=400,
-            detail=f"kegtron-pro tap monitors require the following meta fields: {', '.join(missing)}",
+            detail=f"{monitor_type_name} tap monitors require the following meta fields: {', '.join(missing)}",
         )
 
 
@@ -138,7 +139,10 @@ async def create_tap_monitor(
         raise HTTPException(status_code=400, detail=f"Unsupported tap monitor type: {monitor_type}")
 
     if monitor_type == "kegtron-pro":
-        _validate_kegtron_pro_meta(data.get("meta") or {})
+        _validate_tap_monitor_meta_keys(data.get("meta") or {}, KEGTRON_PRO_REQUIRED_META_KEYS, "kegtron-pro")
+
+    if monitor_type == "kegtron-gen1":
+        _validate_tap_monitor_meta_keys(data.get("meta") or {}, KEGTRON_GEN1_REQUIRED_META_KEYS, "kegtron-gen1")
 
     # Check for duplicate device_id within the same monitor type
     device_id = (data.get("meta") or {}).get("device_id")
@@ -151,6 +155,16 @@ async def create_tap_monitor(
                 db_session,
                 monitor_type=monitor_type,
                 q_fn=lambda q: q.where(TapMonitorsDB.meta["device_id"].astext == device_id, TapMonitorsDB.meta["port_num"].astext.cast(Integer) == port_num),
+            )
+        elif monitor_type == "kegtron-gen1":
+            port_index = (data.get("meta") or {}).get("port_index")
+            err_msg = f"A tap monitor of type '{monitor_type}' already exists for device '{device_id}' and port {port_index}"
+            existing = await TapMonitorsDB.query(
+                db_session,
+                monitor_type=monitor_type,
+                q_fn=lambda q: q.where(
+                    TapMonitorsDB.meta["device_id"].astext == device_id, TapMonitorsDB.meta["port_index"].astext.cast(Integer) == port_index
+                ),
             )
         else:
             existing = await TapMonitorsDB.query(
@@ -238,7 +252,9 @@ async def update_tap_monitor(
 
     if data.get("meta"):
         if tap_monitor.monitor_type == "kegtron-pro":
-            _validate_kegtron_pro_meta(data["meta"], allow_missing=True)
+            _validate_tap_monitor_meta_keys(data["meta"], KEGTRON_PRO_REQUIRED_META_KEYS, "kegtron-pro", allow_missing=True)
+        elif tap_monitor.monitor_type == "kegtron-gen1":
+            _validate_tap_monitor_meta_keys(data["meta"], KEGTRON_GEN1_REQUIRED_META_KEYS, "kegtron-gen1", allow_missing=True)
 
     LOGGER.debug("Updating tap monitor %s with data: %s", tap_monitor_id, data)
 

@@ -25,6 +25,8 @@
     "tap_monitors.keg_volume_monitors.weight.enabled": "bool",
     "tap_monitors.keg_volume_monitors.flow.enabled": "bool",
     "tap_monitors.kegtron.pro.enabled": "bool",
+    "tap_monitors.kegtron.gen1.enabled": "bool",
+    "tap_monitors.kegtron.gen1.insecure": "bool",
     "tap_monitors.open_plaato_keg.enabled": "bool",
     "tap_monitors.open_plaato_keg.insecure": "bool",
     "tap_monitors.plaato_keg.enabled": "bool",
@@ -109,6 +111,9 @@
     },
     "kegtron": {
       "pro": {
+        "enabled": false
+      },
+      "gen1": {
         "enabled": false
       }
     },

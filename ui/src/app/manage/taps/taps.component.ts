@@ -8,6 +8,7 @@ import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError, DataService } from '../../_services/data.service';
 import { SettingsService } from '../../_services/settings.service';
 
+import { KegtronGen1ResetDialogComponent } from '../../_dialogs/kegtron-gen1-reset-dialog/kegtron-gen1-reset-dialog.component';
 import { KegtronResetDialogComponent } from '../../_dialogs/kegtron-reset-dialog/kegtron-reset-dialog.component';
 
 import { Batch, Beer, Beverage, Location, Tap, TapMonitor, UserInfo } from '../../models/models';
@@ -379,6 +380,24 @@ export class ManageTapsComponent implements OnInit {
           }
         });
       }
+    } else if (
+      !_.has(updateData, 'tapMonitorId') &&
+      _.has(updateData, 'batchId') &&
+      !isNilOrEmpty(updateData.batchId) &&
+      this.modifyTap.tapMonitor?.monitorType === 'kegtron-gen1'
+    ) {
+      const dialogRef = this.dialog.open(KegtronGen1ResetDialogComponent, {
+        data: {
+          deviceId: this.modifyTap.tapMonitor.meta.deviceId,
+          portIndex: this.modifyTap.tapMonitor.meta.portIndex,
+          showSkip: true,
+        },
+      });
+      dialogRef.afterClosed().subscribe(result => {
+        if (result === 'submit' || result === 'skip') {
+          this._executeSave(updateData);
+        }
+      });
     } else if (
       _.has(updateData, 'tapMonitorId') &&
       this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro'

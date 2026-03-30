@@ -96,6 +96,15 @@ def _init_tap_monitors():
         else:
             LOGGER.info("Disabling plaato_keg tap monitor types")
 
+        if CONFIG.get("tap_monitors.kegtron.gen1.enabled", False):
+            LOGGER.info("Enabling kegtron gen1 tap monitors")
+            from lib.tap_monitors.kegtron_gen1 import MONITOR_TYPE as kegtron_gen1_monitor_type
+            from lib.tap_monitors.kegtron_gen1 import KegtronGen1
+
+            TAP_MONITORS[kegtron_gen1_monitor_type] = KegtronGen1()
+        else:
+            LOGGER.info("Disabling kegtron gen1 tap monitors")
+
 
 def get_types() -> List[Dict]:
     res = []

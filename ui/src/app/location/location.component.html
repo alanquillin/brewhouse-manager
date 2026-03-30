@@ -92,7 +92,12 @@
                         </p>
                       }
                       @if (!isNilOrEmpty(tap.tapMonitor) && tap.tapMonitor.reportsOnlineStatus) {
-                        @if (!isNilOrEmpty(tap.tapMonitor.online)) {
+                        @if (tap.tapMonitor.checkingOnline) {
+                          <div class="online-checking-status">
+                            <mat-icon>wifi</mat-icon>
+                            <span>Checking online status...</span>
+                          </div>
+                        } @else if (!isNilOrEmpty(tap.tapMonitor.online)) {
                           @if (!tap.tapMonitor.online) {
                             <div class="alert alert-danger offline-status" role="alert">
                               <mat-icon>wifi_off</mat-icon>

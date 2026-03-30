@@ -56,6 +56,8 @@ export class TapMonitorData extends TapMonitor {
   beerRemainingUnit!: string;
   online!: boolean;
   lastUpdatedOn!: number;
+  onlineStatusType!: string;
+  checkingOnline!: boolean;
 
   getLastUpdatedOn(): Date | undefined {
     if (isNilOrEmpty(this.lastUpdatedOn) || !_.isNumber(this.lastUpdatedOn)) {
@@ -265,7 +267,9 @@ export class LocationComponent implements OnInit {
             tapMonitorData.beerRemainingUnit = oldTapMonitor.beerRemainingUnit;
             tapMonitorData.online = oldTapMonitor.online;
             tapMonitorData.lastUpdatedOn = oldTapMonitor.lastUpdatedOn;
+            tapMonitorData.onlineStatusType = oldTapMonitor.onlineStatusType;
             tap.tapMonitor = tapMonitorData;
+            tap.isLoading = false;
 
             this.dataService
               .getAllTapMonitorData(tapMonitorData.id)
@@ -273,23 +277,25 @@ export class LocationComponent implements OnInit {
                 tapMonitorData.percentBeerRemaining = resp.percentRemaining;
                 tapMonitorData.totalBeerRemaining = resp.totalVolumeRemaining;
                 tapMonitorData.beerRemainingUnit = resp.displayVolumeUnit;
-                tapMonitorData.online = resp.online;
                 tapMonitorData.lastUpdatedOn = resp.lastUpdatedOn;
-                tap.isLoading = false;
+                tapMonitorData.onlineStatusType = resp.onlineStatusType;
+                if (resp.onlineStatusType === 'async') {
+                  tapMonitorData.checkingOnline = true;
+                  this.dataService.getTapMonitorOnline(tapMonitorData.id).subscribe({
+                    next: (val: boolean) => {
+                      tapMonitorData.online = val;
+                      tapMonitorData.checkingOnline = false;
+                    },
+                    error: (err: any) => {
+                      this.displayError(err.message);
+                      tapMonitorData.online = false;
+                      tapMonitorData.checkingOnline = false;
+                    },
+                  });
+                } else {
+                  tapMonitorData.online = resp.online;
+                }
               });
-
-            // this.dataService.getPercentBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
-            //   tapMonitorData.percentBeerRemaining = val as number;
-            //   tap.isLoading = false;
-            // });
-            // this.dataService.getTotalBeerRemaining(tapMonitorData.id).subscribe((val: number) => {
-            //   tapMonitorData.totalBeerRemaining = val as number;
-            //   tap.isLoading = false;
-            // });
-            // this.dataService.getBeerRemainingUnit(tapMonitorData.id).subscribe((val: string) => {
-            //   tapMonitorData.beerRemainingUnit = val;
-            //   tap.isLoading = false;
-            // });
           });
       } else {
         tap.isLoading = false;
