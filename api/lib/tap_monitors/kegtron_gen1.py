@@ -31,9 +31,7 @@ class KegtronGen1(TapMonitorBase):
         self.default_vol_unit = self.config.get("tap_monitors.preferred_vol_unit")
         self.base_url = self.config.get("tap_monitors.kegtron.gen1.base_url")
         api_key = self.config.get("tap_monitors.kegtron.gen1.api_key")
-        self.bearer_token = (
-            base64.b64encode(api_key.encode("ascii")).decode("ascii") if api_key else None
-        )
+        self.bearer_token = base64.b64encode(api_key.encode("ascii")).decode("ascii") if api_key else None
         self.insecure = self.config.get("tap_monitors.kegtron.gen1.insecure")
         self.client_args = {}
         if self.insecure and self.base_url and self.base_url.startswith("https"):
