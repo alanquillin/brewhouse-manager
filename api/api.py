@@ -27,7 +27,7 @@ if not _secret_key:
 # Create FastAPI app
 api = FastAPI(
     title="Brewhouse Manager",
-    version="0.8.0",
+    version="0.8.1",
     docs_url="/api/docs",
     redoc_url="/api/redoc" if CONFIG.get("ENV") == "development" else None,
 )
