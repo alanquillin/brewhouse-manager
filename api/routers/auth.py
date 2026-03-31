@@ -101,11 +101,13 @@ async def google_login(request: Request):
     )
 
     flow.redirect_uri = redirect_url
+    flow.autogenerate_code_verifier = True
 
     authorization_url, state = flow.authorization_url(access_type="offline", include_granted_scopes="true")
 
-    # Store state in session to verify callback
+    # Store state and code_verifier in session for the callback
     request.session["oauth_state"] = state
+    request.session["oauth_code_verifier"] = flow.code_verifier
 
     LOGGER.debug("Redirecting to Google SSO: %s", authorization_url)
     return RedirectResponse(url=authorization_url)
@@ -146,6 +148,11 @@ async def google_callback(request: Request, code: str, state: str, db_session: A
     )
 
     flow.redirect_uri = redirect_url
+
+    # Restore PKCE code_verifier from session
+    code_verifier = request.session.get("oauth_code_verifier")
+    if code_verifier:
+        flow.code_verifier = code_verifier
 
     # Exchange authorization code for tokens (blocking I/O — run in thread)
     await asyncio.to_thread(flow.fetch_token, code=code)
@@ -226,6 +233,7 @@ async def google_callback(request: Request, code: str, state: str, db_session: A
 
     # Clear oauth state from session
     request.session.pop("oauth_state", None)
+    request.session.pop("oauth_code_verifier", None)
 
     # Set session cookie
     request.session["user_id"] = str(user.id)

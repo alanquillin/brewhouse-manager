@@ -65,6 +65,15 @@ else
     echo -e "  ${RED}✗${NC} File not found: $PACKAGE_JSON"
 fi
 
+# Update api/tests/unit/test_api.py
+TEST_API="$PROJECT_ROOT/api/tests/unit/test_api.py"
+if [ -f "$TEST_API" ]; then
+    sed -i '' "s/api_module.api.version == \".*\"/api_module.api.version == \"$VERSION\"/" "$TEST_API"
+    echo -e "  ${GREEN}✓${NC} Updated $TEST_API"
+else
+    echo -e "  ${RED}✗${NC} File not found: $TEST_API"
+fi
+
 # Update ui/src/environments/environment.prod.ts
 ENV_PROD="$PROJECT_ROOT/ui/src/environments/environment.prod.ts"
 if [ -f "$ENV_PROD" ]; then

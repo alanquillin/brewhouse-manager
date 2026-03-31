@@ -63,7 +63,9 @@ Brewhouse Manager now supports **two integration methods** for Plaato Keg device
 
 #### Other Tap Monitoring Sensors
 
-- [Kegtron Pro](https://kegtron.com/pro/)
+- Kegtron
+  - [Kegtron Pro](https://kegtron.com/pro/)
+  - [Kegtron Gen1](https://kegtron.com/gen1/) (via [Kegtron Gen1 API Proxy](https://github.com/alanquillin/kegtron-gen1-api-proxy))
 - [DIY Keg Volume Monitors](https://github.com/alanquillin/keg-volume-monitors)
 
 ## Quick Installation
