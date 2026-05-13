@@ -63,6 +63,7 @@ module.exports = tseslint.config(
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "@typescript-eslint/no-empty-function": "warn",
       "@angular-eslint/no-empty-lifecycle-method": "warn",
+      "@angular-eslint/prefer-inject": "warn",
       // Prettier integration
       "prettier/prettier": "warn",
     },
@@ -77,6 +78,7 @@ module.exports = tseslint.config(
       // Template-specific rules can be adjusted here
       "@angular-eslint/template/click-events-have-key-events": "warn",
       "@angular-eslint/template/interactive-supports-focus": "warn",
+      "@angular-eslint/template/prefer-control-flow": "warn",
     },
   }
 );
