@@ -211,11 +211,11 @@ clean: ## Stop and remove the Docker containers
 	docker compose --project-directory deploy/docker-local down --volumes
 
 clean-image: ## Remove the Docker image
-	docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
-	docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_CI)
+	-docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
+	-docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_CI)
 
 clean-seed-image: ## Remove the seed Docker image
-	docker rmi $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
+	-docker rmi $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
 
 clean-images: clean-image clean-seed-image ## Remove all Docker images
 

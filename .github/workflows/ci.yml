@@ -41,6 +41,7 @@ jobs:
         run: make build-ci
 
       - name: Snyk container test
+        if: env.SNYK_TOKEN != ''
         run: |
           snyk container test brewhouse-manager:ci \
             --exclude-base-image-vulns \
