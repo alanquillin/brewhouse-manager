@@ -1,6 +1,6 @@
 # NodeJS base
 # ############################################################
-FROM node:24.13-trixie AS node-base
+FROM node:24.15-trixie AS node-base
 
 RUN yarn config set network-timeout 1200000 -g
 RUN yarn global add @angular/cli

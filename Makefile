@@ -23,6 +23,7 @@ TAG_LATEST := false
 DOCKER_IMAGE ?= brewhouse-manager
 DOCKER_DB_SEED_IMAGE ?= brewhouse-manager-db-seed
 DOCKER_IMAGE_TAG_DEV ?= dev
+DOCKER_IMAGE_TAG_CI ?= ci
 DOCKER := $(shell which docker)
 IMAGE_REPOSITORY := alanquillin
 REPOSITORY_IMAGE ?= $(DOCKER_IMAGE)
@@ -64,7 +65,7 @@ endif
 	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends \
 	clean-local-uploads test test-py test-unit test-unit-no-coverage test-api test-api-verbose \
 	test-api-clean test-ui test-ui-unit test-ui-functional test-ui-functional-only \
-	update-version ui-depends
+	update-version ui-depends ci docker-snyk-check build-ci
 
 # dependency targets
 
@@ -89,6 +90,9 @@ endif
 
 build-dev: ## Build the development Docker image
 	$(DOCKER) build $(DOCKER_BUILD_ARGS) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV) .
+
+build-ci: ## Build the CI Docker image
+	$(DOCKER) build $(DOCKER_BUILD_ARGS) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_CI) .
 
 build-db-seed:
 	$(DOCKER) build $(DOCKER_BUILD_ARGS) -t $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV) deploy/docker-local
@@ -115,6 +119,8 @@ run-db-migrations:
 	./migrate.sh upgrade head
 
 # Testing and Syntax targets
+
+ci: lint test docker-snyk-check ## Run CI pipeline
 
 lint-py: ## Run Python linting
 	$(ISORT) --check-only api
@@ -176,6 +182,16 @@ test-api-verbose: build-dev ## Run API integration tests with verbose output
 test-api-clean: ## Clean up API integration tests
 	$(DOCKER) compose -f api/tests/api/docker-compose.yml down -v --remove-orphans
 
+# Snyk tests
+
+docker-snyk-check: build-ci ## Run Snyk container test (requires SNYK_TOKEN, snyk on PATH)
+	snyk container test $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_CI) \
+		--severity-threshold=high \
+		--project-name=brewhouse-manager:main \
+		--file=./Dockerfile \
+		--platform=$$($(DOCKER) inspect $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_CI) --format='{{.Os}}/{{.Architecture}}') \
+		--exclude-base-image-vulns
+
 # Migrations
 
 create-migration: ## Create a new migration
@@ -195,10 +211,11 @@ clean: ## Stop and remove the Docker containers
 	docker compose --project-directory deploy/docker-local down --volumes
 
 clean-image: ## Remove the Docker image
-	docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
+	-docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
+	-docker rmi $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_CI)
 
 clean-seed-image: ## Remove the seed Docker image
-	docker rmi $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
+	-docker rmi $(DOCKER_DB_SEED_IMAGE):$(DOCKER_IMAGE_TAG_DEV)
 
 clean-images: clean-image clean-seed-image ## Remove all Docker images
 
