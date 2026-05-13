@@ -263,23 +263,29 @@ export class ExtToolBase extends ImageTransitionalBase {
     transformFn?: (v: any) => any,
     brewToolTransformFn?: any
   ): any {
+    // 1. Batch local value (highest priority)
     if (batch !== undefined) {
-      const bv = batch.getVal(key, undefined, transformFn, brewToolTransformFn);
+      const bv = _.get(batch, key);
+      if (!isNilOrEmpty(bv)) {
+        return _.isNil(transformFn) ? bv : transformFn(bv);
+      }
+    }
+
+    // 2. This object's (Beer) local value
+    const v = _.get(this, key);
+    if (!isNilOrEmpty(v)) {
+      return _.isNil(transformFn) ? v : transformFn(v);
+    }
+
+    // 3. External tool fallback (batch first, then this)
+    if (batch !== undefined) {
+      const bv = batch.getExtToolVal(key, brewToolTransformFn);
       if (!isNilOrEmpty(bv)) {
         return bv;
       }
     }
 
-    let v = _.get(this, key);
-    if (isNilOrEmpty(v)) {
-      v = this.getExtToolVal(key, brewToolTransformFn);
-    } else {
-      if (!_.isNil(transformFn)) {
-        v = transformFn(v);
-      }
-    }
-
-    return v;
+    return this.getExtToolVal(key, brewToolTransformFn);
   }
 
   getExtToolVal(key: string, brewToolTransformFn?: any): any {
