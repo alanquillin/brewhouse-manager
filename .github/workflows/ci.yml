@@ -12,9 +12,12 @@ jobs:
       CHROME_BIN: /usr/bin/google-chrome-stable
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: jdx/mise-action@v2
+      - name: Install mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
+        with:
+          install: true
 
       - name: Install Python dependencies
         run: poetry install --no-interaction
@@ -30,3 +33,15 @@ jobs:
 
       - name: Run tests
         run: make test
+
+      - name: Build Docker image (local)
+        run: docker buildx build --load -t brewhouse-manager:ci .
+
+      - name: Snyk container test
+        run: |
+          snyk container test brewhouse-manager:ci \
+            --exclude-base-image-vulns \
+            --severity-threshold=high \
+            --project-name=brewhouse-manager:main \
+            --file=./Dockerfile \
+            --platform=$(docker inspect brewhouse-manager:ci --format='{{.Os}}/{{.Architecture}}')
