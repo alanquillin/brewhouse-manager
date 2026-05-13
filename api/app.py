@@ -135,7 +135,7 @@ if __name__ == "__main__":
         "--log",
         dest="loglevel",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        default=os.environ.get("LOG_LEVEL", logging.get_def_log_level(CONFIG)).upper(),
+        default=(os.environ.get("LOG_LEVEL") or logging.get_def_log_level(CONFIG)).upper(),
         help="Set the logging level",
     )
     args = parser.parse_args()
