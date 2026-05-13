@@ -65,7 +65,7 @@ endif
 	rebuild-db-seed run-db-migrations run-dev run-web-local update-depends \
 	clean-local-uploads test test-py test-unit test-unit-no-coverage test-api test-api-verbose \
 	test-api-clean test-ui test-ui-unit test-ui-functional test-ui-functional-only \
-	update-version ui-depends ci docker-snyk-check
+	update-version ui-depends ci docker-snyk-check build-ci
 
 # dependency targets
 
@@ -91,7 +91,7 @@ endif
 build-dev: ## Build the development Docker image
 	$(DOCKER) build $(DOCKER_BUILD_ARGS) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV) .
 
-build-ci: ## Build the development Docker image
+build-ci: ## Build the CI Docker image
 	$(DOCKER) build $(DOCKER_BUILD_ARGS) --build-arg build_for=dev -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_CI) .
 
 build-db-seed:
