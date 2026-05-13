@@ -327,21 +327,21 @@ export class ManageTapsComponent implements OnInit {
     const updateData: any = _.cloneDeep(this.modifyTap.changes);
 
     if (
-      _.has(updateData, 'batchId') &&
+      Object.hasOwn(updateData, 'batchId') &&
       (updateData.batchId === '-1' || _.isNil(updateData.batchId))
     ) {
       updateData.batchId = null;
     }
 
     if (
-      _.has(updateData, 'tapMonitorId') &&
+      Object.hasOwn(updateData, 'tapMonitorId') &&
       (updateData.tapMonitorId === '-1' || _.isNil(updateData.tapMonitorId))
     ) {
       updateData.tapMonitorId = null;
     }
     if (
-      !_.has(updateData, 'tapMonitorId') &&
-      _.has(updateData, 'batchId') &&
+      !Object.hasOwn(updateData, 'tapMonitorId') &&
+      Object.hasOwn(updateData, 'batchId') &&
       this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro'
     ) {
       if (isNilOrEmpty(updateData.batchId)) {
@@ -381,8 +381,8 @@ export class ManageTapsComponent implements OnInit {
         });
       }
     } else if (
-      !_.has(updateData, 'tapMonitorId') &&
-      _.has(updateData, 'batchId') &&
+      !Object.hasOwn(updateData, 'tapMonitorId') &&
+      Object.hasOwn(updateData, 'batchId') &&
       !isNilOrEmpty(updateData.batchId) &&
       this.modifyTap.tapMonitor?.monitorType === 'kegtron-gen1'
     ) {
@@ -399,7 +399,7 @@ export class ManageTapsComponent implements OnInit {
         }
       });
     } else if (
-      _.has(updateData, 'tapMonitorId') &&
+      Object.hasOwn(updateData, 'tapMonitorId') &&
       this.modifyTap.tapMonitor?.monitorType === 'kegtron-pro'
     ) {
       this.processing = true;
