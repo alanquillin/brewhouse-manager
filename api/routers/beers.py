@@ -15,6 +15,7 @@ from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
 from schemas.beers import BeerCreate, BeerUpdate
 from services.beers import BeerService
+from services.taps import TapService
 
 router = APIRouter(prefix="/api/v1/beers", tags=["beers"])
 LOGGER = logging.getLogger(__name__)
@@ -141,6 +142,7 @@ async def delete_beer(
         )
 
     for batch in batches:
+        await TapService.clear_on_tap_references_for_batch(db_session, batch.id, autocommit=False)
         await BatchLocationsDB.delete_by(db_session, batch_id=batch.id, autocommit=False)
         await OnTapDB.delete_by(db_session, batch_id=batch.id, autocommit=False)
         await BatchOverridesDB.delete_by(db_session, batch_id=batch.id, autocommit=False)

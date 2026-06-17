@@ -2,6 +2,7 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.taps import Taps as TapsDB
 from lib import logging
 from lib.tap_monitors import get_tap_monitor_lib
 from services.base import transform_dict_to_camel_case
@@ -11,6 +12,14 @@ LOGGER = logging.getLogger(__name__)
 
 class TapService:
     """Service for tap-related operations"""
+
+    @staticmethod
+    async def clear_on_tap_references_for_batch(db_session: AsyncSession, batch_id, autocommit=True):
+        """Clear taps.on_tap_id before deleting on_tap rows for a batch."""
+        taps = await TapsDB.get_by_batch(db_session, batch_id=batch_id)
+        for tap in taps:
+            if tap.on_tap_id:
+                await TapsDB.update(db_session, tap.id, on_tap_id=None, autocommit=autocommit)
 
     @staticmethod
     async def transform_tap_response(tap, db_session: AsyncSession, include_location=True, include_tap_monitor=False):
