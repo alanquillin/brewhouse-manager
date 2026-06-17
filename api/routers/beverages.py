@@ -5,9 +5,13 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+# isort: off
+# fmt: off
+from db.batches import Batches as BatchesDB  # pylint: disable=wrong-import-position
 from db.batch_locations import BatchLocations as BatchLocationsDB
 from db.batch_overrides import BatchOverrides as BatchOverridesDB
-from db.batches import Batches as BatchesDB
+# isort: on
+# fmt: on
 from db.beverages import Beverages as BeveragesDB
 from db.image_transitions import ImageTransitions as ImageTransitionsDB
 from db.on_tap import OnTap as OnTapDB

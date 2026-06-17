@@ -528,12 +528,6 @@ export class ManageBeerComponent implements OnInit {
     }
   }
 
-  beerBatchesAssocTaps(_: Beer): string[] {
-    const tapIds: string[] = [];
-
-    return tapIds;
-  }
-
   clearNextTap(tapIds: string[], next: () => void, error: (err: DataError) => void): void {
     if (isNilOrEmpty(tapIds)) return next();
 
