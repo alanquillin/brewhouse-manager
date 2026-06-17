@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -16,6 +16,11 @@ import { PlaatoKegDevice, UserInfo } from '../../models/models';
   standalone: false,
 })
 export class ManagePlaatoKegComponent implements OnInit {
+  private currentUserService = inject(CurrentUserService);
+  private dataService = inject(DataService);
+  private settingsService = inject(SettingsService);
+  private _snackBar = inject(MatSnackBar);
+
   loading = false;
   devices: PlaatoKegDevice[] = [];
   filteredDevices: PlaatoKegDevice[] = [];
@@ -71,13 +76,6 @@ export class ManagePlaatoKegComponent implements OnInit {
       'actions',
     ];
   }
-
-  constructor(
-    private currentUserService: CurrentUserService,
-    private dataService: DataService,
-    private settingsService: SettingsService,
-    private _snackBar: MatSnackBar
-  ) {}
 
   ngOnInit(): void {
     this.loading = true;

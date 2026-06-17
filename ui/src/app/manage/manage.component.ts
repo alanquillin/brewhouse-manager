@@ -1,6 +1,6 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CurrentUserService } from '../_services/current-user.service';
 import { DataError } from '../_services/data.service';
@@ -16,18 +16,16 @@ import { isNilOrEmpty } from '../utils/helpers';
   standalone: false,
 })
 export class ManageComponent implements OnInit {
+  private currentUserService = inject(CurrentUserService);
+  private settingsService = inject(SettingsService);
+  private router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
+
   title = 'Manage Brewhouse';
 
   isLoading = false;
 
   userInfo!: UserInfo | null;
-
-  constructor(
-    private currentUserService: CurrentUserService,
-    private settingsService: SettingsService,
-    private router: Router,
-    private _snackBar: MatSnackBar
-  ) {}
 
   displayError(errMsg: string) {
     this._snackBar.open('Error: ' + errMsg, 'Close');

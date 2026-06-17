@@ -19,6 +19,19 @@ def run_async(coro):
     return asyncio.get_event_loop().run_until_complete(coro)
 
 
+def _collect_route_paths(app):
+    """Return all registered route paths, including those inside included routers."""
+    paths = []
+    for route in app.routes:
+        if hasattr(route, "effective_route_contexts"):
+            for ctx in route.effective_route_contexts():
+                if hasattr(ctx, "path"):
+                    paths.append(ctx.path)
+        elif hasattr(route, "path"):
+            paths.append(route.path)
+    return paths
+
+
 # Lazy import of the api module to ensure CONFIG is already loaded
 @pytest.fixture
 def api_module():
@@ -251,61 +264,61 @@ class TestFastAPIAppConfiguration:
 
     def test_api_has_health_route(self, api_module):
         """Test API has health check route"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/health" in routes
 
     def test_api_includes_auth_router(self, api_module):
         """Test API includes auth routes"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/login" in routes
 
     def test_api_includes_beers_router(self, api_module):
         """Test API includes beers routes"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/api/v1/beers" in routes
 
     def test_api_includes_locations_router(self, api_module):
         """Test API includes locations routes"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/api/v1/locations" in routes
 
     def test_api_includes_users_router(self, api_module):
         """Test API includes users routes"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/api/v1/users" in routes
 
     def test_api_includes_taps_router(self, api_module):
         """Test API includes taps routes"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/api/v1/taps" in routes
 
     def test_api_includes_tap_monitors_router(self, api_module):
         """Test API includes tap_monitors routes"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/api/v1/tap_monitors" in routes
 
     def test_api_includes_batches_router(self, api_module):
         """Test API includes batches routes"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/api/v1/batches" in routes
 
     def test_api_includes_dashboard_router(self, api_module):
         """Test API includes dashboard routes"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/api/v1/dashboard/locations" in routes
 
     def test_api_includes_settings_router(self, api_module):
         """Test API includes settings routes"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/api/v1/settings" in routes
 
     def test_api_includes_location_nested_routes(self, api_module):
         """Test API includes location-nested routes for taps"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         # Location-nested taps route
         assert "/api/v1/locations/{location}/taps" in routes
 
     def test_api_includes_location_nested_tap_monitors(self, api_module):
         """Test API includes location-nested routes for tap_monitors"""
-        routes = [route.path for route in api_module.api.routes]
+        routes = _collect_route_paths(api_module.api)
         assert "/api/v1/locations/{location}/tap_monitors" in routes

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -19,6 +19,11 @@ import { isNilOrEmpty } from 'src/app/utils/helpers';
   standalone: false,
 })
 export class ManageUsersComponent implements OnInit {
+  private currentUserService = inject(CurrentUserService);
+  private dataService = inject(DataService);
+  private router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
+
   loading = false;
   me: UserInfo = new UserInfo();
   users: UserInfo[] = [];
@@ -66,13 +71,6 @@ export class ManageUsersComponent implements OnInit {
     },
     { validators: [Validation.match('password', 'confirmPassword')] }
   );
-
-  constructor(
-    private currentUserService: CurrentUserService,
-    private dataService: DataService,
-    private router: Router,
-    private _snackBar: MatSnackBar
-  ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
 

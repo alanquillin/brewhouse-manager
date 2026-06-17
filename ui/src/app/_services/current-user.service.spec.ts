@@ -328,7 +328,7 @@ describe('CurrentUserService', () => {
       mockDataService.getCurrentUser.and.returnValue(of(mockUserInfo as UserInfo));
 
       // Need to create a fresh instance to test this properly
-      const freshService = new CurrentUserService(mockDataService);
+      const freshService = TestBed.runInInjectionContext(() => new CurrentUserService());
       freshService.getCurrentUser().subscribe(() => {
         freshService.ngOnDestroy();
 

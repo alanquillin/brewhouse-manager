@@ -4,6 +4,20 @@ import asyncio
 from datetime import date, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
+
+class _AwaitableValue:
+    __slots__ = ("_value",)
+
+    def __init__(self, value):
+        self._value = value
+
+    def __await__(self):
+        return self._coro().__await__()
+
+    async def _coro(self):
+        return self._value
+
+
 import pytest
 
 from services.batches import BatchService
@@ -42,11 +56,8 @@ def create_mock_batch(
         "keg_date": keg_date,
     }
 
-    async def _awaitable_locations():
-        return locations or []
-
     mock_batch.awaitable_attrs = MagicMock()
-    mock_batch.awaitable_attrs.locations = _awaitable_locations()
+    mock_batch.awaitable_attrs.locations = _AwaitableValue(locations or [])
 
     return mock_batch
 

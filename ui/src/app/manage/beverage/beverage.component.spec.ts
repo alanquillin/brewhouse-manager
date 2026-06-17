@@ -21,7 +21,7 @@ describe('ManageBeverageComponent', () => {
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
   let mockDialog: jasmine.SpyObj<MatDialog>;
-  let settingsSubject: BehaviorSubject<any>;
+  let _settingsSubject: BehaviorSubject<any>;
 
   const mockUserInfo = {
     id: 'user-1',
@@ -91,7 +91,7 @@ describe('ManageBeverageComponent', () => {
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
     mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
 
-    settingsSubject = mockSettingsService.settings$ as BehaviorSubject<any>;
+    _settingsSubject = mockSettingsService.settings$ as BehaviorSubject<any>;
 
     mockCurrentUserService.getCurrentUser.and.returnValue(of(mockUserInfo as any));
     mockDataService.getLocations.and.returnValue(of(mockLocations as any));

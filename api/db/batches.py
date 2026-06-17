@@ -4,7 +4,7 @@ PKEY = "id"
 
 from sqlalchemy import Column, Date, Float, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Index
 
 from db import AsyncQueryMethodsMixin, AuditedMixin, Base, DictifiableMixin, batch_locations, beers, beverages, generate_audit_trail, locations
@@ -31,9 +31,9 @@ class Batches(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     keg_date = Column(Date, nullable=True)
     archived_on = Column(Date, nullable=True)
 
-    locations = relationship(locations.Locations, secondary=batch_locations.BatchLocations.__table__)
-    beer = relationship(beers.Beers, backref=backref("Batches", cascade="all,delete"))
-    beverage = relationship(beverages.Beverages, backref=backref("Batches", cascade="all,delete"))
+    locations = relationship(locations.Locations, secondary=batch_locations.BatchLocations.__table__, overlaps="BatchLocations,batch,location")
+    beer = relationship(beers.Beers, back_populates="batches")
+    beverage = relationship(beverages.Beverages, back_populates="batches")
 
     # overrides = relationship("BatchOverrides", back_populates="batch")
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -7,10 +7,6 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./footer.component.scss'],
   standalone: false,
 })
-export class FooterComponent implements OnInit {
+export class FooterComponent {
   appVersion: string = environment.appVersion;
-
-  constructor() {}
-
-  ngOnInit(): void {}
 }

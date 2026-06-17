@@ -1,6 +1,6 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { gsap } from 'gsap';
@@ -17,18 +17,16 @@ import { isNilOrEmpty } from '../utils/helpers';
   standalone: false,
 })
 export class ErrorsComponent implements OnInit, AfterViewInit {
+  private currentUserService = inject(CurrentUserService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private _snackBar = inject(MatSnackBar);
+
   errorType: string | undefined;
   userInfo!: UserInfo | null;
   loading = false;
 
   isNilOrEmpty = isNilOrEmpty;
-
-  constructor(
-    private currentUserService: CurrentUserService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private _snackBar: MatSnackBar
-  ) {}
 
   displayError(errMsg: string) {
     this._snackBar.open('Error: ' + errMsg, 'Close');

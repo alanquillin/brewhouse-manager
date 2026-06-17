@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
@@ -16,6 +16,10 @@ import * as _ from 'lodash';
   standalone: false,
 })
 export class ManageLocationsComponent implements OnInit {
+  private dataService = inject(DataService);
+  private router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
+
   loading = false;
   locations: Location[] = [];
   displayedColumns: string[] = ['name', 'description', 'actions'];
@@ -40,12 +44,6 @@ export class ManageLocationsComponent implements OnInit {
     Validators.pattern(this.nameValidationPattern),
   ]);
   descriptionFormControl = new UntypedFormControl('', [Validators.required]);
-
-  constructor(
-    private dataService: DataService,
-    private router: Router,
-    private _snackBar: MatSnackBar
-  ) {}
 
   displayError(errMsg: string) {
     this._snackBar.open('Error: ' + errMsg, 'Close');

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import {
   AbstractControl,
   UntypedFormControl,
@@ -40,6 +40,13 @@ import * as _ from 'lodash';
   standalone: false,
 })
 export class ManageBeverageComponent implements OnInit {
+  private currentUserService = inject(CurrentUserService);
+  private dataService = inject(DataService);
+  private settingsService = inject(SettingsService);
+  private router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
+  dialog = inject(MatDialog);
+
   loading = false;
   loadingBatches = false;
   beverages: Beverage[] = [];
@@ -128,15 +135,6 @@ export class ManageBeverageComponent implements OnInit {
 
     return _.concat(cols, ['brewDate', 'kegDate', 'actions']);
   }
-
-  constructor(
-    private currentUserService: CurrentUserService,
-    private dataService: DataService,
-    private settingsService: SettingsService,
-    private router: Router,
-    private _snackBar: MatSnackBar,
-    public dialog: MatDialog
-  ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -441,7 +439,7 @@ export class ManageBeverageComponent implements OnInit {
     }
   }
 
-  beverageBatchesAssocTaps(beverage: Beverage): string[] {
+  beverageBatchesAssocTaps(_beverage: Beverage): string[] {
     const tapIds: string[] = [];
 
     return tapIds;
@@ -914,7 +912,7 @@ export class ManageBeverageComponent implements OnInit {
     this.dataService
       .updateBatch(batch.id, { archivedOn: convertUnixTimestamp(Date.now()) })
       .subscribe({
-        next: (resp: any) => {
+        next: (_resp: any) => {
           this.processing = false;
           this.loading = true;
           this._refresh(() => {
@@ -935,7 +933,7 @@ export class ManageBeverageComponent implements OnInit {
       this.processing = true;
       this.loadingBatches = true;
       this.dataService.updateBatch(batch.id, { archivedOn: null }).subscribe({
-        next: (resp: any) => {
+        next: (_resp: any) => {
           this.processing = false;
           this.loading = true;
           this._refresh(() => {

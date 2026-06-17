@@ -39,12 +39,6 @@ describe('FooterComponent', () => {
     });
   });
 
-  describe('ngOnInit', () => {
-    it('should be callable', () => {
-      expect(() => component.ngOnInit()).not.toThrow();
-    });
-  });
-
   describe('template rendering', () => {
     it('should render component', () => {
       const compiled = fixture.nativeElement as HTMLElement;

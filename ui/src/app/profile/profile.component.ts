@@ -1,6 +1,6 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CurrentUserService } from '../_services/current-user.service';
@@ -19,6 +19,11 @@ import * as _ from 'lodash';
   standalone: false,
 })
 export class ProfileComponent implements OnInit {
+  private currentUserService = inject(CurrentUserService);
+  private dataService = inject(DataService);
+  private router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
+
   userInfo: UserInfo = new UserInfo();
   editing = false;
   changePassword = false;
@@ -47,13 +52,6 @@ export class ProfileComponent implements OnInit {
     },
     { validators: [Validation.match('password', 'confirmPassword')] }
   );
-
-  constructor(
-    private currentUserService: CurrentUserService,
-    private dataService: DataService,
-    private router: Router,
-    private _snackBar: MatSnackBar
-  ) {}
 
   displayError(errMsg: string) {
     this._snackBar.open('Error: ' + errMsg, 'Close');

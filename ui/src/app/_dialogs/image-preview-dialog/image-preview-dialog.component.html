@@ -2,6 +2,8 @@
   src="{{ data.imgUrl }}"
   style="max-height: 700px; width: auto"
   class="image-dialog-content"
+  tabindex="0"
   (click)="onClick()"
+  (keyup.enter)="onClick()"
   alt="Image Preview"
 />

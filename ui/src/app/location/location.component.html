@@ -129,7 +129,11 @@
                         <div class="tap-qrcode-container">
                           <div class="tap-qrcode-header">Untappd</div>
                           <div class="tap-qrcode-content">
-                            <a (click)="openQRCodeDialog(getUntappdUrl(tap.beer))">
+                            <a
+                              tabindex="0"
+                              (click)="openQRCodeDialog(getUntappdUrl(tap.beer))"
+                              (keyup.enter)="openQRCodeDialog(getUntappdUrl(tap.beer))"
+                            >
                               <qrcode
                                 [qrdata]="getUntappdUrl(tap.beer)"
                                 [width]="76"
@@ -142,7 +146,11 @@
                     </div>
                     @if (!isNilOrEmpty(getImageUrl(tap))) {
                       <div class="tap-logo">
-                        <a (click)="openImageDialog(getImageUrl(tap))">
+                        <a
+                          tabindex="0"
+                          (click)="openImageDialog(getImageUrl(tap))"
+                          (keyup.enter)="openImageDialog(getImageUrl(tap))"
+                        >
                           <img src="{{ getImageUrl(tap) }}" alt="Tap Logo" />
                         </a>
                       </div>
@@ -243,7 +251,11 @@
                         </div>
                         @if (!isNilOrEmpty(getImageUrl(tap))) {
                           <div class="tap-logo tap-logo-cold-brew">
-                            <a (click)="openImageDialog(getImageUrl(tap))">
+                            <a
+                              tabindex="0"
+                              (click)="openImageDialog(getImageUrl(tap))"
+                              (keyup.enter)="openImageDialog(getImageUrl(tap))"
+                            >
                               <img src="{{ getImageUrl(tap) }}" alt="Tap Logo" />
                             </a>
                           </div>

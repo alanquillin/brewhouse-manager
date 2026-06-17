@@ -2,11 +2,10 @@
 # ############################################################
 FROM node:24.15-trixie AS node-base
 
-RUN yarn config set network-timeout 1200000 -g
-RUN yarn global add @angular/cli
-COPY ui/angular.json ui/tsconfig.app.json ui/tsconfig.json ui/package.json ui/.browserslistrc /ui/
+RUN npm install -g pnpm@11 @angular/cli
+COPY ui/angular.json ui/tsconfig.app.json ui/tsconfig.json ui/package.json ui/pnpm-lock.yaml ui/pnpm-workspace.yaml ui/.browserslistrc /ui/
 WORKDIR /ui
-RUN yarn install --non-interactive
+RUN pnpm install --frozen-lockfile
 
 # Python base
 # ############################################################
@@ -18,7 +17,7 @@ RUN apt-get update \
 
 RUN pip install -U pip 
 RUN pip install setuptools wheel
-RUN pip install "poetry>=1.2.2"
+RUN pip install "poetry>=2.4.1"
 
 RUN poetry config virtualenvs.in-project true
 COPY pyproject.toml poetry.lock ./
@@ -34,7 +33,7 @@ FROM node-base AS node-build
 
 ARG build_for=prod
 COPY ui/src /ui/src
-RUN yarn run build:${build_for}
+RUN pnpm run build:${build_for}
 
 # Final build
 # ############################################################

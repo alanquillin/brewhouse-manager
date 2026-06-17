@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DataError, DataService } from '../../_services/data.service';
@@ -12,6 +12,11 @@ import { isNilOrEmpty } from '../../utils/helpers';
   standalone: false,
 })
 export class ImageSelectorDialogComponent implements OnInit {
+  data = inject(MAT_DIALOG_DATA);
+  dialogRef = inject<MatDialogRef<ImageSelectorDialogComponent>>(MatDialogRef);
+  private dataService = inject(DataService);
+  private _snackBar = inject(MatSnackBar);
+
   selectedImage: string | undefined;
   currentImage: string;
   imageType: string;
@@ -20,12 +25,9 @@ export class ImageSelectorDialogComponent implements OnInit {
 
   isNilOrEmpty = isNilOrEmpty;
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    public dialogRef: MatDialogRef<ImageSelectorDialogComponent>,
-    private dataService: DataService,
-    private _snackBar: MatSnackBar
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.currentImage = data.currentImage;
     this.imageType = data.imageType;
     this.processing = false;

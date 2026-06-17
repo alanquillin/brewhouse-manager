@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   AbstractControl,
   UntypedFormControl,
@@ -18,7 +18,7 @@ import * as _ from 'lodash';
   styleUrls: ['./volume-calculator.component.scss'],
   standalone: false,
 })
-export class VolumeCalculatorComponent implements OnInit {
+export class VolumeCalculatorComponent {
   decimalRegex = /^-?\d*[.]?\d{0,3}$/;
   decimalValidator = Validators.pattern(this.decimalRegex);
 
@@ -62,10 +62,6 @@ export class VolumeCalculatorComponent implements OnInit {
 
   isNilOrEmpty = isNilOrEmpty;
   _ = _;
-
-  constructor() {}
-
-  ngOnInit(): void {}
 
   lbs2Kgs(lbs: number): number {
     return lbs * 0.45359237;

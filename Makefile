@@ -142,7 +142,7 @@ format-ui: ## Run UI formatters
 format: format-py format-ui ## Run all formatters
 
 ui-depends: ## Install UI dependencies
-	cd ui && yarn install
+	cd ui && pnpm install
 
 # Unit tests
 

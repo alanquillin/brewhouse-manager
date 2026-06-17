@@ -1,7 +1,7 @@
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { ConfigService } from '../_services/config.service';
@@ -76,6 +76,15 @@ export class TapMonitorData extends TapMonitor {
   standalone: false,
 })
 export class LocationComponent implements OnInit {
+  private currentUserService = inject(CurrentUserService);
+  private dataService = inject(DataService);
+  private settingsService = inject(SettingsService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private _snackBar = inject(MatSnackBar);
+  dialog = inject(MatDialog);
+  private configService = inject(ConfigService);
+
   title = 'Location';
 
   isLoading = false;
@@ -94,16 +103,7 @@ export class LocationComponent implements OnInit {
 
   _ = _; //allow the html template to access lodash
 
-  constructor(
-    private currentUserService: CurrentUserService,
-    private dataService: DataService,
-    private settingsService: SettingsService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private _snackBar: MatSnackBar,
-    public dialog: MatDialog,
-    private configService: ConfigService
-  ) {
+  constructor() {
     this.route.params.subscribe((params: any) => (this.location_identifier = params['location']));
   }
 

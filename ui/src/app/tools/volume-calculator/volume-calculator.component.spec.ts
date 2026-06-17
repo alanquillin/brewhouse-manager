@@ -549,14 +549,4 @@ describe('VolumeCalculatorComponent', () => {
       expect(component.resultsL).toBeCloseTo(17.14, 1);
     });
   });
-
-  describe('ngOnInit', () => {
-    it('should be defined', () => {
-      expect(component.ngOnInit).toBeDefined();
-    });
-
-    it('should not throw', () => {
-      expect(() => component.ngOnInit()).not.toThrow();
-    });
-  });
 });

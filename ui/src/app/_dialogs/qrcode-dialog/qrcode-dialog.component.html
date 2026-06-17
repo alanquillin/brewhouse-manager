@@ -1,4 +1,4 @@
-<div class="qrcode-container" (click)="onClick()">
+<div class="qrcode-container" tabindex="0" (click)="onClick()" (keyup.enter)="onClick()">
   @if (!isNilOrEmpty(title)) {
     <div class="qrcode-title">
       {{ title }}
