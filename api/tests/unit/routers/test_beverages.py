@@ -199,14 +199,47 @@ class TestDeleteBeverage:
         mock_auth_user = create_mock_auth_user()
         mock_session = AsyncMock()
         mock_beverage = create_mock_beverage()
+        mock_batch = MagicMock()
+        mock_batch.id = "batch-1"
+        mock_batch.archived_on = "2024-01-01"
 
-        with patch("routers.beverages.BeveragesDB") as mock_db:
-            mock_db.get_by_pkey = AsyncMock(return_value=mock_beverage)
-            mock_db.delete = AsyncMock()
+        with patch("routers.beverages.BeveragesDB") as mock_beverages_db, patch("routers.beverages.BatchesDB") as mock_batches_db, patch(
+            "routers.beverages.TapService.clear_on_tap_references_for_batch", new_callable=AsyncMock
+        ) as mock_clear_taps, patch("routers.beverages.BatchLocationsDB.delete_by", new_callable=AsyncMock), patch(
+            "routers.beverages.OnTapDB.delete_by", new_callable=AsyncMock
+        ), patch(
+            "routers.beverages.BatchOverridesDB.delete_by", new_callable=AsyncMock
+        ), patch(
+            "routers.beverages.ImageTransitionsDB.delete_by", new_callable=AsyncMock
+        ):
+            mock_beverages_db.get_by_pkey = AsyncMock(return_value=mock_beverage)
+            mock_beverages_db.delete = AsyncMock()
+            mock_batches_db.query = AsyncMock(return_value=[mock_batch])
+            mock_batches_db.delete_by = AsyncMock()
 
-            result = run_async(delete_beverage("bev-1", mock_auth_user, mock_session))
+            run_async(delete_beverage("bev-1", mock_auth_user, mock_session))
 
-            mock_db.delete.assert_called_once()
+            mock_clear_taps.assert_called_once_with(mock_session, "batch-1", autocommit=False)
+            mock_beverages_db.delete.assert_called_once()
+
+    def test_raises_409_when_active_batches_exist(self):
+        """Test raises 409 when beverage has active batches"""
+        from routers.beverages import delete_beverage
+
+        mock_auth_user = create_mock_auth_user()
+        mock_session = AsyncMock()
+        mock_beverage = create_mock_beverage()
+        mock_batch = MagicMock()
+        mock_batch.archived_on = None
+
+        with patch("routers.beverages.BeveragesDB") as mock_beverages_db, patch("routers.beverages.BatchesDB") as mock_batches_db:
+            mock_beverages_db.get_by_pkey = AsyncMock(return_value=mock_beverage)
+            mock_batches_db.query = AsyncMock(return_value=[mock_batch])
+
+            with pytest.raises(HTTPException) as exc_info:
+                run_async(delete_beverage("bev-1", mock_auth_user, mock_session))
+
+            assert exc_info.value.status_code == 409
 
     def test_raises_404_when_not_found(self):
         """Test raises 404 when beverage not found"""

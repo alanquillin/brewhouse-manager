@@ -247,3 +247,39 @@ class TestTapServiceTransformResponse:
             result = run_async(TapService.transform_response(mock_tap, mock_session, include_location=False, filter_unsupported_tap_monitor=True))
 
         assert "tapMonitor" not in result
+
+
+class TestClearOnTapReferencesForBatch:
+    """Tests for TapService.clear_on_tap_references_for_batch"""
+
+    def test_clears_on_tap_id_for_matching_taps(self):
+        """Test clears on_tap_id for taps still referencing the batch"""
+        mock_session = AsyncMock()
+        mock_tap = MagicMock()
+        mock_tap.id = "tap-1"
+        mock_tap.on_tap_id = "on-tap-1"
+
+        with patch("services.taps.TapsDB.get_by_batch", new_callable=AsyncMock) as mock_get_by_batch, patch(
+            "services.taps.TapsDB.update", new_callable=AsyncMock
+        ) as mock_update:
+            mock_get_by_batch.return_value = [mock_tap]
+
+            run_async(TapService.clear_on_tap_references_for_batch(mock_session, "batch-1", autocommit=False))
+
+            mock_update.assert_called_once_with(mock_session, "tap-1", on_tap_id=None, autocommit=False)
+
+    def test_skips_taps_without_on_tap_id(self):
+        """Test does not update taps that have no on_tap_id"""
+        mock_session = AsyncMock()
+        mock_tap = MagicMock()
+        mock_tap.id = "tap-1"
+        mock_tap.on_tap_id = None
+
+        with patch("services.taps.TapsDB.get_by_batch", new_callable=AsyncMock) as mock_get_by_batch, patch(
+            "services.taps.TapsDB.update", new_callable=AsyncMock
+        ) as mock_update:
+            mock_get_by_batch.return_value = [mock_tap]
+
+            run_async(TapService.clear_on_tap_references_for_batch(mock_session, "batch-1"))
+
+            mock_update.assert_not_called()

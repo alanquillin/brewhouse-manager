@@ -413,36 +413,33 @@ export class ManageBeverageComponent implements OnInit {
   }
 
   deleteBeverage(beverage: Beverage): void {
-    if (confirm(`Are you sure you want to delete beverage '${beverage.name}'?`)) {
-      this.processing = true;
-      const tapIds = this.beverageBatchesAssocTaps(beverage);
-      if (!isNilOrEmpty(tapIds)) {
-        if (
-          confirm(
-            `The beverage has 1 or more batch(es) associated with one or more taps.  Batches must first be cleared from the tap(s) before deleting. Proceed?`
-          )
-        ) {
-          this.clearNextTap(
-            tapIds,
-            () => {
-              this._deleteBeverage(beverage);
-            },
-            (err: DataError) => {
-              this.displayError(err.message);
-              this.processing = false;
-            }
+    this.dataService.getBeverageBatches(beverage.id, false, true).subscribe({
+      next: (batches: Batch[]) => {
+        const activeBatches = batches.filter(b => isNilOrEmpty(b.archivedOn));
+        if (activeBatches.length > 0) {
+          this.displayError(
+            `Cannot delete '${beverage.name}': it has ${activeBatches.length} active batch(es). Archive all batches before deleting.`
           );
+          return;
         }
-      } else {
-        this._deleteBeverage(beverage);
-      }
-    }
-  }
 
-  beverageBatchesAssocTaps(_beverage: Beverage): string[] {
-    const tapIds: string[] = [];
+        const archivedCount = batches.length;
+        const batchWarning =
+          archivedCount > 0
+            ? ` This will also permanently delete ${archivedCount} archived batch(es).`
+            : '';
 
-    return tapIds;
+        if (
+          confirm(`Are you sure you want to delete beverage '${beverage.name}'?${batchWarning}`)
+        ) {
+          this.processing = true;
+          this._deleteBeverage(beverage);
+        }
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+      },
+    });
   }
 
   clearNextTap(tapIds: string[], next: () => void, error: (err: DataError) => void): void {

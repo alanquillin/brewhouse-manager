@@ -454,7 +454,7 @@ describe('ManageBeerComponent', () => {
     beforeEach(() => {
       fixture.detectChanges();
       mockDataService.deleteBeer.and.returnValue(of({}));
-      component.beerBatches = { 'beer-1': [] };
+      mockDataService.getBeerBatches.and.returnValue(of([]));
     });
 
     it('should call deleteBeer when confirmed', () => {
@@ -463,6 +463,7 @@ describe('ManageBeerComponent', () => {
 
       component.deleteBeer(beer);
 
+      expect(mockDataService.getBeerBatches).toHaveBeenCalledWith('beer-1', false, true);
       expect(mockDataService.deleteBeer).toHaveBeenCalledWith('beer-1');
     });
 
@@ -472,6 +473,36 @@ describe('ManageBeerComponent', () => {
 
       component.deleteBeer(beer);
 
+      expect(mockDataService.deleteBeer).not.toHaveBeenCalled();
+    });
+
+    it('should include archived batch count in confirm when cache omits archived batches', () => {
+      mockDataService.getBeerBatches.and.returnValue(
+        of([{ id: 'batch-1', archivedOn: '2024-01-01' }] as any)
+      );
+      component.beerBatches = { 'beer-1': [] };
+      const confirmSpy = spyOn(window, 'confirm').and.returnValue(false);
+      const beer = new Beer(mockBeers[0]);
+
+      component.deleteBeer(beer);
+
+      expect(confirmSpy).toHaveBeenCalledWith(
+        jasmine.stringMatching(/permanently delete 1 archived batch\(es\)/)
+      );
+    });
+
+    it('should block delete when active batches exist', () => {
+      mockDataService.getBeerBatches.and.returnValue(of([{ id: 'batch-1' }] as any));
+      spyOn(window, 'confirm');
+      spyOn(component, 'displayError');
+      const beer = new Beer(mockBeers[0]);
+
+      component.deleteBeer(beer);
+
+      expect(component.displayError).toHaveBeenCalledWith(
+        jasmine.stringMatching(/1 active batch\(es\)/)
+      );
+      expect(window.confirm).not.toHaveBeenCalled();
       expect(mockDataService.deleteBeer).not.toHaveBeenCalled();
     });
   });

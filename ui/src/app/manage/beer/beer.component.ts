@@ -507,36 +507,31 @@ export class ManageBeerComponent implements OnInit {
   }
 
   deleteBeer(beer: Beer): void {
-    if (confirm(`Are you sure you want to delete beer '${beer.getName()}'?`)) {
-      this.processing = true;
-      const tapIds = this.beerBatchesAssocTaps(beer);
-      if (!isNilOrEmpty(tapIds)) {
-        if (
-          confirm(
-            `The beer has 1 or more batch associated with one or more taps.  Batches must first be cleared from the tap(s) before deleting. Proceed?`
-          )
-        ) {
-          this.clearNextTap(
-            tapIds,
-            () => {
-              this._deleteBeer(beer);
-            },
-            (err: DataError) => {
-              this.displayError(err.message);
-              this.processing = false;
-            }
+    this.dataService.getBeerBatches(beer.id, false, true).subscribe({
+      next: (batches: Batch[]) => {
+        const activeBatches = batches.filter(b => isNilOrEmpty(b.archivedOn));
+        if (activeBatches.length > 0) {
+          this.displayError(
+            `Cannot delete '${beer.getName()}': it has ${activeBatches.length} active batch(es). Archive all batches before deleting.`
           );
+          return;
         }
-      } else {
-        this._deleteBeer(beer);
-      }
-    }
-  }
 
-  beerBatchesAssocTaps(_: Beer): string[] {
-    const tapIds: string[] = [];
+        const archivedCount = batches.length;
+        const batchWarning =
+          archivedCount > 0
+            ? ` This will also permanently delete ${archivedCount} archived batch(es).`
+            : '';
 
-    return tapIds;
+        if (confirm(`Are you sure you want to delete beer '${beer.getName()}'?${batchWarning}`)) {
+          this.processing = true;
+          this._deleteBeer(beer);
+        }
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+      },
+    });
   }
 
   clearNextTap(tapIds: string[], next: () => void, error: (err: DataError) => void): void {
