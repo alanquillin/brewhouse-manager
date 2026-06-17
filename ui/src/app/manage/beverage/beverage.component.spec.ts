@@ -471,7 +471,7 @@ describe('ManageBeverageComponent', () => {
     beforeEach(() => {
       fixture.detectChanges();
       mockDataService.deleteBeverage.and.returnValue(of({}));
-      component.beverageBatches = { 'bev-1': [] };
+      mockDataService.getBeverageBatches.and.returnValue(of([]));
     });
 
     it('should call deleteBeverage when confirmed', () => {
@@ -480,6 +480,7 @@ describe('ManageBeverageComponent', () => {
 
       component.deleteBeverage(beverage);
 
+      expect(mockDataService.getBeverageBatches).toHaveBeenCalledWith('bev-1', false, true);
       expect(mockDataService.deleteBeverage).toHaveBeenCalledWith('bev-1');
     });
 
@@ -489,6 +490,36 @@ describe('ManageBeverageComponent', () => {
 
       component.deleteBeverage(beverage);
 
+      expect(mockDataService.deleteBeverage).not.toHaveBeenCalled();
+    });
+
+    it('should include archived batch count in confirm when cache omits archived batches', () => {
+      mockDataService.getBeverageBatches.and.returnValue(
+        of([{ id: 'batch-1', archivedOn: '2024-01-01' }] as any)
+      );
+      component.beverageBatches = { 'bev-1': [] };
+      const confirmSpy = spyOn(window, 'confirm').and.returnValue(false);
+      const beverage = new Beverage(mockBeverages[0]);
+
+      component.deleteBeverage(beverage);
+
+      expect(confirmSpy).toHaveBeenCalledWith(
+        jasmine.stringMatching(/permanently delete 1 archived batch\(es\)/)
+      );
+    });
+
+    it('should block delete when active batches exist', () => {
+      mockDataService.getBeverageBatches.and.returnValue(of([{ id: 'batch-1' }] as any));
+      spyOn(window, 'confirm');
+      spyOn(component, 'displayError');
+      const beverage = new Beverage(mockBeverages[0]);
+
+      component.deleteBeverage(beverage);
+
+      expect(component.displayError).toHaveBeenCalledWith(
+        jasmine.stringMatching(/1 active batch\(es\)/)
+      );
+      expect(window.confirm).not.toHaveBeenCalled();
       expect(mockDataService.deleteBeverage).not.toHaveBeenCalled();
     });
   });

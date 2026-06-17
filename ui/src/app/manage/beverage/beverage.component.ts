@@ -413,25 +413,33 @@ export class ManageBeverageComponent implements OnInit {
   }
 
   deleteBeverage(beverage: Beverage): void {
-    const batches = this.beverageBatches[beverage.id] ?? [];
-    const activeBatches = batches.filter(b => isNilOrEmpty(b.archivedOn));
-    if (activeBatches.length > 0) {
-      this.displayError(
-        `Cannot delete '${beverage.name}': it has ${activeBatches.length} active batch(es). Archive all batches before deleting.`
-      );
-      return;
-    }
+    this.dataService.getBeverageBatches(beverage.id, false, true).subscribe({
+      next: (batches: Batch[]) => {
+        const activeBatches = batches.filter(b => isNilOrEmpty(b.archivedOn));
+        if (activeBatches.length > 0) {
+          this.displayError(
+            `Cannot delete '${beverage.name}': it has ${activeBatches.length} active batch(es). Archive all batches before deleting.`
+          );
+          return;
+        }
 
-    const archivedCount = batches.length;
-    const batchWarning =
-      archivedCount > 0
-        ? ` This will also permanently delete ${archivedCount} archived batch(es).`
-        : '';
+        const archivedCount = batches.length;
+        const batchWarning =
+          archivedCount > 0
+            ? ` This will also permanently delete ${archivedCount} archived batch(es).`
+            : '';
 
-    if (confirm(`Are you sure you want to delete beverage '${beverage.name}'?${batchWarning}`)) {
-      this.processing = true;
-      this._deleteBeverage(beverage);
-    }
+        if (
+          confirm(`Are you sure you want to delete beverage '${beverage.name}'?${batchWarning}`)
+        ) {
+          this.processing = true;
+          this._deleteBeverage(beverage);
+        }
+      },
+      error: (err: DataError) => {
+        this.displayError(err.message);
+      },
+    });
   }
 
   clearNextTap(tapIds: string[], next: () => void, error: (err: DataError) => void): void {
