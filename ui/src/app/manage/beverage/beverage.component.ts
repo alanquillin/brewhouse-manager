@@ -413,29 +413,24 @@ export class ManageBeverageComponent implements OnInit {
   }
 
   deleteBeverage(beverage: Beverage): void {
-    if (confirm(`Are you sure you want to delete beverage '${beverage.name}'?`)) {
+    const batches = this.beverageBatches[beverage.id] ?? [];
+    const activeBatches = batches.filter(b => isNilOrEmpty(b.archivedOn));
+    if (activeBatches.length > 0) {
+      this.displayError(
+        `Cannot delete '${beverage.name}': it has ${activeBatches.length} active batch(es). Archive all batches before deleting.`
+      );
+      return;
+    }
+
+    const archivedCount = batches.length;
+    const batchWarning =
+      archivedCount > 0
+        ? ` This will also permanently delete ${archivedCount} archived batch(es).`
+        : '';
+
+    if (confirm(`Are you sure you want to delete beverage '${beverage.name}'?${batchWarning}`)) {
       this.processing = true;
-      const tapIds = this.beverageBatchesAssocTaps(beverage);
-      if (!isNilOrEmpty(tapIds)) {
-        if (
-          confirm(
-            `The beverage has 1 or more batch(es) associated with one or more taps.  Batches must first be cleared from the tap(s) before deleting. Proceed?`
-          )
-        ) {
-          this.clearNextTap(
-            tapIds,
-            () => {
-              this._deleteBeverage(beverage);
-            },
-            (err: DataError) => {
-              this.displayError(err.message);
-              this.processing = false;
-            }
-          );
-        }
-      } else {
-        this._deleteBeverage(beverage);
-      }
+      this._deleteBeverage(beverage);
     }
   }
 

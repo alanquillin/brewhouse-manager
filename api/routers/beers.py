@@ -5,7 +5,12 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.batch_locations import BatchLocations as BatchLocationsDB
+from db.batch_overrides import BatchOverrides as BatchOverridesDB
+from db.batches import Batches as BatchesDB
 from db.beers import Beers as BeersDB
+from db.image_transitions import ImageTransitions as ImageTransitionsDB
+from db.on_tap import OnTap as OnTapDB
 from dependencies.auth import AuthUser, get_db_session, require_user
 from lib import logging
 from schemas.beers import BeerCreate, BeerUpdate
@@ -121,11 +126,28 @@ async def delete_beer(
     current_user: AuthUser = Depends(require_user),
     db_session: AsyncSession = Depends(get_db_session),
 ):
-    """Delete a beer"""
+    """Delete a beer, cascading to archived batches only"""
     beer = await BeersDB.get_by_pkey(db_session, beer_id)
 
     if not beer:
         raise HTTPException(status_code=404, detail="Beer not found")
 
+    batches = await BatchesDB.query(db_session, beer_id=beer_id)
+    active_batches = [b for b in batches if b.archived_on is None]
+    if active_batches:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot delete beer with {len(active_batches)} active batch(es). Archive all batches before deleting.",
+        )
+
+    for batch in batches:
+        await BatchLocationsDB.delete_by(db_session, batch_id=batch.id, autocommit=False)
+        await OnTapDB.delete_by(db_session, batch_id=batch.id, autocommit=False)
+        await BatchOverridesDB.delete_by(db_session, batch_id=batch.id, autocommit=False)
+
+    if batches:
+        await BatchesDB.delete_by(db_session, beer_id=beer_id, autocommit=False)
+
+    await ImageTransitionsDB.delete_by(db_session, beer_id=beer_id, autocommit=False)
     await BeersDB.delete(db_session, beer.id)
     return
