@@ -65,6 +65,7 @@ name = "brewhouse-manager"
 version = "0.8.2"
 authors = ["alanquillin"]
 description = "Brewhouse Manager"
+package-mode = false
 
 [tool.poetry.dependencies]
 MarkupSafe = "^3.0.3"
