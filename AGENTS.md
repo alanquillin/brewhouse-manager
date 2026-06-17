@@ -7,7 +7,7 @@ A homebrew tap management system with a FastAPI backend, Angular frontend, and P
 - **Backend**: Python 3.11, FastAPI, SQLAlchemy 2.0 (async), Pydantic v2
 - **Frontend**: Angular 21, Angular Material, Bootstrap 5.3, RxJS
 - **Database**: PostgreSQL 17, Alembic migrations
-- **Tooling**: Poetry 2.x (Python deps), npm (UI deps), mise (runtime versions via `mise.toml`)
+- **Tooling**: Poetry 2.x (Python deps), pnpm (UI deps), mise (runtime versions via `mise.toml`)
 - **Docker**: Multi-stage build (node + python), docker-compose for local dev
 
 ## Project Structure
@@ -45,7 +45,7 @@ deploy/                 # Docker compose files for local dev
 ```bash
 # Dependencies
 make depends                 # Install Python deps via Poetry
-cd ui && npm ci              # Install UI deps
+make ui-depends              # Install UI deps via pnpm (cd ui && pnpm install)
 
 # Running locally
 make run-dev                 # Full Docker stack (builds images + docker-compose up)
@@ -199,6 +199,14 @@ The project uses `mise.toml` (not `.tool-versions`) for runtime version pinning.
 - Node 24.15.0
 - Poetry 2.4.1
 - Snyk 1.1304.2
+
+### pnpm (UI package manager)
+
+The UI uses pnpm (v11). The lockfile is `ui/pnpm-lock.yaml`; `yarn.lock` and `package-lock.json` are gone.
+
+**pnpm v11 build script approval**: pnpm v11 requires explicit per-package approval to run postinstall scripts. Native packages (`esbuild`, `@parcel/watcher`, `lmdb`, `msgpackr-extract`) are approved in `ui/pnpm-workspace.yaml` via `allowBuilds`. Do not remove that file — without it, `pnpm install` exits 1 in Docker and CI. If new native packages are added that need build scripts, add them to `allowBuilds` in `ui/pnpm-workspace.yaml` as well. Also, `ui/pnpm-workspace.yaml` must be copied into the Docker image (it is in the `COPY` list in `Dockerfile`).
+
+Yarn references in `pnpm-lock.yaml` (e.g. `engines: { yarn: ... }` and `@yarnpkg/lockfile`) are upstream package metadata — not a sign that yarn is being used.
 
 ### Poetry 2.x
 
