@@ -50,9 +50,6 @@ importers:
       '@popperjs/core':
         specifier: ^2.11.6
         version: 2.11.8
-      '@types/gsap':
-        specifier: ^1.0.4
-        version: 1.20.2
       '@types/jquery':
         specifier: ~4.0.0
         version: 4.0.1
@@ -1562,9 +1559,6 @@ packages:
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
-
-  '@types/gsap@1.20.2':
-    resolution: {integrity: sha512-i9nUsnS32+VTgoX5IlaCYukJpCoB3c6h3bZvO67aIRdb3z8NFTWgeUDpQutLyb1ujowp6nw37qLQNvEowqq8yw==}
 
   '@types/jasmine@6.0.0':
     resolution: {integrity: sha512-18lgGsLmEh3VJk9eZ5wAjTISxdqzl6YOwu8UdMpolajN57QOCNbl+AbHUd+Yu9ItrsFdB+c8LSZSGNg8nHaguw==}
@@ -4834,8 +4828,6 @@ snapshots:
   '@types/esrecurse@4.3.1': {}
 
   '@types/estree@1.0.9': {}
-
-  '@types/gsap@1.20.2': {}
 
   '@types/jasmine@6.0.0': {}
 
