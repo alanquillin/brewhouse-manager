@@ -171,6 +171,31 @@ This is defined locally in each test file that uses it.
 
 **Data service**: `DataService` in `_services/data.service.ts` — all API calls go through here with `catchError` → `getError()` pattern.
 
+**Dependency injection**: Use `inject()` function, not constructor parameter injection. This is enforced by `@angular-eslint/prefer-inject`. Example:
+```typescript
+// Correct
+readonly dataService = inject(DataService);
+
+// Wrong — triggers lint warning
+constructor(private dataService: DataService) {}
+```
+
+**Template control flow**: Use Angular's built-in `@if` / `@for` / `@switch` blocks, not structural directives (`*ngIf`, `*ngFor`). Enforced by `@angular-eslint/template/prefer-control-flow`.
+
+**Clickable non-button elements**: Any element with `(click)` that is not a `<button>` or `<a href="...">` must also have `tabindex="0"` and a `(keyup.enter)` handler. Enforced by `@angular-eslint/template/click-events-have-key-events` and `@angular-eslint/template/interactive-supports-focus`.
+
+**Empty lifecycle methods**: Remove empty `ngOnInit()`, `ngOnDestroy()` etc. rather than leaving them as no-ops. Also remove `implements OnInit` and the corresponding import. If a spec file tests for the method's existence, remove those test cases too.
+
+**Creating fresh service instances in specs** (after `inject()` migration): `new MyService(dep)` no longer compiles since there are no constructor parameters. Use `TestBed.runInInjectionContext(() => new MyService())` to create a fresh instance within the active injector:
+```typescript
+const freshService = TestBed.runInInjectionContext(() => new MyService());
+```
+
+**`beverageBatches` / `beerBatches` lookup gotcha**: These maps only contain entries for existing (already-saved) entities. When the add flow is active, `modifyBeverage.id` / `modifyBeer.id` is `undefined`, so `beverageBatches[undefined]` is `undefined` — accessing `.length` on it will throw. Always guard template lookups with optional chaining:
+```html
+@if ((beverageBatches[modifyBeverage.id]?.length ?? 0) > 0 && !loadingBatches) {
+```
+
 ### Tap Monitor Integration
 
 `TapMonitorBase` in `api/lib/tap_monitors/` is the base class for device integrations (Kegtron Pro, Kegtron Gen1, Plaato, etc.). Each implementation provides:
