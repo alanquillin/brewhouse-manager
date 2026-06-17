@@ -28,7 +28,7 @@ class Beverages(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     meta = Column(NestedMutableDict.as_mutable(JSONB), nullable=True)
     image_transitions_enabled = Column(Boolean, nullable=False)
 
-    batches = relationship("Batches", back_populates="beverage")
+    batches = relationship("Batches", back_populates="beverage", cascade="all, delete")
 
     __table_args__ = (Index("beverage_name_lower_ix", func.lower(name), unique=True),)
 

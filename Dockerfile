@@ -18,7 +18,7 @@ RUN apt-get update \
 
 RUN pip install -U pip 
 RUN pip install setuptools wheel
-RUN pip install "poetry>=1.2.2"
+RUN pip install "poetry>=2.4.1"
 
 RUN poetry config virtualenvs.in-project true
 COPY pyproject.toml poetry.lock ./

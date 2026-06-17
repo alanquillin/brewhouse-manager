@@ -4,6 +4,20 @@ import asyncio
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
+
+class _AwaitableValue:
+    __slots__ = ("_value",)
+
+    def __init__(self, value):
+        self._value = value
+
+    def __await__(self):
+        return self._coro().__await__()
+
+    async def _coro(self):
+        return self._value
+
+
 import pytest
 
 from services.beers import BeerService
@@ -36,11 +50,8 @@ def create_mock_beer(
         "external_brewing_tool_meta": external_brewing_tool_meta,
     }
 
-    async def _awaitable_batches():
-        return batches or []
-
     mock_beer.awaitable_attrs = MagicMock()
-    mock_beer.awaitable_attrs.batches = _awaitable_batches()
+    mock_beer.awaitable_attrs.batches = _AwaitableValue(batches or [])
 
     return mock_beer
 

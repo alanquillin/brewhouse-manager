@@ -31,7 +31,7 @@ class Beers(Base, DictifiableMixin, AuditedMixin, AsyncQueryMethodsMixin):
     untappd_id = Column(String, nullable=True)
     image_transitions_enabled = Column(Boolean, nullable=False)
 
-    batches = relationship("Batches", back_populates="beer")
+    batches = relationship("Batches", back_populates="beer", cascade="all, delete")
 
     __table_args__ = (Index("beer_name_lower_ix", func.lower(name), unique=True),)
 

@@ -3,6 +3,20 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
+
+class _AwaitableValue:
+    __slots__ = ("_value",)
+
+    def __init__(self, value):
+        self._value = value
+
+    def __await__(self):
+        return self._coro().__await__()
+
+    async def _coro(self):
+        return self._value
+
+
 import pytest
 
 from services.tap_monitors import TapMonitorService, TapMonitorTypeService
@@ -32,11 +46,8 @@ def create_mock_tap_monitor(
         "monitor_type": monitor_type,
     }
 
-    async def _awaitable_location():
-        return location
-
     mock_monitor.awaitable_attrs = MagicMock()
-    mock_monitor.awaitable_attrs.location = _awaitable_location()
+    mock_monitor.awaitable_attrs.location = _AwaitableValue(location)
 
     return mock_monitor
 

@@ -3,6 +3,20 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
+
+class _AwaitableValue:
+    __slots__ = ("_value",)
+
+    def __init__(self, value):
+        self._value = value
+
+    def __await__(self):
+        return self._coro().__await__()
+
+    async def _coro(self):
+        return self._value
+
+
 import pytest
 from fastapi import HTTPException
 
@@ -30,11 +44,8 @@ def create_mock_tap(id_="tap-1", tap_number=1, location_id="loc-1", on_tap_id=No
     mock.on_tap_id = on_tap_id
     mock.on_tap = None
 
-    async def _awaitable_on_tap():
-        return mock.on_tap
-
     mock.awaitable_attrs = MagicMock()
-    mock.awaitable_attrs.on_tap = _awaitable_on_tap()
+    mock.awaitable_attrs.on_tap = _AwaitableValue(mock.on_tap)
 
     return mock
 

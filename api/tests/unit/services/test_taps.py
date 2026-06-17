@@ -3,6 +3,20 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
+
+class _AwaitableValue:
+    __slots__ = ("_value",)
+
+    def __init__(self, value):
+        self._value = value
+
+    def __await__(self):
+        return self._coro().__await__()
+
+    async def _coro(self):
+        return self._value
+
+
 import pytest
 
 from services.taps import TapService
@@ -34,19 +48,10 @@ def create_mock_tap(
         "on_tap_id": on_tap.id if on_tap else None,
     }
 
-    async def _awaitable_location():
-        return location
-
-    async def _awaitable_on_tap():
-        return on_tap
-
-    async def _awaitable_tap_monitor():
-        return tap_monitor
-
     mock_tap.awaitable_attrs = MagicMock()
-    mock_tap.awaitable_attrs.location = _awaitable_location()
-    mock_tap.awaitable_attrs.on_tap = _awaitable_on_tap()
-    mock_tap.awaitable_attrs.tap_monitor = _awaitable_tap_monitor()
+    mock_tap.awaitable_attrs.location = _AwaitableValue(location)
+    mock_tap.awaitable_attrs.on_tap = _AwaitableValue(on_tap)
+    mock_tap.awaitable_attrs.tap_monitor = _AwaitableValue(tap_monitor)
 
     return mock_tap
 
@@ -143,22 +148,13 @@ class TestTapServiceTransformResponse:
         mock_beer = MagicMock(id="beer-1")
         mock_batch = MagicMock(id="batch-1", beer=mock_beer, beverage=None, beer_id="beer-1", beverage_id=None)
 
-        async def _awaitable_beer():
-            return mock_beer
-
-        async def _awaitable_beverage():
-            return None
-
-        async def _awaitable_batch():
-            return mock_batch
-
         mock_batch.awaitable_attrs = MagicMock()
-        mock_batch.awaitable_attrs.beer = _awaitable_beer()
-        mock_batch.awaitable_attrs.beverage = _awaitable_beverage()
+        mock_batch.awaitable_attrs.beer = _AwaitableValue(mock_beer)
+        mock_batch.awaitable_attrs.beverage = _AwaitableValue(None)
 
         mock_on_tap = MagicMock(id="on-tap-1", batch=mock_batch, batch_id="batch-1")
         mock_on_tap.awaitable_attrs = MagicMock()
-        mock_on_tap.awaitable_attrs.batch = _awaitable_batch()
+        mock_on_tap.awaitable_attrs.batch = _AwaitableValue(mock_batch)
 
         mock_tap = create_mock_tap(on_tap=mock_on_tap)
         mock_session = AsyncMock()

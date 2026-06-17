@@ -3,6 +3,20 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
+
+class _AwaitableValue:
+    __slots__ = ("_value",)
+
+    def __init__(self, value):
+        self._value = value
+
+    def __await__(self):
+        return self._coro().__await__()
+
+    async def _coro(self):
+        return self._value
+
+
 import pytest
 
 from services.users import UserService
@@ -54,11 +68,8 @@ def create_mock_user(
     }
 
     # Make awaitable_attrs.locations awaitable
-    async def _awaitable_locations():
-        return locations
-
     mock_user.awaitable_attrs = MagicMock()
-    mock_user.awaitable_attrs.locations = _awaitable_locations()
+    mock_user.awaitable_attrs.locations = _AwaitableValue(locations)
 
     return mock_user
 

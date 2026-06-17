@@ -4,6 +4,20 @@ import asyncio
 import base64
 from unittest.mock import AsyncMock, MagicMock, patch
 
+
+class _AwaitableValue:
+    __slots__ = ("_value",)
+
+    def __init__(self, value):
+        self._value = value
+
+    def __await__(self):
+        return self._coro().__await__()
+
+    async def _coro(self):
+        return self._value
+
+
 import pytest
 from fastapi import HTTPException, status
 
@@ -50,11 +64,8 @@ def create_mock_db_user(
     mock_user.locations = locations
 
     # Create a proper awaitable for awaitable_attrs.locations
-    async def _awaitable_locations():
-        return locations
-
     mock_user.awaitable_attrs = MagicMock()
-    mock_user.awaitable_attrs.locations = _awaitable_locations()
+    mock_user.awaitable_attrs.locations = _AwaitableValue(locations)
 
     return mock_user
 
