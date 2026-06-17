@@ -2,6 +2,15 @@
 
 A homebrew tap management system with a FastAPI backend, Angular frontend, and PostgreSQL database.
 
+## Agent Behavior Rules
+
+**NEVER commit or push changes without explicit user instruction.** This applies to all tasks, including code reviews, lint fixes, refactors, and bug fixes. The user must review all changes before they are committed or pushed.
+
+- Do not run `git commit` unless the user explicitly asks you to commit.
+- Do not run `git push` unless the user explicitly asks you to push.
+- Do not run `gh pr create` or any GitHub CLI command that publishes or modifies remote state unless the user explicitly asks.
+- After making file edits, stop and let the user review the diff before taking any git actions.
+
 ## Tech Stack
 
 - **Backend**: Python 3.11, FastAPI, SQLAlchemy 2.0 (async), Pydantic v2
