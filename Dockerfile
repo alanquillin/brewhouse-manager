@@ -2,7 +2,7 @@
 # ############################################################
 FROM node:24.15-trixie AS node-base
 
-RUN npm install -g pnpm @angular/cli
+RUN npm install -g pnpm@11 @angular/cli
 COPY ui/angular.json ui/tsconfig.app.json ui/tsconfig.json ui/package.json ui/pnpm-lock.yaml ui/pnpm-workspace.yaml ui/.browserslistrc /ui/
 WORKDIR /ui
 RUN pnpm install --frozen-lockfile

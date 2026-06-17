@@ -742,7 +742,7 @@
             <mat-spinner></mat-spinner>
           </div>
         }
-        @if (beerBatches[this.modifyBeer.id].length > 0 && !loadingBatches) {
+        @if ((beerBatches[this.modifyBeer.id]?.length ?? 0) > 0 && !loadingBatches) {
           <div class="batch-list">
             <table
               mat-table
