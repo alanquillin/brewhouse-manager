@@ -54,7 +54,7 @@ export class AppComponent implements OnInit {
       this.setConfig(_.merge(this.routeData, data));
     });
 
-    this.dataService.unauthorized.subscribe((err: DataError) => {
+    this.dataService.unauthorized.subscribe((_err: DataError) => {
       if (this.restricted) {
         window.location.href = '/login';
       }

@@ -439,7 +439,7 @@ export class ManageBeverageComponent implements OnInit {
     }
   }
 
-  beverageBatchesAssocTaps(beverage: Beverage): string[] {
+  beverageBatchesAssocTaps(_beverage: Beverage): string[] {
     const tapIds: string[] = [];
 
     return tapIds;
@@ -912,7 +912,7 @@ export class ManageBeverageComponent implements OnInit {
     this.dataService
       .updateBatch(batch.id, { archivedOn: convertUnixTimestamp(Date.now()) })
       .subscribe({
-        next: (resp: any) => {
+        next: (_resp: any) => {
           this.processing = false;
           this.loading = true;
           this._refresh(() => {
@@ -933,7 +933,7 @@ export class ManageBeverageComponent implements OnInit {
       this.processing = true;
       this.loadingBatches = true;
       this.dataService.updateBatch(batch.id, { archivedOn: null }).subscribe({
-        next: (resp: any) => {
+        next: (_resp: any) => {
           this.processing = false;
           this.loading = true;
           this._refresh(() => {

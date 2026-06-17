@@ -21,7 +21,7 @@ describe('ManageBeverageComponent', () => {
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
   let mockDialog: jasmine.SpyObj<MatDialog>;
-  let settingsSubject: BehaviorSubject<any>;
+  let _settingsSubject: BehaviorSubject<any>;
 
   const mockUserInfo = {
     id: 'user-1',

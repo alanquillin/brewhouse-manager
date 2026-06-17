@@ -472,7 +472,7 @@ export class ManageBeerComponent implements OnInit {
       );
     } else {
       this.dataService.updateBeer(this.modifyBeer.id, this.beerChanges).subscribe({
-        next: (beer: Beer) => {
+        next: (_beer: Beer) => {
           this._refresh(
             () => {
               this.processing = false;

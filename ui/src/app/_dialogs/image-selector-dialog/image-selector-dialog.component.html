@@ -11,7 +11,9 @@
             class="image-list-item"
             [class.image-list-item-selected]="selectedImage === image"
             [class.image-list-item-current]="!selectedImage && currentImage === image"
+            tabindex="0"
             (click)="onClick(image)"
+            (keyup.enter)="onClick(image)"
             (dblclick)="onDoubleClick(image)"
           >
             <img src="{{ image }}" alt="Image Preview" />

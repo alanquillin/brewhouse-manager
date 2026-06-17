@@ -28,7 +28,8 @@ export class FileUploadDialogComponent {
     this.closeOnComplete = toBoolean(_.get(data, 'closeOnComplete', true));
   }
 
-  onUploadComplete(file: ExtendedFile) {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onUploadComplete(_file: ExtendedFile) {}
 
   onAllUploadsComplete(files: ExtendedFile[]) {
     if (this.closeOnComplete) {

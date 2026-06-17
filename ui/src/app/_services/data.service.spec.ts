@@ -126,6 +126,7 @@ describe('DataService', () => {
       };
 
       service.getError(mockError).subscribe({
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         error: () => {},
       });
     });
@@ -144,6 +145,7 @@ describe('DataService', () => {
       };
 
       service.getError(mockError, true).subscribe({
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         error: () => {},
       });
 
@@ -1137,6 +1139,7 @@ describe('DataService', () => {
       });
 
       service.resetKegtronPort('dev-1', 0, data).subscribe({
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         error: () => {},
       });
 
@@ -1210,6 +1213,7 @@ describe('DataService', () => {
       });
 
       service.clearKegtronPort('dev-1', 0).subscribe({
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         error: () => {},
       });
 

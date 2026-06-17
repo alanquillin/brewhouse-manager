@@ -23,7 +23,7 @@ import { DataService } from './data.service';
 // Test Configuration
 // ============================================================================
 
-const API_BASE_URL = 'http://localhost:5050';
+const _API_BASE_URL = 'http://localhost:5050';
 const ADMIN_API_KEY = 'test-admin-api-key-12345';
 const USER_API_KEY = 'test-user-api-key-67890';
 
@@ -33,13 +33,13 @@ const USER_API_KEY = 'test-user-api-key-67890';
 
 // Locations
 const LOCATION_MAIN_ID = 'd863e51e-8083-4945-9080-7b0ea2c1aeca';
-const LOCATION_SECONDARY_ID = 'b6b23426-a7c2-4b34-900a-f2166df12de1';
+const _LOCATION_SECONDARY_ID = 'b6b23426-a7c2-4b34-900a-f2166df12de1';
 const LOCATION_EMPTY_ID = '6ae6fc3b-b337-4f9b-8206-8c684918d305';
 
 // Beers
 const BEER_IPA_ID = '72029e04-71ec-4b70-86cf-bcfab1b5ec9f';
 const BEER_STOUT_ID = '541904b5-5525-418d-b400-89e6e6286230';
-const BEER_LAGER_ID = 'c2bd2265-5def-4563-9534-498627df4328';
+const _BEER_LAGER_ID = 'c2bd2265-5def-4563-9534-498627df4328';
 const BEER_WHEAT_ID = '677ac863-d1c8-4411-96e4-f5bba28006f2';
 
 // Beverages
@@ -48,23 +48,23 @@ const BEVERAGE_SODA_ID = '2ab4206c-6278-4eab-b1d2-d4ca007993e5';
 
 // Tap Monitors
 const TAP_MONITOR_1_ID = '0a72afcc-b69c-40ce-a0f5-4667db9bbeba';
-const TAP_MONITOR_2_ID = 'e109ec22-fd2c-4143-b971-9c8cdc180a17';
-const TAP_MONITOR_3_ID = '06dd916b-1e19-4ebd-b5ff-cd9535e19245';
-const TAP_MONITOR_SECONDARY_ID = 'f4eb799f-7a39-4f89-8835-09de1da28bff';
+const _TAP_MONITOR_2_ID = 'e109ec22-fd2c-4143-b971-9c8cdc180a17';
+const _TAP_MONITOR_3_ID = '06dd916b-1e19-4ebd-b5ff-cd9535e19245';
+const _TAP_MONITOR_SECONDARY_ID = 'f4eb799f-7a39-4f89-8835-09de1da28bff';
 
 // Batches
 const BATCH_IPA_ID = '1ce1610c-2426-438a-b58f-0eb1c82fd624';
-const BATCH_STOUT_ID = '371daaba-45cf-46e5-aad2-c39dca915835';
-const BATCH_LAGER_ID = '8a76a81d-099d-4372-a1c5-892787973bb1';
+const _BATCH_STOUT_ID = '371daaba-45cf-46e5-aad2-c39dca915835';
+const _BATCH_LAGER_ID = '8a76a81d-099d-4372-a1c5-892787973bb1';
 const BATCH_COFFEE_ID = '7aa317d2-96f6-4757-adc3-3b57d732760e';
-const BATCH_WHEAT_ID = 'd59dae10-84bb-4969-a335-0b066bb96c65';
+const _BATCH_WHEAT_ID = 'd59dae10-84bb-4969-a335-0b066bb96c65';
 
 // Taps
 const TAP_1_ID = '4e3c82e6-ecac-4e0c-a4b4-6c87fde9ea28';
-const TAP_2_ID = 'bef890f4-4f0a-4f13-9999-567a49f1de7f';
-const TAP_3_ID = 'cc5277fd-4e30-46c3-a28a-b82e9aed9f04';
-const TAP_SECONDARY_1_ID = '4c175438-8511-4191-a537-1a8ec7236767';
-const TAP_SECONDARY_2_ID = 'af976792-a2ce-4d0c-b7dc-8b9cfe6e8c64';
+const _TAP_2_ID = 'bef890f4-4f0a-4f13-9999-567a49f1de7f';
+const _TAP_3_ID = 'cc5277fd-4e30-46c3-a28a-b82e9aed9f04';
+const _TAP_SECONDARY_1_ID = '4c175438-8511-4191-a537-1a8ec7236767';
+const _TAP_SECONDARY_2_ID = 'af976792-a2ce-4d0c-b7dc-8b9cfe6e8c64';
 
 // Users
 const USER_ADMIN_ID = '08eacfcc-d250-4506-8ed2-bf54b34b3672';
@@ -93,7 +93,7 @@ function apiKeyInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn) {
 
 describe('DataService Functional Tests', () => {
   let service: DataService;
-  let httpClient: HttpClient;
+  let _httpClient: HttpClient;
 
   // Point directly to Docker API - Chrome is launched with --disable-web-security
   const mockWindow = {
@@ -117,7 +117,7 @@ describe('DataService Functional Tests', () => {
     });
 
     service = TestBed.inject(DataService);
-    httpClient = TestBed.inject(HttpClient);
+    _httpClient = TestBed.inject(HttpClient);
   });
 
   // Helper to set the API key for individual tests
