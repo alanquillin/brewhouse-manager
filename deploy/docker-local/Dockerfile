@@ -1,4 +1,4 @@
-FROM brewhouse-manager:dev as python-build
+FROM brewhouse-manager:dev AS python-build
 
 USER 0
 
