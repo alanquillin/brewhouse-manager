@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { BehaviorSubject, Observable, Subscription, of } from 'rxjs';
 import { catchError, filter, switchMap, take, tap } from 'rxjs/operators';
 
@@ -19,6 +19,8 @@ import { DataError, DataService } from './data.service';
   providedIn: 'root',
 })
 export class CurrentUserService implements OnDestroy {
+  private dataService = inject(DataService);
+
   private userSubject = new BehaviorSubject<UserInfo | null>(null);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private loadedSubject = new BehaviorSubject<boolean>(false);
@@ -33,7 +35,7 @@ export class CurrentUserService implements OnDestroy {
   /** Observable indicating if user data has been loaded at least once. */
   public loaded$: Observable<boolean> = this.loadedSubject.asObservable();
 
-  constructor(private dataService: DataService) {
+  constructor() {
     // Subscribe to unauthorized events to clear the cache on 401
     this.unauthorizedSubscription = this.dataService.unauthorized.subscribe(() => {
       this.clear();

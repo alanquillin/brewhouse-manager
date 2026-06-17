@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -29,6 +29,12 @@ import * as _ from 'lodash';
   standalone: false,
 })
 export class ManageTapMonitorsComponent implements OnInit {
+  private currentUserService = inject(CurrentUserService);
+  private dataService = inject(DataService);
+  private router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+
   loading = false;
   tapMonitors: TapMonitor[] = [];
   filteredTapMonitors: TapMonitor[] = [];
@@ -67,14 +73,6 @@ export class ManageTapMonitorsComponent implements OnInit {
 
     return _.concat(cols, ['tap', 'actions']);
   }
-
-  constructor(
-    private currentUserService: CurrentUserService,
-    private dataService: DataService,
-    private router: Router,
-    private _snackBar: MatSnackBar,
-    private dialog: MatDialog
-  ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
 

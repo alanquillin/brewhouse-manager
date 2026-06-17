@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -18,6 +18,14 @@ import * as _ from 'lodash';
   standalone: false,
 })
 export class LoginComponent implements OnInit {
+  private dataService = inject(DataService);
+  private settingsService = inject(SettingsService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private _snackBar = inject(MatSnackBar);
+  private domSanitizer = inject(DomSanitizer);
+  private matIconRegistry = inject(MatIconRegistry);
+
   loading = false;
   loginFormGroup: UntypedFormGroup = new UntypedFormGroup({
     email: new UntypedFormControl('', [Validators.required]),
@@ -28,15 +36,7 @@ export class LoginComponent implements OnInit {
   password!: string;
   processing = false;
 
-  constructor(
-    private dataService: DataService,
-    private settingsService: SettingsService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private _snackBar: MatSnackBar,
-    private domSanitizer: DomSanitizer,
-    private matIconRegistry: MatIconRegistry
-  ) {
+  constructor() {
     this.matIconRegistry.addSvgIcon(
       'logo',
       this.domSanitizer.bypassSecurityTrustResourceUrl(

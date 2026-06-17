@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { ExtendedFile } from '../../_components/file-uploader/file-uploader.component';
@@ -13,14 +13,16 @@ import * as _ from 'lodash';
   standalone: false,
 })
 export class FileUploadDialogComponent {
+  data = inject(MAT_DIALOG_DATA);
+  dialogRef = inject<MatDialogRef<FileUploadDialogComponent>>(MatDialogRef);
+
   imageType: string;
   allowMultiple: boolean;
   closeOnComplete: boolean;
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    public dialogRef: MatDialogRef<FileUploadDialogComponent>
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.imageType = data.imageType;
     this.allowMultiple = toBoolean(_.get(data, 'allowMultiple', false));
     this.closeOnComplete = toBoolean(_.get(data, 'closeOnComplete', true));

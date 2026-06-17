@@ -1,7 +1,7 @@
 // since these will often be python API driven snake_case names
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EventEmitter, Inject, Injectable } from '@angular/core';
+import { EventEmitter, Injectable, inject } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 
@@ -57,15 +57,15 @@ export class DataError extends Error {
   providedIn: 'root',
 })
 export class DataService {
+  http = inject(HttpClient);
+  private window = inject<Window>(WINDOW);
+
   unauthorized: EventEmitter<DataError>;
 
   apiBaseUrl: string;
   baseUrl: string;
 
-  constructor(
-    public http: HttpClient,
-    @Inject(WINDOW) private window: Window
-  ) {
+  constructor() {
     this.unauthorized = new EventEmitter();
 
     const protocol = this.window.location.protocol;

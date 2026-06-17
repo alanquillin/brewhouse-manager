@@ -6,6 +6,7 @@ import {
   Input,
   Output,
   ViewChild,
+  inject,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DataError, DataService } from '../../_services/data.service';
@@ -29,6 +30,9 @@ export class ExtendedFile extends File {
   standalone: false,
 })
 export class FileUploaderComponent implements AfterViewInit {
+  private dataService = inject(DataService);
+  private _snackBar = inject(MatSnackBar);
+
   @Input() imageType = '';
   @Input() allowMultiple = false;
 
@@ -41,11 +45,6 @@ export class FileUploaderComponent implements AfterViewInit {
   files: any = {};
 
   _ = _;
-
-  constructor(
-    private dataService: DataService,
-    private _snackBar: MatSnackBar
-  ) {}
 
   displayError(errMsg: string) {
     this._snackBar.open('Error: ' + errMsg, 'Close');

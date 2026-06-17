@@ -1,6 +1,6 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CurrentUserService } from '../../_services/current-user.service';
 import { DataError } from '../../_services/data.service';
@@ -17,14 +17,12 @@ import { isNilOrEmpty } from '../../utils/helpers';
   standalone: false,
 })
 export class HeaderComponent implements OnInit {
-  userInfo!: UserInfo | null;
+  private currentUserService = inject(CurrentUserService);
+  private settingsService = inject(SettingsService);
+  private router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
 
-  constructor(
-    private currentUserService: CurrentUserService,
-    private settingsService: SettingsService,
-    private router: Router,
-    private _snackBar: MatSnackBar
-  ) {}
+  userInfo!: UserInfo | null;
   @Input() title = '';
 
   displayError(errMsg: string) {

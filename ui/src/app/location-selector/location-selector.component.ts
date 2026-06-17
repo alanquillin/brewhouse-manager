@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { DataError, DataService } from '../_services/data.service';
@@ -14,16 +14,14 @@ import * as _ from 'lodash';
   standalone: false,
 })
 export class LocationSelectorComponent implements OnInit {
+  private dataService = inject(DataService);
+  private router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
+
   title = 'Location Selector';
 
   loading = false;
   locations: Location[] = [];
-
-  constructor(
-    private dataService: DataService,
-    private router: Router,
-    private _snackBar: MatSnackBar
-  ) {}
 
   displayError(errMsg: string) {
     this._snackBar.open('Error: ' + errMsg, 'Close');

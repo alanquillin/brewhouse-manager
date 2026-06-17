@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { CanActivate, Router, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SettingsService } from '../_services/settings.service';
@@ -7,10 +7,8 @@ import { SettingsService } from '../_services/settings.service';
   providedIn: 'root',
 })
 export class PlaatoKegFeatureGuard implements CanActivate {
-  constructor(
-    private settingsService: SettingsService,
-    private router: Router
-  ) {}
+  private settingsService = inject(SettingsService);
+  private router = inject(Router);
 
   canActivate(): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     const isEnabled = this.settingsService.getSetting<boolean>('plaato_keg_devices.enabled');

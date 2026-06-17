@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import {
   AbstractControl,
   UntypedFormControl,
@@ -39,6 +39,12 @@ import * as _ from 'lodash';
   standalone: false,
 })
 export class ManageBeerComponent implements OnInit {
+  private currentUserService = inject(CurrentUserService);
+  private dataService = inject(DataService);
+  private router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
+  dialog = inject(MatDialog);
+
   loading = false;
   loadingBatches = false;
   beers: Beer[] = [];
@@ -212,14 +218,6 @@ export class ManageBeerComponent implements OnInit {
     kegDate: new UntypedFormControl(new Date(), [this.requiredForBatchIfNoBrewTool(this)]),
     imgUrl: new UntypedFormControl('', []),
   });
-
-  constructor(
-    private currentUserService: CurrentUserService,
-    private dataService: DataService,
-    private router: Router,
-    private _snackBar: MatSnackBar,
-    public dialog: MatDialog
-  ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
 

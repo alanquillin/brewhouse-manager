@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { Settings } from '../models/models';
@@ -8,11 +8,11 @@ import { DataService } from './data.service';
   providedIn: 'root',
 })
 export class SettingsService {
+  private dataService = inject(DataService);
+
   private settingsSubject = new BehaviorSubject<Settings>(new Settings());
 
   public settings$: Observable<Settings> = this.settingsSubject.asObservable();
-
-  constructor(private dataService: DataService) {}
 
   /**
    * Load settings from the API

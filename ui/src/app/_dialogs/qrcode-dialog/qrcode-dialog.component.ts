@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { isNilOrEmpty } from 'src/app/utils/helpers';
@@ -12,6 +12,9 @@ import * as _ from 'lodash';
   standalone: false,
 })
 export class LocationQRCodeDialogComponent {
+  data = inject(MAT_DIALOG_DATA);
+  dialogRef = inject<MatDialogRef<LocationQRCodeDialogComponent>>(MatDialogRef);
+
   url: string;
   title: string;
   width: number;
@@ -19,10 +22,9 @@ export class LocationQRCodeDialogComponent {
   isNilOrEmpty = isNilOrEmpty;
   _ = _;
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    public dialogRef: MatDialogRef<LocationQRCodeDialogComponent>
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.url = data.url;
     this.title = _.get(data, 'title', '');
     this.width = _.toInteger(_.get(data, 'width', 600));

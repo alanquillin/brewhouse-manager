@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -23,6 +23,13 @@ import { isNilOrEmpty } from 'src/app/utils/helpers';
   standalone: false,
 })
 export class ManageTapsComponent implements OnInit {
+  private currentUserService = inject(CurrentUserService);
+  private dataService = inject(DataService);
+  private settingsService = inject(SettingsService);
+  private router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+
   taps: Tap[] = [];
   filteredTaps: Tap[] = [];
   locations: Location[] = [];
@@ -62,15 +69,6 @@ export class ManageTapsComponent implements OnInit {
 
     return _.concat(cols, ['beer', 'beverage', 'tapMonitor', 'actions']);
   }
-
-  constructor(
-    private currentUserService: CurrentUserService,
-    private dataService: DataService,
-    private settingsService: SettingsService,
-    private router: Router,
-    private _snackBar: MatSnackBar,
-    private dialog: MatDialog
-  ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
 

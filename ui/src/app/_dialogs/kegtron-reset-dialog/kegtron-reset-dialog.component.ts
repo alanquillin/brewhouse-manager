@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DataError, DataService } from '../../_services/data.service';
@@ -11,6 +11,17 @@ import { isNilOrEmpty } from '../../utils/helpers';
   standalone: false,
 })
 export class KegtronResetDialogComponent {
+  data = inject<{
+    deviceId: string;
+    portNum: number;
+    showSkip?: boolean;
+    updateDateTapped?: boolean;
+    batchId?: string;
+  }>(MAT_DIALOG_DATA);
+  dialogRef = inject<MatDialogRef<KegtronResetDialogComponent>>(MatDialogRef);
+  private dataService = inject(DataService);
+  private _snackBar = inject(MatSnackBar);
+
   volumeSize: number | null = null;
   volumeUnit = 'gal';
   processing = false;
@@ -23,19 +34,9 @@ export class KegtronResetDialogComponent {
     { value: 'ml', label: 'Milliliters' },
   ];
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
-      deviceId: string;
-      portNum: number;
-      showSkip?: boolean;
-      updateDateTapped?: boolean;
-      batchId?: string;
-    },
-    public dialogRef: MatDialogRef<KegtronResetDialogComponent>,
-    private dataService: DataService,
-    private _snackBar: MatSnackBar
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.showSkip = data.showSkip ?? false;
     this.dialogRef.disableClose = false;
   }

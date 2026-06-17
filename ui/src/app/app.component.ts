@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 import { map } from 'rxjs/operators';
@@ -16,18 +16,16 @@ import { DataError, DataService } from './_services/data.service';
   standalone: false,
 })
 export class AppComponent implements OnInit {
+  private dataService = inject(DataService);
+  private configService = inject(ConfigService);
+  private titleService = inject(Title);
+
   title = 'Brewhouse Manager';
   hideHeader = false;
   emptyHeader = false;
   hideFooter = false;
   restricted = true;
   routeData: any;
-
-  constructor(
-    private dataService: DataService,
-    private configService: ConfigService,
-    private titleService: Title
-  ) {}
 
   setConfig(data: any): void {
     this.title = _.get(data, 'title', 'brewhouse-manager');

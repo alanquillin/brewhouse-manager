@@ -1,6 +1,6 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
 @Component({
   selector: 'app-image-preview-dialog',
@@ -9,10 +9,8 @@ import { Component, Inject } from '@angular/core';
   standalone: false,
 })
 export class LocationImageDialogComponent {
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    public dialogRef: MatDialogRef<LocationImageDialogComponent>
-  ) {}
+  data = inject(MAT_DIALOG_DATA);
+  dialogRef = inject<MatDialogRef<LocationImageDialogComponent>>(MatDialogRef);
 
   onClick(): void {
     this.dialogRef.close();
