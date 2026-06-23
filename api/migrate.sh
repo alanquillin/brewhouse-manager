@@ -1,7 +1,12 @@
 #! /bin/bash
 
-ALEMBIC="alembic"
-PYTHON="python"
+if [ -f "/.venv/bin/alembic" ]; then
+    ALEMBIC="/.venv/bin/alembic"
+    PYTHON="/.venv/bin/python"
+else
+    ALEMBIC="alembic"
+    PYTHON="python"
+fi
 
 ALEMBIC_ARGS="-c db_migrations/alembic.ini"
 

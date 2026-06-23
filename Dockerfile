@@ -23,7 +23,6 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-ansi --only main --no-root
 RUN poetry run pip install psycopg2-binary
 
-
 # Angular build
 # ############################################################
 FROM node-base AS node-build
