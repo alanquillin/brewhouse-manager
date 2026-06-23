@@ -15,7 +15,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc build-essential libpq-dev libffi-dev libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install -U pip setuptools wheel
+RUN pip install -U "pip>=25.3" setuptools wheel
 RUN pip install "poetry>=2.4.1"
 
 RUN poetry config virtualenvs.in-project true
@@ -40,6 +40,8 @@ ARG build_for=prod
 ENV PYTHONUNBUFFERED=1
 ENV CONFIG_BASE_DIR=/brewhouse-manager/config
 ENV RUN_ENV=${build_for}
+
+RUN pip install -U "pip>=25.3"
 
 # perl and perl-base are removed to remediate CVEs in debian/perl.
 # --allow-remove-essential is required because perl-base is marked essential in Debian;
