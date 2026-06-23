@@ -248,7 +248,7 @@ The build uses four stages:
 
 Because poetry is absent at runtime, **all scripts that previously used `poetry run` must use the venv directly**:
 - `entrypoint.sh` activates the venv with `. /.venv/bin/activate` before calling `migrate.sh` and `python app.py`.
-- `api/migrate.sh` uses `ALEMBIC="alembic"` and `PYTHON="python"` (resolved from PATH after venv activation).
+- `api/migrate.sh` resolves `ALEMBIC` and `PYTHON` to `/.venv/bin/alembic` / `/.venv/bin/python` when those paths exist (i.e., inside the container), and falls back to bare commands for local dev where the venv is at a different path or already activated.
 - `deploy/docker-local/Dockerfile` CMD uses `. /.venv/bin/activate && ...` for the seed container.
 
 If a new script or service needs to run Python/alembic inside the container, use `/.venv/bin/python` or activate the venv — do not reinstall poetry.
@@ -274,9 +274,16 @@ RUN groupadd --gid 10000 app && \
 RUN addgroup app --gid 10000 && useradd ...
 ```
 
-### `libpq-dev` auto-removal
+### Runtime library assumptions in the final image
 
-`libpq-dev` is installed in `python-base` alongside the build tools but is auto-removed as a cascade side-effect: `libpq-dev` depends on `libssl-dev`, and purging `libssl-dev` causes apt to remove `libpq-dev` as a broken dependent. This is safe because `psycopg2-binary` bundles its own `libpq.so` and does not require the system library at runtime.
+The `final` stage has no `apt-get install` — it starts from a clean `python:3.12-slim-trixie` and only receives the `.venv`. Any C extension in the venv that dynamically links to a system library not present in the base image will fail at runtime with a "shared library not found" error.
+
+Currently safe because:
+- `psycopg2-binary` bundles its own `libpq.so` (no system `libpq5` needed).
+- `cryptography` downloads a manylinux wheel on Linux that statically bundles OpenSSL.
+- `libssl3` and `libffi8` are present in the Python base image (Python itself needs them).
+
+If a new dependency is added that links to a system library outside this set (e.g., `libpq5`, `libxml2`, `libcurl`), add the **runtime** package (not the `-dev` variant) to the `final` stage's `apt-get install`.
 
 ## CI
 
