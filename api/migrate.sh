@@ -1,8 +1,7 @@
 #! /bin/bash
 
-POETRY=$(which poetry)
-ALEMBIC="${POETRY} run alembic"
-PYTHON="${POETRY} run python"
+ALEMBIC="alembic"
+PYTHON="python"
 
 ALEMBIC_ARGS="-c db_migrations/alembic.ini"
 

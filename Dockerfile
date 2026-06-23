@@ -7,28 +7,21 @@ COPY ui/angular.json ui/tsconfig.app.json ui/tsconfig.json ui/package.json ui/pn
 WORKDIR /ui
 RUN pnpm install --frozen-lockfile
 
-# Python base
+# Python build
 # ############################################################
-FROM python:3.12-slim-trixie AS python-base
+FROM python:3.12-slim-trixie AS python-build
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc build-essential libpq-dev libffi-dev libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install -U pip 
-RUN pip install setuptools wheel
+RUN pip install -U pip setuptools wheel
 RUN pip install "poetry>=2.4.1"
 
 RUN poetry config virtualenvs.in-project true
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-ansi --only main --no-root
 RUN poetry run pip install psycopg2-binary
-
-# --allow-remove-essential is required because perl-base is marked essential in Debian.
-# It is safe here: this is the last apt operation in the stage, the final image inherits
-# from this stage, and nothing in the runtime app (Python/FastAPI) depends on perl.
-# perl and perl-base are removed to remediate CVEs in debian/perl (e.g. 5.40.1-6).
-RUN apt-get purge -y --auto-remove --allow-remove-essential gcc build-essential libffi-dev libssl-dev perl perl-base
 
 
 # Angular build
@@ -39,12 +32,11 @@ ARG build_for=prod
 COPY ui/src /ui/src
 RUN pnpm run build:${build_for}
 
-# Final build
+# Final image — no poetry, no build tools, no compiler
 # ############################################################
-FROM python-base AS final
+FROM python:3.12-slim-trixie AS final
 
 ARG build_for=prod
-
 
 ENV PYTHONUNBUFFERED=1
 ENV CONFIG_BASE_DIR=/brewhouse-manager/config
@@ -55,8 +47,8 @@ RUN groupadd --gid 10000 app && \
             --shell /sbin/nologin \
             --no-create-home \
             --uid 10000 app
-            
 
+COPY --from=python-build /.venv /.venv
 COPY --from=node-build /ui/dist/brewhouse-manager/browser /brewhouse-manager/api/static/
 
 COPY config /brewhouse-manager/config
