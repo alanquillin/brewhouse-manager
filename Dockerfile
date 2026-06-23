@@ -24,7 +24,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-ansi --only main --no-root
 RUN poetry run pip install psycopg2-binary
 
-RUN apt-get purge -y --auto-remove gcc build-essential libffi-dev libssl-dev
+RUN apt-get purge -y --auto-remove --allow-remove-essential gcc build-essential libffi-dev libssl-dev perl perl-base
 
 
 # Angular build
@@ -46,7 +46,7 @@ ENV PYTHONUNBUFFERED=1
 ENV CONFIG_BASE_DIR=/brewhouse-manager/config
 ENV RUN_ENV=${build_for}
 
-RUN addgroup app --gid 10000 && \
+RUN groupadd --gid 10000 app && \
     useradd --gid app \
             --shell /sbin/nologin \
             --no-create-home \
