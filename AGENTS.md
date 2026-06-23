@@ -168,6 +168,19 @@ This is defined locally in each test file that uses it.
 
 **Auth dependency chain**: `get_optional_user()` → `require_user()` (401) → `require_admin()` (403)
 
+**Beer/beverage delete cascade pattern**: Deleting a beer or beverage requires a specific multi-step manual cascade (database FKs have no `ON DELETE CASCADE` at the DB level — it's all application-enforced). The correct order, all with `autocommit=False` until the final step:
+
+1. Check for active batches (`archived_on IS NULL`) — raise 409 if any exist
+2. For each archived batch: `TapService.clear_on_tap_references_for_batch(session, batch.id, autocommit=False)` — nulls `taps.on_tap_id` before on_tap rows are deleted
+3. `BatchLocationsDB.delete_by(session, batch_id=..., autocommit=False)`
+4. `OnTapDB.delete_by(session, batch_id=..., autocommit=False)`
+5. `BatchOverridesDB.delete_by(session, batch_id=..., autocommit=False)`
+6. `BatchesDB.delete_by(session, beer_id=..., autocommit=False)` (or `beverage_id=...`)
+7. `ImageTransitionsDB.delete_by(session, beer_id=..., autocommit=False)`
+8. `BeersDB.delete(session, beer.id)` — default `autocommit=True` commits the whole transaction
+
+`TapService.clear_on_tap_references_for_batch` is in `api/services/taps.py`.
+
 **Config**: `Config` singleton, reads `config/default.json` + env vars with type conversion schema. Access via `CONFIG.get("dotted.key.path")`.
 
 ### Frontend
@@ -200,6 +213,8 @@ constructor(private dataService: DataService) {}
 const freshService = TestBed.runInInjectionContext(() => new MyService());
 ```
 
+**Delete beer/beverage UI pattern**: `deleteBeer` / `deleteBeverage` check local `beerBatches[beer.id]` / `beverageBatches[beverage.id]` data *before* calling the API. If any batch has no `archivedOn` (active), call `displayError()` and return without hitting the API. If all batches are archived, include the count in the `confirm()` message. The backend also enforces the same rule (returns 409), so the UI check is a fast-fail UX convenience, not the only guard.
+
 **`beverageBatches` / `beerBatches` lookup gotcha**: These maps only contain entries for existing (already-saved) entities. When the add flow is active, `modifyBeverage.id` / `modifyBeer.id` is `undefined`, so `beverageBatches[undefined]` is `undefined` — accessing `.length` on it will throw. Always guard template lookups with optional chaining:
 ```html
 @if ((beverageBatches[modifyBeverage.id]?.length ?? 0) > 0 && !loadingBatches) {
@@ -215,6 +230,39 @@ const freshService = TestBed.runInInjectionContext(() => new MyService());
 - Device-specific methods (e.g., `reset_volume()`)
 
 Enabled/disabled via config: `tap_monitors.<type>.enabled`.
+
+## Docker Build Notes
+
+### Multi-stage layout
+
+The final runtime image inherits solely from `python-base` (`python:3.12-slim-trixie`). The `node-base` / `node-build` stages are compile-only — they produce the Angular static files copied into the final image via `COPY --from=node-build`. Packages installed in the node stages (including perl) are discarded and do not appear in the final image layers. Only the `python-base` stage matters for CVE scanning of the shipped container.
+
+### Removing perl (CVE remediation)
+
+`build-essential` (installed in `python-base` for compiling Python packages) pulls `perl` and `perl-base` in as dependencies. They are not needed at runtime. Removing them requires:
+
+1. **`--allow-remove-essential`** — `perl-base` is marked essential in Debian; apt refuses to purge it without this flag.  
+2. This flag is safe in `python-base` because the purge is the **last `apt-get` operation** in the stage and nothing in the runtime app depends on perl.  
+3. Do **not** attempt to purge perl from `node-base` — the non-slim Node image has many packages (e.g. `x11-common`, `ucf`) whose post-removal scripts are written in Perl; removing `perl-base` there causes `dpkg` errors during the build.
+
+### `addgroup` vs `groupadd`
+
+`addgroup` (from the Debian `adduser` package) is a **Perl script**. After `perl-base` is removed from `python-base`, calling `addgroup` in the `final` stage (which inherits from `python-base`) will fail with `addgroup: not found`.
+
+Use `groupadd` instead — it is a C binary from the `shadow` package and does not require perl:
+
+```dockerfile
+# Correct (C binary, no perl dependency)
+RUN groupadd --gid 10000 app && \
+    useradd --gid app --shell /sbin/nologin --no-create-home --uid 10000 app
+
+# Wrong after perl removal (Perl script)
+RUN addgroup app --gid 10000 && useradd ...
+```
+
+### `libpq-dev` auto-removal
+
+`libpq-dev` is installed in `python-base` alongside the build tools but is auto-removed as a cascade side-effect: `libpq-dev` depends on `libssl-dev`, and purging `libssl-dev` causes apt to remove `libpq-dev` as a broken dependent. This is safe because `psycopg2-binary` bundles its own `libpq.so` and does not require the system library at runtime.
 
 ## CI
 
@@ -265,6 +313,24 @@ beverage = relationship(beverages.Beverages, back_populates="batches")
 ```
 
 This has been applied to: `Beers.batches` ↔ `Batches.beer`, `Beverages.batches` ↔ `Batches.beverage`.
+
+### Circular import: `db.batches` must be imported before `db.batch_locations`
+
+`batches.py` accesses `batch_locations.BatchLocations.__table__` at class-definition time (inside the `locations` secondary `relationship`). If any router imports `db.batch_locations` *before* `db.batches`, Python raises `AttributeError: partially initialized module 'db.batch_locations' has no attribute 'BatchLocations'`.
+
+Fix: guard the import order with `# isort: off/on` in any router that imports both:
+
+```python
+# isort: off
+# fmt: off
+from db.batches import Batches as BatchesDB  # pylint: disable=wrong-import-position
+from db.batch_locations import BatchLocations as BatchLocationsDB
+from db.batch_overrides import BatchOverrides as BatchOverridesDB
+# isort: on
+# fmt: on
+```
+
+This pattern already appears in `routers/batches.py` and was added to `routers/beers.py` and `routers/beverages.py`. Isort would otherwise sort `batch_locations` before `batches` alphabetically.
 
 ### Secondary (many-to-many) + direct FK relationships on the same table
 

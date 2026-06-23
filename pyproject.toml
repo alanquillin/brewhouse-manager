@@ -62,7 +62,7 @@ markers = [
 
 [tool.poetry]
 name = "brewhouse-manager"
-version = "0.8.3"
+version = "0.8.4"
 authors = ["alanquillin"]
 description = "Brewhouse Manager"
 package-mode = false
