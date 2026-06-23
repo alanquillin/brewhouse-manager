@@ -231,6 +231,39 @@ const freshService = TestBed.runInInjectionContext(() => new MyService());
 
 Enabled/disabled via config: `tap_monitors.<type>.enabled`.
 
+## Docker Build Notes
+
+### Multi-stage layout
+
+The final runtime image inherits solely from `python-base` (`python:3.12-slim-trixie`). The `node-base` / `node-build` stages are compile-only — they produce the Angular static files copied into the final image via `COPY --from=node-build`. Packages installed in the node stages (including perl) are discarded and do not appear in the final image layers. Only the `python-base` stage matters for CVE scanning of the shipped container.
+
+### Removing perl (CVE remediation)
+
+`build-essential` (installed in `python-base` for compiling Python packages) pulls `perl` and `perl-base` in as dependencies. They are not needed at runtime. Removing them requires:
+
+1. **`--allow-remove-essential`** — `perl-base` is marked essential in Debian; apt refuses to purge it without this flag.  
+2. This flag is safe in `python-base` because the purge is the **last `apt-get` operation** in the stage and nothing in the runtime app depends on perl.  
+3. Do **not** attempt to purge perl from `node-base` — the non-slim Node image has many packages (e.g. `x11-common`, `ucf`) whose post-removal scripts are written in Perl; removing `perl-base` there causes `dpkg` errors during the build.
+
+### `addgroup` vs `groupadd`
+
+`addgroup` (from the Debian `adduser` package) is a **Perl script**. After `perl-base` is removed from `python-base`, calling `addgroup` in the `final` stage (which inherits from `python-base`) will fail with `addgroup: not found`.
+
+Use `groupadd` instead — it is a C binary from the `shadow` package and does not require perl:
+
+```dockerfile
+# Correct (C binary, no perl dependency)
+RUN groupadd --gid 10000 app && \
+    useradd --gid app --shell /sbin/nologin --no-create-home --uid 10000 app
+
+# Wrong after perl removal (Perl script)
+RUN addgroup app --gid 10000 && useradd ...
+```
+
+### `libpq-dev` auto-removal
+
+`libpq-dev` is installed in `python-base` alongside the build tools but is auto-removed as a cascade side-effect: `libpq-dev` depends on `libssl-dev`, and purging `libssl-dev` causes apt to remove `libpq-dev` as a broken dependent. This is safe because `psycopg2-binary` bundles its own `libpq.so` and does not require the system library at runtime.
+
 ## CI
 
 GitHub Actions workflow (`.github/workflows/ci.yml`) runs on PRs to `main`:

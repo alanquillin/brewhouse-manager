@@ -24,6 +24,10 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-ansi --only main --no-root
 RUN poetry run pip install psycopg2-binary
 
+# --allow-remove-essential is required because perl-base is marked essential in Debian.
+# It is safe here: this is the last apt operation in the stage, the final image inherits
+# from this stage, and nothing in the runtime app (Python/FastAPI) depends on perl.
+# perl and perl-base are removed to remediate CVEs in debian/perl (e.g. 5.40.1-6).
 RUN apt-get purge -y --auto-remove --allow-remove-essential gcc build-essential libffi-dev libssl-dev perl perl-base
 
 
