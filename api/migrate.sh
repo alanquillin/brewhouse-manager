@@ -1,8 +1,25 @@
 #! /bin/bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+VENV_BIN=""
 if [ -f "/.venv/bin/alembic" ]; then
-    ALEMBIC="/.venv/bin/alembic"
-    PYTHON="/.venv/bin/python"
+    VENV_BIN="/.venv/bin"
+elif [ -f "${PROJECT_ROOT}/.venv/bin/alembic" ]; then
+    VENV_BIN="${PROJECT_ROOT}/.venv/bin"
+elif [ -n "${VIRTUAL_ENV}" ] && [ -f "${VIRTUAL_ENV}/bin/alembic" ]; then
+    VENV_BIN="${VIRTUAL_ENV}/bin"
+elif command -v poetry >/dev/null 2>&1; then
+    POETRY_VENV="$(cd "${PROJECT_ROOT}" && poetry env info -p 2>/dev/null || true)"
+    if [ -n "${POETRY_VENV}" ] && [ -f "${POETRY_VENV}/bin/alembic" ]; then
+        VENV_BIN="${POETRY_VENV}/bin"
+    fi
+fi
+
+if [ -n "${VENV_BIN}" ]; then
+    ALEMBIC="${VENV_BIN}/alembic"
+    PYTHON="${VENV_BIN}/python"
 else
     ALEMBIC="alembic"
     PYTHON="python"
