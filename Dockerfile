@@ -41,6 +41,11 @@ ENV PYTHONUNBUFFERED=1
 ENV CONFIG_BASE_DIR=/brewhouse-manager/config
 ENV RUN_ENV=${build_for}
 
+# perl and perl-base are removed to remediate CVEs in debian/perl.
+# --allow-remove-essential is required because perl-base is marked essential in Debian;
+# it is safe here because nothing in the runtime app (Python/FastAPI) depends on perl.
+RUN apt-get purge -y --auto-remove --allow-remove-essential perl perl-base
+
 RUN groupadd --gid 10000 app && \
     useradd --gid app \
             --shell /sbin/nologin \
