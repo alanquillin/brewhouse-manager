@@ -103,7 +103,7 @@ rebuild-db-seed:
 # Targets for publishing containers
 
 publish: ## Build and publish the Docker images
-	$(MAKE) build DOCKER_BUILD_ARGS+="--push"
+	$(MAKE) build DOCKER_BUILD_ARGS+="--attest type=provenance,mode=max --attest type=sbom,value=true --push"
 
 # Targets for running the app
 
