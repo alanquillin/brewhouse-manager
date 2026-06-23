@@ -235,19 +235,33 @@ Enabled/disabled via config: `tap_monitors.<type>.enabled`.
 
 ### Multi-stage layout
 
-The final runtime image inherits solely from `python-base` (`python:3.12-slim-trixie`). The `node-base` / `node-build` stages are compile-only — they produce the Angular static files copied into the final image via `COPY --from=node-build`. Packages installed in the node stages (including perl) are discarded and do not appear in the final image layers. Only the `python-base` stage matters for CVE scanning of the shipped container.
+The build uses four stages:
+
+| Stage | Base | Purpose |
+|---|---|---|
+| `node-base` | `node:24.15-trixie` | Install pnpm/Angular CLI, install UI deps |
+| `python-build` | `python:3.12-slim-trixie` | Install Poetry + build tools, compile `.venv` |
+| `node-build` | `node-base` | Compile Angular app |
+| `final` | `python:3.12-slim-trixie` (clean) | Runtime image — copies `.venv` + app code only |
+
+**Poetry is not present in the final image.** It lives only in `python-build`. The `.venv` directory (at `/.venv` in the container) is the only Python artifact copied into `final` via `COPY --from=python-build /.venv /.venv`. This keeps poetry, its transitive deps (e.g. msgpack), build tools, and compilers out of the shipped image.
+
+Because poetry is absent at runtime, **all scripts that previously used `poetry run` must use the venv directly**:
+- `entrypoint.sh` activates the venv with `. /.venv/bin/activate` before calling `migrate.sh` and `python app.py`.
+- `api/migrate.sh` resolves `ALEMBIC` and `PYTHON` to `/.venv/bin/alembic` / `/.venv/bin/python` when those paths exist (i.e., inside the container), and falls back to bare commands for local dev where the venv is at a different path or already activated.
+- `deploy/docker-local/Dockerfile` CMD uses `. /.venv/bin/activate && ...` for the seed container.
+
+If a new script or service needs to run Python/alembic inside the container, use `/.venv/bin/python` or activate the venv — do not reinstall poetry.
 
 ### Removing perl (CVE remediation)
 
-`build-essential` (installed in `python-base` for compiling Python packages) pulls `perl` and `perl-base` in as dependencies. They are not needed at runtime. Removing them requires:
+`build-essential` (installed in `python-build` for compiling Python packages) pulls `perl` and `perl-base` in as dependencies. They are not needed at runtime and were previously removed from `python-base` (now `python-build`). This step is no longer necessary in `python-build` because `python-build` is a build-only stage — its layers do not ship. The `final` stage starts from a clean `python:3.12-slim-trixie` which does not include perl.
 
-1. **`--allow-remove-essential`** — `perl-base` is marked essential in Debian; apt refuses to purge it without this flag.  
-2. This flag is safe in `python-base` because the purge is the **last `apt-get` operation** in the stage and nothing in the runtime app depends on perl.  
-3. Do **not** attempt to purge perl from `node-base` — the non-slim Node image has many packages (e.g. `x11-common`, `ucf`) whose post-removal scripts are written in Perl; removing `perl-base` there causes `dpkg` errors during the build.
+Historical note: `--allow-remove-essential` was required to purge `perl-base` from a Debian-based stage because apt marks it essential. Do **not** attempt to purge perl from `node-base` — the non-slim Node image has many packages (e.g. `x11-common`, `ucf`) whose post-removal scripts are written in Perl; removing `perl-base` there causes `dpkg` errors during the build.
 
 ### `addgroup` vs `groupadd`
 
-`addgroup` (from the Debian `adduser` package) is a **Perl script**. After `perl-base` is removed from `python-base`, calling `addgroup` in the `final` stage (which inherits from `python-base`) will fail with `addgroup: not found`.
+`addgroup` (from the Debian `adduser` package) is a **Perl script**. It is not available in `python:3.12-slim-trixie` (which does not ship perl). Calling `addgroup` in the `final` stage will fail with `addgroup: not found`.
 
 Use `groupadd` instead — it is a C binary from the `shadow` package and does not require perl:
 
@@ -260,9 +274,16 @@ RUN groupadd --gid 10000 app && \
 RUN addgroup app --gid 10000 && useradd ...
 ```
 
-### `libpq-dev` auto-removal
+### Runtime library assumptions in the final image
 
-`libpq-dev` is installed in `python-base` alongside the build tools but is auto-removed as a cascade side-effect: `libpq-dev` depends on `libssl-dev`, and purging `libssl-dev` causes apt to remove `libpq-dev` as a broken dependent. This is safe because `psycopg2-binary` bundles its own `libpq.so` and does not require the system library at runtime.
+The `final` stage has no `apt-get install` — it starts from a clean `python:3.12-slim-trixie` and only receives the `.venv`. Any C extension in the venv that dynamically links to a system library not present in the base image will fail at runtime with a "shared library not found" error.
+
+Currently safe because:
+- `psycopg2-binary` bundles its own `libpq.so` (no system `libpq5` needed).
+- `cryptography` downloads a manylinux wheel on Linux that statically bundles OpenSSL.
+- `libssl3` and `libffi8` are present in the Python base image (Python itself needs them).
+
+If a new dependency is added that links to a system library outside this set (e.g., `libpq5`, `libxml2`, `libcurl`), add the **runtime** package (not the `-dev` variant) to the `final` stage's `apt-get install`.
 
 ## CI
 
