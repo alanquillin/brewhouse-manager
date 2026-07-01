@@ -255,9 +255,17 @@ If a new script or service needs to run Python/alembic inside the container, use
 
 ### Removing perl (CVE remediation)
 
-`build-essential` (installed in `python-build` for compiling Python packages) pulls `perl` and `perl-base` in as dependencies. They are not needed at runtime and were previously removed from `python-base` (now `python-build`). This step is no longer necessary in `python-build` because `python-build` is a build-only stage — its layers do not ship. The `final` stage starts from a clean `python:3.12-slim-trixie` which does not include perl.
+`python:3.12-slim-trixie` (the base for the `final` stage) ships with `perl` and `perl-base`. They are not needed at runtime and must be purged from the `final` stage:
 
-Historical note: `--allow-remove-essential` was required to purge `perl-base` from a Debian-based stage because apt marks it essential. Do **not** attempt to purge perl from `node-base` — the non-slim Node image has many packages (e.g. `x11-common`, `ucf`) whose post-removal scripts are written in Perl; removing `perl-base` there causes `dpkg` errors during the build.
+```dockerfile
+RUN apt-get purge -y --auto-remove --allow-remove-essential perl perl-base
+```
+
+`--allow-remove-essential` is required because apt marks `perl-base` essential in Debian. It is safe here because nothing in the runtime app (Python/FastAPI) depends on perl, and this is the only apt operation in `final`.
+
+Do **not** attempt to purge perl from `node-base` — the non-slim Node image has many packages (e.g. `x11-common`, `ucf`) whose post-removal scripts are written in Perl; removing `perl-base` there causes `dpkg` errors during the build.
+
+Purging perl from `python-build` is unnecessary because `python-build` is a build-only stage — its layers do not ship to the final image. Only the `final` stage needs the purge.
 
 ### `addgroup` vs `groupadd`
 
@@ -273,6 +281,20 @@ RUN groupadd --gid 10000 app && \
 # Wrong after perl removal (Perl script)
 RUN addgroup app --gid 10000 && useradd ...
 ```
+
+### pip version floor
+
+Both the `python-build` and `final` stages must pin pip to `>=25.3` to avoid CVEs in older pip releases. Each stage starts from `python:3.12-slim-trixie` independently, so each needs its own upgrade:
+
+```dockerfile
+# python-build stage
+RUN pip install -U "pip>=25.3" setuptools wheel
+
+# final stage (before any other pip or venv usage)
+RUN pip install -U "pip>=25.3"
+```
+
+Do not rely on the `.venv` copy from `python-build` to carry the pip version into `final` — the system pip in `final` is separate from the venv pip and is the one used by bare `pip` calls in that stage.
 
 ### Runtime library assumptions in the final image
 
