@@ -5,9 +5,13 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi,
+  withXhr,
+} from '@angular/common/http';
 import { SettingsService } from './_services/settings.service';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -105,7 +109,6 @@ export function initializeSettings(settingsService: SettingsService) {
   bootstrap: [AppComponent],
   imports: [
     AppRoutingModule,
-    BrowserAnimationsModule,
     BrowserModule,
     FormsModule,
     GaugeModule.forRoot(),
@@ -142,7 +145,7 @@ export function initializeSettings(settingsService: SettingsService) {
   providers: [
     HttpClient,
     WINDOW_PROVIDERS,
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
     {
       provide: APP_INITIALIZER,
       useFactory: initializeSettings,

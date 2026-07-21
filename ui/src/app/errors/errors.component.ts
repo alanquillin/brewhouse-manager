@@ -1,6 +1,6 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { AfterViewInit, Component, OnInit, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { gsap } from 'gsap';
@@ -14,6 +14,7 @@ import { isNilOrEmpty } from '../utils/helpers';
   selector: 'app-errors',
   templateUrl: './errors.component.html',
   styleUrls: ['./errors.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ErrorsComponent implements OnInit, AfterViewInit {

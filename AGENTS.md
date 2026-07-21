@@ -14,7 +14,7 @@ A homebrew tap management system with a FastAPI backend, Angular frontend, and P
 ## Tech Stack
 
 - **Backend**: Python 3.11, FastAPI, SQLAlchemy 2.0 (async), Pydantic v2
-- **Frontend**: Angular 21, Angular Material, Bootstrap 5.3, RxJS
+- **Frontend**: Angular 22, Angular Material, Bootstrap 5.3, RxJS
 - **Database**: PostgreSQL 17, Alembic migrations
 - **Tooling**: Poetry 2.x (Python deps), pnpm (UI deps), mise (runtime versions via `mise.toml`)
 - **Docker**: Multi-stage build (node + python), docker-compose for local dev

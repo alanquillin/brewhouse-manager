@@ -4,7 +4,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { VolumeCalculatorComponent } from './volume-calculator.component';
 
@@ -14,13 +13,7 @@ describe('VolumeCalculatorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        ReactiveFormsModule,
-        NoopAnimationsModule,
-        MatSelectModule,
-        MatFormFieldModule,
-        MatInputModule,
-      ],
+      imports: [ReactiveFormsModule, MatSelectModule, MatFormFieldModule, MatInputModule],
       declarations: [VolumeCalculatorComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

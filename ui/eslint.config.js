@@ -34,6 +34,9 @@ module.exports = tseslint.config(
     rules: {
       // Angular-specific rules
       "@angular-eslint/prefer-standalone": "off",
+      // Angular v22 migration set ChangeDetectionStrategy.Eager on existing components to
+      // preserve pre-v22 behavior. Migrating them to OnPush is a separate, deliberate effort.
+      "@angular-eslint/prefer-on-push-component-change-detection": "off",
       "@angular-eslint/directive-selector": [
         "error",
         {

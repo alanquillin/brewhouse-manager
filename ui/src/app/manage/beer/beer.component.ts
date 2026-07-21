@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, ViewChild } from '@angular/core';
 import {
   AbstractControl,
   UntypedFormControl,
@@ -36,6 +36,7 @@ import * as _ from 'lodash';
   selector: 'app-beer',
   templateUrl: './beer.component.html',
   styleUrls: ['./beer.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ManageBeerComponent implements OnInit {

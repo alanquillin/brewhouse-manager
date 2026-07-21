@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
   AbstractControl,
   UntypedFormControl,
@@ -16,6 +16,7 @@ import * as _ from 'lodash';
   selector: 'app-volume-calculator',
   templateUrl: './volume-calculator.component.html',
   styleUrls: ['./volume-calculator.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class VolumeCalculatorComponent {
