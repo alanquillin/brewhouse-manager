@@ -94,6 +94,20 @@ make clean-all               # Stops running containers, cleans up all docker im
 - **UI unit tests**: `make test-ui-unit` — Karma + Jasmine with ChromeHeadless
 - **UI functional tests**: `make test-ui-functional` — requires Docker compose running
 
+### Manual/visual UI verification against the local dev stack
+
+There's no `chromium-cli`/Playwright installed in the sandbox, but a real Chrome exists at `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (macOS). To actually see a UI change rendered (not just pass unit tests):
+
+1. Rebuild the dev image and recreate the `web` container — this is fast (a few seconds) because Docker layer caching means only the changed `ui/src` → `pnpm run build:dev` layer and the final `COPY` layers re-run:
+   ```bash
+   docker build --build-arg build_for=dev -t brewhouse-manager:dev .
+   docker compose --project-directory deploy/docker-local up -d --force-recreate web
+   ```
+   If other containers (postgres/nginx) aren't listed as `Up` afterward, run `docker compose --project-directory deploy/docker-local up -d` (no `--force-recreate`) once more to bring the rest of the stack back.
+2. The stack serves over `https://localhost:8443` (self-signed cert) with nginx in front of the `web` container on port 5001.
+3. The Postgres volume persists real accumulated data across sessions (not just `seed_data.py` fixtures) — location slugs `sample-2-tap-taproom`, `sample-3-tap-taproom`, `sample-4-tap-taproom` exist under routes `/view/<slug>` (public dashboard) and login is `alanquillin@gmail.com` / `foo` (from `deploy/docker-local/my-config.json`, `auth.initial_user`) for `/manage/*` admin pages.
+4. Use `puppeteer-core` (install with `npm install puppeteer-core` in a scratch dir — no need to download a bundled Chromium) launched with `executablePath` pointed at the system Chrome and `--ignore-certificate-errors` in `args`. `page.setRequestInterception(true)` lets you mock/delay/force-fail specific API responses (e.g. the tap-monitor `/data` polling endpoint) to reach UI states — loading spinners, error banners — that aren't reproducible with whatever real data happens to be in the dev DB at the time.
+
 ### Mocking `awaitable_attrs` (SQLAlchemy async lazy loading)
 
 Production code accesses async-loaded relationships via `await obj.awaitable_attrs.some_attr`. Mocking this requires a directly awaitable value — **not** a coroutine object and **not** an `AsyncMock` instance.
@@ -220,6 +234,27 @@ const freshService = TestBed.runInInjectionContext(() => new MyService());
 @if ((beverageBatches[modifyBeverage.id]?.length ?? 0) > 0 && !loadingBatches) {
 ```
 
+**Programmatic `matTooltip` toggle (hover-or-click)**: To make a tooltip open on both hover and click/tap (not just hover), grab a template reference to the directive and call `.toggle()`:
+```html
+<span
+  tabindex="0"
+  #myTooltip="matTooltip"
+  matTooltip="..."
+  (click)="myTooltip.toggle()"
+  (keyup.enter)="myTooltip.toggle()"
+>...</span>
+```
+`tabindex="0"` + `(keyup.enter)` are required to satisfy `click-events-have-key-events` / `interactive-supports-focus` on the non-button element. Used throughout `location.component.html` for the tap online/offline/active/error status indicators and in `taps.component.html` for the tap-monitor warning icon.
+
+**`mat-card-header` does not stretch its content to full width by default**: `mat-card-subtitle`'s wrapping `.mat-mdc-card-header-text` div is a flex item with no `flex-grow`, so a custom `display:flex; justify-content:space-between` row placed inside `mat-card-subtitle` will only span the width of its content, not the card. To right-justify something in the header, add a scoped override:
+```scss
+:host ::ng-deep .tap-card > mat-card-header .mat-mdc-card-header-text {
+  flex: 1;
+  width: 100%;
+}
+```
+(see `location.component.scss`).
+
 ### Tap Monitor Integration
 
 `TapMonitorBase` in `api/lib/tap_monitors/` is the base class for device integrations (Kegtron Pro, Kegtron Gen1, Plaato, etc.). Each implementation provides:
@@ -230,6 +265,10 @@ const freshService = TestBed.runInInjectionContext(() => new MyService());
 - Device-specific methods (e.g., `reset_volume()`)
 
 Enabled/disabled via config: `tap_monitors.<type>.enabled`.
+
+**`reports_online_status()` is a static per-type capability flag**, independent of any single poll's success/failure. UI code should never assume every tap monitor supports online/offline reporting — `getTapMonitorsForLocation` / `TapMonitor.reportsOnlineStatus` (mapped from `get_types()` in `lib/tap_monitors/__init__.py`) tells you whether to show real online/offline state or a generic "Active" state instead. `open-plaato-keg` and `keg-volume-monitor-weight` are examples of types that return `False` here.
+
+**`lastUpdatedOn` (last-connected timestamp) is only implemented for `plaato-keg`**: its `get_all()` (`lib/tap_monitors/plaato_keg.py`) is the only adapter that populates the `lastUpdatedOn` field from a DB-cached device row. `kegtron.py`, `kegtron_gen1.py`, and `keg_volume_monitor.py` never set it, so their dashboard "last connected" tooltip will always be empty — this is a real gap, not a mapping bug, if a future task wants to add last-seen tracking for those types it needs new extraction logic in each adapter's `parse_resp()`/`get_all()`.
 
 ## Docker Build Notes
 
