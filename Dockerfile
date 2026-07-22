@@ -1,6 +1,6 @@
 # NodeJS base
 # ############################################################
-FROM node:24.18-trixie AS node-base
+FROM node:26.5-trixie AS node-base
 
 RUN npm install -g pnpm@11 @angular/cli
 COPY ui/angular.json ui/tsconfig.app.json ui/tsconfig.json ui/package.json ui/pnpm-lock.yaml ui/pnpm-workspace.yaml ui/.browserslistrc /ui/

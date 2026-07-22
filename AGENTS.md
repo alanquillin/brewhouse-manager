@@ -13,7 +13,7 @@ A homebrew tap management system with a FastAPI backend, Angular frontend, and P
 
 ## Tech Stack
 
-- **Backend**: Python 3.11, FastAPI, SQLAlchemy 2.0 (async), Pydantic v2
+- **Backend**: Python 3.14, FastAPI, SQLAlchemy 2.0 (async), Pydantic v2
 - **Frontend**: Angular 22, Angular Material, Bootstrap 5.3, RxJS
 - **Database**: PostgreSQL 17, Alembic migrations
 - **Tooling**: Poetry 2.x (Python deps), pnpm (UI deps), mise (runtime versions via `mise.toml`)
@@ -145,9 +145,11 @@ This class is defined at the top of each affected test file (not shared via conf
 Sync test methods run async production code via:
 ```python
 def run_async(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 ```
 This is defined locally in each test file that uses it.
+
+**Python 3.14 gotcha**: this helper used to be `asyncio.get_event_loop().run_until_complete(coro)`. As of Python 3.14, `asyncio.get_event_loop()` no longer implicitly creates an event loop when none exists in the current thread — it raises `RuntimeError: There is no current event loop in thread 'MainThread'` instead. All 39 `run_async` definitions across `api/tests/unit/` were switched to `asyncio.run(coro)` for the 3.14 upgrade. If a test needs to build a `Task`/`Future` (e.g. via `asyncio.ensure_future()`) before calling `run_async(...)`, that construction must happen *inside* a coroutine passed to `run_async`, not beforehand at the top level of the test — `ensure_future()` also requires a running loop and will hit the same `RuntimeError` otherwise (see `test_shutdown_cancels_tcp_task` in `api/tests/unit/test_app.py` for the pattern: wrap the setup + the `await app.shutdown()` call together in a local `async def` and pass that to `run_async`).
 
 ## Code Style
 
@@ -278,10 +280,10 @@ The build uses four stages:
 
 | Stage | Base | Purpose |
 |---|---|---|
-| `node-base` | `node:24.15-trixie` | Install pnpm/Angular CLI, install UI deps |
-| `python-build` | `python:3.12-slim-trixie` | Install Poetry + build tools, compile `.venv` |
+| `node-base` | `node:26.5-trixie` | Install pnpm/Angular CLI, install UI deps |
+| `python-build` | `python:3.14-slim-trixie` | Install Poetry + build tools, compile `.venv` |
 | `node-build` | `node-base` | Compile Angular app |
-| `final` | `python:3.12-slim-trixie` (clean) | Runtime image — copies `.venv` + app code only |
+| `final` | `python:3.14-slim-trixie` (clean) | Runtime image — copies `.venv` + app code only |
 
 **Poetry is not present in the final image.** It lives only in `python-build`. The `.venv` directory (at `/.venv` in the container) is the only Python artifact copied into `final` via `COPY --from=python-build /.venv /.venv`. This keeps poetry, its transitive deps (e.g. msgpack), build tools, and compilers out of the shipped image.
 
@@ -294,7 +296,7 @@ If a new script or service needs to run Python/alembic inside the container, use
 
 ### Removing perl (CVE remediation)
 
-`python:3.12-slim-trixie` (the base for the `final` stage) ships with `perl` and `perl-base`. They are not needed at runtime and must be purged from the `final` stage:
+`python:3.14-slim-trixie` (the base for the `final` stage) ships with `perl` and `perl-base`. They are not needed at runtime and must be purged from the `final` stage:
 
 ```dockerfile
 RUN apt-get purge -y --auto-remove --allow-remove-essential perl perl-base
@@ -308,7 +310,7 @@ Purging perl from `python-build` is unnecessary because `python-build` is a buil
 
 ### `addgroup` vs `groupadd`
 
-`addgroup` (from the Debian `adduser` package) is a **Perl script**. It is not available in `python:3.12-slim-trixie` (which does not ship perl). Calling `addgroup` in the `final` stage will fail with `addgroup: not found`.
+`addgroup` (from the Debian `adduser` package) is a **Perl script**. It is not available in `python:3.14-slim-trixie` (which does not ship perl). Calling `addgroup` in the `final` stage will fail with `addgroup: not found`.
 
 Use `groupadd` instead — it is a C binary from the `shadow` package and does not require perl:
 
@@ -323,7 +325,7 @@ RUN addgroup app --gid 10000 && useradd ...
 
 ### pip version floor
 
-Both the `python-build` and `final` stages must pin pip to `>=25.3` to avoid CVEs in older pip releases. Each stage starts from `python:3.12-slim-trixie` independently, so each needs its own upgrade:
+Both the `python-build` and `final` stages must pin pip to `>=25.3` to avoid CVEs in older pip releases. Each stage starts from `python:3.14-slim-trixie` independently, so each needs its own upgrade:
 
 ```dockerfile
 # python-build stage
@@ -337,7 +339,7 @@ Do not rely on the `.venv` copy from `python-build` to carry the pip version int
 
 ### Runtime library assumptions in the final image
 
-The `final` stage has no `apt-get install` — it starts from a clean `python:3.12-slim-trixie` and only receives the `.venv`. Any C extension in the venv that dynamically links to a system library not present in the base image will fail at runtime with a "shared library not found" error.
+The `final` stage has no `apt-get install` — it starts from a clean `python:3.14-slim-trixie` and only receives the `.venv`. Any C extension in the venv that dynamically links to a system library not present in the base image will fail at runtime with a "shared library not found" error.
 
 Currently safe because:
 - `psycopg2-binary` bundles its own `libpq.so` (no system `libpq5` needed).
@@ -359,10 +361,12 @@ GitHub Actions workflow (`.github/workflows/ci.yml`) runs on PRs to `main`:
 ### Package Manager (mise)
 
 The project uses `mise.toml` (not `.tool-versions`) for runtime version pinning. Current pinned versions:
-- Python 3.11.13
-- Node 24.15.0
+- Python 3.14.6
+- Node 26.5.0
 - Poetry 2.4.1
-- Snyk 1.1304.2
+- Snyk 1.1306.1
+
+**Upgrading Python or Node**: `pyproject.toml`'s `python = ">=3.12,<4.0"` constraint and Angular CLI 22's own `engines.node` (`^22.22.3 || ^24.15.0 || >=26.0.0`) already tolerate new major versions without a pin change there — the actual work is bumping `mise.toml` and the two `FROM` lines in `Dockerfile` (see Docker Build Notes table above), then `poetry lock` (Python) or `pnpm install` (Node) to refresh the lockfile. Also bump `@types/node` in `ui/package.json` to match the new Node major for accurate typings. Check for prebuilt wheels (`cp<version>` tags on PyPI) before assuming a pinned C-extension dependency (`cryptography`, `psycopg2-binary`, `asyncpg`, `uvloop`, `httptools`) will install cleanly on a very new Python — as of the 3.14 upgrade all of these already had wheels available.
 
 ### pnpm (UI package manager)
 
