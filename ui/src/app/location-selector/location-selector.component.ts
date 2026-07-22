@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { DataError, DataService } from '../_services/data.service';
@@ -11,6 +11,7 @@ import * as _ from 'lodash';
   selector: 'app-location-selector',
   templateUrl: './location-selector.component.html',
   styleUrls: ['./location-selector.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LocationSelectorComponent implements OnInit {

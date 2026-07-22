@@ -29,11 +29,85 @@
         }
       </div>
     }
+    <ng-template #tapStatusIndicator let-tap>
+      @if (!tap.isEmpty && !isNilOrEmpty(tap.tapMonitor)) {
+        <span class="tap-status-wrapper">
+          <span class="tap-status-prefix">Tap Monitor:</span>
+          @if (!tap.tapMonitor.initialized) {
+            <span class="tap-status-indicator tap-status-checking">
+              <mat-spinner diameter="14"></mat-spinner>
+              <span>checking...</span>
+            </span>
+          } @else if (tap.tapMonitor.hasError) {
+            <span
+              class="tap-status-indicator tap-status-error"
+              tabindex="0"
+              #tapErrorTooltip="matTooltip"
+              matTooltip="Error received trying to check the tap monitor status"
+              (click)="tapErrorTooltip.toggle()"
+              (keyup.enter)="tapErrorTooltip.toggle()"
+            >
+              <mat-icon>error</mat-icon>
+              <span>Error</span>
+            </span>
+          } @else if (!tap.tapMonitor.reportsOnlineStatus) {
+            <span
+              class="tap-status-indicator tap-status-active"
+              tabindex="0"
+              #tapActiveTooltip="matTooltip"
+              matTooltip="Tap monitor is enabled but does not support providing realtime status"
+              (click)="tapActiveTooltip.toggle()"
+              (keyup.enter)="tapActiveTooltip.toggle()"
+            >
+              <mat-icon>check_circle</mat-icon>
+              <span>Active</span>
+            </span>
+          } @else if (isNilOrEmpty(tap.tapMonitor.online)) {
+            <span class="tap-status-indicator tap-status-checking">
+              <mat-spinner diameter="14"></mat-spinner>
+              <span>checking...</span>
+            </span>
+          } @else {
+            <span
+              class="tap-status-indicator"
+              [class.tap-status-online]="tap.tapMonitor.online"
+              [class.tap-status-offline]="!tap.tapMonitor.online"
+              tabindex="0"
+              #tapStatusTooltip="matTooltip"
+              [matTooltip]="
+                !isNilOrEmpty(tap.tapMonitor.lastUpdatedOn)
+                  ? 'Last connected on ' + displayDate(tap.tapMonitor.getLastUpdatedOn())
+                  : ''
+              "
+              (click)="tapStatusTooltip.toggle()"
+              (keyup.enter)="tapStatusTooltip.toggle()"
+            >
+              @if (tap.tapMonitor.online) {
+                <mat-icon>wifi</mat-icon>
+                <span>Online</span>
+              } @else {
+                <mat-icon>wifi_off</mat-icon>
+                <span>Offline</span>
+              }
+            </span>
+          }
+        </span>
+      }
+    </ng-template>
     @for (tap of taps; track tap) {
       <div class="tap-list" class="tap-count-{{ taps.length < 4 ? taps.length : '4plus' }}">
         <mat-card class="tap-card">
           <mat-card-header>
-            <mat-card-subtitle>Tap {{ tap.tapNumber }}: {{ tap.description }}</mat-card-subtitle>
+            <mat-card-subtitle>
+              <div class="tap-header-row">
+                <span class="tap-header-title">Tap {{ tap.tapNumber }}: {{ tap.description }}</span>
+                @if (showTapStatus(tap)) {
+                  <ng-container
+                    *ngTemplateOutlet="tapStatusIndicator; context: { $implicit: tap }"
+                  ></ng-container>
+                }
+              </div>
+            </mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             @if (tap.isEmpty) {
@@ -90,38 +164,6 @@
                           Total Remaining: {{ _.round(tap.tapMonitor.totalBeerRemaining, 2) }}
                           {{ tap.tapMonitor.beerRemainingUnit }} ({{ getRemainingBeerValue(tap) }}%)
                         </p>
-                      }
-                      @if (!isNilOrEmpty(tap.tapMonitor) && tap.tapMonitor.reportsOnlineStatus) {
-                        @if (tap.tapMonitor.checkingOnline) {
-                          <div class="online-checking-status">
-                            <mat-icon>wifi</mat-icon>
-                            <span>Checking online status...</span>
-                          </div>
-                        } @else if (!isNilOrEmpty(tap.tapMonitor.online)) {
-                          @if (!tap.tapMonitor.online) {
-                            <div class="alert alert-danger offline-status" role="alert">
-                              <mat-icon>wifi_off</mat-icon>
-                              <span>
-                                Offline!
-                                @if (!isNilOrEmpty(tap.tapMonitor.lastUpdatedOn)) {
-                                  &nbsp;(Last updated on
-                                  {{ displayDate(tap.tapMonitor.getLastUpdatedOn()) }})
-                                }
-                              </span>
-                            </div>
-                          } @else {
-                            <div class="online-status">
-                              <mat-icon>wifi</mat-icon>
-                              <span>
-                                Online!
-                                @if (!isNilOrEmpty(tap.tapMonitor.lastUpdatedOn)) {
-                                  &nbsp;(Last updated on
-                                  {{ displayDate(tap.tapMonitor.getLastUpdatedOn()) }})
-                                }
-                              </span>
-                            </div>
-                          }
-                        }
                       }
                     </div>
                     <div class="tap-qrcode">

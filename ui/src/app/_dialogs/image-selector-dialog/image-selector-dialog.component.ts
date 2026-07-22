@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DataError, DataService } from '../../_services/data.service';
@@ -9,6 +9,7 @@ import { isNilOrEmpty } from '../../utils/helpers';
   selector: 'app-image-selector-dialog',
   templateUrl: './image-selector-dialog.component.html',
   styleUrls: ['./image-selector-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ImageSelectorDialogComponent implements OnInit {

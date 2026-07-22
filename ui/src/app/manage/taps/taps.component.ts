@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -20,6 +20,7 @@ import { isNilOrEmpty } from 'src/app/utils/helpers';
   selector: 'app-taps',
   templateUrl: './taps.component.html',
   styleUrls: ['./taps.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ManageTapsComponent implements OnInit {
@@ -529,6 +530,17 @@ export class ManageTapsComponent implements OnInit {
       name = 'UNNAMED';
     }
     return `${name} (${tapMonitor.monitorType})`;
+  }
+
+  tapMonitorMissingOnlineStatus(
+    tapMonitor: TapMonitor | undefined,
+    tapMonitorId?: string
+  ): boolean {
+    tapMonitor = this.resolveTapMonitor(tapMonitor, tapMonitorId);
+    if (_.isNil(tapMonitor)) {
+      return false;
+    }
+    return !tapMonitor.reportsOnlineStatus;
   }
 
   getTapMonitorError(tapMonitor: TapMonitor | undefined, tapMonitorId?: string): string {

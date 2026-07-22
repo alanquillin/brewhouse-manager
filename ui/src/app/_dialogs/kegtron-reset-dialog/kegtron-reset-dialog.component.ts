@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DataError, DataService } from '../../_services/data.service';
@@ -8,6 +8,7 @@ import { isNilOrEmpty } from '../../utils/helpers';
   selector: 'app-kegtron-reset-dialog',
   templateUrl: './kegtron-reset-dialog.component.html',
   styleUrls: ['./kegtron-reset-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class KegtronResetDialogComponent {

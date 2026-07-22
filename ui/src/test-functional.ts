@@ -1,14 +1,10 @@
 // This file is required by karma-functional.conf.js and loads functional test files
 // Functional tests run against a real API server in Docker
 
-import { provideHttpClient } from '@angular/common/http';
-import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
+import { provideHttpClient, withXhr } from '@angular/common/http';
+import { ANIMATION_MODULE_TYPE, NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { getTestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { provideRouter } from '@angular/router';
 import 'zone.js/testing';
 
@@ -34,11 +30,11 @@ import { WINDOW } from './app/window.provider';
       } as unknown as Window,
     },
     // Provide real HTTP client (not the testing module)
-    provideHttpClient(),
+    provideHttpClient(withXhr()),
     // Provide router with empty routes for tests
     provideRouter([]),
     // Disable animations for tests
-    provideNoopAnimations(),
+    { provide: ANIMATION_MODULE_TYPE, useValue: 'NoopAnimations' },
   ],
   schemas: [NO_ERRORS_SCHEMA],
 })
@@ -46,8 +42,8 @@ export class FunctionalTestingModule {}
 
 // Initialize the Angular testing environment with our functional testing module
 getTestBed().initTestEnvironment(
-  [BrowserDynamicTestingModule, FunctionalTestingModule],
-  platformBrowserDynamicTesting(),
+  [BrowserTestingModule, FunctionalTestingModule],
+  platformBrowserTesting(),
   {
     errorOnUnknownElements: false,
     errorOnUnknownProperties: false,

@@ -12,6 +12,7 @@ import {
   HttpRequest,
   provideHttpClient,
   withInterceptors,
+  withXhr,
 } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
@@ -110,7 +111,7 @@ describe('DataService Functional Tests', () => {
     TestBed.configureTestingModule({
       providers: [
         // Use provideHttpClient with functional interceptor
-        provideHttpClient(withInterceptors([apiKeyInterceptor])),
+        provideHttpClient(withXhr(), withInterceptors([apiKeyInterceptor])),
         DataService,
         { provide: WINDOW, useValue: mockWindow },
       ],

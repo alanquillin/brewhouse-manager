@@ -11,7 +11,7 @@ from lib.tap_monitors.kegtron_gen1 import MONITOR_TYPE, KegtronGen1
 
 # Helper to run async functions in sync tests
 def run_async(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 def _make_mock_http_client(mock_async_client, response_or_responses):

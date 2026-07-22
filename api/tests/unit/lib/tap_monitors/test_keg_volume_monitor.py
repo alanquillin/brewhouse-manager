@@ -12,7 +12,7 @@ from lib.tap_monitors.keg_volume_monitor import KEYMAP, KegVolumeMonitor
 
 # Helper to run async functions in sync tests
 def run_async(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 class TestKegVolumeMonitorKeymap:

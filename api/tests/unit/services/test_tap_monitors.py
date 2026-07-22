@@ -24,7 +24,7 @@ from services.tap_monitors import TapMonitorService, TapMonitorTypeService
 
 def run_async(coro):
     """Helper to run async functions in sync tests"""
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 def create_mock_tap_monitor(

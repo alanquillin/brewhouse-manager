@@ -705,6 +705,44 @@ describe('ManageTapsComponent', () => {
     });
   });
 
+  describe('tapMonitorMissingOnlineStatus', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+      component.tapMonitors = mockTapMonitors as any;
+    });
+
+    it('should return true when monitor does not report online status', () => {
+      const monitor = { id: 'tm-3', reportsOnlineStatus: false } as TapMonitor;
+      const result = component.tapMonitorMissingOnlineStatus(monitor);
+      expect(result).toBe(true);
+    });
+
+    it('should return false when monitor reports online status', () => {
+      const monitor = { id: 'tm-4', reportsOnlineStatus: true } as TapMonitor;
+      const result = component.tapMonitorMissingOnlineStatus(monitor);
+      expect(result).toBe(false);
+    });
+
+    it('should return false for undefined monitor', () => {
+      const result = component.tapMonitorMissingOnlineStatus(undefined);
+      expect(result).toBe(false);
+    });
+
+    it('should find monitor by id and check its reportsOnlineStatus', () => {
+      component.tapMonitors = [
+        {
+          id: 'tm-1',
+          name: 'Monitor 1',
+          monitorType: 'plaato-blynk',
+          locationId: 'loc-1',
+          reportsOnlineStatus: false,
+        },
+      ] as any;
+      const result = component.tapMonitorMissingOnlineStatus(undefined, 'tm-1');
+      expect(result).toBe(true);
+    });
+  });
+
   describe('modifyForm getter', () => {
     it('should return form controls', () => {
       const controls = component.modifyForm;

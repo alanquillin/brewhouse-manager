@@ -24,10 +24,13 @@
             {{ file?.name }}
           </h4>
           <p class="size">
-            {{ formatBytes(file?.size) }}
+            {{ formatBytes($safeNavigationMigration(file?.size)) }}
           </p>
           @if (!file.hasError) {
-            <mat-progress-bar mode="determinate" [value]="file?.progress"></mat-progress-bar>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="$safeNavigationMigration(file?.progress)"
+            ></mat-progress-bar>
           }
           @if (file.hasError) {
             <div class="error-message">Error: {{ file.errorMessage }}</div>

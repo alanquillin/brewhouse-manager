@@ -11,7 +11,7 @@ from lib.tap_monitors.plaato_keg import KEYMAP, PlaatoKeg
 
 # Helper to run async functions in sync tests
 def run_async(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 class TestPlaatoKegKeymap:

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -13,6 +13,7 @@ import { PlaatoKegDevice, UserInfo } from '../../models/models';
   selector: 'app-plaato-keg',
   templateUrl: './plaato-keg.component.html',
   styleUrls: ['./plaato-keg.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ManagePlaatoKegComponent implements OnInit {

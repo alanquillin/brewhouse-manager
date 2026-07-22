@@ -1,6 +1,6 @@
 # NodeJS base
 # ############################################################
-FROM node:24.15-trixie AS node-base
+FROM node:26.5-trixie AS node-base
 
 RUN npm install -g pnpm@11 @angular/cli
 COPY ui/angular.json ui/tsconfig.app.json ui/tsconfig.json ui/package.json ui/pnpm-lock.yaml ui/pnpm-workspace.yaml ui/.browserslistrc /ui/
@@ -9,7 +9,7 @@ RUN pnpm install --frozen-lockfile
 
 # Python build
 # ############################################################
-FROM python:3.12-slim-trixie AS python-build
+FROM python:3.14-slim-trixie AS python-build
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc build-essential libpq-dev libffi-dev libssl-dev \
@@ -33,7 +33,7 @@ RUN pnpm run build:${build_for}
 
 # Final image — no poetry, no build tools, no compiler
 # ############################################################
-FROM python:3.12-slim-trixie AS final
+FROM python:3.14-slim-trixie AS final
 
 ARG build_for=prod
 

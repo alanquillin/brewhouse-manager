@@ -13,8 +13,8 @@ A homebrew tap management system with a FastAPI backend, Angular frontend, and P
 
 ## Tech Stack
 
-- **Backend**: Python 3.11, FastAPI, SQLAlchemy 2.0 (async), Pydantic v2
-- **Frontend**: Angular 21, Angular Material, Bootstrap 5.3, RxJS
+- **Backend**: Python 3.14, FastAPI, SQLAlchemy 2.0 (async), Pydantic v2
+- **Frontend**: Angular 22, Angular Material, Bootstrap 5.3, RxJS
 - **Database**: PostgreSQL 17, Alembic migrations
 - **Tooling**: Poetry 2.x (Python deps), pnpm (UI deps), mise (runtime versions via `mise.toml`)
 - **Docker**: Multi-stage build (node + python), docker-compose for local dev
@@ -94,6 +94,20 @@ make clean-all               # Stops running containers, cleans up all docker im
 - **UI unit tests**: `make test-ui-unit` — Karma + Jasmine with ChromeHeadless
 - **UI functional tests**: `make test-ui-functional` — requires Docker compose running
 
+### Manual/visual UI verification against the local dev stack
+
+There's no `chromium-cli`/Playwright installed in the sandbox, but a real Chrome exists at `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (macOS). To actually see a UI change rendered (not just pass unit tests):
+
+1. Rebuild the dev image and recreate the `web` container — this is fast (a few seconds) because Docker layer caching means only the changed `ui/src` → `pnpm run build:dev` layer and the final `COPY` layers re-run:
+   ```bash
+   docker build --build-arg build_for=dev -t brewhouse-manager:dev .
+   docker compose --project-directory deploy/docker-local up -d --force-recreate web
+   ```
+   If other containers (postgres/nginx) aren't listed as `Up` afterward, run `docker compose --project-directory deploy/docker-local up -d` (no `--force-recreate`) once more to bring the rest of the stack back.
+2. The stack serves over `https://localhost:8443` (self-signed cert) with nginx in front of the `web` container on port 5001.
+3. The Postgres volume persists real accumulated data across sessions (not just `seed_data.py` fixtures) — location slugs `sample-2-tap-taproom`, `sample-3-tap-taproom`, `sample-4-tap-taproom` exist under routes `/view/<slug>` (public dashboard) and login is `alanquillin@gmail.com` / `foo` (from `deploy/docker-local/my-config.json`, `auth.initial_user`) for `/manage/*` admin pages.
+4. Use `puppeteer-core` (install with `npm install puppeteer-core` in a scratch dir — no need to download a bundled Chromium) launched with `executablePath` pointed at the system Chrome and `--ignore-certificate-errors` in `args`. `page.setRequestInterception(true)` lets you mock/delay/force-fail specific API responses (e.g. the tap-monitor `/data` polling endpoint) to reach UI states — loading spinners, error banners — that aren't reproducible with whatever real data happens to be in the dev DB at the time.
+
 ### Mocking `awaitable_attrs` (SQLAlchemy async lazy loading)
 
 Production code accesses async-loaded relationships via `await obj.awaitable_attrs.some_attr`. Mocking this requires a directly awaitable value — **not** a coroutine object and **not** an `AsyncMock` instance.
@@ -131,9 +145,11 @@ This class is defined at the top of each affected test file (not shared via conf
 Sync test methods run async production code via:
 ```python
 def run_async(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 ```
 This is defined locally in each test file that uses it.
+
+**Python 3.14 gotcha**: this helper used to be `asyncio.get_event_loop().run_until_complete(coro)`. As of Python 3.14, `asyncio.get_event_loop()` no longer implicitly creates an event loop when none exists in the current thread — it raises `RuntimeError: There is no current event loop in thread 'MainThread'` instead. All 39 `run_async` definitions across `api/tests/unit/` were switched to `asyncio.run(coro)` for the 3.14 upgrade. If a test needs to build a `Task`/`Future` (e.g. via `asyncio.ensure_future()`) before calling `run_async(...)`, that construction must happen *inside* a coroutine passed to `run_async`, not beforehand at the top level of the test — `ensure_future()` also requires a running loop and will hit the same `RuntimeError` otherwise (see `test_shutdown_cancels_tcp_task` in `api/tests/unit/test_app.py` for the pattern: wrap the setup + the `await app.shutdown()` call together in a local `async def` and pass that to `run_async`).
 
 ## Code Style
 
@@ -220,6 +236,27 @@ const freshService = TestBed.runInInjectionContext(() => new MyService());
 @if ((beverageBatches[modifyBeverage.id]?.length ?? 0) > 0 && !loadingBatches) {
 ```
 
+**Programmatic `matTooltip` toggle (hover-or-click)**: To make a tooltip open on both hover and click/tap (not just hover), grab a template reference to the directive and call `.toggle()`:
+```html
+<span
+  tabindex="0"
+  #myTooltip="matTooltip"
+  matTooltip="..."
+  (click)="myTooltip.toggle()"
+  (keyup.enter)="myTooltip.toggle()"
+>...</span>
+```
+`tabindex="0"` + `(keyup.enter)` are required to satisfy `click-events-have-key-events` / `interactive-supports-focus` on the non-button element. Used throughout `location.component.html` for the tap online/offline/active/error status indicators and in `taps.component.html` for the tap-monitor warning icon.
+
+**`mat-card-header` does not stretch its content to full width by default**: `mat-card-subtitle`'s wrapping `.mat-mdc-card-header-text` div is a flex item with no `flex-grow`, so a custom `display:flex; justify-content:space-between` row placed inside `mat-card-subtitle` will only span the width of its content, not the card. To right-justify something in the header, add a scoped override:
+```scss
+:host ::ng-deep .tap-card > mat-card-header .mat-mdc-card-header-text {
+  flex: 1;
+  width: 100%;
+}
+```
+(see `location.component.scss`).
+
 ### Tap Monitor Integration
 
 `TapMonitorBase` in `api/lib/tap_monitors/` is the base class for device integrations (Kegtron Pro, Kegtron Gen1, Plaato, etc.). Each implementation provides:
@@ -231,6 +268,10 @@ const freshService = TestBed.runInInjectionContext(() => new MyService());
 
 Enabled/disabled via config: `tap_monitors.<type>.enabled`.
 
+**`reports_online_status()` is a static per-type capability flag**, independent of any single poll's success/failure. UI code should never assume every tap monitor supports online/offline reporting — `getTapMonitorsForLocation` / `TapMonitor.reportsOnlineStatus` (mapped from `get_types()` in `lib/tap_monitors/__init__.py`) tells you whether to show real online/offline state or a generic "Active" state instead. `open-plaato-keg` and `keg-volume-monitor-weight` are examples of types that return `False` here.
+
+**`lastUpdatedOn` (last-connected timestamp) is only implemented for `plaato-keg`**: its `get_all()` (`lib/tap_monitors/plaato_keg.py`) is the only adapter that populates the `lastUpdatedOn` field from a DB-cached device row. `kegtron.py`, `kegtron_gen1.py`, and `keg_volume_monitor.py` never set it, so their dashboard "last connected" tooltip will always be empty — this is a real gap, not a mapping bug, if a future task wants to add last-seen tracking for those types it needs new extraction logic in each adapter's `parse_resp()`/`get_all()`.
+
 ## Docker Build Notes
 
 ### Multi-stage layout
@@ -239,10 +280,10 @@ The build uses four stages:
 
 | Stage | Base | Purpose |
 |---|---|---|
-| `node-base` | `node:24.15-trixie` | Install pnpm/Angular CLI, install UI deps |
-| `python-build` | `python:3.12-slim-trixie` | Install Poetry + build tools, compile `.venv` |
+| `node-base` | `node:26.5-trixie` | Install pnpm/Angular CLI, install UI deps |
+| `python-build` | `python:3.14-slim-trixie` | Install Poetry + build tools, compile `.venv` |
 | `node-build` | `node-base` | Compile Angular app |
-| `final` | `python:3.12-slim-trixie` (clean) | Runtime image — copies `.venv` + app code only |
+| `final` | `python:3.14-slim-trixie` (clean) | Runtime image — copies `.venv` + app code only |
 
 **Poetry is not present in the final image.** It lives only in `python-build`. The `.venv` directory (at `/.venv` in the container) is the only Python artifact copied into `final` via `COPY --from=python-build /.venv /.venv`. This keeps poetry, its transitive deps (e.g. msgpack), build tools, and compilers out of the shipped image.
 
@@ -255,7 +296,7 @@ If a new script or service needs to run Python/alembic inside the container, use
 
 ### Removing perl (CVE remediation)
 
-`python:3.12-slim-trixie` (the base for the `final` stage) ships with `perl` and `perl-base`. They are not needed at runtime and must be purged from the `final` stage:
+`python:3.14-slim-trixie` (the base for the `final` stage) ships with `perl` and `perl-base`. They are not needed at runtime and must be purged from the `final` stage:
 
 ```dockerfile
 RUN apt-get purge -y --auto-remove --allow-remove-essential perl perl-base
@@ -269,7 +310,7 @@ Purging perl from `python-build` is unnecessary because `python-build` is a buil
 
 ### `addgroup` vs `groupadd`
 
-`addgroup` (from the Debian `adduser` package) is a **Perl script**. It is not available in `python:3.12-slim-trixie` (which does not ship perl). Calling `addgroup` in the `final` stage will fail with `addgroup: not found`.
+`addgroup` (from the Debian `adduser` package) is a **Perl script**. It is not available in `python:3.14-slim-trixie` (which does not ship perl). Calling `addgroup` in the `final` stage will fail with `addgroup: not found`.
 
 Use `groupadd` instead — it is a C binary from the `shadow` package and does not require perl:
 
@@ -284,7 +325,7 @@ RUN addgroup app --gid 10000 && useradd ...
 
 ### pip version floor
 
-Both the `python-build` and `final` stages must pin pip to `>=25.3` to avoid CVEs in older pip releases. Each stage starts from `python:3.12-slim-trixie` independently, so each needs its own upgrade:
+Both the `python-build` and `final` stages must pin pip to `>=25.3` to avoid CVEs in older pip releases. Each stage starts from `python:3.14-slim-trixie` independently, so each needs its own upgrade:
 
 ```dockerfile
 # python-build stage
@@ -298,7 +339,7 @@ Do not rely on the `.venv` copy from `python-build` to carry the pip version int
 
 ### Runtime library assumptions in the final image
 
-The `final` stage has no `apt-get install` — it starts from a clean `python:3.12-slim-trixie` and only receives the `.venv`. Any C extension in the venv that dynamically links to a system library not present in the base image will fail at runtime with a "shared library not found" error.
+The `final` stage has no `apt-get install` — it starts from a clean `python:3.14-slim-trixie` and only receives the `.venv`. Any C extension in the venv that dynamically links to a system library not present in the base image will fail at runtime with a "shared library not found" error.
 
 Currently safe because:
 - `psycopg2-binary` bundles its own `libpq.so` (no system `libpq5` needed).
@@ -320,10 +361,12 @@ GitHub Actions workflow (`.github/workflows/ci.yml`) runs on PRs to `main`:
 ### Package Manager (mise)
 
 The project uses `mise.toml` (not `.tool-versions`) for runtime version pinning. Current pinned versions:
-- Python 3.11.13
-- Node 24.15.0
+- Python 3.14.6
+- Node 26.5.0
 - Poetry 2.4.1
-- Snyk 1.1304.2
+- Snyk 1.1306.1
+
+**Upgrading Python or Node**: `pyproject.toml`'s `python = ">=3.12,<4.0"` constraint and Angular CLI 22's own `engines.node` (`^22.22.3 || ^24.15.0 || >=26.0.0`) already tolerate new major versions without a pin change there — the actual work is bumping `mise.toml` and the two `FROM` lines in `Dockerfile` (see Docker Build Notes table above), then `poetry lock` (Python) or `pnpm install` (Node) to refresh the lockfile. Also bump `@types/node` in `ui/package.json` to match the new Node major for accurate typings. Check for prebuilt wheels (`cp<version>` tags on PyPI) before assuming a pinned C-extension dependency (`cryptography`, `psycopg2-binary`, `asyncpg`, `uvloop`, `httptools`) will install cleanly on a very new Python — as of the 3.14 upgrade all of these already had wheels available.
 
 ### pnpm (UI package manager)
 

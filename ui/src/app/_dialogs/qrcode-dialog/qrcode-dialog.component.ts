@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { isNilOrEmpty } from 'src/app/utils/helpers';
@@ -9,6 +9,7 @@ import * as _ from 'lodash';
   selector: 'app-qrcode-dialog',
   templateUrl: 'qrcode-dialog.component.html',
   styleUrls: ['qrcode-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LocationQRCodeDialogComponent {
