@@ -8,7 +8,7 @@ import pytest
 
 def run_async(coro):
     """Helper to run async functions in sync tests"""
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 # Lazy import of the app module
@@ -263,11 +263,16 @@ class TestApplicationShutdown:
         async def cancelled_coro():
             raise asyncio.CancelledError()
 
-        mock_task = asyncio.ensure_future(cancelled_coro())
-        mock_task.cancel = MagicMock(wraps=mock_task.cancel)
-        app.tcp_task = mock_task
+        async def run_shutdown():
+            task = asyncio.ensure_future(cancelled_coro())
+            task.cancel = MagicMock(wraps=task.cancel)
+            app.tcp_task = task
 
-        run_async(app.shutdown())
+            await app.shutdown()
+
+            return task
+
+        mock_task = run_async(run_shutdown())
 
         mock_task.cancel.assert_called_once()
 

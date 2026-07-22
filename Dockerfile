@@ -9,7 +9,7 @@ RUN pnpm install --frozen-lockfile
 
 # Python build
 # ############################################################
-FROM python:3.12-slim-trixie AS python-build
+FROM python:3.14-slim-trixie AS python-build
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc build-essential libpq-dev libffi-dev libssl-dev \
@@ -33,7 +33,7 @@ RUN pnpm run build:${build_for}
 
 # Final image — no poetry, no build tools, no compiler
 # ############################################################
-FROM python:3.12-slim-trixie AS final
+FROM python:3.14-slim-trixie AS final
 
 ARG build_for=prod
 
