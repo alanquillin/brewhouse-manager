@@ -532,6 +532,17 @@ export class ManageTapsComponent implements OnInit {
     return `${name} (${tapMonitor.monitorType})`;
   }
 
+  tapMonitorMissingOnlineStatus(
+    tapMonitor: TapMonitor | undefined,
+    tapMonitorId?: string
+  ): boolean {
+    tapMonitor = this.resolveTapMonitor(tapMonitor, tapMonitorId);
+    if (_.isNil(tapMonitor)) {
+      return false;
+    }
+    return !tapMonitor.reportsOnlineStatus;
+  }
+
   getTapMonitorError(tapMonitor: TapMonitor | undefined, tapMonitorId?: string): string {
     tapMonitor = this.resolveTapMonitor(tapMonitor, tapMonitorId);
     if (_.isNil(tapMonitor) || _.isEmpty(tapMonitor.error)) {

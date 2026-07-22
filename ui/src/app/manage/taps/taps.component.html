@@ -138,6 +138,15 @@
             </th>
             <td mat-cell *matCellDef="let element">
               {{ getTapMonitorName(element.tapMonitor, element.tapMonitorId) }}
+              @if (tapMonitorMissingOnlineStatus(element.tapMonitor, element.tapMonitorId)) {
+                <mat-icon
+                  class="tap-monitor-warning"
+                  tabindex="0"
+                  matTooltip="The selected tap monitor does not support reporting realtime online status.  Status will be displayed as 'active'"
+                >
+                  warning
+                </mat-icon>
+              }
               @if (getTapMonitorError(element.tapMonitor, element.tapMonitorId)) {
                 <div class="tap-monitor-error">
                   <mat-icon>warning</mat-icon>
@@ -305,6 +314,16 @@
                 </mat-option>
               }
             </mat-select>
+            @if (tapMonitorMissingOnlineStatus(undefined, modifyTap.editValues.tapMonitorId)) {
+              <mat-icon
+                matSuffix
+                class="tap-monitor-warning"
+                tabindex="0"
+                matTooltip="The selected tap monitor does not support reporting realtime online status.  Status will be displayed as 'active'"
+              >
+                warning
+              </mat-icon>
+            }
           </mat-form-field>
         </fieldset>
       </form>
