@@ -4,6 +4,11 @@ div.tap-list {
   padding-bottom: 4px;
 }
 
+:host ::ng-deep .tap-card > mat-card-header .mat-mdc-card-header-text {
+  flex: 1;
+  width: 100%;
+}
+
 div.tap-volume {
   order: 1;
   display: inline-block;
@@ -229,36 +234,72 @@ div.tap-logo img {
   z-index: 1000;
 }
 
-.online-status {
+.tap-header-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.tap-header-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tap-status-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 90%;
+  color: inherit;
+}
+
+.tap-status-prefix {
+  color: inherit;
+  margin-right: 4px;
+}
+
+.tap-status-indicator {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+
+  .mat-icon {
+    margin-right: 4px;
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+    vertical-align: middle;
+  }
+}
+
+.tap-status-online {
   color: green;
-  display: flex;
-  flex-direction: row;
-  vertical-align: middle;
+}
 
-  .mat-icon {
+.tap-status-offline {
+  color: #757575;
+}
+
+.tap-status-checking {
+  color: #757575;
+  cursor: default;
+
+  mat-spinner {
     margin-right: 6px;
   }
 }
 
-.offline-status {
-  padding: 6px 12px;
-  margin: 0px;
-  display: flex;
-  flex-direction: row;
-  vertical-align: middle;
-
-  .mat-icon {
-    margin-right: 6px;
-  }
+.tap-status-error {
+  color: #d32f2f;
 }
 
-.online-checking-status {
-  color: orange;
-  display: flex;
-  flex-direction: row;
-  vertical-align: middle;
-
-  .mat-icon {
-    margin-right: 6px;
-  }
+.tap-status-active {
+  color: #1976d2;
 }

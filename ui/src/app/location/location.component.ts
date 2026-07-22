@@ -57,7 +57,8 @@ export class TapMonitorData extends TapMonitor {
   online!: boolean;
   lastUpdatedOn!: number;
   onlineStatusType!: string;
-  checkingOnline!: boolean;
+  hasError!: boolean;
+  initialized!: boolean;
 
   getLastUpdatedOn(): Date | undefined {
     if (isNilOrEmpty(this.lastUpdatedOn) || !_.isNumber(this.lastUpdatedOn)) {
@@ -269,34 +270,38 @@ export class LocationComponent implements OnInit {
             tapMonitorData.online = oldTapMonitor.online;
             tapMonitorData.lastUpdatedOn = oldTapMonitor.lastUpdatedOn;
             tapMonitorData.onlineStatusType = oldTapMonitor.onlineStatusType;
+            tapMonitorData.hasError = oldTapMonitor.hasError;
+            tapMonitorData.initialized = oldTapMonitor.initialized;
             tap.tapMonitor = tapMonitorData;
             tap.isLoading = false;
 
-            this.dataService
-              .getAllTapMonitorData(tapMonitorData.id)
-              .subscribe((resp: TapMonitorDataModel) => {
+            this.dataService.getAllTapMonitorData(tapMonitorData.id).subscribe({
+              next: (resp: TapMonitorDataModel) => {
+                tapMonitorData.hasError = false;
+                tapMonitorData.initialized = true;
                 tapMonitorData.percentBeerRemaining = resp.percentRemaining;
                 tapMonitorData.totalBeerRemaining = resp.totalVolumeRemaining;
                 tapMonitorData.beerRemainingUnit = resp.displayVolumeUnit;
                 tapMonitorData.lastUpdatedOn = resp.lastUpdatedOn;
                 tapMonitorData.onlineStatusType = resp.onlineStatusType;
                 if (resp.onlineStatusType === 'async') {
-                  tapMonitorData.checkingOnline = true;
                   this.dataService.getTapMonitorOnline(tapMonitorData.id).subscribe({
                     next: (val: boolean) => {
                       tapMonitorData.online = val;
-                      tapMonitorData.checkingOnline = false;
                     },
-                    error: (err: any) => {
-                      this.displayError(err.message);
-                      tapMonitorData.online = false;
-                      tapMonitorData.checkingOnline = false;
+                    error: () => {
+                      tapMonitorData.hasError = true;
                     },
                   });
                 } else {
                   tapMonitorData.online = resp.online;
                 }
-              });
+              },
+              error: () => {
+                tapMonitorData.hasError = true;
+                tapMonitorData.initialized = true;
+              },
+            });
           });
       } else {
         tap.isLoading = false;
@@ -311,6 +316,10 @@ export class LocationComponent implements OnInit {
     }
 
     return false;
+  }
+
+  showTapStatus(tap: TapDetails): boolean {
+    return !tap.isEmpty && !isNilOrEmpty(tap.tapMonitor);
   }
 
   getSrm(tap: Tap): string {
