@@ -142,7 +142,10 @@
                 <mat-icon
                   class="tap-monitor-warning"
                   tabindex="0"
+                  #tapMonitorWarningTooltip="matTooltip"
                   matTooltip="The selected tap monitor does not support reporting realtime online status.  Status will be displayed as 'active'"
+                  (click)="tapMonitorWarningTooltip.toggle()"
+                  (keyup.enter)="tapMonitorWarningTooltip.toggle()"
                 >
                   warning
                 </mat-icon>
@@ -319,7 +322,10 @@
                 matSuffix
                 class="tap-monitor-warning"
                 tabindex="0"
+                #tapMonitorFormWarningTooltip="matTooltip"
                 matTooltip="The selected tap monitor does not support reporting realtime online status.  Status will be displayed as 'active'"
+                (click)="tapMonitorFormWarningTooltip.toggle()"
+                (keyup.enter)="tapMonitorFormWarningTooltip.toggle()"
               >
                 warning
               </mat-icon>

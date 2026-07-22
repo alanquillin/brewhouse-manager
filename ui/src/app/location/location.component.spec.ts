@@ -53,6 +53,7 @@ describe('LocationComponent', () => {
       'getDashboardBeverage',
       'getDashboardTapMonitor',
       'getAllTapMonitorData',
+      'getTapMonitorOnline',
     ]);
     mockSettingsService = jasmine.createSpyObj('SettingsService', [], {
       settings$: of(mockSettings),
@@ -248,6 +249,28 @@ describe('LocationComponent', () => {
     it('should return false when batchId is set', () => {
       const tap = new TapDetails({ batchId: 'batch-1' });
       expect(component.isTapEmpty(tap)).toBe(false);
+    });
+  });
+
+  describe('showTapStatus', () => {
+    it('should return false when tap is empty', () => {
+      const tap = new TapDetails({});
+      tap.isEmpty = true;
+      expect(component.showTapStatus(tap)).toBe(false);
+    });
+
+    it('should return false when tap has no tapMonitor', () => {
+      const tap = new TapDetails({ beerId: 'beer-1' });
+      tap.isEmpty = false;
+      tap.tapMonitor = undefined as any;
+      expect(component.showTapStatus(tap)).toBe(false);
+    });
+
+    it('should return true when tap is not empty and has a tapMonitor', () => {
+      const tap = new TapDetails({ beerId: 'beer-1' });
+      tap.isEmpty = false;
+      tap.tapMonitor = new TapMonitorData({ id: 'tm-1' });
+      expect(component.showTapStatus(tap)).toBe(true);
     });
   });
 
@@ -527,6 +550,60 @@ describe('LocationComponent', () => {
       const tap = new TapDetails({ beverageId: 'bev-1' });
       component.setTapDetails(tap);
       expect(mockDataService.getDashboardBeverage).toHaveBeenCalledWith('bev-1');
+    });
+
+    describe('tapMonitor status', () => {
+      beforeEach(() => {
+        mockDataService.getDashboardTapMonitor.and.returnValue(
+          of({ id: 'tm-1', reportsOnlineStatus: true } as any)
+        );
+      });
+
+      it('should mark hasError and initialized on getAllTapMonitorData failure', () => {
+        mockDataService.getAllTapMonitorData.and.returnValue(
+          throwError(() => new DataError('boom', 500))
+        );
+        const tap = new TapDetails({
+          beerId: 'beer-1',
+          tapMonitorId: 'tm-1',
+          tapMonitor: { id: 'tm-1' },
+        });
+        const result = component.setTapDetails(tap);
+        expect(result.tapMonitor.hasError).toBe(true);
+        expect(result.tapMonitor.initialized).toBe(true);
+      });
+
+      it('should mark hasError on async getTapMonitorOnline failure without clearing initialized', () => {
+        mockDataService.getAllTapMonitorData.and.returnValue(
+          of({ onlineStatusType: 'async' } as any)
+        );
+        mockDataService.getTapMonitorOnline.and.returnValue(
+          throwError(() => new DataError('boom', 500))
+        );
+        const tap = new TapDetails({
+          beerId: 'beer-1',
+          tapMonitorId: 'tm-1',
+          tapMonitor: { id: 'tm-1' },
+        });
+        const result = component.setTapDetails(tap);
+        expect(result.tapMonitor.hasError).toBe(true);
+        expect(result.tapMonitor.initialized).toBe(true);
+      });
+
+      it('should set online directly for non-async status type', () => {
+        mockDataService.getAllTapMonitorData.and.returnValue(
+          of({ onlineStatusType: 'sync', online: true } as any)
+        );
+        const tap = new TapDetails({
+          beerId: 'beer-1',
+          tapMonitorId: 'tm-1',
+          tapMonitor: { id: 'tm-1' },
+        });
+        const result = component.setTapDetails(tap);
+        expect(result.tapMonitor.online).toBe(true);
+        expect(result.tapMonitor.hasError).toBe(false);
+        expect(result.tapMonitor.initialized).toBe(true);
+      });
     });
   });
 });
