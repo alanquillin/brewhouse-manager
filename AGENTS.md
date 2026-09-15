@@ -354,6 +354,8 @@ GitHub Actions workflow (`.github/workflows/ci.yml`) runs on PRs to `main`:
 - Uses `mise` to install Python, Node, and Poetry from `mise.toml`
 - Installs deps, builds dev Docker image, runs `make test` and `make lint`
 
+**Action pinning convention**: every `uses:` is pinned to a full commit SHA with the human-readable tag as a trailing comment (`uses: owner/repo@<40-char-sha> # vX.Y.Z`), not a floating tag. To bump one, resolve the new tag to its commit SHA first (annotated tags need dereferencing — `gh api repos/<owner>/<repo>/git/refs/tags/<tag>` gives an object; if `.object.type` is `"tag"` (not `"commit"`), follow up with `gh api repos/<owner>/<repo>/git/tags/<that-sha>` to get the actual commit SHA it points to) rather than trusting a changelog/release page's stated SHA. As of the last check: `actions/checkout` v7.0.1, `jdx/mise-action` v4.3.0, `pnpm/action-setup` v6.1.0 — all confirmed to have no breaking changes affecting this workflow's usage (no `with:` inputs on checkout; `install: true` on mise-action; `version: 11` on pnpm/action-setup, which v6 added native support for).
+
 ---
 
 ## Dependency & Tooling Notes
@@ -361,12 +363,22 @@ GitHub Actions workflow (`.github/workflows/ci.yml`) runs on PRs to `main`:
 ### Package Manager (mise)
 
 The project uses `mise.toml` (not `.tool-versions`) for runtime version pinning. Current pinned versions:
-- Python 3.14.6
-- Node 26.5.0
-- Poetry 2.4.1
-- Snyk 1.1306.1
+- Python 3.14.7
+- Node 26.8.2
+- Poetry 2.4.3
+- Snyk 1.1307.2
+
+Check for newer patch/minor releases with `mise latest <tool>` (compares against the tool's own upstream releases, unlike `mise outdated`, which only flags tools pinned to `"latest"` in the *global* `~/.config/mise/config.toml` — it ignores exact-pinned versions in the project's `mise.toml`).
 
 **Upgrading Python or Node**: `pyproject.toml`'s `python = ">=3.12,<4.0"` constraint and Angular CLI 22's own `engines.node` (`^22.22.3 || ^24.15.0 || >=26.0.0`) already tolerate new major versions without a pin change there — the actual work is bumping `mise.toml` and the two `FROM` lines in `Dockerfile` (see Docker Build Notes table above), then `poetry lock` (Python) or `pnpm install` (Node) to refresh the lockfile. Also bump `@types/node` in `ui/package.json` to match the new Node major for accurate typings. Check for prebuilt wheels (`cp<version>` tags on PyPI) before assuming a pinned C-extension dependency (`cryptography`, `psycopg2-binary`, `asyncpg`, `uvloop`, `httptools`) will install cleanly on a very new Python — as of the 3.14 upgrade all of these already had wheels available.
+
+**PATH doesn't refresh automatically after bumping `mise.toml` pins mid-session**: mise's shell integration updates `PATH` via a `chpwd`/`precmd` hook that fires on interactive directory changes — it does **not** re-fire inside a single non-interactive shell invocation (e.g. Claude Code's Bash tool re-sourcing the profile per command). After editing `mise.toml` and running `mise install`, a bare `which poetry`/`poetry --version` in the same session can still resolve the *old* installed version even though `mise current` correctly reports the new one. Force a refresh with `eval "$(mise activate bash)"` (ignore the harmless `no such hash table element` warnings it prints), or sidestep it entirely with `mise exec -- <cmd>`, before verifying or testing an upgraded tool.
+
+### Dependency upgrade heuristic (Python/poetry, mise tools, GHA actions)
+
+When asked to upgrade "what's safe": a bump is safe by default only if it stays within the *existing* version constraint (caret range in `pyproject.toml`, or same major version for exactly-pinned tools/actions) — run the test suite (and `make lint-py` for isort/pylint) after, not just before. Two extra cases:
+- **Exactly-pinned packages/tools** (no `^`/`~`, e.g. `psycopg2-binary`, `cryptography` in `pyproject.toml`, or any `mise.toml` entry) never move via `poetry update` / `mise install` alone — the pin itself must be edited first.
+- **Major version bumps** (`cryptography` 49→50, `isort` 8→9, `uvicorn` 0.52→0.53, or any GitHub Action's major tag) are not auto-applied even if the exact pin is edited and tests pass — check the changelog/release notes for breaking changes relevant to actual usage first (tests passing doesn't prove a removed/renamed CLI flag or changed default isn't lurking). If clean, upgrade and re-verify; if in doubt, leave pinned and report the option back.
 
 ### pnpm (UI package manager)
 
