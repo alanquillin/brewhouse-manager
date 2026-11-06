@@ -69,8 +69,8 @@ package-mode = false
 
 [tool.poetry.dependencies]
 MarkupSafe = "^3.0.3"
-cryptography = "49.0.0"
-psycopg2-binary = "2.9.12"
+cryptography = "50.0.1"
+psycopg2-binary = "2.9.13"
 fastapi = "^0.141.1"
 PyJWT = "^2.13.0"
 SQLAlchemy-Utils = "^0.42.1"
@@ -93,7 +93,7 @@ asyncpg = "^0.31.0"
 python-multipart = "^0.0.32"
 itsdangerous = "^2.2.0"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.32"}
-uvicorn = {extras = ["standard"], version = "^0.52.0"}
+uvicorn = {extras = ["standard"], version = "^0.53.0"}
 httpx = "^0.28.1"
 google-api-python-client = "^2.188.0"
 google-auth-oauthlib = "^1.2.4"
@@ -105,7 +105,7 @@ python-json-logger = "^4.1.0"
 bandit = "^1.9.3"
 black = "^26.1.0"
 freezegun = "^1.5.5"
-isort = "^8.0.1"
+isort = "^9.0.1"
 pdbpp = "^0.12.1"
 py = "^1.10.0"
 pylint = "^4.0.4"
